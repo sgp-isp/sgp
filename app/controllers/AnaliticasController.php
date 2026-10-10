@@ -52,6 +52,10 @@ class AnaliticasController extends Controller
             ? "AND dpa.departamento_asignado_id = {$deptId}"
             : '';
 
+        $periodoActivo    = PeriodoService::getActivo();
+        $hayPeriodoActivo = ($periodoActivo !== null);
+        $periodoActivoWhere = $hayPeriodoActivo ? "AND dpa.periodo_id = {$periodoActivo->id}" : "AND 1=0";
+
 
         // ────────────────────────────────────────────────────────────────
         // KPIs
@@ -78,7 +82,7 @@ class AnaliticasController extends Controller
         $this->db->query("
             SELECT COUNT(*) AS total
             FROM datos_pasante dpa
-            WHERE dpa.estado_pasantia = 'Activo' {$tutorWhere}
+            WHERE dpa.estado_pasantia = 'Activo' {$tutorWhere} {$periodoActivoWhere}
         ");
         $kpiActivos = (int)($this->db->single()->total ?? 0);
 
@@ -93,6 +97,7 @@ class AnaliticasController extends Controller
                 WHERE a.estado IN ('Presente', 'Justificado', 'Ausente')
                   AND dpa.estado_pasantia = 'Activo'
                   {$tutorWhere}
+                  {$periodoActivoWhere}
                 GROUP BY a.pasante_id
             ) AS sub
         ");
@@ -112,6 +117,7 @@ class AnaliticasController extends Controller
             WHERE dpa.estado_pasantia = 'Activo'
               AND dpa.horas_meta > 0
               {$tutorWhere}
+              {$periodoActivoWhere}
         ");
         $kpiProgreso = (float)($this->db->single()->promedio ?? 0);
 
@@ -120,7 +126,7 @@ class AnaliticasController extends Controller
             SELECT ROUND(AVG(e.promedio_final), 2) AS promedio
             FROM evaluaciones e
             INNER JOIN datos_pasante dpa ON dpa.usuario_id = e.pasante_id
-            WHERE dpa.estado_pasantia = 'Activo' {$tutorWhere}
+            WHERE dpa.estado_pasantia = 'Activo' {$tutorWhere} {$periodoActivoWhere}
         ");
         $kpiEval = (float)($this->db->single()->promedio ?? 0);
 
@@ -468,6 +474,8 @@ class AnaliticasController extends Controller
             'heatmapCalData'         => $heatmapCalData,
             'allCalData'             => $allCalData,
             'mesesSinPeriodo'        => $mesesSinPeriodo, // [SGP-FEATURE-CAL-SIN-PERIODO]
+            'hayPeriodoActivo'       => $hayPeriodoActivo,
+            'periodoActivo'          => $periodoActivo,
             'estadosPasantia'        => $estadosPasantia,
             // Rendimiento individual
             'progresoPorPasante'     => $progresoPorPasante,

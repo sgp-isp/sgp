@@ -370,6 +370,31 @@ $metricas  = [
         </div>
     </div>
 
+    <!-- ===== BANNER RECESO PERÍODO ===== -->
+    <?php if (empty($hayPeriodoActivo)): ?>
+    <div style="background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 20px 26px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: #dbeafe; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-size: 1.4rem; flex-shrink: 0;">
+                <i class="ti ti-calendar-off"></i>
+            </div>
+            <div>
+                <h4 style="margin: 0; font-size: 1rem; font-weight: 800; color: #1e3a8a;">Período Académico en Receso o Cerrado</h4>
+                <p style="margin: 3px 0 0; font-size: 0.83rem; color: #475569;">
+                    No hay un período académico activo en este momento. Los KPIs de pasantes activos y progreso reflejan la ausencia de cohorte en curso.
+                </p>
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="<?= URLROOT ?>/periodos" style="background: #1d4ed8; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="ti ti-calendar-plus"></i> Gestionar Períodos
+            </a>
+            <a href="<?= URLROOT ?>/asistencias?vista=anual" style="background: white; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="ti ti-history"></i> Histórico de Asistencias
+            </a>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- ===== KPIs ROW ===== -->
     <div class="bento-grid">
 
