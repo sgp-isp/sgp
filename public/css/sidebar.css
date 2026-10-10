@@ -13,10 +13,10 @@
     --z-overlay: 1040;
     --z-sidebar-mobile: 1050;
 
-    /* Gradient Profesional (Match Banner) */
-    --gradient-start: #2d4a9e;
-    --gradient-mid: #1e3a8a;
-    --gradient-end: #162660;
+    /* Gradient Profesional (Match Banner & Dynamic Branding) */
+    --gradient-start: var(--color-accent-brand, #2d4a9e);
+    --gradient-mid: var(--color-primary, #1e3a8a);
+    --gradient-end: var(--color-primary, #162660);
 
     /* Colores WCAG */
     --text-light: rgba(255, 255, 255, 0.8);
@@ -493,31 +493,73 @@ body.sidebar-collapsed .nav-link:hover::before {
         visibility: hidden;
     }
 
-    /* Centrar íconos de navegación */
+    /* Centrar íconos de navegación en caja perfecta 48x48 */
     .main-sidebar .nav-link {
+        display: flex !important;
+        align-items: center !important;
         justify-content: center !important;
-        padding: 12px !important;
+        width: 48px !important;
+        height: 48px !important;
+        margin: 4px auto !important;
+        padding: 0 !important;
+        border-radius: 12px !important;
         position: relative;
+        overflow: visible !important;
+        box-sizing: border-box !important;
     }
 
     .main-sidebar .nav-link i {
         margin: 0 !important;
-        font-size: 20px !important;
+        font-size: 22px !important;
+        line-height: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Ítem activo en mini-sidebar: caja blanca 48x48 perfectamente centrada */
+    .main-sidebar .nav-item>a.active,
+    .main-sidebar .nav-link.active,
+    .main-sidebar .nav-item.active>a {
+        width: 48px !important;
+        height: 48px !important;
+        margin: 4px auto !important;
+        background-color: #ffffff !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .main-sidebar .nav-item>a.active i,
+    .main-sidebar .nav-link.active i,
+    .main-sidebar .nav-item.active>a i {
+        color: #1e293b !important;
+    }
+
+    /* Desactivar barrita lateral que desalinea el centro */
+    .main-sidebar .nav-item>a::before,
+    .main-sidebar .nav-link::before {
+        display: none !important;
     }
 
     /* Footer y botón logout centrado */
     .main-sidebar .sidebar-footer {
-        padding: 12px 8px !important;
+        padding: 12px 0 !important;
     }
 
     .main-sidebar .btn-logout {
+        display: flex !important;
+        align-items: center !important;
         justify-content: center !important;
-        padding: 10px !important;
+        width: 48px !important;
+        height: 48px !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        border-radius: 12px !important;
     }
 
     .main-sidebar .btn-logout i {
         margin: 0 !important;
-        font-size: 20px !important;
+        font-size: 22px !important;
     }
 
     /* Logo compacto */

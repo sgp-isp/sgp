@@ -1443,12 +1443,12 @@ $hoy             = date('Y-m-d');
         <div class="cfg-card cg-6" style="border-top:4px solid var(--color-primary, #162660);">
             <div class="cfg-card-header" style="flex-wrap:wrap;gap:12px;">
                 <div class="cfg-card-title">
-                    <div class="cfg-icon-box" style="background:#f1f5f9;">
+                    <div class="cfg-icon-box" style="background:var(--color-input-bg, #f1f5f9);">
                         <i class="ti ti-palette" style="font-size:1.2rem;color:var(--color-primary, #162660);"></i>
                     </div>
                     <div>
-                        <div style="font-weight:800;font-size:1.05rem;color:#1e293b;">Paleta de Colores y Tema</div>
-                        <div style="font-size:0.75rem;color:#64748b;font-weight:500;margin-top:2px;">
+                        <div class="cfg-card-heading" style="font-weight:800;font-size:1.05rem;color:#1e293b;">Paleta de Colores y Tema</div>
+                        <div class="cfg-card-subheading" style="font-size:0.75rem;color:#64748b;font-weight:500;margin-top:2px;">
                             Personaliza la identidad visual y modo de contraste del sistema
                         </div>
                     </div>
@@ -1470,10 +1470,10 @@ $hoy             = date('Y-m-d');
                 <!-- Selectores de color -->
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
                     <!-- Color Primario -->
-                    <div style="background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;">
+                    <div class="cfg-color-panel" style="background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;">
                         <label class="cfg-field-label" style="display:flex;justify-content:space-between;align-items:center;">
-                            <span>Color Primario (Barras / Headers)</span>
-                            <span id="hexPrimarioDisplay" style="font-family:monospace;font-weight:700;color:#2563eb;"><?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?></span>
+                            <span class="cfg-card-subheading">Color Primario (Barras / Headers)</span>
+                            <span id="hexPrimarioDisplay" style="font-family:monospace;font-weight:700;color:var(--color-accent-brand, #2563eb);"><?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?></span>
                         </label>
                         <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
                             <input type="color" id="pickerPrimario" value="<?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>"
@@ -1486,10 +1486,10 @@ $hoy             = date('Y-m-d');
                     </div>
 
                     <!-- Color de Acento -->
-                    <div style="background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;">
+                    <div class="cfg-color-panel" style="background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;">
                         <label class="cfg-field-label" style="display:flex;justify-content:space-between;align-items:center;">
-                            <span>Color de Acento (Botones / KPIs)</span>
-                            <span id="hexAcentoDisplay" style="font-family:monospace;font-weight:700;color:#2563eb;"><?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?></span>
+                            <span class="cfg-card-subheading">Color de Acento (Botones / KPIs)</span>
+                            <span id="hexAcentoDisplay" style="font-family:monospace;font-weight:700;color:var(--color-accent-brand, #2563eb);"><?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?></span>
                         </label>
                         <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
                             <input type="color" id="pickerAcento" value="<?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>"
@@ -1504,29 +1504,29 @@ $hoy             = date('Y-m-d');
 
                 <!-- Presets Rápidos -->
                 <div style="margin-bottom:18px;">
-                    <div style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:8px;letter-spacing:0.5px;">
+                    <div class="cfg-card-subheading" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;margin-bottom:8px;letter-spacing:0.5px;">
                         Paletas Predefinidas Recomendadas
                     </div>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                        <button type="button" onclick="aplicarPresetColor('#162660', '#2563eb')" class="preset-theme-btn"
+                        <button type="button" onclick="aplicarPresetColor('#162660', '#2563eb', this)" class="preset-theme-btn"
                             style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
                             <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#162660;"></span>
                             <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#2563eb;margin-left:-4px;"></span>
                             Azul ISP Institucional
                         </button>
-                        <button type="button" onclick="aplicarPresetColor('#065f46', '#059669')" class="preset-theme-btn"
+                        <button type="button" onclick="aplicarPresetColor('#065f46', '#059669', this)" class="preset-theme-btn"
                             style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
                             <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#065f46;"></span>
                             <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#059669;margin-left:-4px;"></span>
                             Salud Pública Esmeralda
                         </button>
-                        <button type="button" onclick="aplicarPresetColor('#312e81', '#6366f1')" class="preset-theme-btn"
+                        <button type="button" onclick="aplicarPresetColor('#312e81', '#6366f1', this)" class="preset-theme-btn"
                             style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
                             <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#312e81;"></span>
                             <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#6366f1;margin-left:-4px;"></span>
                             Índigo Ejecutivo
                         </button>
-                        <button type="button" onclick="aplicarPresetColor('#0f172a', '#0284c7')" class="preset-theme-btn"
+                        <button type="button" onclick="aplicarPresetColor('#0f172a', '#0284c7', this)" class="preset-theme-btn"
                             style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
                             <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#0f172a;"></span>
                             <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#0284c7;margin-left:-4px;"></span>
@@ -1558,7 +1558,7 @@ $hoy             = date('Y-m-d');
                         style="padding:10px 18px;display:flex;align-items:center;gap:7px;background:linear-gradient(135deg, #1e3a8a, #2563eb);">
                         <i class="ti ti-device-floppy"></i> Guardar Paleta
                     </button>
-                    <button type="button" onclick="confirmarRestablecerTema()"
+                    <button type="button" onclick="confirmarRestablecerTema()" class="cfg-btn-reset-theme"
                         style="padding:10px 16px;border:1.5px solid #e2e8f0;background:white;color:#64748b;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;">
                         <i class="ti ti-rotate"></i> Restablecer Valores
                     </button>
@@ -1573,15 +1573,15 @@ $hoy             = date('Y-m-d');
         </div>
 
         <!-- CARD: Logos y Emblemas Institucionales -->
-        <div class="cfg-card cg-6" style="border-top:4px solid #2563eb;">
+        <div class="cfg-card cg-6" style="border-top:4px solid var(--color-accent-brand, #2563eb);">
             <div class="cfg-card-header" style="flex-wrap:wrap;gap:12px;">
                 <div class="cfg-card-title">
-                    <div class="cfg-icon-box" style="background:#eff6ff;">
-                        <i class="ti ti-photo-star" style="font-size:1.2rem;color:#2563eb;"></i>
+                    <div class="cfg-icon-box" style="background:var(--color-input-bg, #eff6ff);">
+                        <i class="ti ti-photo-star" style="font-size:1.2rem;color:var(--color-accent-brand, #2563eb);"></i>
                     </div>
                     <div>
-                        <div style="font-weight:800;font-size:1.05rem;color:#1e293b;">Logos y Emblemas Institucionales</div>
-                        <div style="font-size:0.75rem;color:#64748b;font-weight:500;margin-top:2px;">
+                        <div class="cfg-card-heading" style="font-weight:800;font-size:1.05rem;color:#1e293b;">Logos y Emblemas Institucionales</div>
+                        <div class="cfg-card-subheading" style="font-size:0.75rem;color:#64748b;font-weight:500;margin-top:2px;">
                             Actualiza los logos del sistema y cintillos de reportes PDF sin editar código
                         </div>
                     </div>
@@ -1592,52 +1592,49 @@ $hoy             = date('Y-m-d');
             <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px;">
 
                 <!-- 1. Logo Principal -->
-                <div style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
-                    <div style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                <div class="cfg-emblem-row" style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
+                    <div class="cfg-emblem-thumb" style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
                         <img src="<?= URLROOT ?>/img/logo.png?v=<?= time() ?>" alt="Logo Principal" style="max-width:100%;max-height:100%;object-fit:contain;">
                     </div>
                     <div style="flex:1;min-width:0;">
-                        <div style="font-weight:800;font-size:0.88rem;color:#1e293b;">Logo Principal SGP / ISP</div>
-                        <div style="font-size:0.74rem;color:#64748b;margin-top:2px;">Visible en la cabecera, sidebar y pantalla de inicio de sesión</div>
-                        <div style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>logo.png</code> (PNG con fondo transparente recomendado)</div>
+                        <div class="cfg-emblem-title" style="font-weight:800;font-size:0.88rem;color:#1e293b;">Logo Principal SGP / ISP</div>
+                        <div class="cfg-emblem-desc" style="font-size:0.74rem;color:#64748b;margin-top:2px;">Visible en la cabecera, sidebar y pantalla de inicio de sesión</div>
+                        <div class="cfg-emblem-file" style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>logo.png</code> (PNG con fondo transparente recomendado)</div>
                     </div>
-                    <button type="button" onclick="abrirModalLogo('logo_principal')"
-                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;"
-                        onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                    <button type="button" onclick="abrirModalLogo('logo_principal')" class="cfg-emblem-btn"
+                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;">
                         <i class="ti ti-upload"></i> Cambiar
                     </button>
                 </div>
 
                 <!-- 2. Cintillo Oficial PDF -->
-                <div style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
-                    <div style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                <div class="cfg-emblem-row" style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
+                    <div class="cfg-emblem-thumb" style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
                         <img src="<?= URLROOT ?>/img/cintillo-salud.png?v=<?= time() ?>" alt="Cintillo Oficial" style="max-width:100%;max-height:100%;object-fit:contain;">
                     </div>
                     <div style="flex:1;min-width:0;">
-                        <div style="font-weight:800;font-size:0.88rem;color:#1e293b;">Cintillo Oficial para Reportes</div>
-                        <div style="font-size:0.74rem;color:#64748b;margin-top:2px;">Encabezado ministerial en reportes, constancias y planillas PDF</div>
-                        <div style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>cintillo-salud.png</code> (Proporción panorámica)</div>
+                        <div class="cfg-emblem-title" style="font-weight:800;font-size:0.88rem;color:#1e293b;">Cintillo Oficial para Reportes</div>
+                        <div class="cfg-emblem-desc" style="font-size:0.74rem;color:#64748b;margin-top:2px;">Encabezado ministerial en reportes, constancias y planillas PDF</div>
+                        <div class="cfg-emblem-file" style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>cintillo-salud.png</code> (Proporción panorámica)</div>
                     </div>
-                    <button type="button" onclick="abrirModalLogo('cintillo')"
-                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;"
-                        onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                    <button type="button" onclick="abrirModalLogo('cintillo')" class="cfg-emblem-btn"
+                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;">
                         <i class="ti ti-upload"></i> Cambiar
                     </button>
                 </div>
 
                 <!-- 3. Logo Gobernación -->
-                <div style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
-                    <div style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                <div class="cfg-emblem-row" style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
+                    <div class="cfg-emblem-thumb" style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
                         <img src="<?= URLROOT ?>/img/gobe.png?v=<?= time() ?>" alt="Gobernación" style="max-width:100%;max-height:100%;object-fit:contain;">
                     </div>
                     <div style="flex:1;min-width:0;">
-                        <div style="font-weight:800;font-size:0.88rem;color:#1e293b;">Logo de la Gobernación de Bolívar</div>
-                        <div style="font-size:0.74rem;color:#64748b;margin-top:2px;">Emblema gubernamental del estado aplicado en documentos institucionales</div>
-                        <div style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>gobe.png</code> (PNG transparente)</div>
+                        <div class="cfg-emblem-title" style="font-weight:800;font-size:0.88rem;color:#1e293b;">Logo de la Gobernación de Bolívar</div>
+                        <div class="cfg-emblem-desc" style="font-size:0.74rem;color:#64748b;margin-top:2px;">Emblema gubernamental del estado aplicado en documentos institucionales</div>
+                        <div class="cfg-emblem-file" style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>gobe.png</code> (PNG transparente)</div>
                     </div>
-                    <button type="button" onclick="abrirModalLogo('gobernacion')"
-                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;"
-                        onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                    <button type="button" onclick="abrirModalLogo('gobernacion')" class="cfg-emblem-btn"
+                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;">
                         <i class="ti ti-upload"></i> Cambiar
                     </button>
                 </div>
@@ -2775,9 +2772,19 @@ $hoy             = date('Y-m-d');
         actualizarPreviewTema();
     }
 
-    function aplicarPresetColor(primario, acento) {
+    function aplicarPresetColor(primario, acento, btnEl) {
         sincronizarColor('primario', primario);
         sincronizarColor('acento', acento);
+
+        // Visual feedback del preset activo
+        document.querySelectorAll('.preset-theme-btn').forEach(b => {
+            b.classList.remove('active');
+            b.style.boxShadow = 'none';
+        });
+        if (btnEl) {
+            btnEl.classList.add('active');
+            btnEl.style.boxShadow = '0 0 0 2px ' + acento;
+        }
     }
 
     function actualizarPreviewTema() {
@@ -2786,6 +2793,20 @@ $hoy             = date('Y-m-d');
         const prevCard = document.getElementById('previewCardBrand');
         if (prevCard) {
             prevCard.style.background = 'linear-gradient(135deg, ' + cp + ', ' + ca + ')';
+        }
+
+        // Live Preview instantáneo en toda la interfaz
+        document.documentElement.style.setProperty('--color-primary', cp);
+        document.documentElement.style.setProperty('--color-accent-brand', ca);
+        document.documentElement.style.setProperty('--color-info', ca);
+        document.documentElement.style.setProperty('--icon-active', ca);
+        document.documentElement.style.setProperty('--gradient-start', ca);
+        document.documentElement.style.setProperty('--gradient-mid', cp);
+        document.documentElement.style.setProperty('--gradient-end', cp);
+
+        const sidebar = document.querySelector('.main-sidebar');
+        if (sidebar) {
+            sidebar.style.background = 'linear-gradient(180deg, ' + ca + ' 0%, ' + cp + ' 50%, ' + cp + ' 100%)';
         }
     }
 

@@ -73,12 +73,12 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
 
     <!-- IMPORTANTE: style.css debe cargar AL FINAL para tener prioridad sobre otros frameworks -->
     <link rel="stylesheet" href="<?= URLROOT ?>/css/style.css">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/sidebar.css?v=4">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/sidebar.css?v=5">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/mobile-dock.css?v=7">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/topbar.css?v=3">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/loading.css">
     <!-- Dark Mode CSS (Fase 5) -->
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/dark-mode.css?v=1">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/dark-mode.css?v=2">
 
     <?php
     // Branding Dinámico (Fase 5)
@@ -102,6 +102,12 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
         --color-accent-brand: <?= htmlspecialchars($_accentColor) ?>;
         --color-info: <?= htmlspecialchars($_accentColor) ?>;
         --icon-active: <?= htmlspecialchars($_accentColor) ?>;
+        --gradient-start: <?= htmlspecialchars($_accentColor) ?>;
+        --gradient-mid: <?= htmlspecialchars($_primaryColor) ?>;
+        --gradient-end: <?= htmlspecialchars($_primaryColor) ?>;
+    }
+    .admin-banner, .pasantes-banner, .users-banner, .dashboard-banner, .module-banner {
+        background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%) !important;
     }
     </style>
 
