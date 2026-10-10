@@ -68,29 +68,40 @@ class EvaluacionesController extends Controller {
                 ) eval_stats ON eval_stats.pasante_id = u.id
         ";
 
-        if ($rol_id === 2) {
-            // Obtener departamento del tutor
-            $this->db->query("SELECT departamento_id FROM usuarios WHERE id = :tid LIMIT 1");
-            $this->db->bind(':tid', $tutorActualId);
-            $deptId = (int)($this->db->single()->departamento_id ?? 0);
+        $periodoActivo    = PeriodoService::getActivo();
+        $hayPeriodoActivo = ($periodoActivo !== null);
 
-            $this->db->query($baseSelect . "
-                WHERE u.rol_id = 3
-                  AND COALESCE(dpa.tipo_pasantia, 'Regular') = 'Regular'
-                  AND dpa.estado_pasantia IN ('Activo', 'Finalizado')
-                  AND dpa.departamento_asignado_id = :dept_id
-                ORDER BY eval_stats.total_evals ASC, IFNULL(dp.apellidos, u.correo) ASC
-            ");
-            $this->db->bind(':dept_id', $deptId);
+        if ($hayPeriodoActivo) {
+            if ($rol_id === 2) {
+                // Obtener departamento del tutor
+                $this->db->query("SELECT departamento_id FROM usuarios WHERE id = :tid LIMIT 1");
+                $this->db->bind(':tid', $tutorActualId);
+                $deptId = (int)($this->db->single()->departamento_id ?? 0);
+
+                $this->db->query($baseSelect . "
+                    WHERE u.rol_id = 3
+                      AND COALESCE(dpa.tipo_pasantia, 'Regular') = 'Regular'
+                      AND dpa.estado_pasantia = 'Activo'
+                      AND dpa.periodo_id = :periodo_id
+                      AND dpa.departamento_asignado_id = :dept_id
+                    ORDER BY eval_stats.total_evals ASC, IFNULL(dp.apellidos, u.correo) ASC
+                ");
+                $this->db->bind(':dept_id', $deptId);
+                $this->db->bind(':periodo_id', $periodoActivo->id);
+            } else {
+                $this->db->query($baseSelect . "
+                    WHERE u.rol_id = 3
+                      AND COALESCE(dpa.tipo_pasantia, 'Regular') = 'Regular'
+                      AND dpa.estado_pasantia = 'Activo'
+                      AND dpa.periodo_id = :periodo_id
+                    ORDER BY eval_stats.total_evals ASC, IFNULL(dp.apellidos, u.correo) ASC
+                ");
+                $this->db->bind(':periodo_id', $periodoActivo->id);
+            }
+            $pasantes = $this->db->resultSet();
         } else {
-            $this->db->query($baseSelect . "
-                WHERE u.rol_id = 3
-                  AND COALESCE(dpa.tipo_pasantia, 'Regular') = 'Regular'
-                  AND dpa.estado_pasantia IN ('Activo', 'Finalizado')
-                ORDER BY eval_stats.total_evals ASC, IFNULL(dp.apellidos, u.correo) ASC
-            ");
+            $pasantes = [];
         }
-        $pasantes = $this->db->resultSet();
 
         $this->db->query("
             SELECT u.id, dp.nombres, dp.apellidos, u.rol_id
@@ -105,12 +116,14 @@ class EvaluacionesController extends Controller {
         $this->_notificarCulminacionProxima();
 
         $this->view('evaluaciones/index', [
-            'evaluaciones'  => $evaluaciones,
-            'pasantes'      => $pasantes,
-            'tutores'       => $tutores,
-            'tutorActualId' => $tutorActualId,
-            'total'         => count($evaluaciones),
-            'abrir_modal'   => isset($_GET['accion']) && $_GET['accion'] === 'nueva',
+            'evaluaciones'     => $evaluaciones,
+            'pasantes'         => $pasantes,
+            'tutores'          => $tutores,
+            'tutorActualId'    => $tutorActualId,
+            'total'            => count($evaluaciones),
+            'abrir_modal'      => isset($_GET['accion']) && $_GET['accion'] === 'nueva',
+            'hayPeriodoActivo' => $hayPeriodoActivo,
+            'periodoActivo'    => $periodoActivo,
         ]);
     }
 

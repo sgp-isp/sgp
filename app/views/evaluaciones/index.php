@@ -10,6 +10,8 @@ $tutores       = $data['tutores']       ?? [];
 $tutorActualId = $data['tutorActualId'] ?? null;
 $total         = $data['total']         ?? 0;
 $abrir_modal   = $data['abrir_modal']   ?? false;
+$hayPeriodoActivo = $data['hayPeriodoActivo'] ?? true;
+$periodoActivo   = $data['periodoActivo']   ?? null;
 
 // ─── KPIs ──────────────────────────────────────────────────────────────────
 $promedioGlobal = 0;
@@ -449,6 +451,28 @@ $totalCriterios = array_sum(array_map(fn($c) => count($c['items']), $categorias)
     </div>
 </div>
 
+<!-- ═══ BANNER RECESO PERÍODO ═══════════════════════════════════════════════════ -->
+<?php if (!$hayPeriodoActivo): ?>
+<div style="background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 20px 26px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: #dbeafe; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-size: 1.4rem; flex-shrink: 0;">
+            <i class="ti ti-calendar-off"></i>
+        </div>
+        <div>
+            <h4 style="margin: 0; font-size: 1rem; font-weight: 800; color: #1e3a8a;">Período Académico en Receso o Cerrado</h4>
+            <p style="margin: 3px 0 0; font-size: 0.83rem; color: #475569;">
+                No hay un período académico activo actualmente. Las evaluaciones operacionales se habilitan cuando hay una cohorte en curso.
+            </p>
+        </div>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <a href="<?= URLROOT ?>/periodos" style="background: #1d4ed8; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="ti ti-calendar-plus"></i> Gestionar Períodos
+        </a>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- ═══ KPIs ═════════════════════════════════════════════════════════════════ -->
 <div class="ev-kpi-grid">
 <?php foreach ([
@@ -498,17 +522,29 @@ $totalCriterios = array_sum(array_map(fn($c) => count($c['items']), $categorias)
 
             <div class="ev-list-scroll" style="min-height:220px;">
                 <?php if (empty($sinEvaluar)): ?>
-                <div style="height:100%;min-height:200px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:32px;">
-                    <div style="width:72px;height:72px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-                        </svg>
+                    <?php if (!$hayPeriodoActivo): ?>
+                    <div style="height:100%;min-height:200px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;padding:32px;text-align:center;">
+                        <div style="width:60px;height:60px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;color:#3b82f6;font-size:1.6rem;flex-shrink:0;">
+                            <i class="ti ti-calendar-off"></i>
+                        </div>
+                        <div>
+                            <p style="font-weight:700;color:#1e293b;font-size:0.92rem;margin:0 0 4px;">Sin cohorte activa</p>
+                            <p style="color:#64748b;font-size:0.8rem;margin:0;line-height:1.4;">No hay pasantes en curso en este momento.</p>
+                        </div>
                     </div>
-                    <div style="text-align:center;">
-                        <p style="font-weight:700;color:#15803d;font-size:0.95rem;margin:0 0 6px;">¡Excelente trabajo!</p>
-                        <p style="color:#94a3b8;font-size:0.82rem;margin:0;line-height:1.5;">No hay pasantes pendientes<br>por evaluar en este momento.</p>
+                    <?php else: ?>
+                    <div style="height:100%;min-height:200px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:32px;">
+                        <div style="width:72px;height:72px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                        <div style="text-align:center;">
+                            <p style="font-weight:700;color:#15803d;font-size:0.95rem;margin:0 0 6px;">¡Excelente trabajo!</p>
+                            <p style="color:#94a3b8;font-size:0.82rem;margin:0;line-height:1.5;">Todos los pasantes activos cuentan<br>con su evaluación al día.</p>
+                        </div>
                     </div>
-                </div>
+                    <?php endif; ?>
                 <?php else: ?>
                 <?php foreach ($sinEvaluar as $p):
                     $ini = strtoupper(substr($p->nombres ?? '?', 0, 1) . substr($p->apellidos ?? '', 0, 1));
