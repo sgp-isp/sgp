@@ -26,7 +26,15 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="light only">
+    <meta name="color-scheme" content="light dark">
+    <!-- Dark Mode Pre-render (Cero FOUC) -->
+    <script>
+        (function() {
+            var theme = localStorage.getItem('sgp_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            if (theme === 'dark') document.documentElement.classList.add('dark');
+        })();
+    </script>
     <!-- SGP-FIX [sesión_inactividad / 1.1] CSRF meta tag para fetch() JS -->
     <?php echo CsrfHelper::meta(); ?>
     <title>SGP - Sistema de Gestión de Pasantías</title>
@@ -69,6 +77,33 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     <link rel="stylesheet" href="<?= URLROOT ?>/css/mobile-dock.css?v=6">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/topbar.css?v=2">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/loading.css">
+    <!-- Dark Mode CSS (Fase 5) -->
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/dark-mode.css?v=1">
+
+    <?php
+    // Branding Dinámico (Fase 5)
+    $_primaryColor = '#162660';
+    $_accentColor = '#2563eb';
+    try {
+        $_dbBrand = Database::getInstance();
+        $_dbBrand->query("SELECT clave, valor FROM configuracion WHERE clave IN ('color_primario', 'color_acento')");
+        $brandRows = $_dbBrand->resultSet();
+        if ($brandRows) {
+            foreach ($brandRows as $_cfgRow) {
+                if ($_cfgRow->clave === 'color_primario' && !empty($_cfgRow->valor)) $_primaryColor = $_cfgRow->valor;
+                if ($_cfgRow->clave === 'color_acento' && !empty($_cfgRow->valor)) $_accentColor = $_cfgRow->valor;
+            }
+        }
+    } catch (\Throwable $e) {}
+    ?>
+    <style>
+    :root {
+        --color-primary: <?= htmlspecialchars($_primaryColor) ?>;
+        --color-accent-brand: <?= htmlspecialchars($_accentColor) ?>;
+        --color-info: <?= htmlspecialchars($_accentColor) ?>;
+        --icon-active: <?= htmlspecialchars($_accentColor) ?>;
+    }
+    </style>
 
     <!-- ══ SGP TIP — Tooltip de ayuda en línea (global) ══ -->
     <style>

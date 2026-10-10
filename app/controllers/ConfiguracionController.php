@@ -70,7 +70,167 @@ class ConfiguracionController extends Controller {
             exit;
         }
 
-        // ── POST: Agregar feriado ─────────────────────────────────────────
+        // ── POST: Guardar Tema y Colores (Fase 5 - Branding) ───────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guardar_tema') {
+            $this->verifyCsrfOrRedirect();
+            $colorPrimario = trim($_POST['color_primario'] ?? '');
+            $colorAcento   = trim($_POST['color_acento']   ?? '');
+
+            $hexPattern = '/^#[0-9a-fA-F]{6}$/';
+            if (!preg_match($hexPattern, $colorPrimario) || !preg_match($hexPattern, $colorAcento)) {
+                Session::setFlash('error', '⚠️ Los colores deben estar en formato hexadecimal válido (ej. #162660).');
+                header('Location: ' . URLROOT . '/configuracion');
+                exit;
+            }
+
+            try {
+                $this->db->query("
+                    INSERT INTO configuracion (clave, valor, descripcion)
+                    VALUES ('color_primario', :cp, 'Color institucional primario')
+                    ON DUPLICATE KEY UPDATE valor = :cp, updated_at = NOW()
+                ");
+                $this->db->bind(':cp', $colorPrimario);
+                $this->db->execute();
+
+                $this->db->query("
+                    INSERT INTO configuracion (clave, valor, descripcion)
+                    VALUES ('color_acento', :ca, 'Color de acento de la interfaz')
+                    ON DUPLICATE KEY UPDATE valor = :ca, updated_at = NOW()
+                ");
+                $this->db->bind(':ca', $colorAcento);
+                $this->db->execute();
+
+                if (class_exists('AuditModel')) {
+                    AuditModel::log('ACTUALIZAR_TEMA', "Paleta actualizada: Primario: {$colorPrimario}, Acento: {$colorAcento}");
+                }
+                Session::setFlash('success', '🎨 Paleta de colores de la interfaz actualizada exitosamente.');
+            } catch (\Throwable $e) {
+                error_log('[SGP-BRANDING] Error guardar_tema: ' . $e->getMessage());
+                Session::setFlash('error', '❌ Ocurrió un error al guardar los colores del tema.');
+            }
+            header('Location: ' . URLROOT . '/configuracion');
+            exit;
+        }
+
+        // ── POST: Restablecer Tema por Defecto ─────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'restablecer_tema') {
+            $this->verifyCsrfOrRedirect();
+            try {
+                $this->db->query("
+                    INSERT INTO configuracion (clave, valor, descripcion)
+                    VALUES ('color_primario', '#162660', 'Color institucional primario')
+                    ON DUPLICATE KEY UPDATE valor = '#162660', updated_at = NOW()
+                ");
+                $this->db->execute();
+
+                $this->db->query("
+                    INSERT INTO configuracion (clave, valor, descripcion)
+                    VALUES ('color_acento', '#2563eb', 'Color de acento de la interfaz')
+                    ON DUPLICATE KEY UPDATE valor = '#2563eb', updated_at = NOW()
+                ");
+                $this->db->execute();
+
+                if (class_exists('AuditModel')) {
+                    AuditModel::log('RESET_TEMA', "Paleta institucional restablecida a valores por defecto");
+                }
+                Session::setFlash('success', '🔄 Tema restablecido a los colores institucionales predeterminados.');
+            } catch (\Throwable $e) {
+                Session::setFlash('error', '❌ Error al restablecer el tema.');
+            }
+            header('Location: ' . URLROOT . '/configuracion');
+            exit;
+        }
+
+        // ── POST: Subir Logo Institucional (Fase 5 - Branding) ─────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'subir_logo') {
+            $this->verifyCsrfOrRedirect();
+            $tipoLogo = trim($_POST['tipo_logo'] ?? '');
+
+            $archivosMap = [
+                'logo_principal' => [
+                    'primario' => 'logo.png',
+                    'copias'   => ['logo-header.png', 'logo-full.png'],
+                    'label'    => 'Logo Institucional Principal'
+                ],
+                'cintillo' => [
+                    'primario' => 'cintillo-salud.png',
+                    'copias'   => ['cintillo_pdf.png'],
+                    'label'    => 'Cintillo Oficial para Reportes'
+                ],
+                'gobernacion' => [
+                    'primario' => 'gobe.png',
+                    'copias'   => [],
+                    'label'    => 'Logo de Gobernación'
+                ]
+            ];
+
+            if (!isset($archivosMap[$tipoLogo])) {
+                Session::setFlash('error', '⚠️ Tipo de logo inválido seleccionado.');
+                header('Location: ' . URLROOT . '/configuracion');
+                exit;
+            }
+
+            if (!isset($_FILES['archivo_logo']) || $_FILES['archivo_logo']['error'] !== UPLOAD_ERR_OK) {
+                $errCode = $_FILES['archivo_logo']['error'] ?? -1;
+                $msgErr = $errCode === UPLOAD_ERR_INI_SIZE ? 'El archivo excede el tamaño máximo permitido.' : 'No se seleccionó ningún archivo o ocurrió un error al subirlo.';
+                Session::setFlash('error', '⚠️ ' . $msgErr);
+                header('Location: ' . URLROOT . '/configuracion');
+                exit;
+            }
+
+            $file = $_FILES['archivo_logo'];
+            $maxBytes = 3 * 1024 * 1024; // 3MB
+
+            if ($file['size'] > $maxBytes) {
+                Session::setFlash('error', '⚠️ El archivo no debe superar los 3 MB.');
+                header('Location: ' . URLROOT . '/configuracion');
+                exit;
+            }
+
+            // Validar extensión
+            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            if (!in_array($extension, ['png', 'jpg', 'jpeg'], true)) {
+                Session::setFlash('error', '⚠️ Formato no permitido. Solo se aceptan imágenes PNG o JPG.');
+                header('Location: ' . URLROOT . '/configuracion');
+                exit;
+            }
+
+            // Validar tipo MIME
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+
+            if (!in_array($mimeType, ['image/png', 'image/jpeg', 'image/jpg'], true)) {
+                Session::setFlash('error', '⚠️ El archivo no es una imagen válida.');
+                header('Location: ' . URLROOT . '/configuracion');
+                exit;
+            }
+
+            $imgDir = dirname(APPROOT) . '/public/img';
+            if (!is_dir($imgDir)) {
+                @mkdir($imgDir, 0755, true);
+            }
+
+            $targetConfig = $archivosMap[$tipoLogo];
+            $destPath = $imgDir . '/' . $targetConfig['primario'];
+
+            if (move_uploaded_file($file['tmp_name'], $destPath)) {
+                foreach ($targetConfig['copias'] as $copia) {
+                    @copy($destPath, $imgDir . '/' . $copia);
+                }
+
+                if (class_exists('AuditModel')) {
+                    AuditModel::log('ACTUALIZAR_LOGO', "Actualizado: {$targetConfig['label']} ({$targetConfig['primario']})");
+                }
+                Session::setFlash('success', "✅ {$targetConfig['label']} actualizado correctamente.");
+            } else {
+                Session::setFlash('error', '❌ No se pudo guardar el archivo en el servidor. Verifica los permisos de la carpeta de imágenes.');
+            }
+
+            header('Location: ' . URLROOT . '/configuracion');
+            exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'agregar_feriado') {
             $this->verifyCsrfOrRedirect();
             $fecha       = trim($_POST['fecha']       ?? '');
@@ -499,11 +659,16 @@ class ConfiguracionController extends Controller {
             }
         }
 
-        // Notificaciones Stats y Config (Fase 4)
-        require_once APPROOT . '/models/NotificationModel.php';
-        $notifModel = new NotificationModel($this->db);
-        $notifAnalytics = $notifModel->getAnalytics();
-        $notifUsuarios = $notifModel->getUsersList();
+        // Branding Institucional (Fase 5)
+        $colorPrimario = '#162660';
+        $colorAcento   = '#2563eb';
+        try {
+            $this->db->query("SELECT clave, valor FROM configuracion WHERE clave IN ('color_primario', 'color_acento')");
+            foreach ($this->db->resultSet() as $brandRow) {
+                if ($brandRow->clave === 'color_primario' && !empty($brandRow->valor)) $colorPrimario = $brandRow->valor;
+                if ($brandRow->clave === 'color_acento' && !empty($brandRow->valor)) $colorAcento = $brandRow->valor;
+            }
+        } catch (\Throwable $e) {}
 
         $data = [
             'title'          => 'Configuración del Sistema',
@@ -515,6 +680,8 @@ class ConfiguracionController extends Controller {
             'ispInfo'        => $ispInfo,
             'notifAnalytics' => $notifAnalytics,
             'notifUsuarios'  => $notifUsuarios,
+            'colorPrimario'  => $colorPrimario,
+            'colorAcento'    => $colorAcento,
         ];
 
         $this->view('configuracion/index', $data);

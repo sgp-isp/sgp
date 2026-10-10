@@ -1,0 +1,305 @@
+/**
+ * ========================================================
+ * SGP DARK MODE - Premium Navy/Slate Theme (Fase 5)
+ * ========================================================
+ * Diseñado con alto contraste y ergonomía visual para monitores
+ * de cualquier tecnología (IPS, VA, TN) y pantallas móviles.
+ */
+
+[data-theme="dark"],
+html.dark,
+body.dark-mode {
+    color-scheme: dark !important;
+
+    /* Tokens de tema oscuro */
+    --color-bg: #090e17 !important;
+    --color-card: #111a2e !important;
+    --text-dark: #f8fafc !important;
+    --text-body: #94a3b8 !important;
+    --text-muted: #64748b !important;
+    --sidebar-bg: #070b12 !important;
+    --marker-bg: #111a2e !important;
+    --text-inactive: #64748b !important;
+    --text-active: #38bdf8 !important;
+    --icon-active: #38bdf8 !important;
+    --smart-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+    --hover-shadow: 0 16px 40px rgba(0, 0, 0, 0.6) !important;
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ── Estructura Principal ────────────────────────────── */
+[data-theme="dark"] body {
+    background-color: #090e17 !important;
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .wrapper,
+[data-theme="dark"] .content-wrapper {
+    background-color: #090e17 !important;
+}
+
+[data-theme="dark"] .main-header,
+[data-theme="dark"] .main-header.navbar-white {
+    background-color: #0d1526 !important;
+    border-bottom: 1px solid #1e293b !important;
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .main-footer {
+    background-color: #0d1526 !important;
+    border-top: 1px solid #1e293b !important;
+    color: #64748b !important;
+}
+
+/* ── Tarjetas y Paneles ──────────────────────────────── */
+[data-theme="dark"] .card,
+[data-theme="dark"] .smart-card,
+[data-theme="dark"] .cfg-card,
+[data-theme="dark"] .bita-kpi,
+[data-theme="dark"] .maint-panel,
+[data-theme="dark"] .box {
+    background-color: #111a2e !important;
+    border-color: #1e293b !important;
+    color: #cbd5e1 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+[data-theme="dark"] .cfg-card:hover,
+[data-theme="dark"] .smart-card:hover,
+[data-theme="dark"] .bita-kpi:hover {
+    border-color: #334155 !important;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] .card-header,
+[data-theme="dark"] .smart-card-header,
+[data-theme="dark"] .cfg-card-header {
+    border-bottom-color: #1e293b !important;
+    color: #f8fafc !important;
+}
+
+/* ── Textos y Títulos ────────────────────────────────── */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6,
+[data-theme="dark"] .cfg-kpi-value,
+[data-theme="dark"] .bita-kpi-val,
+[data-theme="dark"] .card-title {
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] .cfg-kpi-label,
+[data-theme="dark"] .bita-kpi-label {
+    color: #94a3b8;
+}
+
+/* ── Tablas y DataTables ─────────────────────────────── */
+[data-theme="dark"] table,
+[data-theme="dark"] .table,
+[data-theme="dark"] table.dataTable {
+    background-color: #111a2e !important;
+    color: #cbd5e1 !important;
+    border-color: #1e293b !important;
+}
+
+[data-theme="dark"] .table th,
+[data-theme="dark"] table.dataTable thead th,
+[data-theme="dark"] table.dataTable tfoot th {
+    background-color: #0e1628 !important;
+    color: #f1f5f9 !important;
+    border-color: #1e293b !important;
+}
+
+[data-theme="dark"] .table td,
+[data-theme="dark"] table.dataTable tbody td {
+    background-color: transparent !important;
+    border-color: #1e293b !important;
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] table.dataTable tbody tr:hover td {
+    background-color: #162238 !important;
+}
+
+[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button {
+    color: #cbd5e1 !important;
+    background: #162238 !important;
+    border-color: #1e293b !important;
+}
+
+[data-theme="dark"] .dataTables_wrapper .dataTables_info,
+[data-theme="dark"] .dataTables_wrapper .dataTables_length,
+[data-theme="dark"] .dataTables_wrapper .dataTables_filter {
+    color: #94a3b8 !important;
+}
+
+/* ── Grid.js ─────────────────────────────────────────── */
+[data-theme="dark"] .gridjs-container {
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .gridjs-wrapper {
+    border-color: #1e293b !important;
+    background: #111a2e !important;
+}
+
+[data-theme="dark"] th.gridjs-th {
+    background-color: #0e1628 !important;
+    color: #f1f5f9 !important;
+    border-color: #1e293b !important;
+}
+
+[data-theme="dark"] td.gridjs-td {
+    background-color: #111a2e !important;
+    border-color: #1e293b !important;
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .gridjs-footer {
+    background-color: #0e1628 !important;
+    border-color: #1e293b !important;
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .gridjs-pagination .gridjs-pages button {
+    background-color: #162238 !important;
+    border-color: #1e293b !important;
+    color: #cbd5e1 !important;
+}
+
+/* ── Formularios e Inputs ────────────────────────────── */
+[data-theme="dark"] input.form-control,
+[data-theme="dark"] select.form-control,
+[data-theme="dark"] textarea.form-control,
+[data-theme="dark"] .cfg-input,
+[data-theme="dark"] .form-control {
+    background-color: #162238 !important;
+    border: 1.5px solid #263859 !important;
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] input.form-control:focus,
+[data-theme="dark"] .cfg-input:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+    background-color: #1a2942 !important;
+}
+
+[data-theme="dark"] input::placeholder {
+    color: #64748b !important;
+}
+
+/* ── Modales y Dropdowns ─────────────────────────────── */
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .dropdown-menu,
+[data-theme="dark"] .dropdown-menu-notifications {
+    background-color: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    color: #cbd5e1 !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme="dark"] .notif-header {
+    background: #0d1526 !important;
+    border-bottom: 1px solid #1e293b !important;
+}
+
+[data-theme="dark"] .notif-header h6 {
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .notif-item {
+    border-bottom: 1px solid #1e293b !important;
+}
+
+[data-theme="dark"] .notif-item:hover {
+    background: #162238 !important;
+}
+
+[data-theme="dark"] .notif-title {
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .user-profile-menu {
+    background: #111a2e !important;
+    border-color: #1e293b !important;
+}
+
+[data-theme="dark"] .user-profile-header {
+    background: #0d1526 !important;
+    border-bottom-color: #1e293b !important;
+}
+
+[data-theme="dark"] .user-profile-item:hover {
+    background: #162238 !important;
+    color: #38bdf8 !important;
+}
+
+/* ── Elementos UI Auxiliares ─────────────────────────── */
+[data-theme="dark"] .cfg-list-item,
+[data-theme="dark"] .user-notif-row {
+    background-color: #141f36 !important;
+    border-color: #1e293b !important;
+}
+
+[data-theme="dark"] .cfg-info-row {
+    border-bottom-color: #1e293b !important;
+}
+
+[data-theme="dark"] .cfg-info-label {
+    color: #64748b !important;
+}
+
+[data-theme="dark"] .cfg-info-value {
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .cfg-badge {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] code {
+    background: #1e293b !important;
+    color: #93c5fd !important;
+}
+
+/* ── Botones de Alternancia de Tema ──────────────────── */
+.theme-toggle-btn {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 10px;
+    transition: background 0.15s, transform 0.15s;
+    display: flex;
+    align-items: center;
+    color: #475569;
+}
+
+.theme-toggle-btn:hover {
+    background: #f1f5f9;
+    transform: scale(1.08);
+}
+
+[data-theme="dark"] .theme-toggle-btn {
+    color: #fbbf24;
+}
+
+[data-theme="dark"] .theme-toggle-btn:hover {
+    background: #1e293b;
+}
+
+[data-theme="dark"] .notif-btn {
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .notif-btn:hover {
+    background: #1e293b !important;
+}

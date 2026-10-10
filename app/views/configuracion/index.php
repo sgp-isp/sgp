@@ -43,17 +43,18 @@ $hoy             = date('Y-m-d');
         background: white;
         border-radius: 20px;
         padding: 24px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+        border: 1.5px solid #e2e8f0;
         display: flex;
         flex-direction: column;
         min-width: 0;
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     }
 
     .cfg-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.07);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12), 0 4px 8px rgba(15, 23, 42, 0.06);
+        border-color: #cbd5e1;
     }
 
     .cg-3 {
@@ -1045,48 +1046,60 @@ $hoy             = date('Y-m-d');
                     display: inline-flex;
                     align-items: center;
                     justify-content: center;
-                    width: 36px;
-                    height: 54px;
+                    width: clamp(24px, 2.8vw, 36px);
+                    height: clamp(36px, 4vw, 54px);
                     background: #4c1d95;
                     border-radius: 8px;
                     box-shadow: 0 3px 10px rgba(124,58,237,0.3);
-                    flex-shrink: 0;
+                    flex-shrink: 1;
                     transition: transform 0.08s ease;
                 }
                 .mfc-digit::before {
                     content: attr(data-v);
                     font-family: 'Courier New', Courier, monospace !important;
-                    font-size: 2rem;
+                    font-size: clamp(1.2rem, 2.2vw, 2rem);
                     font-weight: 900;
                     color: #ede9fe;
                     line-height: 1;
                 }
                 .mfc-digit.flip { transform: scaleY(0.82); }
                 .mfc-sep-char {
-                    font-size: 1.8rem;
+                    font-size: clamp(1.1rem, 2vw, 1.8rem);
                     font-weight: 900;
                     color: #4c1d95;
                     line-height: 1;
                     padding: 0 1px;
-                    align-self: flex-start;
-                    margin-top: 8px;
+                    align-self: center;
+                    margin-top: 0;
                 }
                 .mfc-label {
-                    font-size: 0.6rem;
+                    font-size: clamp(0.55rem, 0.8vw, 0.65rem);
                     font-weight: 800;
                     color: #7c3aed;
                     text-transform: uppercase;
-                    letter-spacing: 0.07em;
+                    letter-spacing: 0.05em;
                     margin-top: 5px;
                     text-align: center;
+                }
+                #mfc-wrap {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: clamp(2px, 0.7vw, 6px);
+                    margin: 8px 0 14px;
+                    flex-wrap: nowrap;
+                    width: 100%;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                    overflow: hidden;
                 }
                 @keyframes mfcPulse{0%,100%{box-shadow:0 2px 8px rgba(220,38,38,0.2);}50%{box-shadow:0 2px 18px rgba(220,38,38,0.55);}}
                 /* ── Mobile ─────────────────────────────────────── */
                 @media (max-width: 480px) {
-                    .mfc-digit { width: 26px; height: 40px; }
-                    .mfc-digit::before { font-size: 1.3rem; }
-                    .mfc-sep-char { font-size: 1.3rem; margin-top: 5px; }
-                    .mfc-period-badge { font-size: 0.62rem; padding: 2px 5px; margin-top: 5px; }
+                    .mfc-digit { width: 22px; height: 34px; border-radius: 6px; }
+                    .mfc-digit::before { font-size: 1.15rem; }
+                    .mfc-sep-char { font-size: 1.1rem; }
+                    .mfc-period-badge { font-size: 0.6rem; padding: 2px 4px; }
                 }
                 </style>
 
@@ -1422,6 +1435,217 @@ $hoy             = date('Y-m-d');
             </div>
         </div>
     </div><!-- /Fila 5 -->
+
+    <!-- ===== FILA 6: Personalización Institucional y Branding (Fase 5) ===== -->
+    <div class="cfg-grid">
+
+        <!-- CARD: Paleta de Colores y Modo Visual -->
+        <div class="cfg-card cg-6" style="border-top:4px solid var(--color-primary, #162660);">
+            <div class="cfg-card-header" style="flex-wrap:wrap;gap:12px;">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#f1f5f9;">
+                        <i class="ti ti-palette" style="font-size:1.2rem;color:var(--color-primary, #162660);"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:800;font-size:1.05rem;color:#1e293b;">Paleta de Colores y Tema</div>
+                        <div style="font-size:0.75rem;color:#64748b;font-weight:500;margin-top:2px;">
+                            Personaliza la identidad visual y modo de contraste del sistema
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <button type="button" id="cfgBtnToggleTheme" onclick="alternarTemaVisual()"
+                        style="background:#f8fafc;border:1px solid #cbd5e1;padding:6px 12px;border-radius:10px;font-size:0.78rem;font-weight:700;color:#334155;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;">
+                        <i class="ti ti-moon" id="cfgThemeIcon"></i>
+                        <span id="cfgThemeLabel">Modo Oscuro</span>
+                    </button>
+                </div>
+            </div>
+
+            <form method="POST" action="<?= URLROOT ?>/configuracion" id="formBrandingTema" style="margin-top:14px;">
+                <input type="hidden" name="accion" value="guardar_tema">
+                <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+
+                <!-- Selectores de color -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+                    <!-- Color Primario -->
+                    <div style="background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;">
+                        <label class="cfg-field-label" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span>Color Primario (Barras / Headers)</span>
+                            <span id="hexPrimarioDisplay" style="font-family:monospace;font-weight:700;color:#2563eb;"><?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?></span>
+                        </label>
+                        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+                            <input type="color" id="pickerPrimario" value="<?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>"
+                                oninput="sincronizarColor('primario', this.value)"
+                                style="width:44px;height:40px;padding:2px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;background:white;">
+                            <input type="text" name="color_primario" id="inputPrimario" value="<?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>"
+                                maxlength="7" class="cfg-input" style="flex:1;font-family:monospace;font-weight:700;"
+                                oninput="sincronizarColor('primario', this.value)">
+                        </div>
+                    </div>
+
+                    <!-- Color de Acento -->
+                    <div style="background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;">
+                        <label class="cfg-field-label" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span>Color de Acento (Botones / KPIs)</span>
+                            <span id="hexAcentoDisplay" style="font-family:monospace;font-weight:700;color:#2563eb;"><?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?></span>
+                        </label>
+                        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+                            <input type="color" id="pickerAcento" value="<?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>"
+                                oninput="sincronizarColor('acento', this.value)"
+                                style="width:44px;height:40px;padding:2px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;background:white;">
+                            <input type="text" name="color_acento" id="inputAcento" value="<?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>"
+                                maxlength="7" class="cfg-input" style="flex:1;font-family:monospace;font-weight:700;"
+                                oninput="sincronizarColor('acento', this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Presets Rápidos -->
+                <div style="margin-bottom:18px;">
+                    <div style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:8px;letter-spacing:0.5px;">
+                        Paletas Predefinidas Recomendadas
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button type="button" onclick="aplicarPresetColor('#162660', '#2563eb')" class="preset-theme-btn"
+                            style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#162660;"></span>
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#2563eb;margin-left:-4px;"></span>
+                            Azul ISP Institucional
+                        </button>
+                        <button type="button" onclick="aplicarPresetColor('#065f46', '#059669')" class="preset-theme-btn"
+                            style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#065f46;"></span>
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#059669;margin-left:-4px;"></span>
+                            Salud Pública Esmeralda
+                        </button>
+                        <button type="button" onclick="aplicarPresetColor('#312e81', '#6366f1')" class="preset-theme-btn"
+                            style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#312e81;"></span>
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#6366f1;margin-left:-4px;"></span>
+                            Índigo Ejecutivo
+                        </button>
+                        <button type="button" onclick="aplicarPresetColor('#0f172a', '#0284c7')" class="preset-theme-btn"
+                            style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#0f172a;"></span>
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#0284c7;margin-left:-4px;"></span>
+                            Pizarra / Zafiro
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Previsualizador Dinámico de Muestra -->
+                <div id="previewCardBrand"
+                    style="background:linear-gradient(135deg, <?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>, <?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>);padding:14px 18px;border-radius:12px;color:white;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,0.12);transition:all .2s;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div style="width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;">
+                            <i class="ti ti-sparkles" style="font-size:1.1rem;color:white;"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight:800;font-size:0.88rem;">Vista Previa de Interfaz</div>
+                            <div style="font-size:0.72rem;opacity:0.85;">Los elementos de la barra y botones adoptarán este estilo</div>
+                        </div>
+                    </div>
+                    <span id="previewBrandBadge" style="background:rgba(255,255,255,0.25);padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;backdrop-filter:blur(4px);">
+                        Muestra Activa
+                    </span>
+                </div>
+
+                <!-- Acciones -->
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <button type="submit" class="cfg-btn-primary"
+                        style="padding:10px 18px;display:flex;align-items:center;gap:7px;background:linear-gradient(135deg, #1e3a8a, #2563eb);">
+                        <i class="ti ti-device-floppy"></i> Guardar Paleta
+                    </button>
+                    <button type="button" onclick="confirmarRestablecerTema()"
+                        style="padding:10px 16px;border:1.5px solid #e2e8f0;background:white;color:#64748b;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;">
+                        <i class="ti ti-rotate"></i> Restablecer Valores
+                    </button>
+                </div>
+            </form>
+
+            <!-- Form oculto para restablecer -->
+            <form id="formRestablecerTema" method="POST" action="<?= URLROOT ?>/configuracion" style="display:none;">
+                <input type="hidden" name="accion" value="restablecer_tema">
+                <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+            </form>
+        </div>
+
+        <!-- CARD: Logos y Emblemas Institucionales -->
+        <div class="cfg-card cg-6" style="border-top:4px solid #2563eb;">
+            <div class="cfg-card-header" style="flex-wrap:wrap;gap:12px;">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#eff6ff;">
+                        <i class="ti ti-photo-star" style="font-size:1.2rem;color:#2563eb;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:800;font-size:1.05rem;color:#1e293b;">Logos y Emblemas Institucionales</div>
+                        <div style="font-size:0.75rem;color:#64748b;font-weight:500;margin-top:2px;">
+                            Actualiza los logos del sistema y cintillos de reportes PDF sin editar código
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Emblemas -->
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px;">
+
+                <!-- 1. Logo Principal -->
+                <div style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
+                    <div style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                        <img src="<?= URLROOT ?>/img/logo.png?v=<?= time() ?>" alt="Logo Principal" style="max-width:100%;max-height:100%;object-fit:contain;">
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:800;font-size:0.88rem;color:#1e293b;">Logo Principal SGP / ISP</div>
+                        <div style="font-size:0.74rem;color:#64748b;margin-top:2px;">Visible en la cabecera, sidebar y pantalla de inicio de sesión</div>
+                        <div style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>logo.png</code> (PNG con fondo transparente recomendado)</div>
+                    </div>
+                    <button type="button" onclick="abrirModalLogo('logo_principal')"
+                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;"
+                        onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                        <i class="ti ti-upload"></i> Cambiar
+                    </button>
+                </div>
+
+                <!-- 2. Cintillo Oficial PDF -->
+                <div style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
+                    <div style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                        <img src="<?= URLROOT ?>/img/cintillo-salud.png?v=<?= time() ?>" alt="Cintillo Oficial" style="max-width:100%;max-height:100%;object-fit:contain;">
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:800;font-size:0.88rem;color:#1e293b;">Cintillo Oficial para Reportes</div>
+                        <div style="font-size:0.74rem;color:#64748b;margin-top:2px;">Encabezado ministerial en reportes, constancias y planillas PDF</div>
+                        <div style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>cintillo-salud.png</code> (Proporción panorámica)</div>
+                    </div>
+                    <button type="button" onclick="abrirModalLogo('cintillo')"
+                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;"
+                        onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                        <i class="ti ti-upload"></i> Cambiar
+                    </button>
+                </div>
+
+                <!-- 3. Logo Gobernación -->
+                <div style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
+                    <div style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                        <img src="<?= URLROOT ?>/img/gobe.png?v=<?= time() ?>" alt="Gobernación" style="max-width:100%;max-height:100%;object-fit:contain;">
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:800;font-size:0.88rem;color:#1e293b;">Logo de la Gobernación de Bolívar</div>
+                        <div style="font-size:0.74rem;color:#64748b;margin-top:2px;">Emblema gubernamental del estado aplicado en documentos institucionales</div>
+                        <div style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>gobe.png</code> (PNG transparente)</div>
+                    </div>
+                    <button type="button" onclick="abrirModalLogo('gobernacion')"
+                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;"
+                        onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                        <i class="ti ti-upload"></i> Cambiar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </div><!-- /Fila 6 -->
 
 </div><!-- /container -->
 
@@ -2528,6 +2752,154 @@ $hoy             = date('Y-m-d');
             f.style.display = txt.includes(query) ? '' : 'none';
         });
     }
+
+    // ── Branding y Personalización de Tema (Fase 5) ──────────
+    function sincronizarColor(tipo, val) {
+        if (!val) return;
+        val = val.trim();
+        if (tipo === 'primario') {
+            const picker = document.getElementById('pickerPrimario');
+            const input = document.getElementById('inputPrimario');
+            const disp = document.getElementById('hexPrimarioDisplay');
+            if (picker && picker.value !== val) picker.value = val;
+            if (input && input.value !== val) input.value = val;
+            if (disp) disp.textContent = val;
+        } else if (tipo === 'acento') {
+            const picker = document.getElementById('pickerAcento');
+            const input = document.getElementById('inputAcento');
+            const disp = document.getElementById('hexAcentoDisplay');
+            if (picker && picker.value !== val) picker.value = val;
+            if (input && input.value !== val) input.value = val;
+            if (disp) disp.textContent = val;
+        }
+        actualizarPreviewTema();
+    }
+
+    function aplicarPresetColor(primario, acento) {
+        sincronizarColor('primario', primario);
+        sincronizarColor('acento', acento);
+    }
+
+    function actualizarPreviewTema() {
+        const cp = (document.getElementById('inputPrimario')?.value || '#162660').trim();
+        const ca = (document.getElementById('inputAcento')?.value || '#2563eb').trim();
+        const prevCard = document.getElementById('previewCardBrand');
+        if (prevCard) {
+            prevCard.style.background = 'linear-gradient(135deg, ' + cp + ', ' + ca + ')';
+        }
+    }
+
+    function alternarTemaVisual() {
+        if (typeof toggleDarkMode === 'function') {
+            toggleDarkMode();
+        } else {
+            const curr = document.documentElement.getAttribute('data-theme') || 'light';
+            const next = curr === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            if (next === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+            localStorage.setItem('sgp_theme', next);
+        }
+        sincronizarBotonTemaConfig();
+    }
+
+    function sincronizarBotonTemaConfig() {
+        const theme = localStorage.getItem('sgp_theme') || 'light';
+        const icon = document.getElementById('cfgThemeIcon');
+        const label = document.getElementById('cfgThemeLabel');
+        const btn = document.getElementById('cfgBtnToggleTheme');
+        if (theme === 'dark') {
+            if (icon) icon.className = 'ti ti-sun';
+            if (label) label.textContent = 'Modo Claro';
+            if (btn) { btn.style.background = '#1e293b'; btn.style.color = '#f8fafc'; btn.style.borderColor = '#334155'; }
+        } else {
+            if (icon) icon.className = 'ti ti-moon';
+            if (label) label.textContent = 'Modo Oscuro';
+            if (btn) { btn.style.background = '#f8fafc'; btn.style.color = '#334155'; btn.style.borderColor = '#cbd5e1'; }
+        }
+    }
+
+    function confirmarRestablecerTema() {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: '¿Restablecer tema?',
+                text: 'Se volverán a aplicar los colores institucionales originales del ISP (#162660 y #2563eb).',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, restablecer',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#162660'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    document.getElementById('formRestablecerTema')?.submit();
+                }
+            });
+        } else {
+            if (confirm('¿Restablecer los colores del tema por defecto?')) {
+                document.getElementById('formRestablecerTema')?.submit();
+            }
+        }
+    }
+
+    // ── Modal Subir Logo Institucional ─────────────────────
+    function abrirModalLogo(tipo) {
+        const m = document.getElementById('modalSubirLogo');
+        if (!m) return;
+        const sel = document.getElementById('selectTipoLogo');
+        if (sel && tipo) sel.value = tipo;
+        actualizarInfoLogoModal();
+        const prev = document.getElementById('previewImgLogo');
+        if (prev) { prev.style.display = 'none'; prev.src = ''; }
+        const fileInp = document.getElementById('archivoLogoInput');
+        if (fileInp) fileInp.value = '';
+        m.style.display = 'flex';
+    }
+
+    function cerrarModalLogo() {
+        const m = document.getElementById('modalSubirLogo');
+        if (m) m.style.display = 'none';
+    }
+
+    function actualizarInfoLogoModal() {
+        const sel = document.getElementById('selectTipoLogo');
+        const info = document.getElementById('infoLogoModal');
+        if (!sel || !info) return;
+        const val = sel.value;
+        if (val === 'logo_principal') {
+            info.innerHTML = '<strong>Logo Principal:</strong> Se recomienda imagen PNG con fondo transparente de al menos 400x120px.';
+        } else if (val === 'cintillo') {
+            info.innerHTML = '<strong>Cintillo Oficial:</strong> Proporción horizontal/panorámica (ej. 1200x180px) para reportes y constancias PDF.';
+        } else if (val === 'gobernacion') {
+            info.innerHTML = '<strong>Logo de Gobernación:</strong> Emblema del estado en PNG transparente.';
+        }
+    }
+
+    function previewArchivoLogo(input) {
+        const file = input.files && input.files[0];
+        const preview = document.getElementById('previewImgLogo');
+        if (!file || !preview) return;
+
+        if (file.size > 3 * 1024 * 1024) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'warning', title: 'Archivo muy grande', text: 'El archivo no debe superar los 3 MB.' });
+            } else {
+                alert('El archivo no debe superar los 3 MB.');
+            }
+            input.value = '';
+            preview.style.display = 'none';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Sincronizar botón de tema al cargar
+    setTimeout(sincronizarBotonTemaConfig, 200);
 </script>
 
 <!-- ═══════════════════════════════════════════════════════
@@ -2690,5 +3062,83 @@ $hoy             = date('Y-m-d');
                 </div>
             <?php endif; ?>
         </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Subir Logo Institucional (Fase 5 - Branding)
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalSubirLogo"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.55);backdrop-filter:blur(5px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:22px;width:100%;max-width:540px;margin:16px;box-shadow:0 28px 70px rgba(0,0,0,.22);overflow:hidden;">
+
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#172554 0%,#1e3a8a 55%,#2563eb 100%);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;">
+                    <i class="ti ti-upload" style="font-size:1.25rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white;font-weight:800;font-size:1.05rem;">Actualizar Emblema Institucional</div>
+                    <div style="color:rgba(255,255,255,.75);font-size:0.76rem;">Reemplazo seguro de archivo de imagen del sistema</div>
+                </div>
+            </div>
+            <button onclick="cerrarModalLogo()" type="button"
+                style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:white;font-size:1.1rem;display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <!-- Formulario -->
+        <form method="POST" action="<?= URLROOT ?>/configuracion" enctype="multipart/form-data" style="padding:22px 24px;">
+            <input type="hidden" name="accion" value="subir_logo">
+            <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+
+            <!-- Tipo de Logo -->
+            <div style="margin-bottom:16px;">
+                <label class="cfg-field-label">Selecciona el Emblema a Actualizar *</label>
+                <select name="tipo_logo" id="selectTipoLogo" class="cfg-input" style="width:100%;cursor:pointer;" onchange="actualizarInfoLogoModal()">
+                    <option value="logo_principal">Logo Principal SGP / ISP (logo.png)</option>
+                    <option value="cintillo">Cintillo Oficial para Reportes (cintillo-salud.png)</option>
+                    <option value="gobernacion">Logo de Gobernación de Bolívar (gobe.png)</option>
+                </select>
+                <div id="infoLogoModal" style="font-size:0.74rem;color:#64748b;margin-top:6px;line-height:1.4;">
+                    <strong>Logo Principal:</strong> Se recomienda imagen PNG con fondo transparente de al menos 400x120px.
+                </div>
+            </div>
+
+            <!-- Zona de Subida / File Input -->
+            <div style="margin-bottom:18px;">
+                <label class="cfg-field-label">Seleccionar Archivo de Imagen *</label>
+                <div style="border:2px dashed #cbd5e1;border-radius:12px;padding:20px;text-align:center;background:#f8fafc;cursor:pointer;transition:all .2s;"
+                    onclick="document.getElementById('archivoLogoInput').click()"
+                    onmouseover="this.style.borderColor='#3b82f6';this.style.background='#eff6ff';"
+                    onmouseout="this.style.borderColor='#cbd5e1';this.style.background='#f8fafc';">
+                    <i class="ti ti-cloud-upload" style="font-size:2.2rem;color:#3b82f6;display:block;margin-bottom:6px;"></i>
+                    <div style="font-weight:700;font-size:0.88rem;color:#1e293b;">Haz clic para buscar o arrastra la imagen aquí</div>
+                    <div style="font-size:0.75rem;color:#94a3b8;margin-top:4px;">Formatos soportados: PNG, JPG, JPEG (máximo 3 MB)</div>
+                    <input type="file" name="archivo_logo" id="archivoLogoInput" accept="image/png,image/jpeg" style="display:none;" required onchange="previewArchivoLogo(this)">
+                </div>
+
+                <!-- Preview antes de subir -->
+                <div style="text-align:center;margin-top:12px;">
+                    <img id="previewImgLogo" src="" alt="Vista Previa"
+                        style="display:none;max-height:110px;max-width:100%;margin:0 auto;border:1px solid #e2e8f0;border-radius:8px;padding:4px;background:white;box-shadow:0 4px 10px rgba(0,0,0,0.06);">
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button type="button" onclick="cerrarModalLogo()"
+                    style="padding:10px 18px;border:1.5px solid #e2e8f0;border-radius:10px;background:white;color:#64748b;font-weight:600;font-size:0.85rem;cursor:pointer;">
+                    Cancelar
+                </button>
+                <button type="submit" class="cfg-btn-primary"
+                    style="padding:10px 20px;background:linear-gradient(135deg,#1e3a8a,#2563eb);border:none;border-radius:10px;color:white;font-weight:700;font-size:0.85rem;display:flex;align-items:center;gap:6px;">
+                    <i class="ti ti-upload"></i> Subir y Guardar Emblema
+                </button>
+            </div>
+        </form>
+
     </div>
 </div>

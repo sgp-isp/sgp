@@ -279,6 +279,40 @@ if (Session::get('requiere_cambio_clave') == 1) {
     <!-- ZONA DERECHA: Notificaciones + Perfil -->
     <ul class="navbar-nav ml-auto align-items-center" style="gap: 12px;">
         
+        <!-- Toggle Modo Oscuro (Fase 5) -->
+        <li class="nav-item">
+            <button id="themeToggleBtn" class="theme-toggle-btn notif-btn" aria-label="Cambiar tema claro / oscuro" title="Cambiar tema claro / oscuro" onclick="toggleSgpTheme()">
+                <i class="ti ti-moon" id="themeToggleIcon" style="font-size: 21px;"></i>
+            </button>
+        </li>
+
+        <script>
+        function applySgpTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.classList.toggle('dark', theme === 'dark');
+            if (document.body) document.body.classList.toggle('dark-mode', theme === 'dark');
+            try { localStorage.setItem('sgp_theme', theme); } catch(e){}
+            var icon = document.getElementById('themeToggleIcon');
+            if (icon) {
+                icon.className = theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+                icon.style.color = theme === 'dark' ? '#fbbf24' : '#475569';
+            }
+        }
+        function toggleSgpTheme() {
+            var cur = localStorage.getItem('sgp_theme') || (document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+            var next = cur === 'dark' ? 'light' : 'dark';
+            applySgpTheme(next);
+        }
+        (function() {
+            var saved = localStorage.getItem('sgp_theme') || 'light';
+            applySgpTheme(saved);
+        })();
+        document.addEventListener('pjax:complete', function() {
+            var saved = localStorage.getItem('sgp_theme') || 'light';
+            applySgpTheme(saved);
+        });
+        </script>
+
         <!-- Notificaciones -->
         <li class="nav-item dropdown">
             <div class="notif-wrapper" id="notification-wrapper">
