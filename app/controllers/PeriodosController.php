@@ -1135,21 +1135,22 @@ class PeriodosController extends Controller
         require_once '../app/lib/PdfGenerator.php';
         $pdf = new PdfGenerator();
 
-        $cintillo_path = __DIR__ . '/../../public/img/cintillo_isp_bolivar.jpg';
-        if (!function_exists('imgToBase64')) {
-            function imgToBase64(string $path): string {
-                static $cache = [];
-                if (isset($cache[$path])) return $cache[$path];
-                if (file_exists($path)) {
-                    $ext  = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-                    $mime = ($ext === 'jpg') ? 'jpeg' : $ext;
-                    $cache[$path] = 'data:image/' . $mime . ';base64,' . base64_encode(file_get_contents($path));
-                    return $cache[$path];
-                }
-                return $cache[$path] = '';
+        $baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(__DIR__)) . '/public/img/';
+        $cintilloCandidates = [
+            $baseImgDir . 'cintillo-salud.png',
+            $baseImgDir . 'cintillo_isp_bolivar.jpg',
+            $baseImgDir . 'cintillo_pdf.png',
+            $baseImgDir . 'cintillo.png'
+        ];
+        $b64 = '';
+        foreach ($cintilloCandidates as $cp) {
+            if (file_exists($cp)) {
+                $ext = strtolower(pathinfo($cp, PATHINFO_EXTENSION));
+                $mime = ($ext === 'jpg' || $ext === 'jpeg') ? 'image/jpeg' : 'image/png';
+                $b64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($cp));
+                break;
             }
         }
-        $b64 = imgToBase64($cintillo_path);
 
         $nombreCompleto = htmlspecialchars(trim(($pasante->nombres ?? '') . ' ' . ($pasante->apellidos ?? '')));
         $desdeF = date('d/m/Y', strtotime($desde));
@@ -1480,8 +1481,22 @@ class PeriodosController extends Controller
         $pctColor = $pct >= 80 ? '#16a34a' : ($pct >= 50 ? '#d97706' : '#dc2626');
 
         // ── Cintillo institucional ──────────────────────────────────
-        $imgPath   = __DIR__ . '/../../public/img/cintillo_isp_bolivar.jpg';
-        $bCintillo = file_exists($imgPath) ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($imgPath)) : '';
+        $baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(__DIR__)) . '/public/img/';
+        $cintilloCandidates = [
+            $baseImgDir . 'cintillo-salud.png',
+            $baseImgDir . 'cintillo_isp_bolivar.jpg',
+            $baseImgDir . 'cintillo_pdf.png',
+            $baseImgDir . 'cintillo.png'
+        ];
+        $bCintillo = '';
+        foreach ($cintilloCandidates as $cp) {
+            if (file_exists($cp)) {
+                $ext = strtolower(pathinfo($cp, PATHINFO_EXTENSION));
+                $mime = ($ext === 'jpg' || $ext === 'jpeg') ? 'image/jpeg' : 'image/png';
+                $bCintillo = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($cp));
+                break;
+            }
+        }
 
         // ── HTML ────────────────────────────────────────────────────
         $html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><style>

@@ -103,10 +103,21 @@ class PdfGenerator
         $pdf->AddPage();
 
         // ── Cintillo institucional ─────────────
-        $imgPath = __DIR__ . '/../../public/img/cintillo_isp_bolivar.jpg';
-        if (file_exists($imgPath)) {
-            $pdf->Image($imgPath, 15, 10, 180, 0, 'JPEG');
-            $pdf->Ln(22);
+        $baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(__DIR__)) . '/public/img/';
+        $cintilloCandidates = [
+            $baseImgDir . 'cintillo-salud.png',
+            $baseImgDir . 'cintillo_isp_bolivar.jpg',
+            $baseImgDir . 'cintillo_pdf.png',
+            $baseImgDir . 'cintillo.png'
+        ];
+        foreach ($cintilloCandidates as $candidate) {
+            if (file_exists($candidate)) {
+                $ext = strtoupper(pathinfo($candidate, PATHINFO_EXTENSION));
+                $imgType = ($ext === 'JPG' || $ext === 'JPEG') ? 'JPEG' : 'PNG';
+                $pdf->Image($candidate, 15, 10, 180, 0, $imgType);
+                $pdf->Ln(22);
+                break;
+            }
         }
 
         // ── Encabezado del reporte ─────────────
@@ -190,14 +201,26 @@ class PdfGenerator
      */
     public static function wrapHtml(string $body, string $titulo = 'Reporte SGP'): string
     {
-        $imgPath = __DIR__ . '/../../public/img/cintillo_isp_bolivar.jpg';
+        $baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(__DIR__)) . '/public/img/';
+        $cintilloCandidates = [
+            $baseImgDir . 'cintillo-salud.png',
+            $baseImgDir . 'cintillo_isp_bolivar.jpg',
+            $baseImgDir . 'cintillo_pdf.png',
+            $baseImgDir . 'cintillo.png'
+        ];
         $cintillo = '';
-        if (file_exists($imgPath)) {
-            $b64 = base64_encode(file_get_contents($imgPath));
-            $cintillo = '<div style="width:100%;margin-bottom:16px;line-height:0;">'
-                      . '<img src="data:image/jpeg;base64,' . $b64 . '" style="width:100%;height:auto;display:block;" alt="Cintillo ISP Bolívar">'
-                      . '</div>';
-        } else {
+        foreach ($cintilloCandidates as $candidate) {
+            if (file_exists($candidate)) {
+                $ext = strtolower(pathinfo($candidate, PATHINFO_EXTENSION));
+                $mime = ($ext === 'jpg' || $ext === 'jpeg') ? 'image/jpeg' : 'image/png';
+                $b64 = base64_encode(file_get_contents($candidate));
+                $cintillo = '<div style="width:100%;margin-bottom:16px;line-height:0;">'
+                          . '<img src="data:' . $mime . ';base64,' . $b64 . '" style="width:100%;height:auto;display:block;" alt="Cintillo Institucional">'
+                          . '</div>';
+                break;
+            }
+        }
+        if (!$cintillo) {
             $cintillo = '<div style="width:100%;padding:12px 20px;background:#162660;color:white;font-family:Helvetica,Arial,sans-serif;font-size:12pt;font-weight:bold;margin-bottom:16px;">Instituto de Salud Pública de Bolívar &nbsp;|&nbsp; SGP</div>';
         }
 

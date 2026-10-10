@@ -7,27 +7,23 @@
  * sin problemas de permisos o rutas relativas.
  */
 
-$cintillo_path = __DIR__ . '/../../../../public/img/cintillo_isp_bolivar.jpg';
+$baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(dirname(__DIR__))) . '/public/img/';
+$cintilloCandidates = [
+    $baseImgDir . 'cintillo-salud.png',
+    $baseImgDir . 'cintillo_isp_bolivar.jpg',
+    $baseImgDir . 'cintillo_pdf.png',
+    $baseImgDir . 'cintillo.png'
+];
 
-if (!function_exists('imgToBase64')) {
-    function imgToBase64(string $path): string
-    {
-        // Cache estático: evita re-leer y re-codificar el archivo en el mismo request
-        static $cache = [];
-        if (isset($cache[$path])) {
-            return $cache[$path];
-        }
-        if (file_exists($path)) {
-            $ext  = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-            $mime = ($ext === 'jpg') ? 'jpeg' : $ext;
-            $cache[$path] = 'data:image/' . $mime . ';base64,' . base64_encode(file_get_contents($path));
-            return $cache[$path];
-        }
-        return $cache[$path] = '';
+$base64_cintillo = '';
+foreach ($cintilloCandidates as $cp) {
+    if (file_exists($cp)) {
+        $ext = strtolower(pathinfo($cp, PATHINFO_EXTENSION));
+        $mime = ($ext === 'jpg' || $ext === 'jpeg') ? 'image/jpeg' : 'image/png';
+        $base64_cintillo = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($cp));
+        break;
     }
 }
-
-$base64_cintillo = imgToBase64($cintillo_path);
 ?>
 
 <?php if ($base64_cintillo): ?>
