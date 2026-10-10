@@ -1,0 +1,710 @@
+/* ========================================
+   SGP MODERN THEME 2026 - MINI-RAIL SIDEBAR
+   Instagram/Linear Style Navigation
+   ======================================== */
+
+:root {
+    /* Dimensiones GLPI-Style */
+    --sidebar-width: 260px;
+    --sidebar-width-mini: 80px;
+    --header-height: 70px;
+
+    /* Colores Corporativos — Accent azul eléctrico (coherente con navy) */
+    --color-primary: #1e2b58;
+    --color-primary-dark: #162044;
+    --color-accent: #3b82f6;
+    /* Azul eléctrico (antes: dorado #F59E0B) */
+    --color-accent-dark: #2563eb;
+    /* Azul saturado (antes: ámbar #D97706) */
+
+    /* Backgrounds */
+    --bg-body: #F0F5FA;
+    --bg-surface: #FFFFFF;
+
+    /* Efectos */
+    --shadow-card: 0 8px 24px rgba(30, 43, 88, 0.05);
+    --radius-lg: 16px;
+    --radius-md: 10px;
+
+    /* Iconos y Touch Targets */
+    --icon-size: 28px;
+    --nav-item-height: 52px;
+}
+
+/* ========================================
+   GLPI-STYLE LAYOUT (CSS Grid con Áreas Nombradas)
+   ======================================== */
+
+/* Reset del body */
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Contenedor Principal - GLPI Grid Structure */
+.app-layout {
+    display: grid;
+    /* Columna 1: Sidebar (Fijo), Columna 2: Resto (Flexible) */
+    grid-template-columns: var(--sidebar-width-mini) 1fr;
+    /* Fila 1: Header, Fila 2: Contenido */
+    grid-template-rows: var(--header-height) 1fr;
+    /* Áreas Nombradas (GLPI-Style) */
+    grid-template-areas:
+        "sidebar header"
+        "sidebar content";
+    min-height: 100vh;
+    transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estado Expandido */
+.app-layout.sidebar-expanded {
+    grid-template-columns: var(--sidebar-width) 1fr;
+}
+
+/* ========================================
+   SIDEBAR: Ocupa toda la columna izquierda (Full Height)
+   ======================================== */
+.main-sidebar {
+    grid-area: sidebar;
+    /* Área nombrada */
+    background: linear-gradient(135deg, #1e2b58 0%, #293a70 100%);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 16px rgba(30, 43, 88, 0.08);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Scrollbar Personalizado */
+.main-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.main-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.main-sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   HEADER: Comienza DESPUÉS del sidebar
+   ======================================== */
+.main-header {
+    grid-area: header;
+    /* Área nombrada */
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 0 30px;
+    display: flex;
+    align-items: center;
+    z-index: 900;
+}
+
+/* Contenedor de Logos Institucionales */
+.header-logos {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.header-logos img {
+    height: 35px;
+    width: auto;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.header-logos img:hover {
+    transform: scale(1.05);
+}
+
+.institutional-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ========================================
+   CONTENT: Debajo del header
+   ======================================== */
+.content-wrapper {
+    grid-area: content;
+    /* Área nombrada */
+    padding: 30px;
+    background: var(--bg-body);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Contenedor interno para centrado (GLPI-Style) */
+.content-wrapper>.container-fluid,
+.content-wrapper>.row {
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ========================================
+   SIDEBAR HEADER (Logo + Toggle)
+   ======================================== */
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--header-height);
+    padding: 0 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.brand-text {
+    font-size: 24px;
+    font-weight: 800;
+    color: #FFFFFF;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    opacity: 0;
+    width: 0;
+    transition: opacity 0.3s ease, width 0.3s ease;
+}
+
+.app-layout.sidebar-expanded .brand-text {
+    opacity: 1;
+    width: auto;
+}
+
+.toggle-sidebar-btn {
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.toggle-sidebar-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.toggle-sidebar-btn i {
+    font-size: 24px;
+}
+
+/* ========================================
+   NAVEGACIÓN
+   ======================================== */
+.sidebar-nav {
+    flex: 1;
+    padding: 16px 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Scrollbar Personalizado */
+.sidebar-nav::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
+
+.nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* ========================================
+   ENLACES (Touch Targets Optimizados)
+   ======================================== */
+.nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--nav-item-height);
+    padding: 12px 0;
+    margin: 4px 0;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    cursor: pointer;
+}
+
+/* Cuando está expandido, alinear a la izquierda */
+.app-layout.sidebar-expanded .nav-link {
+    justify-content: flex-start;
+    padding: 12px 16px;
+}
+
+/* ICONOS (Protagonistas - Centrados en Collapsed) */
+.nav-link i {
+    font-size: var(--icon-size);
+    width: var(--icon-size);
+    text-align: center;
+    flex-shrink: 0;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+}
+
+/* TEXTO (Oculto por defecto) */
+.nav-link .menu-text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 15px;
+    font-weight: 500;
+    transition: opacity 0.2s ease, width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: 0;
+}
+
+/* Mostrar texto cuando sidebar está expandido (Toggle) */
+.app-layout.sidebar-expanded .menu-text {
+    opacity: 1;
+    width: auto;
+    margin-left: 12px;
+}
+
+/* ========================================
+   ESTADOS INTERACTIVOS
+   ======================================== */
+
+/* HOVER (Efecto Sutil) */
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.nav-link:hover i {
+    transform: scale(1.08);
+}
+
+/* ESTADO ACTIVO (Glassmorphism + Icono Destacado) */
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    color: #FFFFFF;
+}
+
+/* Borde Lateral Naranja (Indicador Visual Limpio) */
+.nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+/* Icono Activo en Naranja */
+.nav-link.active i {
+    color: var(--color-accent);
+    transform: scale(1.1);
+}
+
+/* ========================================
+   TOOLTIPS (Cuando está colapsado)
+   ======================================== */
+.nav-link[title]:not(:hover) {
+    position: relative;
+}
+
+/* Tooltips solo cuando sidebar está CERRADO */
+.app-layout:not(.sidebar-expanded) .nav-link[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: calc(var(--sidebar-width-mini) + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    animation: tooltipFadeIn 0.2s ease 0.3s forwards;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Flecha del Tooltip */
+.app-layout:not(.sidebar-expanded) .nav-link[title]:hover::before {
+    content: '';
+    position: absolute;
+    left: var(--sidebar-width-mini);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 6px 6px 6px 0;
+    border-color: transparent rgba(0, 0, 0, 0.9) transparent transparent;
+    z-index: 10001;
+    opacity: 0;
+    animation: tooltipFadeIn 0.2s ease 0.3s forwards;
+}
+
+@keyframes tooltipFadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+/* ========================================
+   FOOTER (Logout)
+   ======================================== */
+.sidebar-footer {
+    padding: 16px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--nav-item-height);
+    padding: 12px 0;
+    color: rgba(255, 99, 71, 0.9);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-logout i {
+    font-size: var(--icon-size);
+    width: var(--sidebar-width-mini);
+    text-align: center;
+    transition: all 0.25s ease;
+}
+
+.btn-logout span {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 15px;
+    font-weight: 500;
+    transition: opacity 0.2s ease, width 0.3s ease;
+}
+
+.app-layout.sidebar-expanded .btn-logout span {
+    opacity: 1;
+    width: auto;
+    margin-left: 12px;
+}
+
+.btn-logout:hover {
+    background: rgba(255, 99, 71, 0.15);
+    color: #FF6347;
+}
+
+.btn-logout:hover i {
+    transform: scale(1.08);
+}
+
+/* ========================================
+   COMPONENTES GLOBALES
+   ======================================== */
+
+/* Tarjetas Modernas con Hover Premium */
+.card {
+    border: none !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-card);
+    background: var(--bg-surface);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+    box-shadow: 0 16px 40px rgba(30, 43, 88, 0.12);
+    transform: translateY(-5px);
+}
+
+/* Badges Modernos (Estilo Pastilla) */
+.badge-soft-success {
+    background-color: #D1FAE5;
+    color: #065F46;
+    border-radius: 50rem;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-soft-warning {
+    background-color: #FEF3C7;
+    color: #92400E;
+    border-radius: 50rem;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-soft-danger {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    border-radius: 50rem;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-soft-info {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+    border-radius: 50rem;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* KPI Cards (Específicas para Dashboard) */
+.kpi-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.kpi-card:hover::before {
+    opacity: 1;
+}
+
+/* Botones Primarios */
+.btn-primary {
+    background-color: var(--color-primary) !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-dark) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(30, 43, 88, 0.2) !important;
+}
+
+/* ========================================
+   RESPONSIVE: MOBILE
+   ======================================== */
+@media (max-width: 992px) {
+    .app-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: var(--header-height) 1fr;
+        grid-template-areas:
+            "header"
+            "content";
+    }
+
+    .main-sidebar {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        height: 100vh;
+        width: var(--sidebar-width-expanded);
+        z-index: 9999;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Sidebar Abierto en Mobile */
+    .app-layout.sidebar-open .main-sidebar {
+        left: 0;
+    }
+
+    /* En móvil, siempre mostrar texto */
+    .main-sidebar .menu-text,
+    .main-sidebar .btn-logout span {
+        opacity: 1;
+        width: auto;
+        margin-left: 12px;
+    }
+
+    .nav-link {
+        justify-content: flex-start;
+        padding: 12px 16px;
+    }
+
+    .nav-link i {
+        width: auto;
+        margin-right: 0;
+    }
+
+    /* Overlay oscuro */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9998;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .app-layout.sidebar-open .sidebar-overlay {
+        display: block;
+        opacity: 1;
+    }
+
+    /* Deshabilitar tooltips en mobile */
+    .nav-link[title]:hover::after,
+    .nav-link[title]:hover::before {
+        display: none;
+    }
+}
+
+/* ========================================
+   UTILIDADES
+   ======================================== */
+
+/* Ocultar scrollbar pero mantener funcionalidad */
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Animación suave para cambios de layout */
+* {
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========================================
+   DASHBOARD COMPONENTS - PREMIUM STYLES
+   ======================================== */
+
+/* Contenedor de Logos Institucionales */
+.institutional-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* KPI Cards con Hover Premium */
+.kpi-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.kpi-card:hover::before {
+    opacity: 1;
+}
+
+/* Badges Modernos (Estilo Pastilla) */
+.badge-soft-success {
+    background-color: #D1FAE5;
+    color: #065F46;
+    border-radius: 50rem;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-soft-warning {
+    background-color: #FEF3C7;
+    color: #92400E;
+    border-radius: 50rem;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-soft-danger {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    border-radius: 50rem;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-soft-info {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+    border-radius: 50rem;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}

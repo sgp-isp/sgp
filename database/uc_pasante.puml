@@ -1,0 +1,134 @@
+@startuml uc_pasante
+' =========================================================
+' DIAGRAMA DE CASOS DE USO — Pasante
+' Sistema de Gestion de Pasantes (SGP)
+' Defensa · Julio 2026
+' =========================================================
+
+left to right direction
+skinparam usecase {
+  BackgroundColor      #FAF5FF
+  BorderColor          #7C3AED
+  FontColor            #1C1C1C
+  FontSize             11
+  FontName             Arial
+}
+skinparam actor {
+  BackgroundColor      #F3E8FF
+  BorderColor          #7C3AED
+  FontColor            #4C1D95
+  FontSize             12
+  FontName             Arial
+}
+skinparam rectangle {
+  BackgroundColor      #FDFAFF
+  BorderColor          #7C3AED
+  BorderThickness      2.5
+  FontColor            #4C1D95
+  FontSize             14
+  FontName             Arial Bold
+}
+skinparam ArrowColor   #7C3AED
+skinparam ArrowThickness 1.3
+skinparam shadowing    false
+skinparam note {
+  BackgroundColor #F3E8FF
+  BorderColor     #A855F7
+  FontSize        9
+}
+
+title <b>Casos de Uso — Pasante</b>\nSGP · Sistema de Gestion de Pasantes
+
+actor "Pasante" as PAS
+
+rectangle "SGP — Sistema de Gestion de Pasantes" {
+
+  ' ---- AUTENTICACION ----
+  package "Acceso al Sistema" {
+    (Iniciar sesion con usuario/clave) as UC_LOGIN
+    (Marcar asistencia por kiosco PIN) as UC_KIOSCO
+    (Cerrar sesion) as UC_LOGOUT
+  }
+
+  ' ---- ASISTENCIAS Y PROGRESO ----
+  package "Asistencias y Progreso" {
+    (Ver almanaque personal de asistencias) as UC_ALMANAQUE
+    (Ver progreso de horas acumuladas) as UC_PROGRESO
+    (Ver detalle de dia especifico) as UC_DIA
+  }
+
+  ' ---- ACTIVIDADES DIARIAS ----
+  package "Actividades Diarias" {
+    (Registrar actividad del dia) as UC_ACT_CREATE
+    (Ver historial de actividades) as UC_ACT_LIST
+    (Editar actividad pendiente) as UC_ACT_EDIT
+  }
+
+  ' ---- EXAMENES ----
+  package "Examenes en Linea" {
+    (Ver examenes disponibles) as UC_EXAM_LIST
+    (Tomar examen en linea) as UC_EXAM_TAKE
+    (Ver resultado de examen) as UC_EXAM_RESULT
+  }
+
+  ' ---- EVALUACIONES ----
+  package "Evaluaciones Recibidas" {
+    (Ver evaluaciones del tutor) as UC_EVA_VER
+  }
+
+  ' ---- PERFIL ----
+  package "Perfil Personal" {
+    (Actualizar datos personales) as UC_PERFIL
+    (Cambiar contrasena) as UC_PWD
+  }
+
+}
+
+' ---- ASOCIACIONES ----
+PAS --> UC_LOGIN
+PAS --> UC_KIOSCO
+PAS --> UC_LOGOUT
+
+PAS --> UC_ALMANAQUE
+PAS --> UC_PROGRESO
+PAS --> UC_DIA
+
+PAS --> UC_ACT_CREATE
+PAS --> UC_ACT_LIST
+PAS --> UC_ACT_EDIT
+
+PAS --> UC_EXAM_LIST
+PAS --> UC_EXAM_TAKE
+PAS --> UC_EXAM_RESULT
+
+PAS --> UC_EVA_VER
+
+PAS --> UC_PERFIL
+PAS --> UC_PWD
+
+' ---- INCLUDE ----
+UC_DIA          ..> UC_ALMANAQUE  : <<include>>
+UC_EXAM_TAKE    ..> UC_EXAM_LIST  : <<include>>
+UC_EXAM_RESULT  ..> UC_EXAM_TAKE  : <<include>>
+UC_ACT_EDIT     ..> UC_ACT_LIST   : <<include>>
+
+note right of UC_KIOSCO
+  Ingresa PIN de 4-6 digitos
+  en la pantalla del kiosco.
+  Registra hora de entrada;
+  suma 8 h automaticamente.
+end note
+
+note right of UC_PROGRESO
+  Barra visual: dias cursados
+  vs 180 dias meta (1440 h).
+  Proyeccion de fecha fin.
+end note
+
+note right of UC_ACT_CREATE
+  Bitacora diaria del pasante:
+  titulo + descripcion de
+  tareas realizadas en el dia.
+end note
+
+@enduml

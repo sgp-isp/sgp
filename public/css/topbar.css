@@ -1,0 +1,374 @@
+/* ========================================
+   TOPBAR - EDGE TO EDGE (PROFESSIONAL)
+   Basado en respaldo + Mejoras responsive
+   ======================================== */
+
+.main-header {
+    /* POSICIONAMIENTO FIJO Y FULL WIDTH */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--header-height);
+    /* usa la variable de sidebar.css :root */
+    z-index: 1000;
+
+    /* ESTILOS VISUALES */
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    /* LAYOUT FLEX */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    margin: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* [FIX-PERF-SCROLL] El header de arriba es position:fixed y queda por
+   ENCIMA del contenido (z-index:1000). sgp-pjax.js hace
+   content.scrollIntoView() tras cada navegación — sin este
+   scroll-margin-top, el navegador alinea el borde superior del
+   contenido con el borde superior del viewport, dejando los primeros
+   var(--header-height) px (el banner del módulo) tapados detrás del
+   header fijo. Antes esto no se notaba porque cada navegación
+   recargaba la página completa (scroll siempre en 0 por defecto) —
+   solo se hizo visible al arreglar PJAX. */
+#sgp-content {
+    scroll-margin-top: var(--header-height);
+}
+
+/* CINTILLO INSTITUCIONAL */
+.institutional-strip {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    max-width: 700px;
+}
+
+.institutional-strip img {
+    max-height: 50px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* ✨ NUEVO: Cintillo centrado simétrico (ambos logos juntos) */
+.institutional-strip-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    /* Separación entre logos */
+    z-index: 10;
+}
+
+/* Separador visual entre logos */
+.institutional-separator {
+    width: 2px;
+    height: 45px;
+    background: linear-gradient(to bottom,
+            transparent,
+            rgba(22, 38, 96, 0.2),
+            rgba(22, 38, 96, 0.3),
+            rgba(22, 38, 96, 0.2),
+            transparent);
+}
+
+/* ✨ NUEVO: Logos institucionales con transiciones suaves */
+.institutional-logo {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: grayscale(0%) opacity(1);
+}
+
+.institutional-logo:hover {
+    transform: scale(1.02);
+    filter: grayscale(0%) opacity(0.85);
+}
+
+/* BOTONES HEADER */
+.header-icon-btn {
+    font-size: 1.2rem;
+    color: #64748b;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.header-icon-btn:hover {
+    color: #162660;
+    background: #f8fafc;
+}
+
+.notification-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 0.6rem;
+    padding: 3px 5px;
+    border-radius: 50%;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* PERFIL USUARIO */
+.profile-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #162660 0%, #0d1a3d 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 5px rgba(22, 38, 96, 0.2);
+}
+
+.user-profile-link {
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.user-profile-link:hover {
+    background: #f8fafc;
+}
+
+/* MENU DROPDOWN PERFIL */
+.profile-dropdown {
+    min-width: 240px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 8px;
+    margin-top: 10px;
+}
+
+/* HAMBURGUESA */
+.btn-toggle {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #162660;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-right: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-toggle:hover {
+    background: rgba(22, 38, 96, 0.08);
+}
+
+.btn-toggle:active {
+    transform: scale(0.95);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+/* Desktop + Tablet grande (>= 992px) — sidebar siempre visible */
+@media (min-width: 992px) {
+    .main-header {
+        left: 0 !important;
+        width: 100% !important;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    /* Hamburguesa innecesaria: el sidebar ya es visible */
+    #sidebarToggle {
+        display: none !important;
+    }
+
+    /* Botón collapse VISIBLE: permite colapsar el sidebar */
+    #sidebarCollapseToggle {
+        display: inline-block !important;
+    }
+
+    .institutional-strip {
+        display: flex !important;
+    }
+}
+
+/* Tablet mediana (768px - 991px) — dock activo, sin sidebar ni hamburguesa */
+@media (min-width: 768px) and (max-width: 991px) {
+    .main-header {
+        padding: 0 15px;
+    }
+
+    /* Logos centrales: ocultar para no solapar con topbar estrecho */
+    .main-header .institutional-strip-center {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+
+    .institutional-strip {
+        max-width: 500px;
+        gap: 12px !important;
+    }
+
+    .institutional-strip img {
+        max-height: 42px;
+        max-width: 220px !important;
+    }
+
+    .institutional-strip>div {
+        height: 32px !important;
+    }
+
+    /* Ocultar texto del perfil en tablet */
+    .user-profile-link .d-none.d-md-block {
+        display: none !important;
+    }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+    .main-header {
+        left: 0 !important;
+        width: 100% !important;
+        padding: 0 12px;
+        height: 60px;
+    }
+
+    /* Hamburguesa mobile visible */
+    #sidebarToggle {
+        display: block !important;
+    }
+
+    /* Toggle collapse OCULTO en mobile */
+    #sidebarCollapseToggle {
+        display: none !important;
+    }
+
+    /* Cintillo oculto en móvil */
+    .institutional-strip {
+        display: none !important;
+    }
+
+    /* NUEVO: Ocultar cintillo central en móvil */
+    .main-header .institutional-strip-center {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* Logo SGP más pequeño */
+    .brand-link img {
+        height: 32px !important;
+    }
+
+    /* Avatar más pequeño */
+    .profile-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    /* Iconos más pequeños */
+    .header-icon-btn {
+        font-size: 1.1rem;
+        padding: 6px 8px;
+    }
+
+    /* Ajustar altura del header en mobile */
+    :root {
+        --header-height: 60px;
+    }
+}
+
+/* Extra Small Mobile (< 375px) */
+@media (max-width: 374px) {
+    .main-header {
+        padding: 0 8px;
+    }
+
+    .navbar-nav {
+        gap: 4px !important;
+    }
+
+    .brand-link {
+        margin-left: 4px !important;
+    }
+}
+
+/* ========================================
+   NAVBAR UTILITIES
+   ======================================== */
+
+.navbar-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+}
+
+.brand-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.brand-link:hover {
+    opacity: 0.8;
+}
+
+/* ========================================
+   DROPDOWN IMPROVEMENTS
+   ======================================== */
+
+.dropdown-menu {
+    animation: fadeInDown 0.2s ease;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-item {
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    margin: 2px 0;
+}
+
+.dropdown-item:hover {
+    background: #f8fafc;
+    transform: translateX(2px);
+}
+
+.dropdown-divider {
+    margin: 8px 0;
+}

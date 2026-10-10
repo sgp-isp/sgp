@@ -1,0 +1,442 @@
+/* 
+ * SweetAlert2 - SGP Premium Bento Navy Theme 
+ * Minimalist Vanilla UI sin degradados agresivos ni sombras pesadas
+ */
+
+/* Contenedor Principal (Popup Bento) */
+.swal2-popup {
+    border-radius: 20px !important;
+    padding: 24px !important;
+    background: #ffffff !important;
+    box-shadow: 0 10px 40px -10px rgba(30, 58, 138, 0.08) !important;
+    border: 1px solid #e2e8f0 !important;
+    font-family: inherit !important;
+}
+
+/* Título */
+.swal2-title {
+    color: #1e3a8a !important; /* Navy oscuro corporativo */
+    font-weight: 700 !important;
+    font-size: 1.5rem !important;
+    padding: 0 0 16px 0 !important;
+    margin: 0 !important;
+}
+
+/* Texto / Contenido HTML */
+.swal2-html-container {
+    color: #475569 !important; /* Slate gris elegante */
+    font-size: 1.05rem !important;
+    line-height: 1.6 !important;
+    margin: 0 0 24px 0 !important;
+}
+
+/* Iconos Swal */
+.swal2-icon {
+    /* Limpia márgenes grandes para un look compacto */
+    margin-top: 10px !important;
+    margin-bottom: 24px !important;
+}
+
+/* Acciones (Contenedor de botones) */
+.swal2-actions {
+    margin: 0 !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+/* Botones Píldora Minimalistas */
+.swal2-styled.swal2-confirm,
+.swal2-styled.swal2-cancel,
+.swal2-styled.swal2-deny {
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    padding: 12px 24px !important;
+    font-size: 0.95rem !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Botón principal Confirmar Navy */
+.swal2-styled.swal2-confirm {
+    background-color: #1d4ed8 !important; /* SGP Navy Primary */
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.swal2-styled.swal2-confirm:hover {
+    background-color: #1e3a8a !important; /* Navy Dark Hover */
+}
+
+/* Botón Cancelar */
+.swal2-styled.swal2-cancel {
+    background-color: #f1f5f9 !important; /* Slate muy sutil */
+    color: #475569 !important;
+    border: none !important;
+}
+
+.swal2-styled.swal2-cancel:hover {
+    background-color: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+/* Inputs de Swal */
+.swal2-input, .swal2-textarea {
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 12px 16px !important;
+    color: #334155 !important;
+    font-family: monospace, sans-serif !important;
+    transition: all 0.2s ease !important;
+}
+.swal2-input:focus, .swal2-textarea:focus {
+    border-color: #1d4ed8 !important;
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1) !important;
+    outline: none !important;
+}
+
+/* Variante para cadenas alfanuméricas largas (ej. Sgp.12345678) */
+.swal-bento-token-long {
+    font-size: 1.4rem !important;
+    font-weight: 800 !important;
+    color: #1d4ed8 !important;
+    letter-spacing: 2px !important;
+    background: #f8fafc !important;
+    padding: 14px 24px !important;
+    border-radius: 12px !important;
+    border: 2px dashed #cbd5e1 !important;
+    display: inline-block !important;
+    font-family: monospace, sans-serif !important;
+    word-break: break-all !important;
+}
+
+/* Wrapper token + botón copiar */
+.swal-token-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+}
+.swal-copy-btn {
+    flex-shrink: 0;
+    background: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    color: #2563eb;
+    font-size: 1.1rem;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1;
+}
+.swal-copy-btn:hover { background: #dbeafe; color: #1d4ed8; }
+.swal-copy-btn.copied { background: #dcfce7; border-color: #86efac; color: #16a34a; }
+
+/* ── Toast Mode (flash messages & AJAX feedback) ───────────────────── */
+.swal2-toast.sgp-swal-toast {
+    border-radius: 14px !important;
+    padding: 14px 18px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    min-width: 280px !important;
+    max-width: 420px !important;
+}
+.swal2-toast.sgp-swal-toast .swal2-title {
+    font-size: .9rem !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.swal2-toast.sgp-swal-toast .swal2-icon {
+    width: 28px !important;
+    height: 28px !important;
+    margin: 0 10px 0 0 !important;
+    border-width: 2px !important;
+}
+.swal2-toast.sgp-swal-toast .swal2-icon .swal2-icon-content {
+    font-size: 1.1rem !important;
+}
+.swal2-toast.sgp-swal-toast .swal2-timer-progress-bar {
+    background: rgba(0,0,0,0.15) !important;
+    border-radius: 0 0 14px 14px !important;
+}
+/* Colores por tipo */
+.swal2-toast.sgp-swal-toast.swal2-icon-success {
+    background: linear-gradient(135deg,#f0fdf4,#ecfdf5) !important;
+    border-color: #bbf7d0 !important;
+}
+.swal2-toast.sgp-swal-toast.swal2-icon-error {
+    background: linear-gradient(135deg,#fff1f2,#fef2f2) !important;
+    border-color: #fecdd3 !important;
+}
+.swal2-toast.sgp-swal-toast.swal2-icon-warning {
+    background: linear-gradient(135deg,#fffbeb,#fef9c3) !important;
+    border-color: #fde68a !important;
+}
+.swal2-toast.sgp-swal-toast.swal2-icon-info {
+    background: linear-gradient(135deg,#eff6ff,#e0f2fe) !important;
+    border-color: #bae6fd !important;
+}
+
+/* ── Animación y Scrollbar ─────────────────────────────────────────── */
+@keyframes bell-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(15deg); }
+  50% { transform: rotate(-10deg); }
+  75% { transform: rotate(5deg); }
+}
+.bell-ringing i {
+  display: inline-block;
+  animation: bell-wiggle 2s ease-in-out infinite;
+  transform-origin: top center;
+}
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+/* Clases Vanilla CSS para Notificaciones */
+.notif-wrapper { position: relative; display: flex; align-items: center; justify-content: center; }
+.notif-btn { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; color: #475569; border-radius: 50%; transition: all 0.2s; border: none; background: transparent; cursor: pointer; outline: none; }
+.notif-btn:hover { color: #1d4ed8; background-color: #eff6ff; }
+.notif-badge { position: absolute; top: -4px; right: -4px; display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background-color: #ef4444; color: white; font-size: 9px; font-weight: bold; border: 2px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+
+/* Clases para los ítems del dropdown */
+.notif-item { display: flex; gap: 12px; padding: 16px; transition: background-color 0.2s; text-decoration: none; }
+.notif-read { background-color: #ffffff; border-bottom: 1px solid #f1f5f9; opacity: 0.7; }
+.notif-read:hover { background-color: #f8fafc; }
+.notif-icon-read { color: #94a3b8; }
+
+.notif-critical { background-color: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; border-bottom: 1px solid #ffffff; }
+.notif-critical:hover { background-color: rgba(239, 68, 68, 0.1); }
+.notif-icon-critical { color: #ef4444; }
+
+.notif-warning { background-color: rgba(245, 158, 11, 0.05); border-left: 4px solid #f59e0b; border-bottom: 1px solid #ffffff; }
+.notif-warning:hover { background-color: rgba(245, 158, 11, 0.1); }
+.notif-icon-warning { color: #f59e0b; }
+
+.notif-info { background-color: rgba(59, 130, 246, 0.05); border-left: 4px solid #3b82f6; border-bottom: 1px solid #f8fafc; }
+.notif-info:hover { background-color: rgba(59, 130, 246, 0.1); }
+.notif-icon-info { color: #3b82f6; }
+
+/* ── Botón "¿Necesitas ayuda?" del footer del login (mismo estilo que
+   el botón "Entendido" del modal: azul sólido, texto blanco) ───────── */
+.sgp-help-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #2563eb; color: #fff !important;
+    border: none; border-radius: 8px;
+    padding: 8px 16px; font-weight: 700; font-size: .85rem;
+    cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,.35);
+    transition: background .2s, transform .15s, box-shadow .2s;
+}
+.sgp-help-btn i { font-size: 1.05rem; }
+.sgp-help-btn:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37,99,235,.45); }
+
+/* ── Modal de Ayuda (Login - Pantalla de Inicio) ─────────────────────
+   El popup se ancla arriba del viewport (no centrado) para que el
+   título nunca quede oculto, y es scrolleable como red de seguridad
+   si el contenido supera la altura disponible. ─────────────────────── */
+.swal2-container:has(.sgp-swal-help-login) {
+    align-items: flex-start !important;
+    /* 80px despeja el .cintillo-container institucional (fixed, ~67px, z-index:9999) */
+    padding: 80px 12px 20px !important;
+}
+.swal2-popup.sgp-swal-help-login {
+    width: 600px !important;
+    max-width: 94vw !important;
+    max-height: calc(100vh - 100px) !important;
+    overflow-y: auto !important;
+    padding: 16px 18px !important;
+    /* [FIX-UX] Scrollbar delgado y discreto como red de seguridad para
+       pantallas muy pequeñas — el tamaño del modal ya se ajustó para no
+       necesitarlo en resoluciones de laptop comunes. */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+.swal2-popup.sgp-swal-help-login::-webkit-scrollbar { width: 6px; }
+.swal2-popup.sgp-swal-help-login::-webkit-scrollbar-track { background: transparent; }
+.swal2-popup.sgp-swal-help-login::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+/* [FIX-UX] Antes tenía una línea divisoria gris (border-bottom) bajo el
+   título — el usuario la señaló como algo que no le gustaba visualmente.
+   El espaciado por sí solo ya separa el título del contenido. */
+.sgp-swal-help-login .swal2-title {
+    padding-bottom: 6px !important;
+    margin-bottom: 0 !important;
+}
+.sgp-swal-help-login .swal2-html-container {
+    margin: 6px 0 10px !important;
+}
+
+/* ── Carrusel de pasos (slides con flechas izquierda/derecha) ──────── */
+.ss-carousel { position: relative; }
+.ss-carousel-viewport { overflow: hidden; border-radius: 10px; }
+.ss-carousel-track { display: flex; transition: transform .35s cubic-bezier(.22,1,.36,1); }
+.ss-slide { flex: 0 0 100%; box-sizing: border-box; padding: 0 4px; }
+
+/* [FIX-UX] Misma línea divisoria gris del título, quitada por la misma razón. */
+.ss-slide-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 6px;
+}
+.ss-slide-icon {
+    width: 32px; height: 32px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 1rem;
+}
+.ss-icon-blue   { background: #eff6ff; color: #2563eb; }
+.ss-icon-green  { background: #f0fdf4; color: #16a34a; }
+.ss-icon-amber  { background: #fef3c7; color: #d97706; }
+.ss-icon-purple { background: #f3e8ff; color: #7c3aed; }
+.ss-slide-title { font-weight: 800; color: #1e293b; font-size: .95rem; }
+
+/* Captura/GIF con fallback automático al placeholder si el archivo no existe.
+   Recuadro cuadrado (no panorámico): la mayoría de capturas son tarjetas
+   verticales (.auth-card), así que un marco ancho dejaba mucho espacio
+   vacío a los lados y la imagen se veía pequeña. */
+/* [FIX-UX] Antes 280x280: en pantallas de laptop comunes (~1366x768) el
+   popup completo (título + imagen + texto + footer) superaba el alto
+   disponible y forzaba scroll interno dentro del modal. Con zoom-al-clic
+   ya disponible, una miniatura más chica sigue siendo útil sin obligar
+   a scrollear en la mayoría de resoluciones. */
+/* [FIX-UX] Marco moderno: borde con gradiente azul institucional (en vez
+   de borde gris plano) + sombra suave con tinte azul, para que el recuadro
+   se vea como un elemento de UI cuidado y no como una imagen "pelada". */
+.ss-help-shot {
+    position: relative;
+    width: 190px;
+    height: 190px;
+    max-width: 100%;
+    margin: 0 auto 10px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    /* [FIX-UX] Padding tipo "passe-partout": sin esto, en capturas
+       verticales la imagen quedaba a 0px del borde superior/inferior y
+       su propia esquina redondeada (ya viene así en la captura) chocaba
+       visualmente con la esquina redondeada del marco, justo encima.
+       Con este margen blanco parejo en los 4 lados, la imagen queda
+       "flotando" adentro del marco en vez de pegada a su esquina. */
+    padding: 10px;
+    box-sizing: border-box;
+    background:
+        linear-gradient(#fff, #fff) padding-box,
+        linear-gradient(135deg, #2563eb, #7dd3fc) border-box;
+    box-shadow: 0 10px 24px -8px rgba(37, 99, 235, .35);
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+}
+.ss-help-img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; cursor: zoom-in; }
+/* Insignia de lupa: pista visual de que la imagen se puede ampliar */
+.ss-zoom-hint {
+    position: absolute; top: 8px; right: 8px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(15,23,42,.55); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .85rem; pointer-events: none;
+}
+.ss-help-placeholder {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 14px;
+}
+.ss-help-placeholder i { font-size: 1.6rem; color: #93c5fd; margin-bottom: 6px; }
+.ss-help-placeholder span {
+    font-size: .75rem;
+    font-weight: 700;
+    color: #1d4ed8;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+}
+
+.ss-slide-body { font-size: .82rem; line-height: 1.5; color: #475569; }
+.ss-slide-box { border-radius: 6px; padding: 6px 12px; font-size: .78rem; margin-top: 8px; border-left: 3px solid; }
+.ss-box-warn   { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
+.ss-box-ok     { background: #f0fdf4; border-color: #16a34a; color: #15803d; }
+.ss-box-purple { background: #faf5ff; border-color: #7c3aed; color: #6d28d9; }
+
+/* Flechas de navegación (sobre la imagen, posición fija: header + mitad de .ss-help-shot)
+   [FIX-UX] 44x44 en vez de 34x34 — objetivo táctil mínimo recomendado (WCAG 2.5.5 / Material). */
+.ss-nav {
+    position: absolute; top: 133px; transform: translateY(-50%);
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,.92); border: 1px solid #e2e8f0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #1d4ed8; font-size: 1.05rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    transition: all .15s; z-index: 2; padding: 0;
+}
+.ss-nav:hover:not(:disabled) { background: #eff6ff; transform: translateY(-50%) scale(1.08); }
+.ss-nav:disabled { opacity: .25; cursor: default; }
+.ss-nav.ss-prev { left: 6px; }
+.ss-nav.ss-next { right: 6px; }
+
+/* Pie del carrusel: indicadores (dots) + contador "Paso X de N"
+   [FIX-UX] El punto visual sigue siendo pequeño, pero el botón (::after)
+   ahora tiene una zona de toque de 24x24 alrededor, con separación entre sí. */
+.ss-carousel-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+.ss-dots { display: flex; gap: 4px; }
+.ss-dot {
+    width: 24px; height: 24px; padding: 0; border: none; background: transparent;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.ss-dot::after {
+    content: ''; display: block; width: 7px; height: 7px; border-radius: 50%;
+    background: #e2e8f0; transition: all .2s;
+}
+.ss-dot.active::after { background: #2563eb; width: 18px; border-radius: 4px; }
+.ss-counter { font-size: .75rem; font-weight: 700; color: #94a3b8; }
+
+/* ── Visor de zoom/pan: overlay DENTRO del mismo popup (no abre un
+   segundo Swal). Reabrir un Swal.fire() distinto rompía el focus-trap
+   del modal original (Tab se escapaba al formulario de login detrás) —
+   ver hallazgo de la auditoría UX. Todo el zoom vive en este overlay. ── */
+.ss-zoom-overlay {
+    position: absolute; inset: 0; z-index: 50;
+    background: #0f172a; border-radius: 12px;
+    display: none; flex-direction: column;
+    padding: 12px;
+}
+.ss-zoom-overlay.visible { display: flex; }
+.ss-zoom-overlay-inner {
+    flex: 1; min-height: 0; position: relative;
+    overflow: hidden; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: #1e293b;
+}
+.ss-zoom-img2 {
+    max-width: 100%; max-height: 100%;
+    object-fit: contain;
+    user-select: none; -webkit-user-drag: none;
+}
+.ss-zoom-close2 {
+    position: absolute; top: 8px; right: 8px; z-index: 2;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
+    color: #fff; font-size: 1.1rem; cursor: pointer; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+}
+.ss-zoom-close2:hover { background: rgba(255,255,255,.22); }
+/* [FIX-UX] Pista visual: sin esto, arrastrar para mover la imagen ampliada
+   no tenía ninguna señal más que el cursor cambiando a "mano". */
+.ss-zoom-pan-hint {
+    position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+    background: rgba(15,23,42,.8); color: #fff; font-size: .72rem; font-weight: 600;
+    padding: 5px 12px; border-radius: 999px; pointer-events: none;
+    opacity: 0; transition: opacity .2s; display: flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+}
+.ss-zoom-pan-hint.visible { opacity: 1; }
+.ss-zoom-toolbar2 {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-top: 12px; flex-shrink: 0;
+}
+.ss-zoom-btn2 {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+    color: #fff; font-size: 1.05rem; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all .15s;
+}
+.ss-zoom-btn2:hover { background: rgba(255,255,255,.22); transform: scale(1.06); }
+.ss-zoom-level2 { color: #fff; font-weight: 700; font-size: .85rem; min-width: 48px; text-align: center; }

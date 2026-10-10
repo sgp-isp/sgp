@@ -1,0 +1,331 @@
+@startuml DiagramaClases_SGP
+title Sistema de Gestión de Pasantes (SGP)\nDiagrama de Clases
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 11
+skinparam packageFontSize 12
+skinparam shadowing false
+skinparam linetype ortho
+
+' ============================================================
+' CAPA: CORE / NUCLEO
+' ============================================================
+package "Núcleo del Framework" <<Frame>> {
+
+    class App {
+        - url : array
+        + __construct()
+        + parseUrl() : void
+    }
+
+    class Database {
+        - {static} instance : Database
+        - conn : PDO
+        - stmt : PDOStatement
+        - Database()
+        + {static} getInstance() : Database
+        + query(sql : string) : void
+        + bind(param : string, value : mixed) : void
+        + execute() : bool
+        + resultSet() : array
+        + single() : array
+        + rowCount() : int
+        + lastInsertId() : int
+        + beginTransaction() : bool
+        + commit() : bool
+        + rollBack() : bool
+    }
+
+    class Controller {
+        # model(model : string) : object
+        # view(view : string, data : array) : void
+    }
+
+    class Session {
+        + {static} start() : void
+        + {static} set(key : string, value : mixed) : void
+        + {static} get(key : string) : mixed
+        + {static} destroy() : void
+        + {static} generateCsrfToken() : string
+        + {static} validateCsrfToken() : bool
+    }
+
+    class AuthMiddleware {
+        + {static} require() : void
+        + {static} verificarEstado() : void
+    }
+
+    class RoleMiddleware {
+        + {static} hasRole(role : int) : void
+        + {static} hasAnyRole(roles : array) : void
+    }
+
+    class Validator {
+        + {static} validate(data : array, rules : array) : array
+        + {static} sanitize(input : string) : string
+    }
+}
+
+' ============================================================
+' CAPA: MODELOS
+' ============================================================
+package "Modelos" <<Database>> {
+
+    class UserModel {
+        - db : Database
+        + __construct(db : Database)
+        + findByEmail(email : string) : array
+        + findById(id : int) : array
+        + findByCedula(cedula : string) : array
+        + create(data : array) : bool
+        + createWithTempPassword(data : array) : int
+        + update(id : int, data : array) : bool
+        + delete(id : int) : bool
+        + getAllUsers() : array
+        + updatePassword(id : int, hash : string) : bool
+        + getDatosCompletos(id : int) : array
+        + getUsersKPIs() : array
+        + checkProfileCompletion(id : int) : bool
+        + getSecurityQuestions() : array
+        + saveSecurityAnswer(data : array) : bool
+    }
+
+    class PasanteModel {
+        - db : Database
+        + __construct(db : Database)
+        + getAll() : array
+        + getByUsuarioId(id : int) : array
+        + asignar(data : array) : bool
+        + sumarHoras(id : int, horas : int) : bool
+        + finalizar(id : int) : bool
+        + calcularFechaFin(inicio : string, dias : int) : string
+    }
+
+    class AsignacionModel {
+        - db : Database
+        + __construct(db : Database)
+        + getAll() : array
+        + getById(id : int) : array
+        + guardar(data : array) : bool
+        + activar(id : int) : bool
+        + finalizar(id : int) : bool
+        + eliminar(id : int) : bool
+    }
+
+    class AsistenciaModel {
+        - db : Database
+        + __construct(db : Database)
+        + buscarPasanteLive(q : string) : array
+        + obtenerHistorialCompletoPasante(id : int) : array
+        + calcularProgresoProRata(id : int) : array
+        + getProgresoTodosActivos() : array
+        + rellenarDiasVacios() : int
+        + getFeriadosEnRango(inicio : string, fin : string) : array
+        + calcularProgresoPorCalendario(id : int) : array
+    }
+
+    class EvaluacionModel {
+        - db : Database
+        + __construct(db : Database)
+        + getAll() : array
+        + getByTutor(tutorId : int) : array
+        + getByPasante(pasanteId : int) : array
+        + getById(id : int) : array
+        + guardar(data : array) : bool
+    }
+
+    class DepartamentoModel {
+        - db : Database
+        + __construct(db : Database)
+        + getAll() : array
+        + getById(id : int) : array
+    }
+
+    class FeriadoModel {
+        - db : Database
+        + __construct(db : Database)
+        + obtenerTodos(anio : int) : array
+        + obtenerVigentes() : array
+        + existeFecha(fecha : string) : bool
+        + crear(data : array) : bool
+        + eliminar(id : int) : bool
+        + actualizar(id : int, data : array) : bool
+    }
+
+    class NotificationModel {
+        - db : Database
+        + __construct(db : Database)
+        + getUnreadByUser(userId : int) : array
+        + getCountUnread(userId : int) : int
+        + markAsRead(id : int) : bool
+        + markAllAsRead(userId : int) : bool
+        + create(data : array) : bool
+        + deleteOldRead() : int
+    }
+
+    class AuditModel {
+        - db : Database
+        + {static} log(data : array) : void
+    }
+
+    class DashboardAdminModel {
+        - db : Database
+        + __construct(db : Database)
+        + getKpiTotales() : array
+        + getTotalActivos() : int
+        + getPendientesAsignar() : int
+        + getAsistenciasHoy() : int
+        + getFaltasHoy() : int
+        + getTotalInstituciones() : int
+    }
+}
+
+' ============================================================
+' CAPA: CONTROLADORES
+' ============================================================
+package "Controladores" <<Component>> {
+
+    class AuthController {
+        - userModel : UserModel
+        + index() : void
+        + login() : void
+        + logout() : void
+        + register() : void
+        + recovery() : void
+        + reset() : void
+    }
+
+    class UsersController {
+        - userModel : UserModel
+        + index() : void
+        + create() : void
+        + update() : void
+        + delete() : void
+        + show() : void
+    }
+
+    class PasantesController {
+        - pasanteModel : PasanteModel
+        + index() : void
+        + show() : void
+        + resetPin() : void
+    }
+
+    class AsistenciasController {
+        - asistenciaModel : AsistenciaModel
+        + index() : void
+        + auditoria() : void
+        + historial() : void
+        + justificar() : void
+        + almanaque() : void
+    }
+
+    class EvaluacionesController {
+        - evaluacionModel : EvaluacionModel
+        + index() : void
+        + create() : void
+        + guardar() : void
+        + show() : void
+    }
+
+    class ReportesController {
+        - userModel : UserModel
+        - asistenciaModel : AsistenciaModel
+        - evaluacionModel : EvaluacionModel
+        + index() : void
+        + kardex() : void
+        + asistencias() : void
+        + evaluacion() : void
+        + exportarExcel() : void
+        + exportarPDF() : void
+    }
+
+    class KioscoController {
+        - asistenciaModel : AsistenciaModel
+        + index() : void
+        + marcar() : void
+        + validarPin() : void
+    }
+
+    class ConfiguracionController {
+        - feriadoModel : FeriadoModel
+        - departamentoModel : DepartamentoModel
+        + index() : void
+        + feriados() : void
+        + departamentos() : void
+    }
+
+    class BitacoraController {
+        - auditModel : AuditModel
+        + index() : void
+        + filtrar() : void
+    }
+
+    class DashboardController {
+        - dashModel : DashboardAdminModel
+        + index() : void
+    }
+}
+
+' ============================================================
+' RELACIONES DE HERENCIA
+' ============================================================
+Controller <|-- AuthController
+Controller <|-- UsersController
+Controller <|-- PasantesController
+Controller <|-- AsistenciasController
+Controller <|-- EvaluacionesController
+Controller <|-- ReportesController
+Controller <|-- KioscoController
+Controller <|-- ConfiguracionController
+Controller <|-- BitacoraController
+Controller <|-- DashboardController
+
+' ============================================================
+' RELACIONES DE DEPENDENCIA (controlador → modelo)
+' ============================================================
+AuthController ..> UserModel : usa
+UsersController ..> UserModel : usa
+PasantesController ..> PasanteModel : usa
+AsistenciasController ..> AsistenciaModel : usa
+EvaluacionesController ..> EvaluacionModel : usa
+ReportesController ..> UserModel : usa
+ReportesController ..> AsistenciaModel : usa
+ReportesController ..> EvaluacionModel : usa
+KioscoController ..> AsistenciaModel : usa
+ConfiguracionController ..> FeriadoModel : usa
+ConfiguracionController ..> DepartamentoModel : usa
+BitacoraController ..> AuditModel : usa
+DashboardController ..> DashboardAdminModel : usa
+
+' ============================================================
+' RELACIONES DE DEPENDENCIA (modelo → Database)
+' ============================================================
+UserModel --> Database : <<usa>>
+PasanteModel --> Database : <<usa>>
+AsignacionModel --> Database : <<usa>>
+AsistenciaModel --> Database : <<usa>>
+EvaluacionModel --> Database : <<usa>>
+DepartamentoModel --> Database : <<usa>>
+FeriadoModel --> Database : <<usa>>
+NotificationModel --> Database : <<usa>>
+AuditModel --> Database : <<usa>>
+DashboardAdminModel --> Database : <<usa>>
+
+' ============================================================
+' RELACIONES DE MIDDLEWARE
+' ============================================================
+Controller ..> AuthMiddleware : invoca
+Controller ..> RoleMiddleware : invoca
+AuthMiddleware ..> Session : usa
+App --> Controller : instancia
+
+Database -[hidden]- "Singleton"
+
+note top of Database : Patrón Singleton:\nuna sola instancia\npor request HTTP
+
+note top of Controller : Clase base abstracta:\ntodos los controladores\nheredan de ella
+
+note right of AsistenciaModel : rellenarDiasVacios():\nINSERT IGNORE idempotente.\nMarca días L-V sin registro\ncomo Ausente automáticamente.
+
+@enduml

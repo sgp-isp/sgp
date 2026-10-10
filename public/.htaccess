@@ -1,0 +1,32 @@
+Options -MultiViews
+
+# [FIX-ED-3] Cabeceras de seguridad HTTP — antes ausentes por completo.
+# CSP deliberadamente permisiva en script-src/style-src porque la app usa
+# extensivamente atributos onclick/onmouseover y <script> inline en las
+# vistas (incluidas las cargadas dinámicamente por PJAX) — un CSP estricto
+# sin 'unsafe-inline' rompería la interfaz completa. Aun así cubre lo
+# importante: frame-ancestors (clickjacking), object-src y base-uri.
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
+    # HSTS: los navegadores solo la aplican sobre HTTPS real; en HTTP local (XAMPP) se ignora sin efecto.
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+RewriteEngine On
+# [FIX-PORTABILIDAD] Antes: "RewriteBase /proyecto_sgp/sgp/public/" — ruta
+# fija que solo funcionaba si el proyecto vivía exactamente en esa carpeta.
+# Al copiar la app a otra carpeta o a otro equipo, el enrutamiento fallaba
+# (404 en todo excepto la portada). Se quita el RewriteBase fijo: Apache
+# infiere la base automáticamente a partir de dónde vive físicamente este
+# .htaccess, por lo que la app funciona sin importar el nombre/ruta de la
+# carpeta en la que se coloque.
+
+# Servir archivos estáticos de uploads/ directamente sin pasar por el router
+RewriteRule ^uploads/ - [L,NC]
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.+)$ index.php?url=$1 [QSA,L]

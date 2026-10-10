@@ -1,0 +1,76 @@
+Carpeta de capturas para el carrusel de ayuda del Login
+=========================================================
+
+El botón "¿Necesitas ayuda?" del pie de página del Login (footer.php)
+abre un carrusel de 8 pasos. Cada paso busca automáticamente su imagen
+en esta carpeta.
+
+Si el archivo existe, se muestra dentro del recuadro (recortada/ajustada
+automáticamente, sin deformarse).
+Si NO existe, se muestra el recuadro punteado "[ Captura: ... ]" como
+ahora (no rompe nada, es un reemplazo automático).
+
+Archivos esperados (8 pasos)
+------------------------------
+1. login-form.png                  ✅ YA EXISTE
+   -> Pantalla de inicio de sesión (formulario completo).
+
+2. kiosco-boton.png                ✅ YA EXISTE
+   -> Botón verde "Marcar Asistencia" (esquina superior derecha del login).
+
+3. kiosco-vista.png                ⬜ FALTA
+   -> Ve a /sgp/public/kiosco (clic en el botón verde) y captura la
+      pantalla completa (reloj + teclado de PIN).
+   -> SEÑALAMIENTO: con el lápiz/flecha de Win+Shift+S, dibuja un
+      círculo o flecha alrededor del TECLADO NUMÉRICO antes de guardar.
+
+4. recuperar-paso1-correo.png      ⬜ FALTA
+   -> Desde el login, clic en "¿Olvidaste tu contraseña?" y captura la
+      pantalla donde se pide el correo electrónico.
+
+5. recuperar-paso2-preguntas.png   ⬜ FALTA
+   -> Continúa el flujo: captura la pantalla de "Preguntas de seguridad"
+      (Paso 2 de la recuperación).
+
+6. recuperar-paso3-nueva-clave.png ⬜ FALTA
+   -> Último paso: pantalla para definir la nueva contraseña.
+   -> SEÑALAMIENTO: dibuja una flecha apuntando a la BARRA DE COLOR
+      (fortaleza de contraseña: rojo/amarillo/verde) antes de guardar.
+
+7. registro-paso1-datos.png        ⬜ FALTA
+   -> Desde el login, clic en "Regístrate aquí" y captura el Paso 1
+      (datos personales, cédula, correo).
+
+8. registro-paso2-preguntas.png    ⬜ FALTA
+   -> En el mismo formulario, clic en "Siguiente" y captura el Paso 2
+      (configurar preguntas de seguridad).
+
+Cómo anotar (señalamientos)
+------------------------------
+1. Win + Shift + S -> selecciona el área.
+2. Aparece una notificación en la esquina -> haz clic en ella (se abre
+   el editor de Recorte).
+3. Usa el lápiz/resaltador para dibujar el círculo o la flecha.
+4. Guarda como (Ctrl+S o el ícono de guardar) directamente en esta
+   carpeta con el nombre indicado arriba.
+
+Recomendaciones
+------------------
+- El recuadro del carrusel es CUADRADO (280x280px). La imagen se ajusta
+  automáticamente dentro de él sin deformarse (object-fit contain).
+- Recorta la captura lo más cerca posible de la tarjeta/formulario
+  (evita dejar fondo oscuro o espacio vacío alrededor): así se ve más
+  grande y legible dentro del recuadro cuadrado.
+- Formatos soportados: PNG, JPG, GIF.
+- Solo necesitas guardar el archivo con el nombre exacto de arriba;
+  no hay que tocar código.
+
+RECORTA login-form.png (recomendado)
+------------------------------------
+La imagen actual incluye mucho fondo oscuro alrededor de la tarjeta de
+login, por lo que se ve pequeña dentro del recuadro cuadrado. Para
+mejorarla:
+1. Win + Shift + S -> recorta SOLO la tarjeta blanca/clara del formulario
+   (correo, contraseña, captcha, botón Ingresar), con poco margen.
+2. Guarda con el mismo nombre "login-form.png" (reemplaza el archivo
+   actual) en esta carpeta.

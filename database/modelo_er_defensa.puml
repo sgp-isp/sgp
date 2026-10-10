@@ -1,0 +1,365 @@
+@startuml ModeloER_SGP_Defensa
+allowmixing
+scale max 3000 width
+'==========================================================================
+' MODELO ENTIDAD-RELACION — Diagrama simplificado para defensa
+' Sistema de Gestion de Pasantes (SGP)
+'
+' 17 entidades principales (38 originales minus 14 tablas auxiliares/pivote)
+' Tablas excluidas:  bitacora, bitacora_historico, notificaciones,
+'   preguntas_seguridad, usuarios_respuestas, modulos_sistema,
+'   acciones_modulo, permisos_rol, usuario_permisos, intentos_acceso,
+'   actividades_extras, actividad_participantes, actividad_asistencias,
+'   actividad_evidencias.
+'==========================================================================
+
+skinparam classAttributeIconSize 0
+hide circle
+skinparam shadowing false
+skinparam entity {
+  BackgroundColor White
+  BorderColor #34495E
+  BackgroundColor<<weak>> #FFF6CC
+  BorderColor<<weak>> #B8860B
+  BorderThickness<<weak>> 2
+}
+skinparam hexagon {
+  BackgroundColor #FDE9D9
+  BorderColor #C0504D
+  FontSize 11
+}
+skinparam note {
+  BackgroundColor #EAF2FB
+  BorderColor #5B9BD5
+}
+
+title Modelo Entidad-Relacion (Chen) — SGP\nDiagrama para defensa · Julio 2026
+
+'==========================================================================
+' BLOQUE 1: NUCLEO DE USUARIOS
+'==========================================================================
+
+entity "usuarios" as usuarios {
+  * __id__ : int
+  --
+  cedula : varchar(20) <<UNIQUE>>
+  correo : varchar(100) <<UNIQUE>>
+  rol_id : int          {FK → roles}
+  departamento_id : int {FK → departamentos}
+  estado : enum(activo, inactivo)
+  created_at : timestamp
+}
+
+entity "roles" as roles {
+  * __id__ : int
+  --
+  nombre : varchar(50)
+}
+
+entity "departamentos" as departamentos {
+  * __id__ : int
+  --
+  nombre : varchar(100)
+  activo : tinyint(1)
+}
+
+entity "datos_personales" as datos_personales <<weak>> {
+  * __id__ : int
+  --
+  usuario_id : int {FK → usuarios} <<UNIQUE>>
+  nombres : varchar(100)
+  apellidos : varchar(100)
+  telefono : varchar(20)
+  genero : enum(M, F, Otro)
+}
+
+'==========================================================================
+' BLOQUE 2: ACADEMICO / PASANTIAS
+'==========================================================================
+
+entity "datos_pasante" as datos_pasante <<weak>> {
+  * __id__ : int
+  --
+  usuario_id : int    {FK → usuarios} <<UNIQUE>>
+  periodo_id : int    {FK → periodos_academicos}
+  institucion_id : int {FK → instituciones}
+  tutor_id : int      {FK → usuarios}
+  estado_pasantia : enum(Pendiente, Activo, Finalizado, Retirado)
+  tipo_pasantia : enum(Regular, Corta)
+  fecha_inicio_pasantia : date
+  fecha_fin_estimada : date
+  horas_acumuladas : int
+  horas_meta : int
+}
+
+entity "periodos_academicos" as periodos_academicos {
+  * __id__ : int
+  --
+  nombre : varchar(100)
+  tipo : enum(Regular, Corto)
+  fecha_inicio : date
+  fecha_fin : date
+  estado : enum(Planificado, Activo, Cerrado)
+}
+
+entity "instituciones" as instituciones {
+  * __id__ : int
+  --
+  nombre : varchar(255)
+  tipo : enum(Escuela Tecnica, Universidad)
+  activo : tinyint(1)
+}
+
+entity "asignaciones" as asignaciones {
+  * __id__ : int
+  --
+  pasante_id : int      {FK → usuarios}
+  tutor_id : int        {FK → usuarios}
+  departamento_id : int {FK → departamentos}
+  fecha_inicio : date
+  fecha_fin : date
+  estado : enum(activo, finalizado, cancelado)
+}
+
+entity "asistencias" as asistencias <<weak>> {
+  * __id__ : int
+  --
+  pasante_id : int    {FK → usuarios}
+  asignacion_id : int {FK → asignaciones}
+  * fecha : date
+  hora_registro : time
+  estado : enum(Presente, Justificado, Ausente)
+  metodo : enum(Kiosco, Manual, AutoFill)
+  horas_calculadas : decimal(10,2)
+  es_retardo : tinyint(1)
+  es_auto_fill : tinyint(1)
+  ..
+  (uk: pasante_id + fecha)
+}
+
+entity "dias_feriados" as dias_feriados {
+  * __id__ : int
+  --
+  * fecha : date
+  nombre : varchar(150)
+  tipo : enum(Nacional, Regional, Institucional)
+  aplica_departamento_id : int {FK → departamentos}
+  es_laborable : tinyint(1)
+}
+
+'==========================================================================
+' BLOQUE 3: EVALUACIONES Y ACTIVIDADES
+'==========================================================================
+
+entity "evaluaciones" as evaluaciones {
+  * __id__ : int
+  --
+  pasante_id : int       {FK → usuarios}
+  tutor_id : int         {FK → usuarios}
+  fecha_evaluacion : date
+  promedio_final : decimal(4,2)
+  observaciones : text
+}
+
+entity "actividades_pasante" as actividades_pasante <<weak>> {
+  * __id__ : int
+  --
+  pasante_id : int {FK → usuarios}
+  * fecha : date
+  * titulo : varchar(150)
+  descripcion : text
+  corrector_id : int {FK → usuarios, opc.}
+}
+
+'==========================================================================
+' BLOQUE 4: EXAMENES
+'==========================================================================
+
+entity "examenes" as examenes {
+  * __id__ : int
+  --
+  titulo : varchar(200)
+  periodo_id : int  {FK → periodos_academicos}
+  creado_por : int  {FK → usuarios}
+  fecha_inicio : date
+  fecha_fin : date
+  activo : tinyint(1)
+}
+
+entity "examen_preguntas" as examen_preguntas <<weak>> {
+  * __id__ : int
+  --
+  examen_id : int {FK → examenes}
+  * orden : tinyint(4)
+  enunciado : text
+  tipo : enum(opcion_multiple, verdadero_falso)
+  puntos : tinyint(4)
+}
+
+entity "examen_opciones" as examen_opciones <<weak>> {
+  * __id__ : int
+  --
+  pregunta_id : int {FK → examen_preguntas}
+  texto : varchar(500)
+  es_correcta : tinyint(1)
+}
+
+entity "examen_intentos" as examen_intentos {
+  * __id__ : int
+  --
+  examen_id : int  {FK → examenes}
+  pasante_id : int {FK → usuarios}
+  puntaje_obtenido : decimal(6,2)
+  puntaje_maximo : decimal(6,2)
+  porcentaje : decimal(5,2)
+  ..
+  (uk: examen_id + pasante_id)
+}
+
+entity "examen_respuestas" as examen_respuestas <<weak>> {
+  * __id__ : int
+  --
+  intento_id : int         {FK → examen_intentos}
+  pregunta_id : int        {FK → examen_preguntas}
+  opcion_id_elegida : int  {FK → examen_opciones}
+}
+
+'==========================================================================
+' RELACIONES — BLOQUE 1: USUARIOS
+'==========================================================================
+
+hexagon "tiene rol" as D01
+usuarios "N" -- D01
+D01 -- "1" roles
+
+hexagon "pertenece a" as D02
+usuarios "N" -- D02
+D02 -- "0..1" departamentos
+
+hexagon "posee perfil" as D03
+usuarios "1" -- D03
+D03 -- "1" datos_personales
+
+'==========================================================================
+' RELACIONES — BLOQUE 2: PASANTIAS
+'==========================================================================
+
+hexagon "es pasante" as D08
+usuarios "1" -- D08
+D08 -- "1" datos_pasante
+
+hexagon "cursa en periodo" as D10
+datos_pasante "N" -- D10
+D10 -- "0..1" periodos_academicos
+
+hexagon "procede de" as D09
+datos_pasante "N" -- D09
+D09 -- "0..1" instituciones
+
+hexagon "tutoriado por" as D11
+datos_pasante "N" -- D11
+D11 -- "0..1" usuarios
+
+hexagon "es asignado" as D13
+usuarios "N" -- D13 : pasante
+D13 -- "1" asignaciones
+
+hexagon "supervisa asignacion" as D14
+usuarios "N" -- D14 : tutor
+D14 -- "1" asignaciones
+
+hexagon "ubica en depto" as D15
+departamentos "N" -- D15
+D15 -- "1" asignaciones
+
+hexagon "marca asistencia" as D16
+usuarios "1" -- D16 : pasante
+D16 -- "N" asistencias
+
+hexagon "en el marco de" as D17
+asignaciones "0..1" -- D17
+D17 -- "N" asistencias
+
+hexagon "aplica a depto" as D18
+dias_feriados "N" -- D18
+D18 -- "0..1" departamentos
+
+'==========================================================================
+' RELACIONES — BLOQUE 3: EVALUACIONES Y ACTIVIDADES
+'==========================================================================
+
+hexagon "evalua al pasante" as D21
+usuarios "1" -- D21 : tutor
+D21 -- "N" evaluaciones
+
+hexagon "es evaluado" as D22
+usuarios "1" -- D22 : pasante
+D22 -- "N" evaluaciones
+
+hexagon "registra actividad" as D19
+usuarios "1" -- D19 : pasante
+D19 -- "N" actividades_pasante
+
+hexagon "corrige" as D20
+usuarios "0..1" -- D20 : corrector
+D20 -- "N" actividades_pasante
+
+'==========================================================================
+' RELACIONES — BLOQUE 4: EXAMENES
+'==========================================================================
+
+hexagon "programa examen" as D23
+periodos_academicos "0..1" -- D23
+D23 -- "N" examenes
+
+hexagon "crea examen" as D24
+usuarios "1" -- D24 : creador
+D24 -- "N" examenes
+
+hexagon "compuesto de" as D25
+examenes "1" -- D25
+D25 -- "N" examen_preguntas
+
+hexagon "ofrece opciones" as D26
+examen_preguntas "1" -- D26
+D26 -- "N" examen_opciones
+
+hexagon "genera intento" as D27
+examenes "1" -- D27
+D27 -- "N" examen_intentos
+
+hexagon "presenta examen" as D28
+usuarios "1" -- D28 : pasante
+D28 -- "N" examen_intentos
+
+hexagon "contiene respuestas" as D29
+examen_intentos "1" -- D29
+D29 -- "N" examen_respuestas
+
+hexagon "responde a pregunta" as D30
+examen_preguntas "1" -- D30
+D30 -- "N" examen_respuestas
+
+hexagon "opcion elegida" as D31
+examen_opciones "0..1" -- D31
+D31 -- "N" examen_respuestas
+
+legend right
+  |= Elemento |= Significado |
+  | Rectangulo blanco | Entidad fuerte |
+  | Rectangulo amarillo (doble borde) | Entidad debil (existencia dependiente) |
+  | Hexagono | Relacion con cardinalidades 1 / N / M / 0..1 |
+  | __campo__ | Clave primaria (PK) |
+  | * campo | Clave parcial (entidad debil) |
+  | {FK → tabla} | Clave foranea |
+  --
+  **17 entidades** de las 38 originales.
+  Excluidas (14 tablas): bitacora, bitacora_historico,
+  notificaciones, preguntas_seguridad, usuarios_respuestas,
+  modulos_sistema, acciones_modulo, permisos_rol,
+  usuario_permisos, intentos_acceso, actividades_extras,
+  actividad_participantes, actividad_asistencias,
+  actividad_evidencias.
+endlegend
+
+@enduml

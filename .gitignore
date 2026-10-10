@@ -1,0 +1,22 @@
+# Dependencias
+/vendor/
+/node_modules/
+
+# Logs y almacenamiento temporal
+/storage/logs/
+*.log
+
+# Backups pesados de base de datos
+/app/storage/backups/
+/storage/backups/
+*.sql.gz
+
+# Archivos de entorno y configuración local
+.env
+.env.local
+
+# Archivos del sistema operativo e IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

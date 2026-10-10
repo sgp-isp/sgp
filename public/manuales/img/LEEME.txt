@@ -1,0 +1,359 @@
+==========================================================================
+ CAPTURAS DE PANTALLA PARA LOS MANUALES DE USUARIO (manuales/*.html)
+==========================================================================
+
+¿CÓMO FUNCIONA?
+---------------
+Cada manual (manual_pasante.html, manual_tutor.html, manual_administrador.html,
+manual_superadministrador.html) ahora intenta cargar automáticamente una
+imagen desde esta carpeta "img/" para cada captura de pantalla requerida.
+
+- Si el archivo EXISTE -> se muestra la imagen a ancho completo.
+- Si el archivo NO EXISTE (404) -> se muestra el recuadro punteado azul
+  "[ Captura de pantalla requerida ]" como hasta ahora.
+
+NO hay que tocar el código HTML para nada de esto. Solo hay que:
+  1. Tomar la captura de pantalla indicada.
+  2. Guardarla en formato PNG (o JPG donde se indique) con el NOMBRE EXACTO
+     de la lista de abajo (en minúsculas, con guiones, sin espacios).
+  3. Copiar el archivo a esta carpeta: sgp/public/manuales/img/
+  4. Recargar el manual .html en el navegador (Ctrl+F5) para verla.
+
+Varias imágenes se REUTILIZAN en más de un manual (por ejemplo, la pantalla
+de inicio de sesión es la misma para los 4 roles). Basta con guardarla UNA
+sola vez con el nombre indicado y aparecerá en todos los manuales que la usan.
+
+==========================================================================
+ LISTADO COMPLETO (28 imágenes)
+==========================================================================
+
+--- Acceso al Sistema (todos los manuales) -----------------------------
+
+login.png
+  Pantalla completa de inicio de sesión: campos de correo, contraseña,
+  CAPTCHA, botón "Ingresar" y el botón verde de Kiosco (esquina superior
+  derecha).
+  Resolución: 1280x800 px · PNG
+  Usado en: Pasante, Tutor, Administrador, SuperAdministrador
+
+--- Interfaz General (1 captura distinta por rol, sidebar diferente) ---
+
+interfaz-pasante.png
+  Interfaz general con el panel lateral abierto y el menú del rol Pasante.
+  Resolución: 1440x900 px · PNG
+  Usado en: Pasante
+
+interfaz-tutor.png
+  Interfaz general con el panel lateral abierto y el menú del rol Tutor.
+  Resolución: 1440x900 px · PNG
+  Usado en: Tutor
+
+interfaz-administrador.png
+  Interfaz general con el panel lateral abierto y el menú del rol Administrador.
+  Resolución: 1440x900 px · PNG
+  Usado en: Administrador
+
+interfaz-superadministrador.png
+  Interfaz general con el panel lateral abierto y el menú del rol SuperAdministrador.
+  Resolución: 1440x900 px · PNG
+  Usado en: SuperAdministrador
+
+--- Dashboard ------------------------------------------------------------
+
+dashboard-pasante.png
+  Dashboard del Pasante mostrando la barra de progreso de horas y el
+  estado de la pasantía.
+  Resolución: 1280x800 px · PNG
+  Usado en: Pasante
+
+dashboard-admin.png
+  Dashboard del Administrador/Tutor con tarjetas KPI, gráficas y alertas
+  visibles.
+  Resolución: 1280x800 px · PNG
+  Usado en: Tutor, Administrador, SuperAdministrador
+
+--- Gestión de Pasantes ----------------------------------------------------
+
+pasantes-tabla.png
+  Tabla principal del módulo Pasantes: lista de pasantes, badges de
+  estado y botones de acción.
+  Resolución: 1280x800 px · PNG
+  Usado en: Administrador, SuperAdministrador
+
+pasantes-formulario.png
+  Formulario de registro de un nuevo pasante con todos los campos
+  visibles.
+  Resolución: 1280x800 px · PNG
+  Usado en: Administrador, SuperAdministrador
+
+--- Asistencias ------------------------------------------------------------
+
+asistencias-almanaque-pasante.png
+  Almanaque mensual de asistencia del pasante, con celdas de colores
+  (verde/rojo/azul/amarillo) según el estado de cada día.
+  Resolución: 1280x800 px · PNG
+  Usado en: Pasante
+
+asistencias-vista-diaria.png
+  Vista diaria del módulo Asistencias: tabla del día con el panel
+  "Sin Marcar Hoy".
+  Resolución: 1280x800 px · PNG
+  Usado en: Tutor, Administrador, SuperAdministrador
+
+asistencias-almanaque.png
+  Almanaque anual de un pasante con celdas de colores y el tooltip de
+  edición visible.
+  Resolución: 1280x800 px · PNG
+  Usado en: Tutor, Administrador, SuperAdministrador
+
+asistencias-modal-edicion.png
+  Modal de edición de una celda del almanaque, con los 3 botones de
+  estado (Presente / Ausente / Justificado).
+  Resolución: 1280x800 px · PNG
+  Usado en: Tutor, Administrador, SuperAdministrador
+
+--- Actividades --------------------------------------------------------------
+
+actividades-lista.png
+  Lista de actividades con tipo (Servicio Comunitario / Pasantía),
+  estado, participantes y el botón "+ Nueva Actividad".
+  Resolución: 1280x800 px · PNG
+  Usado en: Tutor, Administrador, SuperAdministrador
+
+--- Períodos Académicos --------------------------------------------------------
+
+periodos-lista.png
+  Lista de períodos académicos con su estado (Activo/Planificado/Cerrado),
+  fechas y número de pasantes asociados.
+  Resolución: 1280x800 px · PNG
+  Usado en: Administrador, SuperAdministrador
+
+--- Reportes y Exportaciones ----------------------------------------------------
+
+reportes-centro.png
+  Centro de reportes mostrando los botones de generación de PDF y Excel
+  disponibles.
+  Resolución: 1280x800 px · PNG
+  Usado en: Tutor, Administrador, SuperAdministrador
+
+reportes-ficha-pdf.png
+  Ejemplo de la Ficha Personal Individual abierta en el visor de PDF del
+  navegador.
+  Resolución: 1280x800 px · PNG
+  Usado en: Tutor, Administrador, SuperAdministrador
+
+--- Kiosco de Asistencias -----------------------------------------------------
+
+kiosco-pin.png
+  Pantalla principal del Kiosco: teclado numérico PIN y reloj
+  institucional. (Foto del dispositivo físico o captura de pantalla.)
+  Formato: PNG/JPG
+  Usado en: Pasante, Tutor, Administrador, SuperAdministrador
+
+kiosco-confirmacion.png
+  Pantalla de confirmación exitosa del Kiosco, con el nombre del pasante
+  y la hora registrada.
+  Formato: PNG/JPG
+  Usado en: Pasante, Tutor, Administrador, SuperAdministrador
+
+--- Evaluaciones --------------------------------------------------------------
+
+evaluaciones-lista.png
+  Lista de evaluaciones con el estado (Pendiente/Completada) y el
+  promedio de cada pasante.
+  Resolución: 1280x800 px · PNG
+  Usado en: Tutor, Administrador, SuperAdministrador
+
+evaluaciones-formulario.png
+  Formulario de evaluación mostrando los criterios con
+  estrellas/calificación y el puntaje final calculado automáticamente.
+  Resolución: 1280x800 px · PNG
+  Usado en: Tutor, Administrador, SuperAdministrador
+
+--- Exámenes Rápidos -----------------------------------------------------------
+
+examenes-pasante.png
+  Vista del examen disponible en el panel del pasante (preguntas y
+  opciones de respuesta) y la pantalla de resultado inmediato tras
+  enviarlo.
+  Resolución: 1280x800 px · PNG
+  Usado en: Pasante
+
+examenes-lista.png
+  Lista de exámenes con su estado (Borrador/Publicado/Cerrado) y el
+  promedio del grupo.
+  Resolución: 1280x800 px · PNG
+  Usado en: Tutor, Administrador, SuperAdministrador
+
+examenes-resultados.png
+  Vista de resultados con el ranking de pasantes y el medidor de
+  puntaje promedio.
+  Resolución: 1280x800 px · PNG
+  Usado en: Tutor, Administrador, SuperAdministrador
+
+examenes-revision.png
+  Panel de revisión detallada de un intento, con preguntas en verde
+  (correctas) y rojo (incorrectas).
+  Resolución: 1280x800 px · PNG
+  Usado en: Tutor, Administrador, SuperAdministrador
+
+--- Panel de SuperAdministrador (exclusivo) -------------------------------------
+
+superadmin-sala-control.png
+  Sala de Control del SuperAdministrador: tarjetas KPI, gráfica de línea
+  "Actividad del Sistema", gráfica de dona "Distribución de Acciones" y
+  la tabla "Actividad por Usuario".
+  Resolución: 1280x800 px · PNG
+  Usado en: SuperAdministrador
+
+superadmin-permisos.png
+  Pantalla de Gestión de Permisos: chips de selección de rol
+  (Administradores/Tutores/Pasantes), búsqueda de usuario y grid de
+  módulos con switches de acciones (ver/crear/editar/eliminar/exportar).
+  Resolución: 1280x800 px · PNG
+  Usado en: SuperAdministrador
+
+superadmin-bitacora.png
+  Vista de la bitácora del sistema: listado de eventos con fecha,
+  usuario, acción, tabla afectada y dirección IP.
+  Resolución: 1280x800 px · PNG
+  Usado en: SuperAdministrador
+
+==========================================================================
+ RESUMEN
+==========================================================================
+Total de archivos de imagen distintos a capturar: 28
+(cubren las ~64 capturas pedidas en los 4 manuales, gracias a la
+reutilización de imágenes compartidas entre roles)
+
+==========================================================================
+ GUÍA RÁPIDA: PASOS GENERALES PARA TOMAR CADA CAPTURA
+==========================================================================
+1. Abrir http://localhost/proyecto_sgp/sgp/public + la ruta indicada
+   (iniciar sesión con el rol correspondiente cuando se requiera).
+2. Ajustar el tamaño de la ventana (o F12 -> ícono "Responsive" en
+   DevTools) al ancho/alto indicado: 1280x800 o 1440x900 px.
+3. Tomar la captura: Win+Shift+S (recorte) o una extensión de
+   "captura de página completa".
+4. Guardar como PNG con el NOMBRE EXACTO de la lista (minúsculas,
+   con guiones).
+5. Copiar el archivo a sgp/public/manuales/img/
+6. Recargar el manual .html (Ctrl+F5) para confirmar que se vea bien.
+
+==========================================================================
+ RUTA Y ACCIÓN PARA CADA CAPTURA
+==========================================================================
+ 1. login.png
+    Ruta: /  (cerrar sesión primero)
+    Acción: capturar el formulario de inicio de sesión completo.
+
+ 2. interfaz-pasante.png
+    Ruta: /dashboard  (iniciar sesión como Pasante)
+    Acción: capturar con el panel lateral abierto.
+
+ 3. interfaz-tutor.png
+    Ruta: /dashboard  (iniciar sesión como Tutor)
+    Acción: capturar con el panel lateral abierto.
+
+ 4. interfaz-administrador.png
+    Ruta: /dashboard  (iniciar sesión como Administrador)
+    Acción: capturar con el panel lateral abierto.
+
+ 5. interfaz-superadministrador.png
+    Ruta: /dashboard o /superadmin  (iniciar sesión como SuperAdministrador)
+    Acción: capturar con el panel lateral abierto.
+
+ 6. dashboard-pasante.png
+    Ruta: /dashboard  (como Pasante)
+    Acción: capturar la barra de progreso de horas y estado de pasantía.
+
+ 7. dashboard-admin.png
+    Ruta: /dashboard  (como Administrador o Tutor)
+    Acción: capturar tarjetas KPI, gráficas y alertas.
+
+ 8. pasantes-tabla.png
+    Ruta: /pasantes  (como Administrador)
+    Acción: capturar la tabla con la lista de pasantes.
+
+ 9. pasantes-formulario.png
+    Ruta: /pasantes -> botón "+ Nuevo Pasante"
+    Acción: capturar el formulario con todos los campos visibles.
+
+10. asistencias-almanaque-pasante.png
+    Ruta: /asistencias/almanaque/{tu_id}  (como Pasante)
+    Acción: capturar el almanaque mensual propio.
+
+11. asistencias-vista-diaria.png
+    Ruta: /asistencias  (como Administrador o Tutor)
+    Acción: capturar la tabla del día + panel "Sin Marcar Hoy".
+
+12. asistencias-almanaque.png
+    Ruta: /asistencias/almanaque/{id_de_un_pasante}  (Admin/Tutor)
+    Acción: capturar el almanaque anual con celdas de colores.
+
+13. asistencias-modal-edicion.png
+    Ruta: (mismo almanaque anterior)
+    Acción: clic en una celda de un día -> capturar el modal de edición
+    (botones Presente/Ausente/Justificado).
+
+14. actividades-lista.png
+    Ruta: /actividades  (Admin/Tutor)
+    Acción: capturar la lista con tipo, estado, participantes y el
+    botón "+ Nueva Actividad".
+
+15. periodos-lista.png
+    Ruta: /periodos  (Administrador)
+    Acción: capturar la lista de períodos académicos.
+
+16. reportes-centro.png
+    Ruta: /reportes  (Admin/Tutor)
+    Acción: capturar los botones de generación de PDF/Excel.
+
+17. reportes-ficha-pdf.png
+    Ruta: /reportes -> botón "Ficha Personal" de un pasante
+    Acción: capturar el PDF abierto en el visor del navegador.
+
+18. kiosco-pin.png
+    Ruta: /kiosco  (sin sesión)
+    Acción: capturar la pantalla principal con el teclado PIN y el reloj.
+
+19. kiosco-confirmacion.png
+    Ruta: /kiosco
+    Acción: ingresar un PIN válido y capturar la pantalla de confirmación.
+
+20. evaluaciones-lista.png
+    Ruta: /evaluaciones  (Admin/Tutor)
+    Acción: capturar la lista de evaluaciones con estado y promedio.
+
+21. evaluaciones-formulario.png
+    Ruta: /evaluaciones -> botón "Evaluar" de un pasante
+    Acción: capturar el formulario con criterios y puntaje.
+
+22. examenes-pasante.png
+    Ruta: /examenes  (como Pasante)
+    Acción: capturar el examen disponible (preguntas) o el resultado
+    inmediato tras enviarlo.
+
+23. examenes-lista.png
+    Ruta: /examenes  (Admin/Tutor)
+    Acción: capturar la lista de exámenes con estado y promedio.
+
+24. examenes-resultados.png
+    Ruta: /examenes -> "Ver resultados" de un examen publicado
+    Acción: capturar el ranking y el medidor de puntaje promedio.
+
+25. examenes-revision.png
+    Ruta: (en resultados) -> "Revisar" un intento
+    Acción: capturar el panel con preguntas en verde/rojo.
+
+26. superadmin-sala-control.png
+    Ruta: /superadmin  (SuperAdministrador)
+    Acción: capturar KPIs, gráficas y tabla "Actividad por Usuario".
+
+27. superadmin-permisos.png
+    Ruta: /superadmin/permisos  (SuperAdministrador)
+    Acción: capturar los chips de rol y el grid de switches.
+
+28. superadmin-bitacora.png
+    Ruta: /bitacora  (SuperAdministrador)
+    Acción: capturar el listado de eventos del sistema.

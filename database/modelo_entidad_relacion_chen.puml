@@ -1,0 +1,692 @@
+@startuml ModeloER_SGP
+allowmixing
+scale max 4000 width
+'==========================================================================
+' MODELO ENTIDAD-RELACION (Notacion de Chen)
+' Sistema de Gestion de Pasantes (SGP) - Base de datos: proyecto_sgp
+'
+' NOTACION:
+'  - entity "..."  => Entidad (rectangulo). Las marcadas <<weak>> (fondo
+'                      amarillo) representan Entidades Debiles en Chen
+'                      (existencia dependiente de su entidad "duena").
+'  - hexagon "..."  => Relacion (rombo), con cardinalidades 1 / N / M en
+'                      cada conexion (la etiqueta se coloca junto a la
+'                      entidad e indica cuantas instancias de esa relacion
+'                      puede tener dicha entidad).
+'  - * campo        => Atributo identificador (forma parte de la clave).
+'  - __campo__      => Clave primaria (PK) de la entidad.
+'  - {FK -> tabla}  => Atributo que es Clave Foranea (FK) hacia otra entidad.
+'  - Las relaciones M:N con atributos propios (permisos_rol,
+'    usuario_permisos, usuarios_respuestas) se modelan como un hexagono con
+'    una nota adjunta que contiene esos atributos (atributos de relacion).
+'  - Vistas (v_*) y tablas de prueba (test_restore) NO se incluyen: son
+'    artefactos derivados/temporales, no forman parte del modelo conceptual.
+'==========================================================================
+
+skinparam classAttributeIconSize 0
+hide circle
+skinparam shadowing false
+skinparam entity {
+  BackgroundColor White
+  BorderColor #34495E
+  BackgroundColor<<weak>> #FFF6CC
+  BorderColor<<weak>> #B8860B
+  BorderThickness<<weak>> 2
+}
+skinparam hexagon {
+  BackgroundColor #FDE9D9
+  BorderColor #C0504D
+  FontSize 11
+}
+skinparam note {
+  BackgroundColor #EAF2FB
+  BorderColor #5B9BD5
+}
+
+title Modelo Entidad-Relacion (Chen) - SGP (Sistema de Gestion de Pasantes)
+
+'==========================================================================
+' SUBSISTEMA 1: NUCLEO DE USUARIOS Y SEGURIDAD
+'==========================================================================
+
+entity "usuarios" as usuarios {
+  * __id__ : int
+  --
+  cedula : varchar(20)  <<UNIQUE>>
+  correo : varchar(100) <<UNIQUE>>
+  password : varchar(255)
+  pin_asistencia : varchar(255)
+  rol_id : int            {FK -> roles}
+  departamento_id : int   {FK -> departamentos, opcional}
+  avatar : varchar(255)
+  requiere_cambio_clave : tinyint(1)
+  estado : enum(activo,inactivo)
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "roles" as roles {
+  * __id__ : int
+  --
+  nombre : varchar(50) <<UNIQUE>>
+  descripcion : text
+  created_at : timestamp
+}
+
+entity "departamentos" as departamentos {
+  * __id__ : int
+  --
+  nombre : varchar(100) <<UNIQUE>>
+  descripcion : text
+  activo : tinyint(1)
+  created_at : timestamp
+}
+
+entity "datos_personales" as datos_personales <<weak>> {
+  * __id__ : int
+  --
+  usuario_id : int <<UNIQUE>> {FK -> usuarios}
+  nombres : varchar(100)
+  apellidos : varchar(100)
+  cargo : varchar(100)
+  telefono : varchar(20)
+  direccion : varchar(200)
+  genero : enum(M,F,Otro)
+  fecha_nacimiento : date
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "preguntas_seguridad" as preguntas_seguridad {
+  * __id__ : int
+  --
+  pregunta : text
+  activa : tinyint(1)
+  created_at : timestamp
+}
+
+entity "intentos_acceso" as intentos_acceso {
+  * __id__ : int
+  --
+  direccion_ip : varchar(45)
+  correo : varchar(150)
+  intentos : int
+  ultimo_intento : datetime
+  bloqueado_hasta : datetime
+  ..
+  (uk: direccion_ip + correo)
+  (sin FK: control anti fuerza bruta,
+   independiente de "usuarios")
+}
+
+'==========================================================================
+' SUBSISTEMA 2: RBAC / PERMISOS
+'==========================================================================
+
+entity "modulos_sistema" as modulos_sistema {
+  * __id__ : int
+  --
+  clave : varchar(80) <<UNIQUE>>
+  nombre : varchar(100)
+  icono : varchar(60)
+  ruta_base : varchar(100)
+  grupo : varchar(60)
+  rol_base : tinyint(1)
+  activo : tinyint(1)
+  orden : int
+}
+
+entity "acciones_modulo" as acciones_modulo {
+  * __id__ : int
+  --
+  modulo_id : int {FK -> modulos_sistema}
+  clave : varchar(100) <<UNIQUE>>
+  nombre : varchar(100)
+  tipo : enum(ver,crear,editar,eliminar,exportar,configurar)
+}
+
+'==========================================================================
+' SUBSISTEMA 3: ACADEMICO / PASANTIAS
+'==========================================================================
+
+entity "instituciones" as instituciones {
+  * __id__ : int
+  --
+  nombre : varchar(255)
+  ubicacion : varchar(200)
+  tipo : enum(Escuela Tecnica,Universidad)
+  categoria : enum(origen,actividad)
+  contacto : varchar(150)
+  telefono : varchar(20)
+  activo : tinyint(1)
+  representante_nombre : varchar(150)
+  representante_cargo : varchar(100)
+  representante_correo : varchar(100)
+  representante_telefono : varchar(20)
+  direccion : text
+  created_at : timestamp
+}
+
+entity "periodos_academicos" as periodos_academicos {
+  * __id__ : int
+  --
+  nombre : varchar(100)
+  tipo : enum(Regular,Corto)
+  fecha_inicio : date
+  fecha_fin : date
+  estado : enum(Planificado,Activo,Cerrado)
+  descripcion : text
+  created_at : timestamp
+}
+
+entity "datos_pasante" as datos_pasante <<weak>> {
+  * __id__ : int
+  --
+  usuario_id : int <<UNIQUE>> {FK -> usuarios}
+  periodo_id : int            {FK -> periodos_academicos, opc.}
+  institucion_procedencia : varchar(150)
+  institucion_id : int        {FK -> instituciones, opc.}
+  estado_pasantia : enum(Pendiente,Activo,Finalizado,Retirado)
+  tipo_pasantia : enum(Regular,Corta)
+  fecha_inicio_pasantia : date
+  fecha_fin_estimada : date
+  horas_acumuladas : int
+  horas_meta : int
+  departamento_asignado_id : int {FK -> departamentos, opc.}
+  tutor_id : int               {FK -> usuarios, opc.}
+  observaciones : text
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "asignaciones" as asignaciones {
+  * __id__ : int
+  --
+  pasante_id : int      {FK -> usuarios}
+  tutor_id : int        {FK -> usuarios}
+  departamento_id : int {FK -> departamentos}
+  fecha_inicio : date
+  fecha_fin : date
+  hora_entrada : time
+  hora_salida : time
+  horas_totales : int
+  horas_cumplidas : decimal(10,2)
+  estado : enum(activo,finalizado,cancelado)
+  observaciones : text
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "dias_feriados" as dias_feriados {
+  * __id__ : int
+  --
+  * fecha : date
+  nombre : varchar(150)
+  * tipo : enum(Nacional,Regional,Institucional)
+  aplica_departamento_id : int {FK -> departamentos, opc.}
+  es_laborable : tinyint(1)
+  created_at : timestamp
+  ..
+  (uk: fecha + tipo)
+}
+
+entity "asistencias" as asistencias <<weak>> {
+  * __id__ : int
+  --
+  pasante_id : int    {FK -> usuarios}
+  asignacion_id : int {FK -> asignaciones, opc.}
+  * fecha : date
+  hora_registro : time
+  metodo : enum(Kiosco,Manual,AutoFill)
+  motivo_justificacion : text
+  ruta_evidencia : varchar(255)
+  es_retardo : tinyint(1)
+  es_auto_fill : tinyint(1)
+  hora_entrada : time
+  hora_salida : time
+  horas_calculadas : decimal(10,2)
+  observacion : text
+  estado : enum(Presente,Justificado,Ausente)
+  created_at : timestamp
+  updated_at : timestamp
+  ..
+  (uk: pasante_id + fecha => clave parcial = fecha)
+}
+
+entity "actividades_pasante" as actividades_pasante <<weak>> {
+  * __id__ : int
+  --
+  pasante_id : int {FK -> usuarios}
+  * fecha : date
+  * titulo : varchar(150)
+  descripcion : text
+  correccion : text
+  corrector_id : int {FK -> usuarios, opc., sin constraint}
+  correccion_at : timestamp
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+'==========================================================================
+' SUBSISTEMA 4: EVALUACIONES
+'==========================================================================
+
+entity "evaluaciones" as evaluaciones {
+  * __id__ : int
+  --
+  pasante_id : int {FK -> usuarios}
+  tutor_id : int   {FK -> usuarios}
+  fecha_evaluacion : date
+  lapso_academico : varchar(100)
+  criterio_iniciativa : int
+  criterio_interes : int
+  criterio_conocimiento : int
+  criterio_analisis : int
+  criterio_comunicacion : int
+  criterio_aprendizaje : int
+  criterio_companerismo : int
+  criterio_cooperacion : int
+  criterio_puntualidad : int
+  criterio_presentacion : int
+  criterio_desarrollo : int
+  criterio_analisis_res : int
+  criterio_conclusiones : int
+  criterio_recomendacion : int
+  promedio_final : decimal(4,2)
+  observaciones : text
+  created_at : timestamp
+}
+
+'==========================================================================
+' SUBSISTEMA 5: EXAMENES
+'==========================================================================
+
+entity "examenes" as examenes {
+  * __id__ : int
+  --
+  titulo : varchar(200)
+  descripcion : text
+  periodo_id : int  {FK -> periodos_academicos, sin constraint}
+  creado_por : int  {FK -> usuarios, sin constraint}
+  fecha_inicio : date
+  fecha_fin : date
+  intentos_permitidos : tinyint(4)
+  activo : tinyint(4)
+  created_at : timestamp
+}
+
+entity "examen_preguntas" as examen_preguntas <<weak>> {
+  * __id__ : int
+  --
+  examen_id : int {FK -> examenes}
+  * orden : tinyint(4)
+  enunciado : text
+  tipo : enum(opcion_multiple,verdadero_falso)
+  puntos : tinyint(4)
+}
+
+entity "examen_opciones" as examen_opciones <<weak>> {
+  * __id__ : int
+  --
+  pregunta_id : int {FK -> examen_preguntas}
+  texto : varchar(500)
+  es_correcta : tinyint(4)
+}
+
+entity "examen_intentos" as examen_intentos {
+  * __id__ : int
+  --
+  examen_id : int  {FK -> examenes}
+  pasante_id : int {FK -> usuarios}
+  iniciado_at : timestamp
+  enviado_at : timestamp
+  puntaje_obtenido : decimal(6,2)
+  puntaje_maximo : decimal(6,2)
+  porcentaje : decimal(5,2)
+  revisado_at : timestamp
+  ..
+  (uk: examen_id + pasante_id)
+}
+
+entity "examen_respuestas" as examen_respuestas <<weak>> {
+  * __id__ : int
+  --
+  intento_id : int        {FK -> examen_intentos}
+  pregunta_id : int        {FK -> examen_preguntas}
+  opcion_id_elegida : int  {FK -> examen_opciones, opc.}
+}
+
+'==========================================================================
+' SUBSISTEMA 6: ACTIVIDADES EXTRACURRICULARES
+' (Servicio Comunitario / Pasantias Cortas / Mantenimiento)
+'==========================================================================
+
+entity "actividades_extras" as actividades_extras {
+  * __id__ : int
+  --
+  nombre : varchar(150)
+  tipo : enum(Servicio Comunitario,Pasantia Corta,Mantenimiento,Otro)
+  institucion_id : int  {FK -> instituciones, opc.}
+  supervisor_id : int   {FK -> usuarios, opc., sin constraint}
+  descripcion : text
+  fecha_inicio : date
+  fecha_fin : date
+  estado : enum(Activa,Finalizada,Cancelada)
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "actividad_participantes" as actividad_participantes <<weak>> {
+  * __id__ : int
+  --
+  actividad_id : int {FK -> actividades_extras}
+  nombres : varchar(100)
+  apellidos : varchar(100)
+  cedula : varchar(15)
+  carrera : varchar(100)
+  telefono : varchar(20)
+  observaciones : text
+  created_at : timestamp
+}
+
+entity "actividad_asistencias" as actividad_asistencias <<weak>> {
+  * __id__ : int
+  --
+  actividad_id : int    {FK -> actividades_extras}
+  participante_id : int {FK -> actividad_participantes}
+  * fecha : date
+  estado : enum(Presente,Ausente,Justificado)
+  notas : varchar(255)
+  created_at : timestamp
+  ..
+  (uk: actividad_id + participante_id + fecha)
+}
+
+entity "actividad_evidencias" as actividad_evidencias <<weak>> {
+  * __id__ : int
+  --
+  actividad_id : int {FK -> actividades_extras}
+  ruta : varchar(255)
+  nombre_orig : varchar(150)
+  descripcion : varchar(255)
+  created_at : timestamp
+}
+
+'==========================================================================
+' SUBSISTEMA 7: AUDITORIA Y NOTIFICACIONES
+'==========================================================================
+
+entity "bitacora" as bitacora {
+  * __id__ : int
+  --
+  usuario_id : int {FK -> usuarios}
+  accion : varchar(100)
+  tabla_afectada : varchar(50)
+  registro_id : int
+  ip_address : varchar(45)
+  user_agent : text
+  detalles : text
+  created_at : timestamp
+}
+
+entity "bitacora_historico" as bitacora_historico {
+  * __id__ : int
+  --
+  bitacora_id : int {FK -> bitacora, sin constraint (archivo)}
+  usuario_id : int  {FK -> usuarios, sin constraint}
+  accion : varchar(100)
+  tabla_afectada : varchar(100)
+  registro_id : int
+  ip_address : varchar(45)
+  user_agent : text
+  detalles : longtext
+  created_at : datetime
+  archivado_at : datetime
+}
+
+entity "notificaciones" as notificaciones {
+  * __id__ : int
+  --
+  usuario_id : int {FK -> usuarios}
+  tipo : varchar(50)
+  titulo : varchar(255)
+  mensaje : text
+  url : varchar(500)
+  leida : tinyint(1)
+  referencia_id : int  (ref. polimorfica + "tipo")
+  created_at : timestamp
+}
+
+
+'==========================================================================
+' RELACIONES (hexagonos) - SUBSISTEMA 1
+'==========================================================================
+
+hexagon "tiene rol" as D01
+usuarios "N" -- D01
+D01 -- "1" roles
+
+hexagon "pertenece a" as D02
+usuarios "N" -- D02
+D02 -- "0..1" departamentos
+
+hexagon "posee perfil" as D03
+usuarios "1" -- D03
+D03 -- "1" datos_personales
+
+hexagon "responde" as D04
+usuarios "N" -- D04
+D04 -- "M" preguntas_seguridad
+note bottom of D04
+  ** atributos de la relacion **
+  (tabla usuarios_respuestas)
+  --
+  respuesta_hash : varchar(255)
+  created_at : timestamp
+  ..
+  uk: usuario_id + pregunta_id
+end note
+
+'==========================================================================
+' RELACIONES - SUBSISTEMA 2 (RBAC)
+'==========================================================================
+
+hexagon "agrupa" as D05
+modulos_sistema "1" -- D05
+D05 -- "N" acciones_modulo
+
+hexagon "otorga (por rol)" as D06
+roles "N" -- D06
+D06 -- "M" acciones_modulo
+note bottom of D06
+  ** atributos de la relacion **
+  (tabla permisos_rol)
+  --
+  habilitado : tinyint(1)
+  ..
+  uk: rol_id + accion_id
+end note
+
+hexagon "otorga (individual)" as D07
+usuarios "N" -- D07 : usuario
+D07 -- "M" acciones_modulo
+D07 -- "1" usuarios : otorgado_por
+note bottom of D07
+  ** atributos de la relacion (ternaria) **
+  (tabla usuario_permisos)
+  --
+  habilitado : tinyint(1)
+  created_at : timestamp
+  updated_at : timestamp
+  ..
+  uk: usuario_id + accion_id
+end note
+
+'==========================================================================
+' RELACIONES - SUBSISTEMA 3 (ACADEMICO / PASANTIAS)
+'==========================================================================
+
+hexagon "es pasante" as D08
+usuarios "1" -- D08
+D08 -- "1" datos_pasante
+
+hexagon "procede de" as D09
+datos_pasante "N" -- D09
+D09 -- "0..1" instituciones
+
+hexagon "cursa en periodo" as D10
+datos_pasante "N" -- D10
+D10 -- "0..1" periodos_academicos
+
+hexagon "tutor actual" as D11
+datos_pasante "N" -- D11
+D11 -- "0..1" usuarios
+
+hexagon "depto actual" as D12
+datos_pasante "N" -- D12
+D12 -- "0..1" departamentos
+
+hexagon "es asignado" as D13
+usuarios "N" -- D13 : pasante
+D13 -- "1" asignaciones
+
+hexagon "supervisa asignacion" as D14
+usuarios "N" -- D14 : tutor
+D14 -- "1" asignaciones
+
+hexagon "ubica" as D15
+departamentos "N" -- D15
+D15 -- "1" asignaciones
+
+hexagon "marca" as D16
+usuarios "1" -- D16 : pasante
+D16 -- "N" asistencias
+
+hexagon "en el marco de" as D17
+asignaciones "0..1" -- D17
+D17 -- "N" asistencias
+
+hexagon "aplica a" as D18
+dias_feriados "N" -- D18
+D18 -- "0..1" departamentos
+
+hexagon "registra" as D19
+usuarios "1" -- D19 : pasante
+D19 -- "N" actividades_pasante
+
+hexagon "corrige" as D20
+usuarios "0..1" -- D20 : corrector
+D20 -- "N" actividades_pasante
+
+'==========================================================================
+' RELACIONES - SUBSISTEMA 4 (EVALUACIONES)
+'==========================================================================
+
+hexagon "evalua" as D21
+usuarios "1" -- D21 : tutor
+D21 -- "N" evaluaciones
+
+hexagon "es evaluado" as D22
+usuarios "1" -- D22 : pasante
+D22 -- "N" evaluaciones
+
+'==========================================================================
+' RELACIONES - SUBSISTEMA 5 (EXAMENES)
+'==========================================================================
+
+hexagon "programa" as D23
+periodos_academicos "0..1" -- D23
+D23 -- "N" examenes
+
+hexagon "crea" as D24
+usuarios "1" -- D24 : creador
+D24 -- "N" examenes
+
+hexagon "compuesto de" as D25
+examenes "1" -- D25
+D25 -- "N" examen_preguntas
+
+hexagon "ofrece" as D26
+examen_preguntas "1" -- D26
+D26 -- "N" examen_opciones
+
+hexagon "genera intento" as D27
+examenes "1" -- D27
+D27 -- "N" examen_intentos
+
+hexagon "presenta" as D28
+usuarios "1" -- D28 : pasante
+D28 -- "N" examen_intentos
+
+hexagon "contiene" as D29
+examen_intentos "1" -- D29
+D29 -- "N" examen_respuestas
+
+hexagon "responde a" as D30
+examen_preguntas "1" -- D30
+D30 -- "N" examen_respuestas
+
+hexagon "opcion elegida" as D31
+examen_opciones "0..1" -- D31
+D31 -- "N" examen_respuestas
+
+'==========================================================================
+' RELACIONES - SUBSISTEMA 6 (ACTIVIDADES EXTRA)
+'==========================================================================
+
+hexagon "sede de" as D32
+instituciones "0..1" -- D32
+D32 -- "N" actividades_extras
+
+hexagon "supervisa" as D33
+usuarios "0..1" -- D33 : supervisor
+D33 -- "N" actividades_extras
+
+hexagon "inscribe" as D34
+actividades_extras "1" -- D34
+D34 -- "N" actividad_participantes
+
+hexagon "documenta" as D35
+actividades_extras "1" -- D35
+D35 -- "N" actividad_evidencias
+
+hexagon "asiste" as D36
+actividad_participantes "1" -- D36
+D36 -- "N" actividad_asistencias
+
+hexagon "de la actividad" as D37
+actividades_extras "1" -- D37
+D37 -- "N" actividad_asistencias
+
+'==========================================================================
+' RELACIONES - SUBSISTEMA 7 (AUDITORIA / NOTIFICACIONES)
+'==========================================================================
+
+hexagon "genera evento" as D38
+usuarios "1" -- D38
+D38 -- "N" bitacora
+
+hexagon "archiva" as D39
+bitacora "1" -- D39
+D39 -- "N" bitacora_historico
+
+hexagon "recibe" as D40
+usuarios "1" -- D40
+D40 -- "N" notificaciones
+
+legend right
+  |= Elemento |= Significado |
+  | Rectangulo blanco | Entidad fuerte |
+  | Rectangulo amarillo (doble borde) | Entidad debil (existencia dependiente) |
+  | Hexagono | Relacion, con cardinalidad 1 / N / M / 0..1 en cada extremo |
+  | __campo__ | Clave primaria (PK) |
+  | * campo | Atributo identificador / clave parcial |
+  | {FK -> tabla} | Clave foranea |
+  | Nota bajo el hexagono | Atributos propios de la relacion (M:N) |
+  --
+  No incluidas: vistas v_dept_efectivo, v_horas_pasante,
+  v_pasante_completo, v_usuarios_base (derivadas, no conceptuales)
+  y test_restore (artefacto de prueba de respaldos).
+endlegend
+
+@enduml

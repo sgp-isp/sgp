@@ -1,0 +1,147 @@
+@startuml uc_administrador
+' =========================================================
+' DIAGRAMA DE CASOS DE USO — Administrador
+' Sistema de Gestion de Pasantes (SGP)
+' Defensa · Julio 2026
+' =========================================================
+
+left to right direction
+skinparam usecase {
+  BackgroundColor      #EFF6FF
+  BorderColor          #1E40AF
+  FontColor            #1C1C1C
+  FontSize             11
+  FontName             Arial
+}
+skinparam actor {
+  BackgroundColor      #DBEAFE
+  BorderColor          #1E40AF
+  FontColor            #1E3A8A
+  FontSize             12
+  FontName             Arial
+}
+skinparam rectangle {
+  BackgroundColor      #F8FAFF
+  BorderColor          #2563EB
+  BorderThickness      2.5
+  FontColor            #1E3A8A
+  FontSize             14
+  FontName             Arial Bold
+}
+skinparam ArrowColor   #1E40AF
+skinparam ArrowThickness 1.3
+skinparam shadowing    false
+skinparam note {
+  BackgroundColor #EFF6FF
+  BorderColor     #3B82F6
+  FontSize        9
+}
+
+title <b>Casos de Uso — Administrador</b>\nSGP · Sistema de Gestion de Pasantes
+
+actor "Administrador" as ADM
+
+rectangle "SGP — Sistema de Gestion de Pasantes" {
+
+  ' ---- AUTENTICACION ----
+  package "Acceso al Sistema" {
+    (Iniciar sesion) as UC_LOGIN
+    (Cerrar sesion) as UC_LOGOUT
+  }
+
+  ' ---- GESTION DE PASANTES ----
+  package "Gestion de Pasantes" {
+    (Registrar nuevo pasante) as UC_REG_PAS
+    (Editar datos del pasante) as UC_EDIT_PAS
+    (Activar / Finalizar pasantia) as UC_STATUS_PAS
+    (Ver lista de pasantes) as UC_LIST_PAS
+    (Ver progreso de horas) as UC_PROGRESO
+  }
+
+  ' ---- ASIGNACIONES ----
+  package "Asignaciones" {
+    (Crear asignacion pasante-tutor) as UC_ASIG_CREATE
+    (Modificar asignacion) as UC_ASIG_EDIT
+    (Finalizar asignacion) as UC_ASIG_END
+  }
+
+  ' ---- CONTROL DE ASISTENCIAS ----
+  package "Control de Asistencias" {
+    (Ver almanaque de pasante) as UC_ALMANAQUE
+    (Editar asistencia de pasante) as UC_EDIT_ATT
+    (Justificar ausencia) as UC_JUSTIF
+    (Ejecutar auto-fill de ausentes) as UC_AUTOFILL
+  }
+
+  ' ---- EVALUACIONES ----
+  package "Evaluaciones" {
+    (Registrar evaluacion de pasante) as UC_EVA_CREATE
+    (Ver historial de evaluaciones) as UC_EVA_LIST
+  }
+
+  ' ---- EXAMENES ----
+  package "Examenes" {
+    (Crear examen) as UC_EXAM_CREATE
+    (Asignar examen a periodo) as UC_EXAM_ASSIGN
+    (Ver resultados de examenes) as UC_EXAM_RESULT
+  }
+
+  ' ---- REPORTES ----
+  package "Reportes" {
+    (Generar reporte individual) as UC_REP_IND
+    (Generar reporte global) as UC_REP_GLOBAL
+    (Exportar PDF de asistencias) as UC_PDF
+    (Ver estadisticas del periodo) as UC_STATS
+  }
+
+}
+
+' ---- ASOCIACIONES ----
+ADM --> UC_LOGIN
+ADM --> UC_LOGOUT
+
+ADM --> UC_REG_PAS
+ADM --> UC_EDIT_PAS
+ADM --> UC_STATUS_PAS
+ADM --> UC_LIST_PAS
+ADM --> UC_PROGRESO
+
+ADM --> UC_ASIG_CREATE
+ADM --> UC_ASIG_EDIT
+ADM --> UC_ASIG_END
+
+ADM --> UC_ALMANAQUE
+ADM --> UC_EDIT_ATT
+ADM --> UC_JUSTIF
+ADM --> UC_AUTOFILL
+
+ADM --> UC_EVA_CREATE
+ADM --> UC_EVA_LIST
+
+ADM --> UC_EXAM_CREATE
+ADM --> UC_EXAM_ASSIGN
+ADM --> UC_EXAM_RESULT
+
+ADM --> UC_REP_IND
+ADM --> UC_REP_GLOBAL
+ADM --> UC_PDF
+ADM --> UC_STATS
+
+' ---- INCLUDE ----
+UC_REP_IND    ..> UC_PDF    : <<include>>
+UC_REP_GLOBAL ..> UC_PDF    : <<include>>
+UC_ASIG_CREATE ..> UC_REG_PAS : <<extend>>
+
+note right of UC_AUTOFILL
+  Marca automaticamente
+  como "Ausente" los dias
+  sin registro del pasante
+end note
+
+note right of UC_EXAM_ASSIGN
+  Asocia el examen a un
+  periodo academico activo
+  con fecha inicio/fin
+end note
+
+@enduml

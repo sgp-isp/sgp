@@ -1,0 +1,134 @@
+@startuml uc_superadministrador
+' =========================================================
+' DIAGRAMA DE CASOS DE USO — SuperAdministrador
+' Sistema de Gestion de Pasantes (SGP)
+' Defensa · Julio 2026
+' =========================================================
+
+left to right direction
+skinparam usecase {
+  BackgroundColor      #FEF9EE
+  BorderColor          #92400E
+  FontColor            #1C1C1C
+  FontSize             11
+  FontName             Arial
+}
+skinparam actor {
+  BackgroundColor      #FEF3C7
+  BorderColor          #92400E
+  FontColor            #78350F
+  FontSize             12
+  FontName             Arial
+}
+skinparam rectangle {
+  BackgroundColor      #FFFDF7
+  BorderColor          #B45309
+  BorderThickness      2.5
+  FontColor            #78350F
+  FontSize             14
+  FontName             Arial Bold
+}
+skinparam ArrowColor   #92400E
+skinparam ArrowThickness 1.3
+skinparam shadowing    false
+skinparam note {
+  BackgroundColor #FFF8E1
+  BorderColor     #D97706
+  FontSize        9
+}
+
+title <b>Casos de Uso — SuperAdministrador</b>\nSGP · Sistema de Gestion de Pasantes
+
+actor "Super\nAdministrador" as SA
+
+rectangle "SGP — Sistema de Gestion de Pasantes" {
+
+  ' ---- AUTENTICACION ----
+  package "Acceso al Sistema" {
+    (Iniciar sesion) as UC_LOGIN
+    (Restablecer contrasena) as UC_RESET
+    (Cerrar sesion) as UC_LOGOUT
+  }
+
+  ' ---- GESTION DE USUARIOS ----
+  package "Gestion de Usuarios" {
+    (Registrar usuario) as UC_USR_CREATE
+    (Editar usuario) as UC_USR_EDIT
+    (Activar / Desactivar usuario) as UC_USR_STATUS
+    (Aprobar solicitud de registro) as UC_USR_APPROVE
+    (Restablecer PIN de asistencia) as UC_USR_PIN
+    (Asignar rol a usuario) as UC_USR_ROL
+  }
+
+  ' ---- ESTRUCTURA ORGANIZACIONAL ----
+  package "Estructura Organizacional" {
+    (Gestionar departamentos) as UC_DEPTO
+    (Gestionar instituciones educativas) as UC_INST
+    (Gestionar periodos academicos) as UC_PERIODOS
+    (Gestionar dias feriados) as UC_FERIADOS
+  }
+
+  ' ---- SUPERVISION DE PASANTES ----
+  package "Supervision de Pasantes" {
+    (Ver almanaque de pasante) as UC_ALMANAQUE
+    (Editar asistencia de pasante) as UC_EDIT_ATT
+    (Justificar ausencia) as UC_JUSTIF
+    (Ver progreso de pasante) as UC_PROGRESO
+  }
+
+  ' ---- REPORTES Y DATOS ----
+  package "Reportes y Datos" {
+    (Generar reporte de asistencia) as UC_REPORTE
+    (Exportar PDF de asistencias) as UC_PDF
+    (Ver estadisticas globales) as UC_STATS
+    (Realizar backup de base de datos) as UC_BACKUP
+    (Consultar bitacora del sistema) as UC_BITACORA
+  }
+
+}
+
+' ---- ASOCIACIONES ----
+SA --> UC_LOGIN
+SA --> UC_RESET
+SA --> UC_LOGOUT
+
+SA --> UC_USR_CREATE
+SA --> UC_USR_EDIT
+SA --> UC_USR_STATUS
+SA --> UC_USR_APPROVE
+SA --> UC_USR_PIN
+SA --> UC_USR_ROL
+
+SA --> UC_DEPTO
+SA --> UC_INST
+SA --> UC_PERIODOS
+SA --> UC_FERIADOS
+
+SA --> UC_ALMANAQUE
+SA --> UC_EDIT_ATT
+SA --> UC_JUSTIF
+SA --> UC_PROGRESO
+
+SA --> UC_REPORTE
+SA --> UC_PDF
+SA --> UC_STATS
+SA --> UC_BACKUP
+SA --> UC_BITACORA
+
+' ---- INCLUDE ----
+UC_REPORTE ..> UC_PDF   : <<include>>
+UC_USR_CREATE ..> UC_USR_ROL : <<include>>
+
+note right of UC_BACKUP
+  Exporta un archivo .sql
+  con snapshot completo
+  de la base de datos
+end note
+
+note right of UC_USR_APPROVE
+  Aprueba cuentas creadas
+  mediante el wizard de
+  registro publico
+end note
+
+@enduml

@@ -1,0 +1,313 @@
+@startuml ModeloER_SGP
+title Sistema de Gestión de Pasantes (SGP)\nModelo Entidad-Relación
+
+skinparam linetype ortho
+skinparam shadowing false
+skinparam entityFontSize 10
+skinparam packageFontSize 11
+hide circle
+
+' ============================================================
+' PAQUETE: Autenticación y Usuarios
+' ============================================================
+package "Autenticación y Usuarios" {
+
+    entity "roles" as roles {
+        * id : INT <<PK>>
+        --
+        nombre : VARCHAR(50)
+    }
+
+    entity "usuarios" as usuarios {
+        * id : INT <<PK>>
+        --
+        correo : VARCHAR(100) <<UNIQUE>>
+        password : VARCHAR(255)
+        cedula : VARCHAR(15)
+        rol_id : INT <<FK>>
+        departamento_id : INT <<FK>>
+        estado : ENUM(activo, inactivo, bloqueado)
+        avatar : VARCHAR(255)
+        requiere_cambio_clave : TINYINT(1)
+        created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
+
+    entity "datos_personales" as datos_personales {
+        * id : INT <<PK>>
+        --
+        usuario_id : INT <<FK>>
+        nombres : VARCHAR(100)
+        apellidos : VARCHAR(100)
+        cedula : VARCHAR(15)
+        telefono : VARCHAR(20)
+        genero : ENUM(M, F, Otro)
+        fecha_nacimiento : DATE
+        cargo : VARCHAR(100)
+        created_at : TIMESTAMP
+    }
+
+    entity "preguntas_seguridad" as preguntas_seguridad {
+        * id : INT <<PK>>
+        --
+        pregunta : VARCHAR(255)
+        activa : TINYINT(1)
+    }
+
+    entity "usuarios_respuestas" as usuarios_respuestas {
+        * id : INT <<PK>>
+        --
+        usuario_id : INT <<FK>>
+        pregunta_id : INT <<FK>>
+        respuesta_hash : VARCHAR(255)
+        created_at : TIMESTAMP
+    }
+
+    entity "intentos_acceso" as intentos_acceso {
+        * id : INT <<PK>>
+        --
+        direccion_ip : VARCHAR(45)
+        correo : VARCHAR(100)
+        intentos : INT
+        ultimo_intento : TIMESTAMP
+    }
+}
+
+' ============================================================
+' PAQUETE: Pasantías y Asignaciones
+' ============================================================
+package "Pasantías y Asignaciones" {
+
+    entity "datos_pasante" as datos_pasante {
+        * id : INT <<PK>>
+        --
+        usuario_id : INT <<FK>>
+        departamento_asignado_id : INT <<FK>>
+        tutor_id : INT <<FK>>
+        institucion_id : INT <<FK>>
+        periodo_id : INT <<FK>>
+        estado_pasantia : ENUM(Sin Asignar, Pendiente,\n Activo, Finalizado, Retirado)
+        horas_acumuladas : INT
+        horas_meta : INT
+        fecha_inicio_pasantia : DATE
+        fecha_fin_estimada : DATE
+        observaciones : TEXT
+        created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
+
+    entity "departamentos" as departamentos {
+        * id : INT <<PK>>
+        --
+        nombre : VARCHAR(100)
+        descripcion : TEXT
+        activo : TINYINT(1)
+    }
+
+    entity "instituciones" as instituciones {
+        * id : INT <<PK>>
+        --
+        nombre : VARCHAR(150)
+        representante_nombre : VARCHAR(100)
+        representante_cargo : VARCHAR(100)
+        representante_correo : VARCHAR(100)
+        representante_telefono : VARCHAR(20)
+    }
+
+    entity "periodos_academicos" as periodos_academicos {
+        * id : INT <<PK>>
+        --
+        nombre : VARCHAR(100)
+        descripcion : TEXT
+        fecha_inicio : DATE
+        fecha_fin : DATE
+        estado : ENUM(Planificado, Activo, Cerrado)
+        creado_por : INT <<FK>>
+        created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
+}
+
+' ============================================================
+' PAQUETE: Asistencias
+' ============================================================
+package "Asistencias" {
+
+    entity "asistencias" as asistencias {
+        * id : INT <<PK>>
+        --
+        pasante_id : INT <<FK>>
+        fecha : DATE
+        hora_registro : TIME
+        estado : ENUM(Presente, Ausente,\n Justificado, Retardo)
+        metodo : VARCHAR(50)
+        motivo_justificacion : TEXT
+        ruta_evidencia : VARCHAR(255)
+        es_auto_fill : TINYINT(1)
+        es_retardo : TINYINT(1)
+        created_at : TIMESTAMP
+    }
+
+    entity "dias_feriados" as dias_feriados {
+        * id : INT <<PK>>
+        --
+        fecha : DATE <<UNIQUE>>
+        nombre : VARCHAR(100)
+        tipo : ENUM(Nacional, Regional, Institucional)
+        created_at : TIMESTAMP
+    }
+}
+
+' ============================================================
+' PAQUETE: Evaluaciones
+' ============================================================
+package "Evaluaciones" {
+
+    entity "evaluaciones" as evaluaciones {
+        * id : INT <<PK>>
+        --
+        pasante_id : INT <<FK>>
+        tutor_id : INT <<FK>>
+        fecha_evaluacion : DATE
+        lapso_academico : VARCHAR(50)
+        criterio_iniciativa : INT
+        criterio_interes : INT
+        criterio_conocimiento : INT
+        criterio_analisis : INT
+        criterio_comunicacion : INT
+        criterio_aprendizaje : INT
+        criterio_companerismo : INT
+        criterio_cooperacion : INT
+        criterio_puntualidad : INT
+        criterio_presentacion : INT
+        criterio_desarrollo : INT
+        criterio_analisis_res : INT
+        criterio_conclusiones : INT
+        criterio_recomendacion : INT
+        promedio_final : DECIMAL(5,2)
+        observaciones : TEXT
+        created_at : TIMESTAMP
+    }
+}
+
+' ============================================================
+' PAQUETE: Actividades Extras
+' ============================================================
+package "Actividades Extras" {
+
+    entity "actividades_extras" as actividades_extras {
+        * id : INT <<PK>>
+        --
+        titulo : VARCHAR(150)
+        descripcion : TEXT
+        tipo : VARCHAR(50)
+        fecha_inicio : DATE
+        fecha_fin : DATE
+        creado_por : INT <<FK>>
+        estado : VARCHAR(50)
+        created_at : TIMESTAMP
+    }
+
+    entity "actividad_participantes" as actividad_participantes {
+        * id : INT <<PK>>
+        --
+        actividad_id : INT <<FK>>
+        usuario_id : INT <<FK>>
+        rol_en_actividad : VARCHAR(50)
+        created_at : TIMESTAMP
+    }
+
+    entity "actividad_asistencias" as actividad_asistencias {
+        * id : INT <<PK>>
+        --
+        actividad_id : INT <<FK>>
+        usuario_id : INT <<FK>>
+        fecha : DATE
+        estado : ENUM(Presente, Ausente)
+        created_at : TIMESTAMP
+    }
+
+    entity "actividad_evidencias" as actividad_evidencias {
+        * id : INT <<PK>>
+        --
+        actividad_id : INT <<FK>>
+        subido_por : INT <<FK>>
+        ruta_archivo : VARCHAR(255)
+        descripcion : TEXT
+        created_at : TIMESTAMP
+    }
+}
+
+' ============================================================
+' PAQUETE: Sistema y Auditoría
+' ============================================================
+package "Sistema y Auditoría" {
+
+    entity "notificaciones" as notificaciones {
+        * id : INT <<PK>>
+        --
+        usuario_id : INT <<FK>>
+        tipo : VARCHAR(50)
+        titulo : VARCHAR(150)
+        mensaje : TEXT
+        url : VARCHAR(255)
+        leida : TINYINT(1)
+        created_at : TIMESTAMP
+    }
+
+    entity "bitacora" as bitacora {
+        * id : INT <<PK>>
+        --
+        usuario_id : INT <<FK>>
+        accion : VARCHAR(50)
+        tabla_afectada : VARCHAR(50)
+        registro_id : INT
+        ip_address : VARCHAR(45)
+        user_agent : TEXT
+        detalles : JSON
+        created_at : TIMESTAMP
+    }
+}
+
+' ============================================================
+' RELACIONES
+' ============================================================
+
+' -- Usuarios y Roles --
+roles                ||--o{ usuarios                : "tiene"
+usuarios             ||--|| datos_personales         : "extiende"
+departamentos        ||--o{ usuarios                : "pertenece a"
+
+' -- Seguridad --
+usuarios             ||--o{ usuarios_respuestas      : "registra"
+preguntas_seguridad  ||--o{ usuarios_respuestas      : "responde"
+
+' -- Pasantía --
+usuarios             ||--o| datos_pasante            : "es pasante"
+departamentos        ||--o{ datos_pasante            : "asignado a"
+usuarios             ||--o{ datos_pasante            : "tutoriza"
+instituciones        ||--o{ datos_pasante            : "procede de"
+periodos_academicos  ||--o{ datos_pasante            : "pertenece a"
+usuarios             ||--o{ periodos_academicos      : "creado por"
+
+' -- Asistencias --
+usuarios             ||--o{ asistencias              : "tiene"
+
+' -- Evaluaciones --
+usuarios             ||--o{ evaluaciones             : "evaluado (pasante)"
+usuarios             ||--o{ evaluaciones             : "evaluador (tutor)"
+
+' -- Actividades --
+usuarios             ||--o{ actividades_extras        : "crea"
+actividades_extras   ||--o{ actividad_participantes   : "tiene"
+usuarios             ||--o{ actividad_participantes   : "participa"
+actividades_extras   ||--o{ actividad_asistencias     : "registra"
+usuarios             ||--o{ actividad_asistencias     : "asiste"
+actividades_extras   ||--o{ actividad_evidencias      : "tiene"
+usuarios             ||--o{ actividad_evidencias      : "sube"
+
+' -- Sistema --
+usuarios             ||--o{ notificaciones            : "recibe"
+usuarios             ||--o{ bitacora                  : "genera"
+
+@enduml

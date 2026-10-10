@@ -1,0 +1,800 @@
+@startdot
+digraph G {
+//==========================================================================
+// MODELO ENTIDAD-RELACION (notacion CLASICA de Chen) - Graphviz DOT
+// Sistema de Gestion de Pasantes (SGP) - Base de datos: proyecto_sgp
+//
+// NOTACION:
+//  - Rectangulo            => Entidad. Doble borde (peripheries=2) = Entidad
+//                             Debil, existencia dependiente de otra entidad.
+//  - Elipse (ovalo)        => Atributo de la entidad a la que esta conectado.
+//       * subrayado          = Clave Primaria (PK)
+//       * cursiva+subrayado  = Clave parcial (discriminador de entidad debil,
+//                             junto con la FK al propietario forma la clave
+//                             compuesta)
+//       * 'nombre (FK)'      = Clave Foranea hacia otra entidad
+//       * sin marca          = Atributo simple
+//  - Rombo (diamond)       => Relacion entre entidades, con cardinalidades
+//                             1 / N / M / 0..1 en cada extremo.
+//  - Nota (note)           => Atributos propios de una relacion M:N.
+//  - Vistas (v_*) y test_restore se excluyen (no son conceptuales).
+//==========================================================================
+
+  graph [fontname="Arial", rankdir=TB, nodesep=0.25, ranksep=0.55, splines=true, size="40,40",
+         label="Modelo Entidad-Relacion (Chen, notacion clasica) - SGP", labelloc=t, fontsize=22, fontname="Arial"];
+  node  [fontname="Arial", fontsize=10];
+  edge  [fontname="Arial", fontsize=9];
+
+  //========================================================================
+  // SECCION 1: NUCLEO DE USUARIOS Y SEGURIDAD
+  //========================================================================
+  usuarios [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="usuarios"];
+  usuarios__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  usuarios -> usuarios__id [dir=none];
+  usuarios__cedula [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="cedula"];
+  usuarios -> usuarios__cedula [dir=none];
+  usuarios__correo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="correo"];
+  usuarios -> usuarios__correo [dir=none];
+  usuarios__password [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="password"];
+  usuarios -> usuarios__password [dir=none];
+  usuarios__pin_asistencia [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pin_asistencia"];
+  usuarios -> usuarios__pin_asistencia [dir=none];
+  usuarios__rol_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="rol_id (FK)"];
+  usuarios -> usuarios__rol_id [dir=none];
+  usuarios__departamento_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="departamento_id (FK)"];
+  usuarios -> usuarios__departamento_id [dir=none];
+  usuarios__avatar [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="avatar"];
+  usuarios -> usuarios__avatar [dir=none];
+  usuarios__requiere_cambio_clave [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="requiere_cambio_clave"];
+  usuarios -> usuarios__requiere_cambio_clave [dir=none];
+  usuarios__estado [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="estado"];
+  usuarios -> usuarios__estado [dir=none];
+  usuarios__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  usuarios -> usuarios__created_at [dir=none];
+  usuarios__updated_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="updated_at"];
+  usuarios -> usuarios__updated_at [dir=none];
+
+  roles [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="roles"];
+  roles__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  roles -> roles__id [dir=none];
+  roles__nombre [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  roles -> roles__nombre [dir=none];
+  roles__descripcion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="descripcion"];
+  roles -> roles__descripcion [dir=none];
+  roles__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  roles -> roles__created_at [dir=none];
+
+  departamentos [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="departamentos"];
+  departamentos__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  departamentos -> departamentos__id [dir=none];
+  departamentos__nombre [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  departamentos -> departamentos__nombre [dir=none];
+  departamentos__descripcion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="descripcion"];
+  departamentos -> departamentos__descripcion [dir=none];
+  departamentos__activo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="activo"];
+  departamentos -> departamentos__activo [dir=none];
+  departamentos__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  departamentos -> departamentos__created_at [dir=none];
+
+  datos_personales [shape=box, style=filled, fillcolor="#FFFFFF", color="#B8860B", peripheries=2, label="datos_personales"];
+  datos_personales__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  datos_personales -> datos_personales__id [dir=none];
+  datos_personales__usuario_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="usuario_id (FK)"];
+  datos_personales -> datos_personales__usuario_id [dir=none];
+  datos_personales__nombres [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombres"];
+  datos_personales -> datos_personales__nombres [dir=none];
+  datos_personales__apellidos [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="apellidos"];
+  datos_personales -> datos_personales__apellidos [dir=none];
+  datos_personales__cargo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="cargo"];
+  datos_personales -> datos_personales__cargo [dir=none];
+  datos_personales__telefono [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="telefono"];
+  datos_personales -> datos_personales__telefono [dir=none];
+  datos_personales__direccion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="direccion"];
+  datos_personales -> datos_personales__direccion [dir=none];
+  datos_personales__genero [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="genero"];
+  datos_personales -> datos_personales__genero [dir=none];
+  datos_personales__fecha_nacimiento [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_nacimiento"];
+  datos_personales -> datos_personales__fecha_nacimiento [dir=none];
+  datos_personales__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  datos_personales -> datos_personales__created_at [dir=none];
+  datos_personales__updated_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="updated_at"];
+  datos_personales -> datos_personales__updated_at [dir=none];
+
+  preguntas_seguridad [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="preguntas_seguridad"];
+  preguntas_seguridad__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  preguntas_seguridad -> preguntas_seguridad__id [dir=none];
+  preguntas_seguridad__pregunta [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pregunta"];
+  preguntas_seguridad -> preguntas_seguridad__pregunta [dir=none];
+  preguntas_seguridad__activa [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="activa"];
+  preguntas_seguridad -> preguntas_seguridad__activa [dir=none];
+  preguntas_seguridad__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  preguntas_seguridad -> preguntas_seguridad__created_at [dir=none];
+
+  intentos_acceso [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="intentos_acceso"];
+  intentos_acceso__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  intentos_acceso -> intentos_acceso__id [dir=none];
+  intentos_acceso__direccion_ip [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="direccion_ip"];
+  intentos_acceso -> intentos_acceso__direccion_ip [dir=none];
+  intentos_acceso__correo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="correo"];
+  intentos_acceso -> intentos_acceso__correo [dir=none];
+  intentos_acceso__intentos [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="intentos"];
+  intentos_acceso -> intentos_acceso__intentos [dir=none];
+  intentos_acceso__ultimo_intento [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="ultimo_intento"];
+  intentos_acceso -> intentos_acceso__ultimo_intento [dir=none];
+  intentos_acceso__bloqueado_hasta [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="bloqueado_hasta"];
+  intentos_acceso -> intentos_acceso__bloqueado_hasta [dir=none];
+
+  //========================================================================
+  // SECCION 2: RBAC / PERMISOS
+  //========================================================================
+  modulos_sistema [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="modulos_sistema"];
+  modulos_sistema__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  modulos_sistema -> modulos_sistema__id [dir=none];
+  modulos_sistema__clave [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="clave"];
+  modulos_sistema -> modulos_sistema__clave [dir=none];
+  modulos_sistema__nombre [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  modulos_sistema -> modulos_sistema__nombre [dir=none];
+  modulos_sistema__icono [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="icono"];
+  modulos_sistema -> modulos_sistema__icono [dir=none];
+  modulos_sistema__ruta_base [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="ruta_base"];
+  modulos_sistema -> modulos_sistema__ruta_base [dir=none];
+  modulos_sistema__grupo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="grupo"];
+  modulos_sistema -> modulos_sistema__grupo [dir=none];
+  modulos_sistema__rol_base [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="rol_base"];
+  modulos_sistema -> modulos_sistema__rol_base [dir=none];
+  modulos_sistema__activo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="activo"];
+  modulos_sistema -> modulos_sistema__activo [dir=none];
+  modulos_sistema__orden [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="orden"];
+  modulos_sistema -> modulos_sistema__orden [dir=none];
+
+  acciones_modulo [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="acciones_modulo"];
+  acciones_modulo__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  acciones_modulo -> acciones_modulo__id [dir=none];
+  acciones_modulo__modulo_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="modulo_id (FK)"];
+  acciones_modulo -> acciones_modulo__modulo_id [dir=none];
+  acciones_modulo__clave [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="clave"];
+  acciones_modulo -> acciones_modulo__clave [dir=none];
+  acciones_modulo__nombre [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  acciones_modulo -> acciones_modulo__nombre [dir=none];
+  acciones_modulo__tipo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tipo"];
+  acciones_modulo -> acciones_modulo__tipo [dir=none];
+
+  //========================================================================
+  // SECCION 3: ACADEMICO / PASANTIAS
+  //========================================================================
+  instituciones [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="instituciones"];
+  instituciones__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  instituciones -> instituciones__id [dir=none];
+  instituciones__nombre [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  instituciones -> instituciones__nombre [dir=none];
+  instituciones__ubicacion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="ubicacion"];
+  instituciones -> instituciones__ubicacion [dir=none];
+  instituciones__tipo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tipo"];
+  instituciones -> instituciones__tipo [dir=none];
+  instituciones__categoria [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="categoria"];
+  instituciones -> instituciones__categoria [dir=none];
+  instituciones__contacto [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="contacto"];
+  instituciones -> instituciones__contacto [dir=none];
+  instituciones__telefono [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="telefono"];
+  instituciones -> instituciones__telefono [dir=none];
+  instituciones__activo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="activo"];
+  instituciones -> instituciones__activo [dir=none];
+  instituciones__representante_nombre [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="representante_nombre"];
+  instituciones -> instituciones__representante_nombre [dir=none];
+  instituciones__representante_cargo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="representante_cargo"];
+  instituciones -> instituciones__representante_cargo [dir=none];
+  instituciones__representante_correo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="representante_correo"];
+  instituciones -> instituciones__representante_correo [dir=none];
+  instituciones__representante_telefono [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="representante_telefono"];
+  instituciones -> instituciones__representante_telefono [dir=none];
+  instituciones__direccion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="direccion"];
+  instituciones -> instituciones__direccion [dir=none];
+  instituciones__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  instituciones -> instituciones__created_at [dir=none];
+
+  periodos_academicos [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="periodos_academicos"];
+  periodos_academicos__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  periodos_academicos -> periodos_academicos__id [dir=none];
+  periodos_academicos__nombre [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  periodos_academicos -> periodos_academicos__nombre [dir=none];
+  periodos_academicos__tipo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tipo"];
+  periodos_academicos -> periodos_academicos__tipo [dir=none];
+  periodos_academicos__fecha_inicio [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_inicio"];
+  periodos_academicos -> periodos_academicos__fecha_inicio [dir=none];
+  periodos_academicos__fecha_fin [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_fin"];
+  periodos_academicos -> periodos_academicos__fecha_fin [dir=none];
+  periodos_academicos__estado [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="estado"];
+  periodos_academicos -> periodos_academicos__estado [dir=none];
+  periodos_academicos__descripcion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="descripcion"];
+  periodos_academicos -> periodos_academicos__descripcion [dir=none];
+  periodos_academicos__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  periodos_academicos -> periodos_academicos__created_at [dir=none];
+
+  datos_pasante [shape=box, style=filled, fillcolor="#FFFFFF", color="#B8860B", peripheries=2, label="datos_pasante"];
+  datos_pasante__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  datos_pasante -> datos_pasante__id [dir=none];
+  datos_pasante__usuario_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="usuario_id (FK)"];
+  datos_pasante -> datos_pasante__usuario_id [dir=none];
+  datos_pasante__periodo_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="periodo_id (FK)"];
+  datos_pasante -> datos_pasante__periodo_id [dir=none];
+  datos_pasante__institucion_procedencia [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="institucion_procedencia"];
+  datos_pasante -> datos_pasante__institucion_procedencia [dir=none];
+  datos_pasante__institucion_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="institucion_id (FK)"];
+  datos_pasante -> datos_pasante__institucion_id [dir=none];
+  datos_pasante__estado_pasantia [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="estado_pasantia"];
+  datos_pasante -> datos_pasante__estado_pasantia [dir=none];
+  datos_pasante__tipo_pasantia [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tipo_pasantia"];
+  datos_pasante -> datos_pasante__tipo_pasantia [dir=none];
+  datos_pasante__fecha_inicio_pasantia [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_inicio_pasantia"];
+  datos_pasante -> datos_pasante__fecha_inicio_pasantia [dir=none];
+  datos_pasante__fecha_fin_estimada [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_fin_estimada"];
+  datos_pasante -> datos_pasante__fecha_fin_estimada [dir=none];
+  datos_pasante__horas_acumuladas [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="horas_acumuladas"];
+  datos_pasante -> datos_pasante__horas_acumuladas [dir=none];
+  datos_pasante__horas_meta [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="horas_meta"];
+  datos_pasante -> datos_pasante__horas_meta [dir=none];
+  datos_pasante__departamento_asignado_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="departamento_asignado_id (FK)"];
+  datos_pasante -> datos_pasante__departamento_asignado_id [dir=none];
+  datos_pasante__tutor_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tutor_id (FK)"];
+  datos_pasante -> datos_pasante__tutor_id [dir=none];
+  datos_pasante__observaciones [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="observaciones"];
+  datos_pasante -> datos_pasante__observaciones [dir=none];
+  datos_pasante__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  datos_pasante -> datos_pasante__created_at [dir=none];
+  datos_pasante__updated_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="updated_at"];
+  datos_pasante -> datos_pasante__updated_at [dir=none];
+
+  asignaciones [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="asignaciones"];
+  asignaciones__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  asignaciones -> asignaciones__id [dir=none];
+  asignaciones__pasante_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pasante_id (FK)"];
+  asignaciones -> asignaciones__pasante_id [dir=none];
+  asignaciones__tutor_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tutor_id (FK)"];
+  asignaciones -> asignaciones__tutor_id [dir=none];
+  asignaciones__departamento_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="departamento_id (FK)"];
+  asignaciones -> asignaciones__departamento_id [dir=none];
+  asignaciones__fecha_inicio [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_inicio"];
+  asignaciones -> asignaciones__fecha_inicio [dir=none];
+  asignaciones__fecha_fin [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_fin"];
+  asignaciones -> asignaciones__fecha_fin [dir=none];
+  asignaciones__hora_entrada [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="hora_entrada"];
+  asignaciones -> asignaciones__hora_entrada [dir=none];
+  asignaciones__hora_salida [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="hora_salida"];
+  asignaciones -> asignaciones__hora_salida [dir=none];
+  asignaciones__horas_totales [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="horas_totales"];
+  asignaciones -> asignaciones__horas_totales [dir=none];
+  asignaciones__horas_cumplidas [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="horas_cumplidas"];
+  asignaciones -> asignaciones__horas_cumplidas [dir=none];
+  asignaciones__estado [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="estado"];
+  asignaciones -> asignaciones__estado [dir=none];
+  asignaciones__observaciones [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="observaciones"];
+  asignaciones -> asignaciones__observaciones [dir=none];
+  asignaciones__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  asignaciones -> asignaciones__created_at [dir=none];
+  asignaciones__updated_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="updated_at"];
+  asignaciones -> asignaciones__updated_at [dir=none];
+
+  dias_feriados [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="dias_feriados"];
+  dias_feriados__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  dias_feriados -> dias_feriados__id [dir=none];
+  dias_feriados__fecha [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>fecha</U></I>>];
+  dias_feriados -> dias_feriados__fecha [dir=none];
+  dias_feriados__nombre [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  dias_feriados -> dias_feriados__nombre [dir=none];
+  dias_feriados__tipo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>tipo</U></I>>];
+  dias_feriados -> dias_feriados__tipo [dir=none];
+  dias_feriados__aplica_departamento_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="aplica_departamento_id (FK)"];
+  dias_feriados -> dias_feriados__aplica_departamento_id [dir=none];
+  dias_feriados__es_laborable [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="es_laborable"];
+  dias_feriados -> dias_feriados__es_laborable [dir=none];
+  dias_feriados__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  dias_feriados -> dias_feriados__created_at [dir=none];
+
+  asistencias [shape=box, style=filled, fillcolor="#FFFFFF", color="#B8860B", peripheries=2, label="asistencias"];
+  asistencias__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  asistencias -> asistencias__id [dir=none];
+  asistencias__pasante_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pasante_id (FK)"];
+  asistencias -> asistencias__pasante_id [dir=none];
+  asistencias__asignacion_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="asignacion_id (FK)"];
+  asistencias -> asistencias__asignacion_id [dir=none];
+  asistencias__fecha [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>fecha</U></I>>];
+  asistencias -> asistencias__fecha [dir=none];
+  asistencias__hora_registro [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="hora_registro"];
+  asistencias -> asistencias__hora_registro [dir=none];
+  asistencias__metodo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="metodo"];
+  asistencias -> asistencias__metodo [dir=none];
+  asistencias__motivo_justificacion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="motivo_justificacion"];
+  asistencias -> asistencias__motivo_justificacion [dir=none];
+  asistencias__ruta_evidencia [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="ruta_evidencia"];
+  asistencias -> asistencias__ruta_evidencia [dir=none];
+  asistencias__es_retardo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="es_retardo"];
+  asistencias -> asistencias__es_retardo [dir=none];
+  asistencias__es_auto_fill [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="es_auto_fill"];
+  asistencias -> asistencias__es_auto_fill [dir=none];
+  asistencias__hora_entrada [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="hora_entrada"];
+  asistencias -> asistencias__hora_entrada [dir=none];
+  asistencias__hora_salida [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="hora_salida"];
+  asistencias -> asistencias__hora_salida [dir=none];
+  asistencias__horas_calculadas [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="horas_calculadas"];
+  asistencias -> asistencias__horas_calculadas [dir=none];
+  asistencias__observacion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="observacion"];
+  asistencias -> asistencias__observacion [dir=none];
+  asistencias__estado [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="estado"];
+  asistencias -> asistencias__estado [dir=none];
+  asistencias__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  asistencias -> asistencias__created_at [dir=none];
+  asistencias__updated_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="updated_at"];
+  asistencias -> asistencias__updated_at [dir=none];
+
+  actividades_pasante [shape=box, style=filled, fillcolor="#FFFFFF", color="#B8860B", peripheries=2, label="actividades_pasante"];
+  actividades_pasante__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  actividades_pasante -> actividades_pasante__id [dir=none];
+  actividades_pasante__pasante_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pasante_id (FK)"];
+  actividades_pasante -> actividades_pasante__pasante_id [dir=none];
+  actividades_pasante__fecha [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>fecha</U></I>>];
+  actividades_pasante -> actividades_pasante__fecha [dir=none];
+  actividades_pasante__titulo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>titulo</U></I>>];
+  actividades_pasante -> actividades_pasante__titulo [dir=none];
+  actividades_pasante__descripcion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="descripcion"];
+  actividades_pasante -> actividades_pasante__descripcion [dir=none];
+  actividades_pasante__correccion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="correccion"];
+  actividades_pasante -> actividades_pasante__correccion [dir=none];
+  actividades_pasante__corrector_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="corrector_id (FK)"];
+  actividades_pasante -> actividades_pasante__corrector_id [dir=none];
+  actividades_pasante__correccion_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="correccion_at"];
+  actividades_pasante -> actividades_pasante__correccion_at [dir=none];
+  actividades_pasante__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  actividades_pasante -> actividades_pasante__created_at [dir=none];
+  actividades_pasante__updated_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="updated_at"];
+  actividades_pasante -> actividades_pasante__updated_at [dir=none];
+
+  //========================================================================
+  // SECCION 4: EVALUACIONES
+  //========================================================================
+  evaluaciones [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="evaluaciones"];
+  evaluaciones__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  evaluaciones -> evaluaciones__id [dir=none];
+  evaluaciones__pasante_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pasante_id (FK)"];
+  evaluaciones -> evaluaciones__pasante_id [dir=none];
+  evaluaciones__tutor_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tutor_id (FK)"];
+  evaluaciones -> evaluaciones__tutor_id [dir=none];
+  evaluaciones__fecha_evaluacion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_evaluacion"];
+  evaluaciones -> evaluaciones__fecha_evaluacion [dir=none];
+  evaluaciones__lapso_academico [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="lapso_academico"];
+  evaluaciones -> evaluaciones__lapso_academico [dir=none];
+  evaluaciones__criterio_iniciativa [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_iniciativa"];
+  evaluaciones -> evaluaciones__criterio_iniciativa [dir=none];
+  evaluaciones__criterio_interes [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_interes"];
+  evaluaciones -> evaluaciones__criterio_interes [dir=none];
+  evaluaciones__criterio_conocimiento [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_conocimiento"];
+  evaluaciones -> evaluaciones__criterio_conocimiento [dir=none];
+  evaluaciones__criterio_analisis [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_analisis"];
+  evaluaciones -> evaluaciones__criterio_analisis [dir=none];
+  evaluaciones__criterio_comunicacion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_comunicacion"];
+  evaluaciones -> evaluaciones__criterio_comunicacion [dir=none];
+  evaluaciones__criterio_aprendizaje [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_aprendizaje"];
+  evaluaciones -> evaluaciones__criterio_aprendizaje [dir=none];
+  evaluaciones__criterio_companerismo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_companerismo"];
+  evaluaciones -> evaluaciones__criterio_companerismo [dir=none];
+  evaluaciones__criterio_cooperacion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_cooperacion"];
+  evaluaciones -> evaluaciones__criterio_cooperacion [dir=none];
+  evaluaciones__criterio_puntualidad [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_puntualidad"];
+  evaluaciones -> evaluaciones__criterio_puntualidad [dir=none];
+  evaluaciones__criterio_presentacion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_presentacion"];
+  evaluaciones -> evaluaciones__criterio_presentacion [dir=none];
+  evaluaciones__criterio_desarrollo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_desarrollo"];
+  evaluaciones -> evaluaciones__criterio_desarrollo [dir=none];
+  evaluaciones__criterio_analisis_res [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_analisis_res"];
+  evaluaciones -> evaluaciones__criterio_analisis_res [dir=none];
+  evaluaciones__criterio_conclusiones [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_conclusiones"];
+  evaluaciones -> evaluaciones__criterio_conclusiones [dir=none];
+  evaluaciones__criterio_recomendacion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="criterio_recomendacion"];
+  evaluaciones -> evaluaciones__criterio_recomendacion [dir=none];
+  evaluaciones__promedio_final [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="promedio_final"];
+  evaluaciones -> evaluaciones__promedio_final [dir=none];
+  evaluaciones__observaciones [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="observaciones"];
+  evaluaciones -> evaluaciones__observaciones [dir=none];
+  evaluaciones__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  evaluaciones -> evaluaciones__created_at [dir=none];
+
+  //========================================================================
+  // SECCION 5: EXAMENES
+  //========================================================================
+  examenes [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="examenes"];
+  examenes__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  examenes -> examenes__id [dir=none];
+  examenes__titulo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="titulo"];
+  examenes -> examenes__titulo [dir=none];
+  examenes__descripcion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="descripcion"];
+  examenes -> examenes__descripcion [dir=none];
+  examenes__periodo_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="periodo_id (FK)"];
+  examenes -> examenes__periodo_id [dir=none];
+  examenes__creado_por [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="creado_por (FK)"];
+  examenes -> examenes__creado_por [dir=none];
+  examenes__fecha_inicio [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_inicio"];
+  examenes -> examenes__fecha_inicio [dir=none];
+  examenes__fecha_fin [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_fin"];
+  examenes -> examenes__fecha_fin [dir=none];
+  examenes__intentos_permitidos [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="intentos_permitidos"];
+  examenes -> examenes__intentos_permitidos [dir=none];
+  examenes__activo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="activo"];
+  examenes -> examenes__activo [dir=none];
+  examenes__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  examenes -> examenes__created_at [dir=none];
+
+  examen_preguntas [shape=box, style=filled, fillcolor="#FFFFFF", color="#B8860B", peripheries=2, label="examen_preguntas"];
+  examen_preguntas__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  examen_preguntas -> examen_preguntas__id [dir=none];
+  examen_preguntas__examen_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="examen_id (FK)"];
+  examen_preguntas -> examen_preguntas__examen_id [dir=none];
+  examen_preguntas__orden [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>orden</U></I>>];
+  examen_preguntas -> examen_preguntas__orden [dir=none];
+  examen_preguntas__enunciado [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="enunciado"];
+  examen_preguntas -> examen_preguntas__enunciado [dir=none];
+  examen_preguntas__tipo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tipo"];
+  examen_preguntas -> examen_preguntas__tipo [dir=none];
+  examen_preguntas__puntos [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="puntos"];
+  examen_preguntas -> examen_preguntas__puntos [dir=none];
+
+  examen_opciones [shape=box, style=filled, fillcolor="#FFFFFF", color="#B8860B", peripheries=2, label="examen_opciones"];
+  examen_opciones__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  examen_opciones -> examen_opciones__id [dir=none];
+  examen_opciones__pregunta_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pregunta_id (FK)"];
+  examen_opciones -> examen_opciones__pregunta_id [dir=none];
+  examen_opciones__texto [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="texto"];
+  examen_opciones -> examen_opciones__texto [dir=none];
+  examen_opciones__es_correcta [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="es_correcta"];
+  examen_opciones -> examen_opciones__es_correcta [dir=none];
+
+  examen_intentos [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="examen_intentos"];
+  examen_intentos__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  examen_intentos -> examen_intentos__id [dir=none];
+  examen_intentos__examen_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="examen_id (FK)"];
+  examen_intentos -> examen_intentos__examen_id [dir=none];
+  examen_intentos__pasante_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pasante_id (FK)"];
+  examen_intentos -> examen_intentos__pasante_id [dir=none];
+  examen_intentos__iniciado_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="iniciado_at"];
+  examen_intentos -> examen_intentos__iniciado_at [dir=none];
+  examen_intentos__enviado_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="enviado_at"];
+  examen_intentos -> examen_intentos__enviado_at [dir=none];
+  examen_intentos__puntaje_obtenido [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="puntaje_obtenido"];
+  examen_intentos -> examen_intentos__puntaje_obtenido [dir=none];
+  examen_intentos__puntaje_maximo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="puntaje_maximo"];
+  examen_intentos -> examen_intentos__puntaje_maximo [dir=none];
+  examen_intentos__porcentaje [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="porcentaje"];
+  examen_intentos -> examen_intentos__porcentaje [dir=none];
+  examen_intentos__revisado_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="revisado_at"];
+  examen_intentos -> examen_intentos__revisado_at [dir=none];
+
+  examen_respuestas [shape=box, style=filled, fillcolor="#FFFFFF", color="#B8860B", peripheries=2, label="examen_respuestas"];
+  examen_respuestas__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  examen_respuestas -> examen_respuestas__id [dir=none];
+  examen_respuestas__intento_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="intento_id (FK)"];
+  examen_respuestas -> examen_respuestas__intento_id [dir=none];
+  examen_respuestas__pregunta_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pregunta_id (FK)"];
+  examen_respuestas -> examen_respuestas__pregunta_id [dir=none];
+  examen_respuestas__opcion_id_elegida [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="opcion_id_elegida (FK)"];
+  examen_respuestas -> examen_respuestas__opcion_id_elegida [dir=none];
+
+  //========================================================================
+  // SECCION 6: ACTIVIDADES EXTRACURRICULARES
+  //========================================================================
+  actividades_extras [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="actividades_extras"];
+  actividades_extras__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  actividades_extras -> actividades_extras__id [dir=none];
+  actividades_extras__nombre [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  actividades_extras -> actividades_extras__nombre [dir=none];
+  actividades_extras__tipo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tipo"];
+  actividades_extras -> actividades_extras__tipo [dir=none];
+  actividades_extras__institucion_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="institucion_id (FK)"];
+  actividades_extras -> actividades_extras__institucion_id [dir=none];
+  actividades_extras__supervisor_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="supervisor_id (FK)"];
+  actividades_extras -> actividades_extras__supervisor_id [dir=none];
+  actividades_extras__descripcion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="descripcion"];
+  actividades_extras -> actividades_extras__descripcion [dir=none];
+  actividades_extras__fecha_inicio [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_inicio"];
+  actividades_extras -> actividades_extras__fecha_inicio [dir=none];
+  actividades_extras__fecha_fin [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_fin"];
+  actividades_extras -> actividades_extras__fecha_fin [dir=none];
+  actividades_extras__estado [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="estado"];
+  actividades_extras -> actividades_extras__estado [dir=none];
+  actividades_extras__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  actividades_extras -> actividades_extras__created_at [dir=none];
+  actividades_extras__updated_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="updated_at"];
+  actividades_extras -> actividades_extras__updated_at [dir=none];
+
+  actividad_participantes [shape=box, style=filled, fillcolor="#FFFFFF", color="#B8860B", peripheries=2, label="actividad_participantes"];
+  actividad_participantes__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  actividad_participantes -> actividad_participantes__id [dir=none];
+  actividad_participantes__actividad_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="actividad_id (FK)"];
+  actividad_participantes -> actividad_participantes__actividad_id [dir=none];
+  actividad_participantes__nombres [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombres"];
+  actividad_participantes -> actividad_participantes__nombres [dir=none];
+  actividad_participantes__apellidos [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="apellidos"];
+  actividad_participantes -> actividad_participantes__apellidos [dir=none];
+  actividad_participantes__cedula [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="cedula"];
+  actividad_participantes -> actividad_participantes__cedula [dir=none];
+  actividad_participantes__carrera [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="carrera"];
+  actividad_participantes -> actividad_participantes__carrera [dir=none];
+  actividad_participantes__telefono [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="telefono"];
+  actividad_participantes -> actividad_participantes__telefono [dir=none];
+  actividad_participantes__observaciones [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="observaciones"];
+  actividad_participantes -> actividad_participantes__observaciones [dir=none];
+  actividad_participantes__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  actividad_participantes -> actividad_participantes__created_at [dir=none];
+
+  actividad_asistencias [shape=box, style=filled, fillcolor="#FFFFFF", color="#B8860B", peripheries=2, label="actividad_asistencias"];
+  actividad_asistencias__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  actividad_asistencias -> actividad_asistencias__id [dir=none];
+  actividad_asistencias__actividad_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="actividad_id (FK)"];
+  actividad_asistencias -> actividad_asistencias__actividad_id [dir=none];
+  actividad_asistencias__participante_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="participante_id (FK)"];
+  actividad_asistencias -> actividad_asistencias__participante_id [dir=none];
+  actividad_asistencias__fecha [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>fecha</U></I>>];
+  actividad_asistencias -> actividad_asistencias__fecha [dir=none];
+  actividad_asistencias__estado [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="estado"];
+  actividad_asistencias -> actividad_asistencias__estado [dir=none];
+  actividad_asistencias__notas [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="notas"];
+  actividad_asistencias -> actividad_asistencias__notas [dir=none];
+  actividad_asistencias__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  actividad_asistencias -> actividad_asistencias__created_at [dir=none];
+
+  actividad_evidencias [shape=box, style=filled, fillcolor="#FFFFFF", color="#B8860B", peripheries=2, label="actividad_evidencias"];
+  actividad_evidencias__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  actividad_evidencias -> actividad_evidencias__id [dir=none];
+  actividad_evidencias__actividad_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="actividad_id (FK)"];
+  actividad_evidencias -> actividad_evidencias__actividad_id [dir=none];
+  actividad_evidencias__ruta [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="ruta"];
+  actividad_evidencias -> actividad_evidencias__ruta [dir=none];
+  actividad_evidencias__nombre_orig [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre_orig"];
+  actividad_evidencias -> actividad_evidencias__nombre_orig [dir=none];
+  actividad_evidencias__descripcion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="descripcion"];
+  actividad_evidencias -> actividad_evidencias__descripcion [dir=none];
+  actividad_evidencias__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  actividad_evidencias -> actividad_evidencias__created_at [dir=none];
+
+  //========================================================================
+  // SECCION 7: AUDITORIA Y NOTIFICACIONES
+  //========================================================================
+  bitacora [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="bitacora"];
+  bitacora__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  bitacora -> bitacora__id [dir=none];
+  bitacora__usuario_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="usuario_id (FK)"];
+  bitacora -> bitacora__usuario_id [dir=none];
+  bitacora__accion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="accion"];
+  bitacora -> bitacora__accion [dir=none];
+  bitacora__tabla_afectada [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tabla_afectada"];
+  bitacora -> bitacora__tabla_afectada [dir=none];
+  bitacora__registro_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="registro_id"];
+  bitacora -> bitacora__registro_id [dir=none];
+  bitacora__ip_address [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="ip_address"];
+  bitacora -> bitacora__ip_address [dir=none];
+  bitacora__user_agent [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="user_agent"];
+  bitacora -> bitacora__user_agent [dir=none];
+  bitacora__detalles [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="detalles"];
+  bitacora -> bitacora__detalles [dir=none];
+  bitacora__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  bitacora -> bitacora__created_at [dir=none];
+
+  bitacora_historico [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="bitacora_historico"];
+  bitacora_historico__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  bitacora_historico -> bitacora_historico__id [dir=none];
+  bitacora_historico__bitacora_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="bitacora_id (FK)"];
+  bitacora_historico -> bitacora_historico__bitacora_id [dir=none];
+  bitacora_historico__usuario_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="usuario_id (FK)"];
+  bitacora_historico -> bitacora_historico__usuario_id [dir=none];
+  bitacora_historico__accion [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="accion"];
+  bitacora_historico -> bitacora_historico__accion [dir=none];
+  bitacora_historico__tabla_afectada [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tabla_afectada"];
+  bitacora_historico -> bitacora_historico__tabla_afectada [dir=none];
+  bitacora_historico__registro_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="registro_id"];
+  bitacora_historico -> bitacora_historico__registro_id [dir=none];
+  bitacora_historico__ip_address [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="ip_address"];
+  bitacora_historico -> bitacora_historico__ip_address [dir=none];
+  bitacora_historico__user_agent [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="user_agent"];
+  bitacora_historico -> bitacora_historico__user_agent [dir=none];
+  bitacora_historico__detalles [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="detalles"];
+  bitacora_historico -> bitacora_historico__detalles [dir=none];
+  bitacora_historico__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  bitacora_historico -> bitacora_historico__created_at [dir=none];
+  bitacora_historico__archivado_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="archivado_at"];
+  bitacora_historico -> bitacora_historico__archivado_at [dir=none];
+
+  notificaciones [shape=box, style=filled, fillcolor="#FFFFFF", color="#34495E", label="notificaciones"];
+  notificaciones__id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  notificaciones -> notificaciones__id [dir=none];
+  notificaciones__usuario_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="usuario_id (FK)"];
+  notificaciones -> notificaciones__usuario_id [dir=none];
+  notificaciones__tipo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tipo"];
+  notificaciones -> notificaciones__tipo [dir=none];
+  notificaciones__titulo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="titulo"];
+  notificaciones -> notificaciones__titulo [dir=none];
+  notificaciones__mensaje [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="mensaje"];
+  notificaciones -> notificaciones__mensaje [dir=none];
+  notificaciones__url [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="url"];
+  notificaciones -> notificaciones__url [dir=none];
+  notificaciones__leida [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="leida"];
+  notificaciones -> notificaciones__leida [dir=none];
+  notificaciones__referencia_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="referencia_id"];
+  notificaciones -> notificaciones__referencia_id [dir=none];
+  notificaciones__created_at [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="created_at"];
+  notificaciones -> notificaciones__created_at [dir=none];
+
+  //========================================================================
+  // RELACIONES (rombos)
+  //========================================================================
+  D01 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="tiene rol"];
+  usuarios -> D01 [dir=none, label="N"];
+  D01 -> roles [dir=none, label="1"];
+
+  D02 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="pertenece a"];
+  usuarios -> D02 [dir=none, label="N"];
+  D02 -> departamentos [dir=none, label="0..1"];
+
+  D03 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="posee perfil"];
+  usuarios -> D03 [dir=none, label="1"];
+  D03 -> datos_personales [dir=none, label="1"];
+
+  D04 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="responde"];
+  usuarios -> D04 [dir=none, label="N"];
+  D04 -> preguntas_seguridad [dir=none, label="M"];
+  note_D04 [shape=note, style=filled, fillcolor="#FFFDE7", color="#C0A000", fontsize=9, label="** atributos de la relacion **\l(tabla usuarios_respuestas)\l--\lrespuesta_hash : varchar(255)\lcreated_at : timestamp\l..\luk: usuario_id + pregunta_id\l"];
+  D04 -> note_D04 [dir=none, style=dashed, arrowhead=none];
+
+  D05 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="agrupa"];
+  modulos_sistema -> D05 [dir=none, label="1"];
+  D05 -> acciones_modulo [dir=none, label="N"];
+
+  D06 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="otorga (por rol)"];
+  roles -> D06 [dir=none, label="N"];
+  D06 -> acciones_modulo [dir=none, label="M"];
+  note_D06 [shape=note, style=filled, fillcolor="#FFFDE7", color="#C0A000", fontsize=9, label="** atributos de la relacion **\l(tabla permisos_rol)\l--\lhabilitado : tinyint(1)\l..\luk: rol_id + accion_id\l"];
+  D06 -> note_D06 [dir=none, style=dashed, arrowhead=none];
+
+  D07 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="otorga (individual)"];
+  usuarios -> D07 [dir=none, label="N\n(usuario)"];
+  D07 -> acciones_modulo [dir=none, label="M"];
+  D07 -> usuarios [dir=none, label="1\n(otorgado_por)"];
+  note_D07 [shape=note, style=filled, fillcolor="#FFFDE7", color="#C0A000", fontsize=9, label="** atributos de la relacion (ternaria) **\l(tabla usuario_permisos)\l--\lhabilitado : tinyint(1)\lcreated_at : timestamp\lupdated_at : timestamp\l..\luk: usuario_id + accion_id\l"];
+  D07 -> note_D07 [dir=none, style=dashed, arrowhead=none];
+
+  D08 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="es pasante"];
+  usuarios -> D08 [dir=none, label="1"];
+  D08 -> datos_pasante [dir=none, label="1"];
+
+  D09 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="procede de"];
+  datos_pasante -> D09 [dir=none, label="N"];
+  D09 -> instituciones [dir=none, label="0..1"];
+
+  D10 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="cursa en periodo"];
+  datos_pasante -> D10 [dir=none, label="N"];
+  D10 -> periodos_academicos [dir=none, label="0..1"];
+
+  D11 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="tutor actual"];
+  datos_pasante -> D11 [dir=none, label="N"];
+  D11 -> usuarios [dir=none, label="0..1"];
+
+  D12 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="depto actual"];
+  datos_pasante -> D12 [dir=none, label="N"];
+  D12 -> departamentos [dir=none, label="0..1"];
+
+  D13 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="es asignado"];
+  usuarios -> D13 [dir=none, label="N\n(pasante)"];
+  D13 -> asignaciones [dir=none, label="1"];
+
+  D14 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="supervisa asignacion"];
+  usuarios -> D14 [dir=none, label="N\n(tutor)"];
+  D14 -> asignaciones [dir=none, label="1"];
+
+  D15 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="ubica"];
+  departamentos -> D15 [dir=none, label="N"];
+  D15 -> asignaciones [dir=none, label="1"];
+
+  D16 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="marca"];
+  usuarios -> D16 [dir=none, label="1\n(pasante)"];
+  D16 -> asistencias [dir=none, label="N"];
+
+  D17 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="en el marco de"];
+  asignaciones -> D17 [dir=none, label="0..1"];
+  D17 -> asistencias [dir=none, label="N"];
+
+  D18 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="aplica a"];
+  dias_feriados -> D18 [dir=none, label="N"];
+  D18 -> departamentos [dir=none, label="0..1"];
+
+  D19 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="registra"];
+  usuarios -> D19 [dir=none, label="1\n(pasante)"];
+  D19 -> actividades_pasante [dir=none, label="N"];
+
+  D20 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="corrige"];
+  usuarios -> D20 [dir=none, label="0..1\n(corrector)"];
+  D20 -> actividades_pasante [dir=none, label="N"];
+
+  D21 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="evalua"];
+  usuarios -> D21 [dir=none, label="1\n(tutor)"];
+  D21 -> evaluaciones [dir=none, label="N"];
+
+  D22 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="es evaluado"];
+  usuarios -> D22 [dir=none, label="1\n(pasante)"];
+  D22 -> evaluaciones [dir=none, label="N"];
+
+  D23 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="programa"];
+  periodos_academicos -> D23 [dir=none, label="0..1"];
+  D23 -> examenes [dir=none, label="N"];
+
+  D24 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="crea"];
+  usuarios -> D24 [dir=none, label="1\n(creador)"];
+  D24 -> examenes [dir=none, label="N"];
+
+  D25 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="compuesto de"];
+  examenes -> D25 [dir=none, label="1"];
+  D25 -> examen_preguntas [dir=none, label="N"];
+
+  D26 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="ofrece"];
+  examen_preguntas -> D26 [dir=none, label="1"];
+  D26 -> examen_opciones [dir=none, label="N"];
+
+  D27 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="genera intento"];
+  examenes -> D27 [dir=none, label="1"];
+  D27 -> examen_intentos [dir=none, label="N"];
+
+  D28 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="presenta"];
+  usuarios -> D28 [dir=none, label="1\n(pasante)"];
+  D28 -> examen_intentos [dir=none, label="N"];
+
+  D29 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="contiene"];
+  examen_intentos -> D29 [dir=none, label="1"];
+  D29 -> examen_respuestas [dir=none, label="N"];
+
+  D30 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="responde a"];
+  examen_preguntas -> D30 [dir=none, label="1"];
+  D30 -> examen_respuestas [dir=none, label="N"];
+
+  D31 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="opcion elegida"];
+  examen_opciones -> D31 [dir=none, label="0..1"];
+  D31 -> examen_respuestas [dir=none, label="N"];
+
+  D32 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="sede de"];
+  instituciones -> D32 [dir=none, label="0..1"];
+  D32 -> actividades_extras [dir=none, label="N"];
+
+  D33 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="supervisa"];
+  usuarios -> D33 [dir=none, label="0..1\n(supervisor)"];
+  D33 -> actividades_extras [dir=none, label="N"];
+
+  D34 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="inscribe"];
+  actividades_extras -> D34 [dir=none, label="1"];
+  D34 -> actividad_participantes [dir=none, label="N"];
+
+  D35 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="documenta"];
+  actividades_extras -> D35 [dir=none, label="1"];
+  D35 -> actividad_evidencias [dir=none, label="N"];
+
+  D36 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="asiste"];
+  actividad_participantes -> D36 [dir=none, label="1"];
+  D36 -> actividad_asistencias [dir=none, label="N"];
+
+  D37 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="de la actividad"];
+  actividades_extras -> D37 [dir=none, label="1"];
+  D37 -> actividad_asistencias [dir=none, label="N"];
+
+  D38 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="genera evento"];
+  usuarios -> D38 [dir=none, label="1"];
+  D38 -> bitacora [dir=none, label="N"];
+
+  D39 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="archiva"];
+  bitacora -> D39 [dir=none, label="1"];
+  D39 -> bitacora_historico [dir=none, label="N"];
+
+  D40 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="recibe"];
+  usuarios -> D40 [dir=none, label="1"];
+  D40 -> notificaciones [dir=none, label="N"];
+
+  //========================================================================
+  // LEYENDA
+  //========================================================================
+  legend [shape=note, style=filled, fillcolor="#F5F5F5", color="#888888", fontsize=9, label="LEYENDA\l--\lRectangulo                = Entidad fuerte\lRectangulo doble borde    = Entidad debil\l(existencia dependiente)\lElipse azul               = Atributo\lsubrayado                 = Clave Primaria (PK)\lcursiva+subrayado         = Clave parcial (entidad debil)\l\"campo (FK)\"              = Clave Foranea\lRombo naranja             = Relacion (cardinalidad 1/N/M/0..1)\lNota junto al rombo       = Atributos propios de relacion M:N\l..\lNo incluidas: vistas v_dept_efectivo, v_horas_pasante,\lv_pasante_completo, v_usuarios_base (derivadas, no\lconceptuales) y test_restore (artefacto de prueba).\l"];
+  notificaciones -> legend [style=invis];
+
+}
+@enddot

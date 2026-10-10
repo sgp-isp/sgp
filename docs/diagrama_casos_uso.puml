@@ -1,0 +1,199 @@
+@startuml DiagramaCasosDeUso_SGP
+title Sistema de Gestión de Pasantes (SGP)\nDiagrama de Casos de Uso
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseFontSize 10
+skinparam shadowing false
+left to right direction
+
+' ============================================================
+' ACTORES
+' ============================================================
+actor "Administrador" as Admin #lightblue
+actor "Tutor"         as Tutor #lightgreen
+actor "Pasante"       as Pasante #lightyellow
+actor "Terminal\nKiosco" as Kiosco #lightsalmon
+actor "Sistema\n(Daemon)" as Sistema #lightgray
+
+' ============================================================
+' SISTEMA
+' ============================================================
+rectangle "SGP — Sistema de Gestión de Pasantes" {
+
+    ' ----------------------------------------------------------
+    ' PAQUETE: Autenticación y Acceso
+    ' ----------------------------------------------------------
+    package "Autenticación y Acceso" {
+        usecase "UC01\nIniciar Sesión" as UC01
+        usecase "UC02\nCerrar Sesión" as UC02
+        usecase "UC03\nRecuperar Contraseña" as UC03
+        usecase "UC04\nCompletar Perfil\n(Wizard Inicial)" as UC04
+        usecase "UC05\nCambiar Contraseña" as UC05
+        usecase "UC06\nRegistrar Intento\nde Acceso (Rate Limit)" as UC06
+    }
+
+    ' ----------------------------------------------------------
+    ' PAQUETE: Gestión de Usuarios
+    ' ----------------------------------------------------------
+    package "Gestión de Usuarios" {
+        usecase "UC07\nCrear Usuario" as UC07
+        usecase "UC08\nEditar Usuario" as UC08
+        usecase "UC09\nEliminar Usuario" as UC09
+        usecase "UC10\nListar Usuarios" as UC10
+        usecase "UC11\nVer / Editar\nPerfil Personal" as UC11
+        usecase "UC12\nResetear PIN\nde Pasante" as UC12
+    }
+
+    ' ----------------------------------------------------------
+    ' PAQUETE: Gestión de Pasantes
+    ' ----------------------------------------------------------
+    package "Gestión de Pasantes y Asignaciones" {
+        usecase "UC13\nListar Pasantes" as UC13
+        usecase "UC14\nAsignar Pasante\n(Depto / Tutor / Período)" as UC14
+        usecase "UC15\nActivar Pasantía" as UC15
+        usecase "UC16\nFinalizar Pasantía" as UC16
+        usecase "UC17\nVer Dashboard\nPersonal del Pasante" as UC17
+        usecase "UC18\nCalcular Progreso\nde Horas" as UC18
+    }
+
+    ' ----------------------------------------------------------
+    ' PAQUETE: Control de Asistencias
+    ' ----------------------------------------------------------
+    package "Control de Asistencias" {
+        usecase "UC19\nRegistrar Asistencia\npor PIN (Kiosco)" as UC19
+        usecase "UC20\nAuditar / Registrar\nAsistencia Manual" as UC20
+        usecase "UC21\nVer Historial\nde Asistencias" as UC21
+        usecase "UC22\nJustificar Ausencia\n(con evidencia)" as UC22
+        usecase "UC23\nVer Almanaque\nPersonal" as UC23
+        usecase "UC24\nAuto-Fill de\nDías Vacíos" as UC24
+    }
+
+    ' ----------------------------------------------------------
+    ' PAQUETE: Evaluaciones
+    ' ----------------------------------------------------------
+    package "Evaluaciones de Desempeño" {
+        usecase "UC25\nCrear Evaluación\n(18 criterios)" as UC25
+        usecase "UC26\nVer Evaluaciones\nde Pasantes" as UC26
+        usecase "UC27\nCalcular Promedio\nde Evaluación" as UC27
+    }
+
+    ' ----------------------------------------------------------
+    ' PAQUETE: Reportes
+    ' ----------------------------------------------------------
+    package "Reportes y Exportaciones" {
+        usecase "UC28\nGenerar Kardex\nde Pasante" as UC28
+        usecase "UC29\nReporte de\nAsistencias" as UC29
+        usecase "UC30\nReporte de\nEvaluación ISP" as UC30
+        usecase "UC31\nExportar a Excel" as UC31
+        usecase "UC32\nExportar a PDF" as UC32
+    }
+
+    ' ----------------------------------------------------------
+    ' PAQUETE: Configuración del Sistema
+    ' ----------------------------------------------------------
+    package "Configuración del Sistema" {
+        usecase "UC33\nGestionar Feriados\n(CRUD)" as UC33
+        usecase "UC34\nGestionar\nDepartamentos (CRUD)" as UC34
+        usecase "UC35\nGestionar Períodos\nAcadémicos (CRUD)" as UC35
+        usecase "UC36\nVer Bitácora\nde Auditoría" as UC36
+        usecase "UC37\nRealizar Respaldo\nde Base de Datos" as UC37
+    }
+
+    ' ----------------------------------------------------------
+    ' PAQUETE: Notificaciones
+    ' ----------------------------------------------------------
+    package "Notificaciones" {
+        usecase "UC38\nRecibir Notificaciones" as UC38
+        usecase "UC39\nMarcar Notificaciones\ncomo Leídas" as UC39
+    }
+}
+
+' ============================================================
+' RELACIONES: ADMINISTRADOR
+' ============================================================
+Admin --> UC01
+Admin --> UC02
+Admin --> UC07
+Admin --> UC08
+Admin --> UC09
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC16
+Admin --> UC20
+Admin --> UC21
+Admin --> UC22
+Admin --> UC26
+Admin --> UC28
+Admin --> UC29
+Admin --> UC30
+Admin --> UC33
+Admin --> UC34
+Admin --> UC35
+Admin --> UC36
+Admin --> UC37
+Admin --> UC38
+Admin --> UC39
+
+' ============================================================
+' RELACIONES: TUTOR
+' ============================================================
+Tutor --> UC01
+Tutor --> UC02
+Tutor --> UC11
+Tutor --> UC13
+Tutor --> UC21
+Tutor --> UC25
+Tutor --> UC26
+Tutor --> UC28
+Tutor --> UC29
+Tutor --> UC30
+Tutor --> UC38
+Tutor --> UC39
+
+' ============================================================
+' RELACIONES: PASANTE
+' ============================================================
+Pasante --> UC01
+Pasante --> UC02
+Pasante --> UC11
+Pasante --> UC17
+Pasante --> UC18
+Pasante --> UC23
+Pasante --> UC38
+Pasante --> UC39
+
+' ============================================================
+' RELACIONES: KIOSCO
+' ============================================================
+Kiosco --> UC19
+
+' ============================================================
+' RELACIONES: SISTEMA (DAEMON)
+' ============================================================
+Sistema --> UC24
+
+' ============================================================
+' RELACIONES <<include>> y <<extend>>
+' ============================================================
+UC01 ..> UC04 : <<extend>>\n[perfil incompleto]
+UC01 ..> UC05 : <<extend>>\n[requiere cambio]
+UC01 ..> UC06 : <<include>>
+UC03 ..> UC05 : <<include>>
+
+UC25 ..> UC27 : <<include>>
+
+UC28 ..> UC31 : <<extend>>
+UC28 ..> UC32 : <<extend>>
+UC29 ..> UC31 : <<extend>>
+UC29 ..> UC32 : <<extend>>
+UC30 ..> UC32 : <<include>>
+
+UC14 ..> UC18 : <<include>>
+UC24 ..> UC18 : <<include>>
+
+@enduml

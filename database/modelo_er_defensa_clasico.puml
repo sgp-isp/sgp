@@ -1,0 +1,377 @@
+@startdot
+digraph G {
+//==========================================================================
+// MODELO ENTIDAD-RELACION (Chen, notacion clasica) — SGP
+// Diagrama para defensa · Julio 2026  |  17 entidades
+//
+// Layout: fdp (force-directed) — distribucion radial compacta.
+// Renderizar con:  dot -Tpng (respeta layout=fdp internamente)
+// o directamente: fdp.exe -Tpng -Goverlap=prism -GK=1.5 -Gsize="20,16" -Gratio=compress
+//==========================================================================
+
+  graph [fontname="Arial", layout=fdp,
+         overlap=prism, K=1.5,
+         nodesep=0.25, ranksep=0.50, splines=true,
+         size="20,16", ratio=compress,
+         label="Modelo Entidad-Relacion (Chen) — Sistema de Gestion de Pasantes  |  Julio 2026",
+         labelloc=t, fontsize=13];
+  node  [fontname="Arial", fontsize=7];
+  edge  [fontname="Arial", fontsize=6];
+
+  //==========================================================================
+  // MODULO USUARIOS (azul)
+  //==========================================================================
+  usuarios [shape=box, style="filled,bold", fillcolor="#DAEAF6", color="#1A5276", label="usuarios", width=1.3];
+  usuarios__id             [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  usuarios__cedula         [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="cedula"];
+  usuarios__correo         [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="correo"];
+  usuarios__pin_asistencia [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pin_asistencia"];
+  usuarios__rol_id         [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="rol_id (FK)"];
+  usuarios__dep_id         [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="departamento_id (FK)"];
+  usuarios__estado         [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="estado"];
+  usuarios -> usuarios__id             [dir=none];
+  usuarios -> usuarios__cedula         [dir=none];
+  usuarios -> usuarios__correo         [dir=none];
+  usuarios -> usuarios__pin_asistencia [dir=none];
+  usuarios -> usuarios__rol_id         [dir=none];
+  usuarios -> usuarios__dep_id         [dir=none];
+  usuarios -> usuarios__estado         [dir=none];
+
+  roles [shape=box, style=filled, fillcolor="#DAEAF6", color="#1A5276", label="roles"];
+  roles__id     [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  roles__nombre [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  roles -> roles__id     [dir=none];
+  roles -> roles__nombre [dir=none];
+
+  departamentos [shape=box, style=filled, fillcolor="#DAEAF6", color="#1A5276", label="departamentos"];
+  dep__id     [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  dep__nombre [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  dep__activo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="activo"];
+  departamentos -> dep__id     [dir=none];
+  departamentos -> dep__nombre [dir=none];
+  departamentos -> dep__activo [dir=none];
+
+  datos_personales [shape=box, style=filled, fillcolor="#DAEAF6", color="#1A5276", peripheries=2, label="datos_personales"];
+  dpf__id        [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  dpf__uid       [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="usuario_id (FK)"];
+  dpf__nombres   [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombres"];
+  dpf__apellidos [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="apellidos"];
+  dpf__cargo     [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="cargo"];
+  dpf__telefono  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="telefono"];
+  datos_personales -> dpf__id        [dir=none];
+  datos_personales -> dpf__uid       [dir=none];
+  datos_personales -> dpf__nombres   [dir=none];
+  datos_personales -> dpf__apellidos [dir=none];
+  datos_personales -> dpf__cargo     [dir=none];
+  datos_personales -> dpf__telefono  [dir=none];
+
+  //==========================================================================
+  // MODULO PASANTIAS (verde)
+  //==========================================================================
+  instituciones [shape=box, style=filled, fillcolor="#D5F5E3", color="#1E8449", label="instituciones"];
+  ins__id     [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  ins__nombre [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  ins__tipo   [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tipo"];
+  ins__activo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="activo"];
+  instituciones -> ins__id     [dir=none];
+  instituciones -> ins__nombre [dir=none];
+  instituciones -> ins__tipo   [dir=none];
+  instituciones -> ins__activo [dir=none];
+
+  periodos_academicos [shape=box, style=filled, fillcolor="#D5F5E3", color="#1E8449", label="periodos_academicos"];
+  per__id        [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  per__nombre    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  per__tipo      [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tipo"];
+  per__fecha_ini [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_inicio"];
+  per__fecha_fin [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_fin"];
+  per__estado    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="estado"];
+  periodos_academicos -> per__id        [dir=none];
+  periodos_academicos -> per__nombre    [dir=none];
+  periodos_academicos -> per__tipo      [dir=none];
+  periodos_academicos -> per__fecha_ini [dir=none];
+  periodos_academicos -> per__fecha_fin [dir=none];
+  periodos_academicos -> per__estado    [dir=none];
+
+  datos_pasante [shape=box, style=filled, fillcolor="#D5F5E3", color="#1E8449", peripheries=2, label="datos_pasante"];
+  dpa__id         [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  dpa__uid        [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="usuario_id (FK)"];
+  dpa__periodo_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="periodo_id (FK)"];
+  dpa__inst_id    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="institucion_id (FK)"];
+  dpa__tutor_id   [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tutor_id (FK)"];
+  dpa__estado     [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="estado_pasantia"];
+  dpa__tipo       [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tipo_pasantia"];
+  dpa__fecha_ini  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_inicio_pasantia"];
+  dpa__fecha_fin  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_fin_estimada"];
+  dpa__horas_acum [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="horas_acumuladas"];
+  dpa__horas_meta [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="horas_meta"];
+  datos_pasante -> dpa__id         [dir=none];
+  datos_pasante -> dpa__uid        [dir=none];
+  datos_pasante -> dpa__periodo_id [dir=none];
+  datos_pasante -> dpa__inst_id    [dir=none];
+  datos_pasante -> dpa__tutor_id   [dir=none];
+  datos_pasante -> dpa__estado     [dir=none];
+  datos_pasante -> dpa__tipo       [dir=none];
+  datos_pasante -> dpa__fecha_ini  [dir=none];
+  datos_pasante -> dpa__fecha_fin  [dir=none];
+  datos_pasante -> dpa__horas_acum [dir=none];
+  datos_pasante -> dpa__horas_meta [dir=none];
+
+  dias_feriados [shape=box, style=filled, fillcolor="#D5F5E3", color="#1E8449", label="dias_feriados"];
+  fer__id        [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  fer__fecha     [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>fecha</U></I>>];
+  fer__nombre    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="nombre"];
+  fer__tipo      [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>tipo</U></I>>];
+  fer__laborable [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="es_laborable"];
+  dias_feriados -> fer__id        [dir=none];
+  dias_feriados -> fer__fecha     [dir=none];
+  dias_feriados -> fer__nombre    [dir=none];
+  dias_feriados -> fer__tipo      [dir=none];
+  dias_feriados -> fer__laborable [dir=none];
+
+  asignaciones [shape=box, style=filled, fillcolor="#D5F5E3", color="#1E8449", label="asignaciones"];
+  asi__id        [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  asi__pas_id    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pasante_id (FK)"];
+  asi__tut_id    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tutor_id (FK)"];
+  asi__dep_id    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="departamento_id (FK)"];
+  asi__fecha_ini [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_inicio"];
+  asi__fecha_fin [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_fin"];
+  asi__estado    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="estado"];
+  asignaciones -> asi__id        [dir=none];
+  asignaciones -> asi__pas_id    [dir=none];
+  asignaciones -> asi__tut_id    [dir=none];
+  asignaciones -> asi__dep_id    [dir=none];
+  asignaciones -> asi__fecha_ini [dir=none];
+  asignaciones -> asi__fecha_fin [dir=none];
+  asignaciones -> asi__estado    [dir=none];
+
+  asistencias [shape=box, style=filled, fillcolor="#D5F5E3", color="#1E8449", peripheries=2, label="asistencias"];
+  att__id       [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  att__pas_id   [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pasante_id (FK)"];
+  att__asig_id  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="asignacion_id (FK)"];
+  att__fecha    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>fecha</U></I>>];
+  att__hora_reg [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="hora_registro"];
+  att__estado   [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="estado"];
+  att__metodo   [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="metodo"];
+  att__horas    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="horas_calculadas"];
+  att__retardo  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="es_retardo"];
+  att__autofill [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="es_auto_fill"];
+  asistencias -> att__id       [dir=none];
+  asistencias -> att__pas_id   [dir=none];
+  asistencias -> att__asig_id  [dir=none];
+  asistencias -> att__fecha    [dir=none];
+  asistencias -> att__hora_reg [dir=none];
+  asistencias -> att__estado   [dir=none];
+  asistencias -> att__metodo   [dir=none];
+  asistencias -> att__horas    [dir=none];
+  asistencias -> att__retardo  [dir=none];
+  asistencias -> att__autofill [dir=none];
+
+  //==========================================================================
+  // MODULO EVALUACIONES/ACTIVIDADES (ambar)
+  //==========================================================================
+  evaluaciones [shape=box, style=filled, fillcolor="#FEF3C7", color="#92400E", label="evaluaciones"];
+  eva__id     [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  eva__pas_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pasante_id (FK)"];
+  eva__tut_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tutor_id (FK)"];
+  eva__fecha  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_evaluacion"];
+  eva__prom   [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="promedio_final"];
+  evaluaciones -> eva__id     [dir=none];
+  evaluaciones -> eva__pas_id [dir=none];
+  evaluaciones -> eva__tut_id [dir=none];
+  evaluaciones -> eva__fecha  [dir=none];
+  evaluaciones -> eva__prom   [dir=none];
+
+  actividades_pasante [shape=box, style=filled, fillcolor="#FEF3C7", color="#92400E", peripheries=2, label="actividades_pasante"];
+  act__id     [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  act__pas_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pasante_id (FK)"];
+  act__fecha  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>fecha</U></I>>];
+  act__titulo [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>titulo</U></I>>];
+  act__desc   [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="descripcion"];
+  actividades_pasante -> act__id     [dir=none];
+  actividades_pasante -> act__pas_id [dir=none];
+  actividades_pasante -> act__fecha  [dir=none];
+  actividades_pasante -> act__titulo [dir=none];
+  actividades_pasante -> act__desc   [dir=none];
+
+  //==========================================================================
+  // MODULO EXAMENES (violeta)
+  //==========================================================================
+  examenes [shape=box, style=filled, fillcolor="#EDE9FE", color="#6C3483", label="examenes"];
+  exm__id        [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  exm__titulo    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="titulo"];
+  exm__per_id    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="periodo_id (FK)"];
+  exm__cre_por   [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="creado_por (FK)"];
+  exm__fecha_ini [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_inicio"];
+  exm__fecha_fin [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="fecha_fin"];
+  exm__activo    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="activo"];
+  examenes -> exm__id        [dir=none];
+  examenes -> exm__titulo    [dir=none];
+  examenes -> exm__per_id    [dir=none];
+  examenes -> exm__cre_por   [dir=none];
+  examenes -> exm__fecha_ini [dir=none];
+  examenes -> exm__fecha_fin [dir=none];
+  examenes -> exm__activo    [dir=none];
+
+  examen_preguntas [shape=box, style=filled, fillcolor="#EDE9FE", color="#6C3483", peripheries=2, label="examen_preguntas"];
+  epq__id     [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  epq__exm_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="examen_id (FK)"];
+  epq__orden  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<I><U>orden</U></I>>];
+  epq__enunc  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="enunciado"];
+  epq__tipo   [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="tipo"];
+  epq__puntos [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="puntos"];
+  examen_preguntas -> epq__id     [dir=none];
+  examen_preguntas -> epq__exm_id [dir=none];
+  examen_preguntas -> epq__orden  [dir=none];
+  examen_preguntas -> epq__enunc  [dir=none];
+  examen_preguntas -> epq__tipo   [dir=none];
+  examen_preguntas -> epq__puntos [dir=none];
+
+  examen_intentos [shape=box, style=filled, fillcolor="#EDE9FE", color="#6C3483", label="examen_intentos"];
+  eit__id      [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  eit__exm_id  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="examen_id (FK)"];
+  eit__pas_id  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pasante_id (FK)"];
+  eit__puntaje [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="puntaje_obtenido"];
+  eit__maximo  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="puntaje_maximo"];
+  eit__porcent [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="porcentaje"];
+  examen_intentos -> eit__id      [dir=none];
+  examen_intentos -> eit__exm_id  [dir=none];
+  examen_intentos -> eit__pas_id  [dir=none];
+  examen_intentos -> eit__puntaje [dir=none];
+  examen_intentos -> eit__maximo  [dir=none];
+  examen_intentos -> eit__porcent [dir=none];
+
+  examen_opciones [shape=box, style=filled, fillcolor="#EDE9FE", color="#6C3483", peripheries=2, label="examen_opciones"];
+  eop__id       [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  eop__preg_id  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pregunta_id (FK)"];
+  eop__texto    [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="texto"];
+  eop__correcta [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="es_correcta"];
+  examen_opciones -> eop__id       [dir=none];
+  examen_opciones -> eop__preg_id  [dir=none];
+  examen_opciones -> eop__texto    [dir=none];
+  examen_opciones -> eop__correcta [dir=none];
+
+  examen_respuestas [shape=box, style=filled, fillcolor="#EDE9FE", color="#6C3483", peripheries=2, label="examen_respuestas"];
+  ers__id      [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label=<<U>id</U>>];
+  ers__int_id  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="intento_id (FK)"];
+  ers__preg_id [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="pregunta_id (FK)"];
+  ers__opc_id  [shape=ellipse, style=filled, fillcolor="#EAF6FF", color="#5B9BD5", label="opcion_id_elegida (FK)"];
+  examen_respuestas -> ers__id      [dir=none];
+  examen_respuestas -> ers__int_id  [dir=none];
+  examen_respuestas -> ers__preg_id [dir=none];
+  examen_respuestas -> ers__opc_id  [dir=none];
+
+  //==========================================================================
+  // RELACIONES (rombos)
+  //==========================================================================
+  D01 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="tiene rol"];
+  usuarios -> D01 [dir=none, label="N"];
+  D01 -> roles    [dir=none, label="1"];
+
+  D02 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="pertenece a"];
+  usuarios -> D02       [dir=none, label="N"];
+  D02 -> departamentos  [dir=none, label="0..1"];
+
+  D03 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="posee perfil"];
+  usuarios -> D03          [dir=none, label="1"];
+  D03 -> datos_personales  [dir=none, label="1"];
+
+  D08 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="es pasante"];
+  usuarios -> D08       [dir=none, label="1"];
+  D08 -> datos_pasante  [dir=none, label="1"];
+
+  D09 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="procede de"];
+  datos_pasante -> D09  [dir=none, label="N"];
+  D09 -> instituciones  [dir=none, label="0..1"];
+
+  D10 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="cursa en período"];
+  datos_pasante -> D10           [dir=none, label="N"];
+  D10 -> periodos_academicos     [dir=none, label="0..1"];
+
+  D11 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="tutor actual"];
+  datos_pasante -> D11 [dir=none, label="N"];
+  D11 -> usuarios      [dir=none, label="0..1"];
+
+  D12 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="depto actual"];
+  datos_pasante -> D12  [dir=none, label="N"];
+  D12 -> departamentos  [dir=none, label="0..1"];
+
+  D13 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="es asignado"];
+  usuarios -> D13     [dir=none, label="N\n(pasante)"];
+  D13 -> asignaciones [dir=none, label="1"];
+
+  D14 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="supervisa asig."];
+  usuarios -> D14     [dir=none, label="N\n(tutor)"];
+  D14 -> asignaciones [dir=none, label="1"];
+
+  D15 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="ubica en depto"];
+  departamentos -> D15  [dir=none, label="N"];
+  D15 -> asignaciones   [dir=none, label="1"];
+
+  D16 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="marca asistencia"];
+  usuarios -> D16    [dir=none, label="1\n(pasante)"];
+  D16 -> asistencias [dir=none, label="N"];
+
+  D17 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="en el marco de"];
+  asignaciones -> D17  [dir=none, label="0..1"];
+  D17 -> asistencias   [dir=none, label="N"];
+
+  D18 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="aplica a depto"];
+  dias_feriados -> D18  [dir=none, label="N"];
+  D18 -> departamentos  [dir=none, label="0..1"];
+
+  D21 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="evalúa"];
+  usuarios -> D21     [dir=none, label="1\n(tutor)"];
+  D21 -> evaluaciones [dir=none, label="N"];
+
+  D22 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="es evaluado"];
+  usuarios -> D22     [dir=none, label="1\n(pasante)"];
+  D22 -> evaluaciones [dir=none, label="N"];
+
+  D19 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="registra actividad"];
+  usuarios -> D19            [dir=none, label="1\n(pasante)"];
+  D19 -> actividades_pasante [dir=none, label="N"];
+
+  D23 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="programa"];
+  periodos_academicos -> D23  [dir=none, label="0..1"];
+  D23 -> examenes             [dir=none, label="N"];
+
+  D24 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="crea examen"];
+  usuarios -> D24  [dir=none, label="1\n(creador)"];
+  D24 -> examenes  [dir=none, label="N"];
+
+  D25 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="compuesto de"];
+  examenes -> D25           [dir=none, label="1"];
+  D25 -> examen_preguntas   [dir=none, label="N"];
+
+  D26 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="ofrece opciones"];
+  examen_preguntas -> D26  [dir=none, label="1"];
+  D26 -> examen_opciones   [dir=none, label="N"];
+
+  D27 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="genera intento"];
+  examenes -> D27         [dir=none, label="1"];
+  D27 -> examen_intentos  [dir=none, label="N"];
+
+  D28 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="presenta examen"];
+  usuarios -> D28         [dir=none, label="1\n(pasante)"];
+  D28 -> examen_intentos  [dir=none, label="N"];
+
+  D29 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="contiene resp."];
+  examen_intentos -> D29   [dir=none, label="1"];
+  D29 -> examen_respuestas [dir=none, label="N"];
+
+  D30 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="responde a pregunta"];
+  examen_preguntas -> D30  [dir=none, label="1"];
+  D30 -> examen_respuestas [dir=none, label="N"];
+
+  D31 [shape=diamond, style=filled, fillcolor="#FDE9D9", color="#C0504D", label="opción elegida"];
+  examen_opciones -> D31   [dir=none, label="0..1"];
+  D31 -> examen_respuestas [dir=none, label="N"];
+
+  //==========================================================================
+  // LEYENDA
+  //==========================================================================
+  legend [shape=note, style=filled, fillcolor="#F5F5F5", color="#888888", fontsize=7,
+    label="LEYENDA\l--\lRect. normal      = Entidad fuerte\lRect. doble borde = Entidad debil\lElipse azul       = Atributo\lsubrayado         = Clave Primaria (PK)\lcursiva+subrayado = Clave parcial\l\"campo (FK)\"      = Clave Foranea\lRombo naranja     = Relacion\l--\lAzul=Usuarios | Verde=Pasantias\lAmbar=Evaluaciones | Violeta=Examenes\l"];
+
+}
+@enddot
