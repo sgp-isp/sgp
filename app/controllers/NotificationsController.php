@@ -95,11 +95,97 @@ class NotificationsController extends Controller
             $this->jsonResponse(false, 'ID de notificación requerido');
         }
 
-        if ($this->notificationModel->markAsRead($id, $user_id)) {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+        $dispositivo = $this->parseUserDevice();
+
+        if ($this->notificationModel->markAsRead($id, $user_id, $ip, $dispositivo)) {
             $this->jsonResponse(true, 'Notificación marcada como leída');
         } else {
             $this->jsonResponse(false, 'Error al marcar notificación');
         }
+    }
+
+    /**
+     * Identificar tipo de dispositivo desde User-Agent
+     */
+    private function parseUserDevice(): string
+    {
+        $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        if (empty($ua)) return 'Desconocido';
+        if (stripos($ua, 'Mobile') !== false || stripos($ua, 'Android') !== false || stripos($ua, 'iPhone') !== false) {
+            return 'Móvil';
+        } elseif (stripos($ua, 'Tablet') !== false || stripos($ua, 'iPad') !== false) {
+            return 'Tablet';
+        } else {
+            return 'Escritorio';
+        }
+    }
+
+    /**
+     * Métricas de entrega, lectura y tracking de clics (solo Administrador/SuperAdmin)
+     * GET /notifications/analytics
+     */
+    public function analytics(): void
+    {
+        $role_id = (int)Session::get('role_id');
+        if (!in_array($role_id, [0, 1])) {
+            $this->jsonResponse(false, 'Sin permiso');
+        }
+
+        $stats = $this->notificationModel->getAnalytics();
+        $this->jsonResponse(true, 'ok', ['analytics' => $stats]);
+    }
+
+    /**
+     * Alternar estado global de notificaciones
+     * POST /notifications/toggleGlobal
+     */
+    public function toggleGlobal(): void
+    {
+        $role_id = (int)Session::get('role_id');
+        if (!in_array($role_id, [0, 1])) {
+            $this->jsonResponse(false, 'Sin permiso');
+        }
+
+        $this->verifyCsrf();
+        $activo = isset($_POST['activo']) && (int)$_POST['activo'] === 1 ? 1 : 0;
+        $res = $this->notificationModel->toggleGlobalNotifications($activo);
+
+        if (class_exists('AuditModel')) {
+            AuditModel::log('UPDATE_CONFIG', "Notificaciones del sistema " . ($activo ? 'reanudadas' : 'pausadas globalmente'));
+        }
+
+        $this->jsonResponse($res, $res ? 'Estado de notificaciones actualizado' : 'Error al actualizar estado', [
+            'activo' => $activo
+        ]);
+    }
+
+    /**
+     * Alternar estado de notificaciones para un usuario específico
+     * POST /notifications/toggleUser
+     */
+    public function toggleUser(): void
+    {
+        $role_id = (int)Session::get('role_id');
+        if (!in_array($role_id, [0, 1])) {
+            $this->jsonResponse(false, 'Sin permiso');
+        }
+
+        $this->verifyCsrf();
+        $userId = (int)($_POST['usuario_id'] ?? 0);
+        $habilitado = isset($_POST['habilitado']) && (int)$_POST['habilitado'] === 1 ? 1 : 0;
+
+        if ($userId <= 0) {
+            $this->jsonResponse(false, 'ID de usuario requerido');
+        }
+
+        $res = $this->notificationModel->toggleUserNotifications($userId, $habilitado);
+
+        if (class_exists('AuditModel')) {
+            AuditModel::log('UPDATE_CONFIG', "Notificaciones para usuario ID $userId " . ($habilitado ? 'habilitadas' : 'silenciadas'));
+        }
+
+        $this->jsonResponse($res, $res ? 'Preferencia de usuario actualizada' : 'Error al actualizar preferencia');
     }
 
     /**

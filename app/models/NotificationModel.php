@@ -73,6 +73,62 @@ class NotificationModel
 
 
     /**
+     * Comprueba si las notificaciones están activas globalmente en el sistema.
+     */
+    public function isGloballyActive(): bool
+    {
+        try {
+            $this->db->query("SELECT valor FROM configuracion WHERE clave = 'notificaciones_activas' LIMIT 1");
+            $row = $this->db->single();
+            return $row ? ((int)$row->valor === 1) : true;
+        } catch (\Throwable $e) {
+            return true;
+        }
+    }
+
+    /**
+     * Comprueba si un usuario específico tiene las notificaciones habilitadas.
+     */
+    public function isUserEnabled(int $userId): bool
+    {
+        try {
+            $this->db->query("SELECT notificaciones_habilitadas FROM usuarios WHERE id = :uid LIMIT 1");
+            $this->db->bind(':uid', $userId);
+            $row = $this->db->single();
+            return $row ? ((int)$row->notificaciones_habilitadas === 1) : true;
+        } catch (\Throwable $e) {
+            return true;
+        }
+    }
+
+    /**
+     * Alternar estado global de notificaciones.
+     */
+    public function toggleGlobalNotifications(int $active): bool
+    {
+        $this->db->query("
+            INSERT INTO configuracion (clave, valor, descripcion)
+            VALUES ('notificaciones_activas', :val, 'Habilita o pausa globalmente el sistema de notificaciones')
+            ON DUPLICATE KEY UPDATE valor = :val2, updated_at = NOW()
+        ");
+        $val = $active ? '1' : '0';
+        $this->db->bind(':val', $val);
+        $this->db->bind(':val2', $val);
+        return $this->db->execute();
+    }
+
+    /**
+     * Alternar estado de notificaciones para un usuario específico.
+     */
+    public function toggleUserNotifications(int $userId, int $enabled): bool
+    {
+        $this->db->query("UPDATE usuarios SET notificaciones_habilitadas = :hab WHERE id = :uid");
+        $this->db->bind(':hab', $enabled ? 1 : 0, PDO::PARAM_INT);
+        $this->db->bind(':uid', $userId, PDO::PARAM_INT);
+        return $this->db->execute();
+    }
+
+    /**
      * Get unread notifications for a user, filtered by role.
      * @param int $user_id
      * @param int $role_id  1=Admin, 2=Tutor, 3=Pasante
@@ -80,6 +136,10 @@ class NotificationModel
      */
     public function getUnreadByUser($user_id, $role_id = 1, $limit = 10)
     {
+        if (!$this->isGloballyActive() || !$this->isUserEnabled((int)$user_id)) {
+            return [];
+        }
+
         $filter = $this->getFilterForRole((int)$role_id);
 
         $this->db->query("
@@ -104,6 +164,10 @@ class NotificationModel
      */
     public function getCountUnread($user_id, $role_id = 1)
     {
+        if (!$this->isGloballyActive() || !$this->isUserEnabled((int)$user_id)) {
+            return 0;
+        }
+
         $filter = $this->getFilterForRole((int)$role_id);
 
         $this->db->query("
@@ -123,18 +187,24 @@ class NotificationModel
 
 
     /**
-     * Mark notification as read
+     * Mark notification as read and track click interaction
      */
-    public function markAsRead($id, $user_id)
+    public function markAsRead($id, $user_id, ?string $ip = null, ?string $dispositivo = null)
     {
         $this->db->query("
             UPDATE notificaciones
-            SET leida = 1
+            SET leida = 1,
+                leido_at = COALESCE(leido_at, NOW()),
+                clickeado_at = NOW(),
+                ip_click = COALESCE(:ip, ip_click),
+                dispositivo = COALESCE(:dispositivo, dispositivo)
             WHERE id = :id AND usuario_id = :user_id
         ");
         
         $this->db->bind(':id', $id);
         $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':ip', $ip);
+        $this->db->bind(':dispositivo', $dispositivo);
         
         return $this->db->execute();
     }
@@ -146,7 +216,8 @@ class NotificationModel
     {
         $this->db->query("
             UPDATE notificaciones
-            SET leida = 1
+            SET leida = 1,
+                leido_at = COALESCE(leido_at, NOW())
             WHERE usuario_id = :user_id AND leida = 0
         ");
         
@@ -165,11 +236,14 @@ class NotificationModel
 
     /**
      * Create a notification con referencia_id opcional.
-     * Usar para eventos rastreables (PIN reset, etc.) que deben
-     * resolverse en todos los destinatarios simultáneamente.
+     * Respeta switch global y preferencia granular del usuario.
      */
     public function createWithRef($usuario_id, $tipo, $titulo, $mensaje, $url = '#', $referencia_id = null)
     {
+        if (!$this->isGloballyActive() || !$this->isUserEnabled((int)$usuario_id)) {
+            return false;
+        }
+
         $this->db->query("
             INSERT INTO notificaciones (usuario_id, tipo, titulo, mensaje, url, referencia_id)
             VALUES (:usuario_id, :tipo, :titulo, :mensaje, :url, :ref_id)
@@ -234,9 +308,87 @@ class NotificationModel
             DELETE FROM notificaciones
             WHERE leida = 1 AND created_at < DATE_SUB(NOW(), INTERVAL :days DAY)
         ");
-        
         $this->db->bind(':days', $days);
-        
         return $this->db->execute();
+    }
+
+    /**
+     * Obtener estadísticas globales y trazabilidad de interacciones para el Administrador.
+     */
+    public function getAnalytics(): array
+    {
+        $stats = [
+            'total_enviadas'    => 0,
+            'total_leidas'      => 0,
+            'total_clickeadas'  => 0,
+            'tasa_lectura'      => 0.0,
+            'tasa_clicks'       => 0.0,
+            'global_activo'     => $this->isGloballyActive(),
+            'ultimas'           => []
+        ];
+
+        try {
+            $this->db->query("
+                SELECT 
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN leida = 1 THEN 1 ELSE 0 END) AS leidas,
+                    SUM(CASE WHEN clickeado_at IS NOT NULL THEN 1 ELSE 0 END) AS clickeadas
+                FROM notificaciones
+            ");
+            $res = $this->db->single();
+            if ($res) {
+                $stats['total_enviadas']   = (int)($res->total ?? 0);
+                $stats['total_leidas']     = (int)($res->leidas ?? 0);
+                $stats['total_clickeadas'] = (int)($res->clickeadas ?? 0);
+                if ($stats['total_enviadas'] > 0) {
+                    $stats['tasa_lectura'] = round(($stats['total_leidas'] / $stats['total_enviadas']) * 100, 1);
+                    $stats['tasa_clicks']  = round(($stats['total_clickeadas'] / $stats['total_enviadas']) * 100, 1);
+                }
+            }
+
+            // Trazabilidad de últimas interacciones (con usuario, rol, IP y dispositivo)
+            $this->db->query("
+                SELECT 
+                    n.id, n.tipo, n.titulo, n.leida, n.created_at, n.leido_at, n.clickeado_at, n.ip_click, n.dispositivo,
+                    u.correo, r.nombre AS rol_nombre,
+                    CONCAT(COALESCE(dp.nombres,''), ' ', COALESCE(dp.apellidos,'')) AS usuario_nombre
+                FROM notificaciones n
+                LEFT JOIN usuarios u ON n.usuario_id = u.id
+                LEFT JOIN roles r ON u.rol_id = r.id
+                LEFT JOIN datos_personales dp ON u.id = dp.usuario_id
+                ORDER BY n.created_at DESC
+                LIMIT 50
+            ");
+            $rows = $this->db->resultSet();
+            $stats['ultimas'] = $rows ? array_map(fn($r) => (array)$r, $rows) : [];
+        } catch (\Throwable $e) {
+            error_log('[SGP-NOTIF-ANALYTICS] ' . $e->getMessage());
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Obtener listado de usuarios con estado de notificaciones para gestión granular.
+     */
+    public function getUsersList(): array
+    {
+        try {
+            $this->db->query("
+                SELECT 
+                    u.id, u.correo, u.rol_id, u.notificaciones_habilitadas, u.estado,
+                    r.nombre AS rol_nombre,
+                    CONCAT(COALESCE(dp.nombres,''), ' ', COALESCE(dp.apellidos,'')) AS nombre_completo
+                FROM usuarios u
+                LEFT JOIN roles r ON u.rol_id = r.id
+                LEFT JOIN datos_personales dp ON u.id = dp.usuario_id
+                WHERE u.estado = 'activo'
+                ORDER BY u.rol_id ASC, nombre_completo ASC
+            ");
+            $rows = $this->db->resultSet();
+            return $rows ? array_map(fn($r) => (array)$r, $rows) : [];
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 }

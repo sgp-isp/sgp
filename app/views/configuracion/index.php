@@ -1337,6 +1337,92 @@ $hoy             = date('Y-m-d');
 
     </div><!-- /Fila 4 -->
 
+    <!-- ===== FILA 5: Sistema Inteligente de Notificaciones (Fase 4) ===== -->
+    <div class="cfg-grid">
+        <div class="cfg-card cg-12" style="border-top:4px solid #3b82f6;">
+            <?php
+            $notifStats = $data['notifAnalytics'] ?? [];
+            $notifActivo = !empty($notifStats['global_activo']);
+            $totalEnviadas = $notifStats['total_enviadas'] ?? 0;
+            $tasaLectura = $notifStats['tasa_lectura'] ?? 0;
+            $tasaClicks = $notifStats['tasa_clicks'] ?? 0;
+            $totalLeidas = $notifStats['total_leidas'] ?? 0;
+            $totalClicks = $notifStats['total_clickeadas'] ?? 0;
+            $notifUsers = $data['notifUsuarios'] ?? [];
+            $ultimasNotifs = $notifStats['ultimas'] ?? [];
+            ?>
+            <div class="cfg-card-header" style="flex-wrap:wrap;gap:14px;border-bottom:1px solid #f1f5f9;padding-bottom:18px;">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#eff6ff;">
+                        <i class="ti ti-bell-ringing" style="font-size:1.25rem;color:#2563eb;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.1rem;font-weight:800;color:#1e293b;">Sistema Inteligente de Notificaciones</div>
+                        <div style="font-size:0.76rem;color:#64748b;font-weight:500;margin-top:2px;">
+                            Control administrativo global, preferencias por usuario y métricas de lectura y clics
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controles y Toggle Global -->
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:10px;background:#f8fafc;padding:6px 14px;border-radius:12px;border:1px solid #e2e8f0;">
+                        <span style="font-size:0.8rem;font-weight:700;color:#334155;">Switch Global:</span>
+                        <label class="cfg-toggle-wrap" style="margin:0;">
+                            <input type="checkbox" id="notifGlobalToggle" <?= $notifActivo ? 'checked' : '' ?>>
+                            <span class="cfg-toggle-track"></span>
+                            <span class="cfg-toggle-dot"></span>
+                        </label>
+                        <span id="notifGlobalBadge" class="cfg-badge" style="background:<?= $notifActivo ? '#dcfce7' : '#fee2e2' ?>;color:<?= $notifActivo ? '#16a34a' : '#dc2626' ?>;font-weight:700;">
+                            <?= $notifActivo ? 'Activas' : 'Pausadas' ?>
+                        </span>
+                    </div>
+
+                    <button type="button" onclick="abrirModalNotifTrazabilidad()" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:8px 14px;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;">
+                        <i class="ti ti-chart-dots-3"></i> Trazabilidad de Clics
+                    </button>
+
+                    <button type="button" onclick="abrirModalNotifUsuarios()" style="background:#f8fafc;color:#475569;border:1px solid #cbd5e1;padding:8px 14px;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;">
+                        <i class="ti ti-users"></i> Gestión por Usuario
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bento Sub-Grid KPIs -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;margin-top:20px;">
+                <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;">
+                    <div style="width:44px;height:44px;border-radius:12px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                        <i class="ti ti-send"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.4rem;font-weight:800;color:#1e293b;"><?= number_format($totalEnviadas) ?></div>
+                        <div style="font-size:0.74rem;color:#64748b;font-weight:600;text-transform:uppercase;">Total Enviadas</div>
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;">
+                    <div style="width:44px;height:44px;border-radius:12px;background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                        <i class="ti ti-eye-check"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.4rem;font-weight:800;color:#16a34a;"><?= $tasaLectura ?>%</div>
+                        <div style="font-size:0.74rem;color:#64748b;font-weight:600;text-transform:uppercase;">Lectura (<?= number_format($totalLeidas) ?> leídas)</div>
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;">
+                    <div style="width:44px;height:44px;border-radius:12px;background:#faf5ff;color:#9333ea;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                        <i class="ti ti-pointer"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.4rem;font-weight:800;color:#9333ea;"><?= $tasaClicks ?>%</div>
+                        <div style="font-size:0.74rem;color:#64748b;font-weight:600;text-transform:uppercase;">Clics / Interacción (<?= number_format($totalClicks) ?> clics)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /Fila 5 -->
+
 </div><!-- /container -->
 
 <!-- ═══════════════════════════════════════════════════════
@@ -2342,17 +2428,267 @@ $hoy             = date('Y-m-d');
     }
 
     // ── Cerrar cualquier modal con Escape o clic en fondo ─
-    ['modalInstitucion', 'modalDepto', 'modalEditarDepto', 'modalEditarInstitucion'].forEach(id => {
+    ['modalInstitucion', 'modalDepto', 'modalEditarDepto', 'modalEditarInstitucion', 'modalNotifTrazabilidad', 'modalNotifUsuarios'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         el.addEventListener('click', e => { if (e.target === el) el.style.display = 'none'; });
     });
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
-            ['modalInstitucion', 'modalDepto', 'modalEditarDepto', 'modalEditarInstitucion'].forEach(id => {
+            ['modalInstitucion', 'modalDepto', 'modalEditarDepto', 'modalEditarInstitucion', 'modalNotifTrazabilidad', 'modalNotifUsuarios'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
         }
     });
+
+    // ── Notificaciones: Switch Global ──────────────────────
+    (function () {
+        const toggle = document.getElementById('notifGlobalToggle');
+        const badge = document.getElementById('notifGlobalBadge');
+
+        if (toggle) {
+            toggle.addEventListener('change', function () {
+                const nuevoEstado = this.checked ? 1 : 0;
+                fetch('<?= URLROOT ?>/configuracion/toggleNotificaciones', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: 'activo=' + nuevoEstado
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        if (badge) {
+                            badge.textContent = nuevoEstado === 1 ? 'Activas' : 'Pausadas';
+                            badge.style.background = nuevoEstado === 1 ? '#dcfce7' : '#fee2e2';
+                            badge.style.color = nuevoEstado === 1 ? '#16a34a' : '#dc2626';
+                        }
+                        NotificationService.success(data.message);
+                    } else {
+                        toggle.checked = !toggle.checked;
+                        NotificationService.error(data.message || 'Error al cambiar estado');
+                    }
+                })
+                .catch(() => {
+                    toggle.checked = !toggle.checked;
+                    NotificationService.error('Error de red al actualizar estado global');
+                });
+            });
+        }
+    })();
+
+    // ── Notificaciones: Modales ────────────────────────────
+    function abrirModalNotifTrazabilidad() {
+        const m = document.getElementById('modalNotifTrazabilidad');
+        if (m) m.style.display = 'flex';
+    }
+    function cerrarModalNotifTrazabilidad() {
+        const m = document.getElementById('modalNotifTrazabilidad');
+        if (m) m.style.display = 'none';
+    }
+
+    function abrirModalNotifUsuarios() {
+        const m = document.getElementById('modalNotifUsuarios');
+        if (m) m.style.display = 'flex';
+    }
+    function cerrarModalNotifUsuarios() {
+        const m = document.getElementById('modalNotifUsuarios');
+        if (m) m.style.display = 'none';
+    }
+
+    // ── Notificaciones: Toggle por Usuario ─────────────────
+    function toggleUserNotif(userId, checkbox) {
+        const habilitado = checkbox.checked ? 1 : 0;
+        fetch('<?= URLROOT ?>/configuracion/toggleUsuarioNotificaciones', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+            body: 'usuario_id=' + userId + '&habilitado=' + habilitado
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                NotificationService.success(data.message);
+            } else {
+                checkbox.checked = !checkbox.checked;
+                NotificationService.error(data.message || 'Error al actualizar preferencia');
+            }
+        })
+        .catch(() => {
+            checkbox.checked = !checkbox.checked;
+            NotificationService.error('Error de conexión al servidor');
+        });
+    }
+
+    // ── Filtro rápido de usuarios en modal ─────────────────
+    function filtrarUsuariosNotif(input) {
+        const query = (input.value || '').toLowerCase().trim();
+        const filas = document.querySelectorAll('.user-notif-row');
+        filas.forEach(f => {
+            const txt = (f.textContent || '').toLowerCase();
+            f.style.display = txt.includes(query) ? '' : 'none';
+        });
+    }
 </script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Trazabilidad de Clics e Interacciones (Fase 4)
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalNotifTrazabilidad"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:22px;width:100%;max-width:920px;max-height:88vh;margin:16px;box-shadow:0 24px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden;">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;">
+                    <i class="ti ti-chart-dots-3" style="font-size:1.25rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white;font-weight:800;font-size:1.05rem;">Trazabilidad de Clics y Lectura</div>
+                    <div style="color:rgba(255,255,255,.75);font-size:0.78rem;">Registro de interacciones de las últimas 50 alertas enviadas</div>
+                </div>
+            </div>
+            <button onclick="cerrarModalNotifTrazabilidad()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:white;font-size:1.1rem;display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <!-- Tabla -->
+        <div style="padding:20px;overflow-y:auto;flex:1;">
+            <?php if (empty($ultimasNotifs)): ?>
+                <div style="text-align:center;padding:40px;color:#94a3b8;">
+                    <i class="ti ti-bell-off" style="font-size:3rem;opacity:0.4;display:block;margin-bottom:10px;"></i>
+                    <p style="font-size:0.95rem;margin:0;">No hay notificaciones registradas para auditar.</p>
+                </div>
+            <?php else: ?>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.83rem;">
+                        <thead>
+                            <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;color:#64748b;text-align:left;">
+                                <th style="padding:10px 12px;font-weight:700;">Destinatario</th>
+                                <th style="padding:10px 12px;font-weight:700;">Alerta</th>
+                                <th style="padding:10px 12px;font-weight:700;">Envío</th>
+                                <th style="padding:10px 12px;font-weight:700;">Lectura</th>
+                                <th style="padding:10px 12px;font-weight:700;">Clic / Interacción</th>
+                                <th style="padding:10px 12px;font-weight:700;">Dispositivo & IP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($ultimasNotifs as $nt): ?>
+                                <tr style="border-bottom:1px solid #f1f5f9;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                                    <td style="padding:12px;">
+                                        <div style="font-weight:700;color:#1e293b;"><?= htmlspecialchars($nt['usuario_nombre'] ?: 'Usuario') ?></div>
+                                        <div style="font-size:0.73rem;color:#94a3b8;"><?= htmlspecialchars($nt['correo'] ?? '—') ?></div>
+                                    </td>
+                                    <td style="padding:12px;max-width:200px;">
+                                        <div style="font-weight:600;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= htmlspecialchars($nt['titulo']) ?>">
+                                            <?= htmlspecialchars($nt['titulo']) ?>
+                                        </div>
+                                        <span class="cfg-badge" style="font-size:0.68rem;padding:2px 6px;background:#eff6ff;color:#2563eb;">
+                                            <?= htmlspecialchars($nt['tipo']) ?>
+                                        </span>
+                                    </td>
+                                    <td style="padding:12px;color:#64748b;white-space:nowrap;">
+                                        <?= date('d/m/y H:i', strtotime($nt['created_at'])) ?>
+                                    </td>
+                                    <td style="padding:12px;white-space:nowrap;">
+                                        <?php if (!empty($nt['leido_at'])): ?>
+                                            <span style="color:#059669;font-weight:600;display:flex;align-items:center;gap:4px;">
+                                                <i class="ti ti-check" style="font-size:0.9rem;"></i> <?= date('d/m H:i', strtotime($nt['leido_at'])) ?>
+                                            </span>
+                                        <?php elseif (!empty($nt['leida'])): ?>
+                                            <span style="color:#059669;font-weight:600;">✅ Leída</span>
+                                        <?php else: ?>
+                                            <span style="color:#94a3b8;font-size:0.75rem;">Sin leer</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td style="padding:12px;white-space:nowrap;">
+                                        <?php if (!empty($nt['clickeado_at'])): ?>
+                                            <span style="color:#9333ea;font-weight:700;display:flex;align-items:center;gap:4px;">
+                                                <i class="ti ti-pointer" style="font-size:0.9rem;"></i> <?= date('d/m H:i', strtotime($nt['clickeado_at'])) ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span style="color:#cbd5e1;font-size:0.75rem;">—</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td style="padding:12px;">
+                                        <div style="color:#475569;font-weight:600;font-size:0.78rem;">
+                                            <?= htmlspecialchars($nt['dispositivo'] ?: 'Escritorio') ?>
+                                        </div>
+                                        <?php if (!empty($nt['ip_click'])): ?>
+                                            <code style="font-size:0.7rem;color:#64748b;background:#f1f5f9;padding:2px 5px;border-radius:4px;"><?= htmlspecialchars($nt['ip_click']) ?></code>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Gestión de Notificaciones por Usuario (Fase 4)
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalNotifUsuarios"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:22px;width:100%;max-width:740px;max-height:85vh;margin:16px;box-shadow:0 24px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden;">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#0f172a,#334155);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;">
+                    <i class="ti ti-users" style="font-size:1.25rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white;font-weight:800;font-size:1.05rem;">Preferencias de Notificaciones por Usuario</div>
+                    <div style="color:rgba(255,255,255,.7);font-size:0.78rem;">Activar o silenciar el envío de alertas para usuarios activos</div>
+                </div>
+            </div>
+            <button onclick="cerrarModalNotifUsuarios()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:white;font-size:1.1rem;display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <!-- Buscador -->
+        <div style="padding:14px 20px;background:#f8fafc;border-bottom:1px solid #e2e8f0;flex-shrink:0;">
+            <div style="position:relative;">
+                <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;"></i>
+                <input type="text" class="cfg-input" placeholder="Buscar por nombre, correo o rol..." style="width:100%;padding-left:36px;" oninput="filtrarUsuariosNotif(this)">
+            </div>
+        </div>
+
+        <!-- Lista -->
+        <div style="padding:16px 20px;overflow-y:auto;flex:1;">
+            <?php if (empty($notifUsers)): ?>
+                <div style="text-align:center;padding:30px;color:#94a3b8;">No se encontraron usuarios.</div>
+            <?php else: ?>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <?php foreach ($notifUsers as $u): ?>
+                        <div class="user-notif-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:white;border:1px solid #e2e8f0;border-radius:12px;transition:box-shadow .15s;">
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="width:36px;height:36px;border-radius:10px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;">
+                                    <?= strtoupper(substr($u['nombre_completo'] ?: $u['correo'], 0, 1)) ?>
+                                </div>
+                                <div>
+                                    <div style="font-weight:700;color:#1e293b;font-size:0.88rem;"><?= htmlspecialchars($u['nombre_completo'] ?: 'Sin nombre') ?></div>
+                                    <div style="font-size:0.75rem;color:#64748b;"><?= htmlspecialchars($u['correo']) ?></div>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:16px;">
+                                <span class="cfg-badge" style="background:#f1f5f9;color:#475569;font-size:0.72rem;">
+                                    <?= htmlspecialchars($u['rol_nombre'] ?? 'Usuario') ?>
+                                </span>
+                                <label class="cfg-toggle-wrap" style="margin:0;" title="Habilitar/Silenciar alertas">
+                                    <input type="checkbox" <?= (int)($u['notificaciones_habilitadas'] ?? 1) === 1 ? 'checked' : '' ?> onchange="toggleUserNotif(<?= (int)$u['id'] ?>, this)">
+                                    <span class="cfg-toggle-track"></span>
+                                    <span class="cfg-toggle-dot"></span>
+                                </label>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>

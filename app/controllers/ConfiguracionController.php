@@ -499,14 +499,22 @@ class ConfiguracionController extends Controller {
             }
         }
 
+        // Notificaciones Stats y Config (Fase 4)
+        require_once APPROOT . '/models/NotificationModel.php';
+        $notifModel = new NotificationModel($this->db);
+        $notifAnalytics = $notifModel->getAnalytics();
+        $notifUsuarios = $notifModel->getUsersList();
+
         $data = [
-            'title'         => 'Configuración del Sistema',
-            'instituciones' => $instituciones,
-            'departamentos' => $departamentos,
-            'feriados'      => $feriados,
-            'statsDB'       => $statsDB,
-            'kioscoActivo'  => $kioscoActivo,
-            'ispInfo'       => $ispInfo,
+            'title'          => 'Configuración del Sistema',
+            'instituciones'  => $instituciones,
+            'departamentos'  => $departamentos,
+            'feriados'       => $feriados,
+            'statsDB'        => $statsDB,
+            'kioscoActivo'   => $kioscoActivo,
+            'ispInfo'        => $ispInfo,
+            'notifAnalytics' => $notifAnalytics,
+            'notifUsuarios'  => $notifUsuarios,
         ];
 
         $this->view('configuracion/index', $data);
@@ -984,6 +992,130 @@ class ConfiguracionController extends Controller {
             'actualizados' => $actualizados,
             'message'      => "$actualizados feriados actualizados correctamente.",
         ]);
+        exit;
+    }
+
+    /**
+     * AJAX POST: Habilitar o deshabilitar el Kiosco
+     * Ruta: POST /configuracion/toggleKiosco
+     */
+    public function toggleKiosco(): void
+    {
+        header('Content-Type: application/json');
+        RoleMiddleware::authorize([0, 1]);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $activo = isset($_POST['activo']) && (int)$_POST['activo'] === 1 ? '1' : '0';
+        try {
+            $this->db->query("
+                INSERT INTO configuracion (clave, valor, descripcion)
+                VALUES ('kiosco_activo', :val, 'Estado del kiosco de asistencia')
+                ON DUPLICATE KEY UPDATE valor = :val2, updated_at = NOW()
+            ");
+            $this->db->bind(':val', $activo);
+            $this->db->bind(':val2', $activo);
+            $this->db->execute();
+
+            Session::set('kiosco_activo', (int)$activo);
+            if (class_exists('AuditModel')) {
+                AuditModel::log('UPDATE_CONFIG', "Kiosco " . ($activo === '1' ? 'habilitado' : 'deshabilitado'));
+            }
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Estado del kiosco actualizado correctamente (' . ($activo === '1' ? 'Activo' : 'Deshabilitado') . ').'
+            ]);
+        } catch (\Throwable $e) {
+            error_log('[SGP-CONFIG] toggleKiosco error: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar estado del kiosco']);
+        }
+        exit;
+    }
+
+    /**
+     * AJAX POST: Switch global de notificaciones del sistema
+     * Ruta: POST /configuracion/toggleNotificaciones
+     */
+    public function toggleNotificaciones(): void
+    {
+        header('Content-Type: application/json');
+        RoleMiddleware::authorize([0, 1]);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $activo = isset($_POST['activo']) && (int)$_POST['activo'] === 1 ? '1' : '0';
+        try {
+            $this->db->query("
+                INSERT INTO configuracion (clave, valor, descripcion)
+                VALUES ('notificaciones_activas', :val, 'Habilita o pausa globalmente el sistema de notificaciones')
+                ON DUPLICATE KEY UPDATE valor = :val2, updated_at = NOW()
+            ");
+            $this->db->bind(':val', $activo);
+            $this->db->bind(':val2', $activo);
+            $this->db->execute();
+
+            if (class_exists('AuditModel')) {
+                AuditModel::log('UPDATE_CONFIG', "Notificaciones del sistema " . ($activo === '1' ? 'reanudadas' : 'pausadas globalmente'));
+            }
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Notificaciones ' . ($activo === '1' ? 'activadas globalmente' : 'pausadas globalmente') . '.'
+            ]);
+        } catch (\Throwable $e) {
+            error_log('[SGP-CONFIG] toggleNotificaciones error: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar notificaciones']);
+        }
+        exit;
+    }
+
+    /**
+     * AJAX POST: Toggle granular de notificaciones por usuario
+     * Ruta: POST /configuracion/toggleUsuarioNotificaciones
+     */
+    public function toggleUsuarioNotificaciones(): void
+    {
+        header('Content-Type: application/json');
+        RoleMiddleware::authorize([0, 1]);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $userId = (int)($_POST['usuario_id'] ?? 0);
+        $habilitado = isset($_POST['habilitado']) && (int)$_POST['habilitado'] === 1 ? 1 : 0;
+
+        if ($userId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'ID de usuario inválido']);
+            exit;
+        }
+
+        try {
+            $this->db->query("UPDATE usuarios SET notificaciones_habilitadas = :hab WHERE id = :uid");
+            $this->db->bind(':hab', $habilitado, PDO::PARAM_INT);
+            $this->db->bind(':uid', $userId, PDO::PARAM_INT);
+            $this->db->execute();
+
+            if (class_exists('AuditModel')) {
+                AuditModel::log('UPDATE_CONFIG', "Notificaciones para usuario ID $userId " . ($habilitado ? 'habilitadas' : 'silenciadas'));
+            }
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Preferencia de notificaciones de usuario actualizada correctamente.'
+            ]);
+        } catch (\Throwable $e) {
+            error_log('[SGP-CONFIG] toggleUsuarioNotificaciones error: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar preferencia']);
+        }
         exit;
     }
 }
