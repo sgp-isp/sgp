@@ -157,6 +157,11 @@ class ConfiguracionController extends Controller {
                     'copias'   => ['cintillo_pdf.png'],
                     'label'    => 'Cintillo Oficial para Reportes'
                 ],
+                'cintillo_sistema' => [
+                    'primario' => 'cintillo.png',
+                    'copias'   => [],
+                    'label'    => 'Cintillo Oficial del Sistema'
+                ],
                 'gobernacion' => [
                     'primario' => 'gobe.png',
                     'copias'   => [],

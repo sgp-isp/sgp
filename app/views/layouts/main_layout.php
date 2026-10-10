@@ -102,6 +102,8 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
         --color-accent-brand: <?= htmlspecialchars($_accentColor) ?>;
         --color-info: <?= htmlspecialchars($_accentColor) ?>;
         --icon-active: <?= htmlspecialchars($_accentColor) ?>;
+        --text-active: <?= htmlspecialchars($_accentColor) ?>;
+        --sidebar-accent: <?= htmlspecialchars($_accentColor) ?>;
         --gradient-start: <?= htmlspecialchars($_accentColor) ?>;
         --gradient-mid: <?= htmlspecialchars($_primaryColor) ?>;
         --gradient-end: <?= htmlspecialchars($_primaryColor) ?>;

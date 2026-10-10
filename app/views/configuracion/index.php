@@ -1535,21 +1535,35 @@ $hoy             = date('Y-m-d');
                     </div>
                 </div>
 
-                <!-- Previsualizador Dinámico de Muestra -->
+                <!-- Previsualizador Dinámico de Muestra y Switch de Live Preview -->
                 <div id="previewCardBrand"
-                    style="background:linear-gradient(135deg, <?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>, <?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>);padding:14px 18px;border-radius:12px;color:white;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,0.12);transition:all .2s;">
+                    style="background:linear-gradient(135deg, <?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>, <?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>);padding:14px 18px;border-radius:12px;color:white;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,0.12);transition:all .2s;flex-wrap:wrap;gap:12px;">
                     <div style="display:flex;align-items:center;gap:10px;">
                         <div style="width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;">
                             <i class="ti ti-sparkles" style="font-size:1.1rem;color:white;"></i>
                         </div>
                         <div>
-                            <div style="font-weight:800;font-size:0.88rem;">Vista Previa de Interfaz</div>
-                            <div style="font-size:0.72rem;opacity:0.85;">Los elementos de la barra y botones adoptarán este estilo</div>
+                            <div style="font-weight:800;font-size:0.88rem;">Muestra de la Paleta</div>
+                            <div style="font-size:0.72rem;opacity:0.88;">Degradado institucional y contraste calculado</div>
                         </div>
                     </div>
-                    <span id="previewBrandBadge" style="background:rgba(255,255,255,0.25);padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;backdrop-filter:blur(4px);">
-                        Muestra Activa
-                    </span>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <!-- Switch Live Preview -->
+                        <label for="switchLivePreview" style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,0.25);backdrop-filter:blur(6px);padding:6px 14px;border-radius:50px;cursor:pointer;border:1px solid rgba(255,255,255,0.2);user-select:none;transition:all .2s;">
+                            <input type="checkbox" id="switchLivePreview" onchange="alternarLivePreview(this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#10b981;">
+                            <span style="font-size:0.78rem;font-weight:700;color:white;" id="labelLivePreview">
+                                <i class="ti ti-eye"></i> Proyectar en la interfaz
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Banner aviso si hay cambios pendientes -->
+                <div id="avisoCambiosPaleta" style="display:none;align-items:center;justify-content:space-between;padding:10px 14px;background:#fffbeb;border:1px solid #fef3c7;border-left:4px solid #f59e0b;border-radius:10px;margin-bottom:14px;font-size:0.8rem;color:#92400e;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <i class="ti ti-alert-triangle" style="font-size:1.1rem;color:#f59e0b;"></i>
+                        <span>Tienes cambios en la paleta sin guardar. Haz clic en <strong>Guardar Paleta</strong> para conservarlos.</span>
+                    </div>
                 </div>
 
                 <!-- Acciones -->
@@ -1610,7 +1624,7 @@ $hoy             = date('Y-m-d');
                 <!-- 2. Cintillo Oficial PDF -->
                 <div class="cfg-emblem-row" style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
                     <div class="cfg-emblem-thumb" style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
-                        <img src="<?= URLROOT ?>/img/cintillo-salud.png?v=<?= time() ?>" alt="Cintillo Oficial" style="max-width:100%;max-height:100%;object-fit:contain;">
+                        <img src="<?= URLROOT ?>/img/cintillo-salud.png?v=<?= time() ?>" alt="Cintillo Oficial para Reportes" style="max-width:100%;max-height:100%;object-fit:contain;">
                     </div>
                     <div style="flex:1;min-width:0;">
                         <div class="cfg-emblem-title" style="font-weight:800;font-size:0.88rem;color:#1e293b;">Cintillo Oficial para Reportes</div>
@@ -1623,7 +1637,23 @@ $hoy             = date('Y-m-d');
                     </button>
                 </div>
 
-                <!-- 3. Logo Gobernación -->
+                <!-- 3. Cintillo Oficial del Sistema (Login / Web) -->
+                <div class="cfg-emblem-row" style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
+                    <div class="cfg-emblem-thumb" style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                        <img src="<?= URLROOT ?>/img/cintillo.png?v=<?= time() ?>" alt="Cintillo Oficial del Sistema" style="max-width:100%;max-height:100%;object-fit:contain;">
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="cfg-emblem-title" style="font-weight:800;font-size:0.88rem;color:#1e293b;">Cintillo Oficial del Sistema</div>
+                        <div class="cfg-emblem-desc" style="font-size:0.74rem;color:#64748b;margin-top:2px;">Encabezado superior visible en la pantalla de inicio de sesión (Login) y vistas del sistema</div>
+                        <div class="cfg-emblem-file" style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>cintillo.png</code> (Proporción horizontal web)</div>
+                    </div>
+                    <button type="button" onclick="abrirModalLogo('cintillo_sistema')" class="cfg-emblem-btn"
+                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;">
+                        <i class="ti ti-upload"></i> Cambiar
+                    </button>
+                </div>
+
+                <!-- 4. Logo Gobernación -->
                 <div class="cfg-emblem-row" style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
                     <div class="cfg-emblem-thumb" style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
                         <img src="<?= URLROOT ?>/img/gobe.png?v=<?= time() ?>" alt="Gobernación" style="max-width:100%;max-height:100%;object-fit:contain;">
@@ -2751,6 +2781,10 @@ $hoy             = date('Y-m-d');
     }
 
     // ── Branding y Personalización de Tema (Fase 5) ──────────
+    const colorOriginalPrimario = '<?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>';
+    const colorOriginalAcento   = '<?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>';
+    let hayCambiosSinGuardar = false;
+
     function sincronizarColor(tipo, val) {
         if (!val) return;
         val = val.trim();
@@ -2788,27 +2822,126 @@ $hoy             = date('Y-m-d');
     }
 
     function actualizarPreviewTema() {
-        const cp = (document.getElementById('inputPrimario')?.value || '#162660').trim();
-        const ca = (document.getElementById('inputAcento')?.value || '#2563eb').trim();
+        const cp = (document.getElementById('inputPrimario')?.value || colorOriginalPrimario).trim();
+        const ca = (document.getElementById('inputAcento')?.value || colorOriginalAcento).trim();
+        
+        // 1. Siempre actualiza la tarjeta de muestra local
         const prevCard = document.getElementById('previewCardBrand');
         if (prevCard) {
             prevCard.style.background = 'linear-gradient(135deg, ' + cp + ', ' + ca + ')';
         }
 
-        // Live Preview instantáneo en toda la interfaz
+        // 2. Control de cambios sin guardar
+        const huboCambio = (cp.toLowerCase() !== colorOriginalPrimario.toLowerCase()) || 
+                           (ca.toLowerCase() !== colorOriginalAcento.toLowerCase());
+        hayCambiosSinGuardar = huboCambio;
+        
+        const aviso = document.getElementById('avisoCambiosPaleta');
+        if (aviso) {
+            aviso.style.display = huboCambio ? 'flex' : 'none';
+        }
+
+        // 3. Proyección en vivo solo si el switch está activado
+        const switchLive = document.getElementById('switchLivePreview');
+        if (switchLive && switchLive.checked) {
+            proyectarEnInterfaz(cp, ca);
+        }
+    }
+
+    function alternarLivePreview(activado) {
+        const cp = (document.getElementById('inputPrimario')?.value || colorOriginalPrimario).trim();
+        const ca = (document.getElementById('inputAcento')?.value || colorOriginalAcento).trim();
+        const label = document.getElementById('labelLivePreview');
+
+        if (activado) {
+            if (label) label.innerHTML = '<i class="ti ti-eye-check" style="color:#34d399;"></i> Proyectando en vivo';
+            proyectarEnInterfaz(cp, ca);
+        } else {
+            if (label) label.innerHTML = '<i class="ti ti-eye"></i> Proyectar en la interfaz';
+            proyectarEnInterfaz(colorOriginalPrimario, colorOriginalAcento);
+        }
+    }
+
+    function proyectarEnInterfaz(cp, ca) {
+        // Variables globales en :root
         document.documentElement.style.setProperty('--color-primary', cp);
         document.documentElement.style.setProperty('--color-accent-brand', ca);
         document.documentElement.style.setProperty('--color-info', ca);
         document.documentElement.style.setProperty('--icon-active', ca);
+        document.documentElement.style.setProperty('--text-active', ca);
+        document.documentElement.style.setProperty('--sidebar-accent', ca);
         document.documentElement.style.setProperty('--gradient-start', ca);
         document.documentElement.style.setProperty('--gradient-mid', cp);
         document.documentElement.style.setProperty('--gradient-end', cp);
 
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || document.documentElement.classList.contains('dark');
         const sidebar = document.querySelector('.main-sidebar');
         if (sidebar) {
-            sidebar.style.background = 'linear-gradient(180deg, ' + ca + ' 0%, ' + cp + ' 50%, ' + cp + ' 100%)';
+            if (!isDark) {
+                sidebar.style.background = 'linear-gradient(180deg, ' + ca + ' 0%, ' + cp + ' 50%, ' + cp + ' 100%)';
+            } else {
+                sidebar.style.background = '';
+            }
         }
+
+        // Sincronizar acentos del menú lateral (indicador activo e íconos)
+        document.querySelectorAll('.main-sidebar .nav-item > a.active, .main-sidebar .nav-link.active').forEach(el => {
+            const icon = el.querySelector('i');
+            if (icon) icon.style.color = ca;
+        });
     }
+
+    // Interceptar navegación cuando hay cambios sin guardar
+    document.addEventListener('DOMContentLoaded', () => {
+        // Al enviar el formulario de tema, no bloquear
+        document.getElementById('formBrandingTema')?.addEventListener('submit', () => {
+            hayCambiosSinGuardar = false;
+        });
+        document.getElementById('formRestablecerTema')?.addEventListener('submit', () => {
+            hayCambiosSinGuardar = false;
+        });
+
+        // Advertencia en enlaces
+        document.querySelectorAll('a[href]').forEach(a => {
+            a.addEventListener('click', (e) => {
+                const href = a.getAttribute('href');
+                if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+                if (hayCambiosSinGuardar) {
+                    e.preventDefault();
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: '¿Salir sin guardar cambios?',
+                            text: 'Has modificado la paleta de colores pero no has guardado los cambios. Si sales ahora, se descartarán.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Sí, salir sin guardar',
+                            cancelButtonText: 'Permanecer aquí',
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#64748b'
+                        }).then(r => {
+                            if (r.isConfirmed) {
+                                hayCambiosSinGuardar = false;
+                                window.location.href = href;
+                            }
+                        });
+                    } else {
+                        if (confirm('Has modificado la paleta de colores sin guardar. ¿Deseas salir y descartar los cambios?')) {
+                            hayCambiosSinGuardar = false;
+                            window.location.href = href;
+                        }
+                    }
+                }
+            });
+        });
+
+        // Advertencia al recargar o cerrar pestaña
+        window.addEventListener('beforeunload', (e) => {
+            if (hayCambiosSinGuardar) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    });
 
     function alternarTemaVisual() {
         if (typeof toggleDarkMode === 'function') {
@@ -2889,7 +3022,9 @@ $hoy             = date('Y-m-d');
         if (val === 'logo_principal') {
             info.innerHTML = '<strong>Logo Principal:</strong> Se recomienda imagen PNG con fondo transparente de al menos 400x120px.';
         } else if (val === 'cintillo') {
-            info.innerHTML = '<strong>Cintillo Oficial:</strong> Proporción horizontal/panorámica (ej. 1200x180px) para reportes y constancias PDF.';
+            info.innerHTML = '<strong>Cintillo Oficial para Reportes:</strong> Proporción panorámica (ej. 1200x180px) para reportes, constancias y planillas PDF.';
+        } else if (val === 'cintillo_sistema') {
+            info.innerHTML = '<strong>Cintillo Oficial del Sistema:</strong> Encabezado panorámico (cintillo.png) visible en la pantalla de inicio de sesión (Login) y cabeceras del sistema.';
         } else if (val === 'gobernacion') {
             info.innerHTML = '<strong>Logo de Gobernación:</strong> Emblema del estado en PNG transparente.';
         }
@@ -3121,6 +3256,7 @@ $hoy             = date('Y-m-d');
                 <select name="tipo_logo" id="selectTipoLogo" class="cfg-input" style="width:100%;cursor:pointer;" onchange="actualizarInfoLogoModal()">
                     <option value="logo_principal">Logo Principal SGP / ISP (logo.png)</option>
                     <option value="cintillo">Cintillo Oficial para Reportes (cintillo-salud.png)</option>
+                    <option value="cintillo_sistema">Cintillo Oficial del Sistema (cintillo.png - Login / Web)</option>
                     <option value="gobernacion">Logo de Gobernación de Bolívar (gobe.png)</option>
                 </select>
                 <div id="infoLogoModal" style="font-size:0.74rem;color:#64748b;margin-top:6px;line-height:1.4;">
