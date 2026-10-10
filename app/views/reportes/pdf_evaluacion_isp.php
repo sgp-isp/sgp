@@ -38,8 +38,22 @@ else
     $resultado = 'DEFICIENTE';
 
 // Cintillo como Base64 con altura controlada
-$imgPath = __DIR__ . '/../../public/img/cintillo_isp_bolivar.jpg';
-$bCintillo = file_exists($imgPath) ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($imgPath)) : '';
+$baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(__DIR__)) . '/public/img/';
+$cintilloCandidates = [
+    $baseImgDir . 'cintillo-salud.png',
+    $baseImgDir . 'cintillo_isp_bolivar.jpg',
+    $baseImgDir . 'cintillo_pdf.png',
+    $baseImgDir . 'cintillo.png'
+];
+$bCintillo = '';
+foreach ($cintilloCandidates as $candidate) {
+    if (file_exists($candidate)) {
+        $ext = strtolower(pathinfo($candidate, PATHINFO_EXTENSION));
+        $mime = ($ext === 'jpg' || $ext === 'jpeg') ? 'image/jpeg' : 'image/png';
+        $bCintillo = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($candidate));
+        break;
+    }
+}
 
 $criterios = [
     'criterio_iniciativa' => ['Iniciativa', 'Demuestra interés para desenvolverse por si mismo en la Institución, estableciendo la colaboración necesaria. Tiene capacidad creadora, aporta ideas y sugerencias para el mejoramiento de las condiciones de trabajo y correcciones de fallas.'],

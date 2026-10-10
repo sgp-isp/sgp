@@ -226,64 +226,64 @@ $periodos           = $data['periodos']           ?? [];
     <?php endforeach; ?>
 
     <div class="dashboard-kpi-grid">
-        <div class="kpi-card-blue" style="background:white;border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #2563eb;display:flex;justify-content:space-between;align-items:center;">
+        <div class="kpi-card-blue" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #2563eb;display:flex;justify-content:space-between;align-items:center;">
             <div style="flex:1;">
-                <p style="color:#64748b;font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Activos</p>
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Activos</p>
                 <div style="display:flex;align-items:center;gap:12px;">
-                    <h2 style="font-size:2.4rem;font-weight:800;color:#2563eb;margin:0;line-height:1;"><?= $totalActivos ?></h2>
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;"><?= $totalActivos ?></h2>
                 </div>
             </div>
-            <a href="<?= URLROOT ?>/pasantes" style="background:#eff6ff;color:#2563eb;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Directorio">
+            <a href="<?= URLROOT ?>/pasantes" class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Directorio">
                 <i class="ti ti-users"></i>
             </a>
         </div>
 
-        <div class="kpi-card-yellow" style="background:white;border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #F59E0B;display:flex;justify-content:space-between;align-items:center;">
+        <div class="kpi-card-yellow" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #F59E0B;display:flex;justify-content:space-between;align-items:center;">
             <div style="flex:1;">
-                <p style="color:#64748b;font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Por Asignar</p>
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Por Asignar</p>
                 <div style="display:flex;align-items:center;gap:12px;">
-                    <h2 style="font-size:2.4rem;font-weight:800;color:#F59E0B;margin:0;line-height:1;"><?= $pendientesAsignar ?></h2>
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;"><?= $pendientesAsignar ?></h2>
                 </div>
             </div>
-            <a href="<?= URLROOT ?>/asignaciones" style="background:#FFFBEB;color:#D97706;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Asignar">
+            <a href="<?= URLROOT ?>/asignaciones" class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Asignar">
                 <i class="ti ti-link"></i>
             </a>
         </div>
 
-        <div class="kpi-card-green" style="background:white;border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #059669;display:flex;justify-content:space-between;align-items:center;">
+        <div class="kpi-card-green" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #059669;display:flex;justify-content:space-between;align-items:center;">
             <div style="flex:1;">
-                <p style="color:#64748b;font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">En Sitio Hoy</p>
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">En Sitio Hoy</p>
                 <div style="display:flex;align-items:center;gap:12px;">
-                    <h2 style="font-size:2.4rem;font-weight:800;color:#059669;margin:0;line-height:1;"><?= $asistenciasHoy ?></h2>
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;"><?= $asistenciasHoy ?></h2>
                 </div>
             </div>
-            <a href="<?= URLROOT ?>/asistencias" style="background:#F0FDF4;color:#059669;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Registros">
+            <a href="<?= URLROOT ?>/asistencias" class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Registros">
                 <i class="ti ti-fingerprint"></i>
             </a>
         </div>
 
-        <div class="kpi-card-red" style="background:white;border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #DC2626;display:flex;justify-content:space-between;align-items:center;">
+        <div class="kpi-card-red" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #DC2626;display:flex;justify-content:space-between;align-items:center;">
             <div style="flex:1;">
-                <p style="color:#64748b;font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Faltas Hoy</p>
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Faltas Hoy</p>
                 <div style="display:flex;align-items:center;gap:12px;">
-                    <h2 style="font-size:2.4rem;font-weight:800;color:#DC2626;margin:0;line-height:1;"><?= $faltasHoy ?></h2>
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;"><?= $faltasHoy ?></h2>
                 </div>
             </div>
-            <a href="<?= URLROOT ?>/asistencias" style="background:#FEF2F2;color:#DC2626;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Justificar">
+            <a href="<?= URLROOT ?>/asistencias" class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Justificar">
                 <i class="ti ti-alert-triangle"></i>
             </a>
         </div>
     </div>
 
     <div class="charts-grid-50">
-        <div class="card figma-card" style="padding: 24px; background: #fff; border-radius: 16px;">
+        <div class="card figma-card" style="padding: 24px; border-radius: 16px;">
             <div class="card-header-compact" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
                 <div>
                     <h3 style="margin: 0; color: #162660; font-size: 1.1rem;">Monitor de Asistencia</h3>
                     <span style="font-size: 0.8rem; color: #94A3B8;">Análisis de flujo de pasantes</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                    <div class="time-toggles" style="display: flex; background: #F8FAFC; padding: 4px; border-radius: 8px; border: 1px solid #E2E8F0;">
+                    <div class="time-toggles" style="display: flex; padding: 4px; border-radius: 8px;">
                         <button id="btnTimeDay" class="btn-micro active" style="font-size:0.75rem;">Diario</button>
                         <button id="btnTimeWeek" class="btn-micro" style="font-size:0.75rem;">Semanal</button>
                         <button id="btnTimeMonth" class="btn-micro" style="font-size:0.75rem;">Mensual</button>
@@ -295,7 +295,7 @@ $periodos           = $data['periodos']           ?? [];
             </div>
         </div>
 
-        <div class="card figma-card" style="padding: 24px; background: #fff; border-radius: 16px;">
+        <div class="card figma-card" style="padding: 24px; border-radius: 16px;">
             <div class="card-header-compact" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <div>
                     <h3 style="margin: 0; color: #162660; font-size: 1.1rem;">Desempeño Departamental</h3>
@@ -316,8 +316,22 @@ $periodos           = $data['periodos']           ?? [];
                         @keyframes fillProgressAnim { from { width: 0%; } }
                         .progress-bar-animated { animation: fillProgressAnim 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
                         .kpi-card-blue, .kpi-card-yellow, .kpi-card-green, .kpi-card-red {
+                            background: #ffffff;
+                            border: 1px solid #e2e8f0;
                             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
                         }
+                        .kpi-card-blue .kpi-title, .kpi-card-yellow .kpi-title, .kpi-card-green .kpi-title, .kpi-card-red .kpi-title { color: #64748b; }
+                        .kpi-card-blue .kpi-num { color: #2563eb; }
+                        .kpi-card-yellow .kpi-num { color: #f59e0b; }
+                        .kpi-card-green .kpi-num { color: #059669; }
+                        .kpi-card-red .kpi-num { color: #dc2626; }
+                        .kpi-card-blue .kpi-icon-link { background: #eff6ff; color: #2563eb; }
+                        .kpi-card-yellow .kpi-icon-link { background: #fffbeb; color: #d97706; }
+                        .kpi-card-green .kpi-icon-link { background: #f0fdf4; color: #059669; }
+                        .kpi-card-red .kpi-icon-link { background: #fef2f2; color: #dc2626; }
+                        .time-toggles { background: #F8FAFC; border: 1px solid #E2E8F0; }
+                        .time-toggles .btn-micro { background: transparent; color: #64748b; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: 600; }
+                        .time-toggles .btn-micro.active { background: #ffffff; color: #2563eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
                         .kpi-card-blue:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(37, 99, 235, 0.5) !important; }
                         .kpi-card-yellow:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(245, 158, 11, 0.5) !important; }
                         .kpi-card-green:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(16, 185, 129, 0.5) !important; }
@@ -396,7 +410,7 @@ $periodos           = $data['periodos']           ?? [];
     <div class="bottom-grid-60-40">
         
         <!-- PANEL IZQUIERDO: Feed de Actividad (Movido de la derecha) -->
-        <div class="card figma-card activity-panel" style="padding: 24px; background: #fff; border-radius: 16px; display: flex; flex-direction: column;">
+        <div class="card figma-card activity-panel" style="padding: 24px; border-radius: 16px; display: flex; flex-direction: column;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h3 style="margin: 0; color: #162660; font-size: 1.1rem;">Feed de Actividad</h3>
                 <a href="<?= URLROOT ?>/asistencias" style="font-size: 0.8rem; font-weight: 600; color: #2563eb; text-decoration: none;">Ver historial completo</a>
@@ -438,7 +452,7 @@ $periodos           = $data['periodos']           ?? [];
         </div>
 
         <!-- PANEL DERECHO: Centro de Acción (Nuevo) -->
-        <div class="card figma-card action-center-panel" style="padding: 24px; background: #fff; border-radius: 16px; display: flex; flex-direction: column;">
+        <div class="card figma-card action-center-panel" style="padding: 24px; border-radius: 16px; display: flex; flex-direction: column;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h3 style="margin: 0; color: #162660; font-size: 1.1rem;">Centro de Acción</h3>
                 <?php if (!empty($alertas_pendientes)): ?>
@@ -560,8 +574,7 @@ $nombresMes = ['January'=>'enero','February'=>'febrero','March'=>'marzo','April'
                'September'=>'septiembre','October'=>'octubre','November'=>'noviembre','December'=>'diciembre'];
 $mesLabel = $nombresMes[date('F')] . ' ' . date('Y');
 ?>
-<div style="background:white;border-radius:18px;padding:22px 28px;
-            box-shadow:0 2px 12px rgba(0,0,0,.06);margin-top:10px;margin-bottom:24px;border:1px solid #f1f5f9;">
+<div class="card figma-card ausentes-mes-card" style="border-radius:18px;padding:22px 28px;margin-top:10px;margin-bottom:24px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
         <div style="display:flex;align-items:center;gap:10px;">
             <div style="width:36px;height:36px;border-radius:10px;background:#fee2e2;
