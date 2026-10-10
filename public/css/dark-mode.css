@@ -907,3 +907,261 @@ body.dark-mode {
 [data-theme="dark"] .border-right {
     border-color: #1e293b !important;
 }
+
+/* ════════════════════════════════════════════════════════════════
+   FASE 5 EXTENSIÓN: UNIVERSAL OBSIDIAN THEME & AMBIENT GLOW
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Banners Universales (Obsidian Navy con Halo Cian) ───── */
+[data-theme="dark"] .admin-banner,
+[data-theme="dark"] .pasantes-banner,
+[data-theme="dark"] .users-banner,
+[data-theme="dark"] .dashboard-banner,
+[data-theme="dark"] .module-banner,
+[data-theme="dark"] .asig-banner,
+[data-theme="dark"] .tpp-banner,
+[data-theme="dark"] .mp-banner,
+[data-theme="dark"] .punt-banner,
+[data-theme="dark"] .perm-banner,
+[data-theme="dark"] .p-banner,
+[data-theme="dark"] div[class*="-banner"] {
+    background: linear-gradient(135deg, #090e1a 0%, #0d1527 50%, #070b14 100%) !important;
+    border: 1px solid rgba(56, 189, 248, 0.28) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 1px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .admin-banner h1,
+[data-theme="dark"] .pasantes-banner h1,
+[data-theme="dark"] .users-banner h1,
+[data-theme="dark"] .asig-banner h1,
+[data-theme="dark"] .dashboard-banner h1,
+[data-theme="dark"] div[class*="-banner"] h1 {
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .admin-banner p,
+[data-theme="dark"] .pasantes-banner p,
+[data-theme="dark"] .users-banner p,
+[data-theme="dark"] .asig-banner p,
+[data-theme="dark"] div[class*="-banner"] p {
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .banner-sparkle-icon,
+[data-theme="dark"] div[class*="-banner"] div[style*="background:rgba(255,255,255,0.15)"],
+[data-theme="dark"] div[class*="-banner"] div[style*="background: rgba(255, 255, 255, 0.15)"] {
+    background: rgba(56, 189, 248, 0.12) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+}
+
+[data-theme="dark"] .banner-clock,
+[data-theme="dark"] div[class*="-banner"] div[style*="background: rgba(0, 0, 0, 0.15)"] {
+    background: rgba(11, 18, 32, 0.8) !important;
+    border: 1px solid rgba(56, 189, 248, 0.22) !important;
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .banner-clock i,
+[data-theme="dark"] .banner-clock span {
+    color: #cbd5e1 !important;
+}
+
+/* Botones de acción dentro de banners en modo oscuro */
+[data-theme="dark"] .btn-create-user,
+[data-theme="dark"] .btn-search-pasante,
+[data-theme="dark"] div[class*="-banner-actions"] button[style*="background: white"],
+[data-theme="dark"] div[class*="-banner-actions"] button[style*="background:white"] {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(56, 189, 248, 0.45) !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4) !important;
+}
+[data-theme="dark"] .btn-create-user:hover,
+[data-theme="dark"] .btn-search-pasante:hover,
+[data-theme="dark"] div[class*="-banner-actions"] button[style*="background: white"]:hover,
+[data-theme="dark"] div[class*="-banner-actions"] button[style*="background:white"]:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5) !important;
+}
+
+/* ── 2. Borde Tecnológico Luminous & Ambient Glow en Tarjetas ─ */
+/* Con la misma transición y acento luminoso que los botones activos del sidebar */
+[data-theme="dark"] .figma-card,
+[data-theme="dark"] .smart-card,
+[data-theme="dark"] .ausentes-mes-card,
+[data-theme="dark"] .activity-panel,
+[data-theme="dark"] .action-center-panel,
+[data-theme="dark"] .dash-kpi-card,
+[data-theme="dark"] .pasantes-table-card,
+[data-theme="dark"] .table-card,
+[data-theme="dark"] .card.shadow-soft {
+    background-color: #111a2e !important;
+    border: 1px solid rgba(56, 189, 248, 0.18) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 1px rgba(56, 189, 248, 0.12) !important;
+    transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease !important;
+}
+
+[data-theme="dark"] .figma-card:hover,
+[data-theme="dark"] .smart-card:hover,
+[data-theme="dark"] .ausentes-mes-card:hover,
+[data-theme="dark"] .activity-panel:hover,
+[data-theme="dark"] .action-center-panel:hover,
+[data-theme="dark"] .dash-kpi-card:hover,
+[data-theme="dark"] .pasantes-table-card:hover,
+[data-theme="dark"] .card.shadow-soft:hover {
+    border-color: rgba(56, 189, 248, 0.5) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 22px rgba(56, 189, 248, 0.2) !important;
+}
+
+/* ── 3. Flujo Paralelo en Inicio (Pasantías Cortas) ────────── */
+[data-theme="dark"] .flujo-paralelo-strip {
+    background: linear-gradient(135deg, rgba(30, 27, 75, 0.7) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
+    border: 1px solid rgba(139, 92, 246, 0.35) !important;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45), 0 0 18px rgba(124, 58, 237, 0.16) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+[data-theme="dark"] .flujo-paralelo-strip:hover {
+    border-color: rgba(167, 139, 250, 0.65) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 26px rgba(139, 92, 246, 0.3) !important;
+    transform: translateY(-2px) !important;
+}
+[data-theme="dark"] .flujo-paralelo-strip .flujo-title {
+    color: #f1f5f9 !important;
+}
+[data-theme="dark"] .flujo-paralelo-strip .flujo-divider {
+    background: rgba(139, 92, 246, 0.3) !important;
+}
+
+/* ── 4. KPI Cards Universales en Todos los Módulos ─────────── */
+[data-theme="dark"] .kpi-card,
+[data-theme="dark"] .kpi-card-user,
+[data-theme="dark"] .kpi-card-pasante,
+[data-theme="dark"] .asig-kpi-card,
+[data-theme="dark"] .sa-kpi,
+[data-theme="dark"] .ta-kpi-card,
+[data-theme="dark"] .td-kpi,
+[data-theme="dark"] .kpi-users-grid > div,
+[data-theme="dark"] .kpi-pasantes-grid > div,
+[data-theme="dark"] .asig-stats-grid > div,
+[data-theme="dark"] div[class*="kpi-card"] {
+    background-color: #111a2e !important;
+    border: 1px solid rgba(56, 189, 248, 0.18) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.38) !important;
+    color: #cbd5e1 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+[data-theme="dark"] .kpi-card:hover,
+[data-theme="dark"] .kpi-card-user:hover,
+[data-theme="dark"] .kpi-card-pasante:hover,
+[data-theme="dark"] .asig-kpi-card:hover,
+[data-theme="dark"] .sa-kpi:hover,
+[data-theme="dark"] .ta-kpi-card:hover,
+[data-theme="dark"] .td-kpi:hover,
+[data-theme="dark"] .kpi-users-grid > div:hover,
+[data-theme="dark"] .kpi-pasantes-grid > div:hover,
+[data-theme="dark"] .asig-stats-grid > div:hover {
+    border-color: rgba(56, 189, 248, 0.5) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 20px rgba(56, 189, 248, 0.2) !important;
+    transform: translateY(-3px) !important;
+}
+
+[data-theme="dark"] .kpi-card h2,
+[data-theme="dark"] .kpi-card .kpi-value,
+[data-theme="dark"] .asig-kpi-card .kpi-value,
+[data-theme="dark"] .sa-kpi .sa-kpi-val {
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .kpi-card p,
+[data-theme="dark"] .kpi-card .kpi-label,
+[data-theme="dark"] .kpi-card .kpi-sub,
+[data-theme="dark"] .asig-kpi-card .kpi-label,
+[data-theme="dark"] .asig-kpi-card .kpi-sub,
+[data-theme="dark"] .sa-kpi .sa-kpi-label,
+[data-theme="dark"] .sa-kpi .sa-kpi-sub {
+    color: #94a3b8 !important;
+}
+
+/* ── 5. Barras de Filtros y Búsqueda en Todos los Módulos ─── */
+[data-theme="dark"] .users-filter-bar,
+[data-theme="dark"] .pasantes-filter-bar,
+[data-theme="dark"] div[class*="-filter-bar"],
+[data-theme="dark"] .table-filter-card {
+    background-color: #0e1628 !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+[data-theme="dark"] .users-filter-bar input,
+[data-theme="dark"] .users-filter-bar select,
+[data-theme="dark"] .pasantes-filter-bar input,
+[data-theme="dark"] .pasantes-filter-bar select,
+[data-theme="dark"] div[class*="-filter-bar"] input,
+[data-theme="dark"] div[class*="-filter-bar"] select {
+    background-color: #111a2e !important;
+    border-color: #243452 !important;
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .users-filter-bar input:focus,
+[data-theme="dark"] .pasantes-filter-bar input:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+}
+
+[data-theme="dark"] .vento-pill {
+    background-color: #162238 !important;
+    color: #94a3b8 !important;
+    border: 1px solid #243452 !important;
+}
+
+[data-theme="dark"] .vento-pill:hover {
+    background-color: #1e2f4c !important;
+    color: #f8fafc !important;
+    border-color: rgba(56, 189, 248, 0.4) !important;
+}
+
+[data-theme="dark"] .vento-pill.active {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.35) !important;
+}
+
+/* ── 6. Mobile Cards (Bento) en Módulos de Lista ─────────────── */
+[data-theme="dark"] .bento-card-pasante,
+[data-theme="dark"] .mobile-card-item {
+    background-color: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+}
+[data-theme="dark"] .bcp-nombre {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .bcp-cedula,
+[data-theme="dark"] .bcp-label {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .bcp-value {
+    color: #cbd5e1 !important;
+}
+[data-theme="dark"] .bcp-btn-outline {
+    background-color: #162238 !important;
+    border-color: #243452 !important;
+    color: #cbd5e1 !important;
+}
+
+/* ── 7. Tarjetas y Alertas Especiales de Módulos ───────────── */
+[data-theme="dark"] div[style*="linear-gradient(to right, #f8fafc, #edf2f9)"],
+[data-theme="dark"] div[style*="background: linear-gradient(to right, #f8fafc, #edf2f9)"] {
+    background: linear-gradient(135deg, #0e1628 0%, #111a2e 100%) !important;
+    border-color: #1e293b !important;
+    border-left: 4px solid #38bdf8 !important;
+}
+[data-theme="dark"] div[style*="linear-gradient(to right, #f8fafc, #edf2f9)"] h4,
+[data-theme="dark"] div[style*="background: linear-gradient(to right, #f8fafc, #edf2f9)"] h4 {
+    color: #f8fafc !important;
+}
+

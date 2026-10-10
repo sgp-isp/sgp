@@ -271,7 +271,7 @@ sort($filtro_inst_nombres);
 <div class="dashboard-container" style="width: 100%; max-width: 100%; padding: 0;">
 
     <!-- BANNER ESTANDARIZADO SGP -->
-    <div class="pasantes-banner" style="background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);border-radius:20px;padding:32px 40px;margin-bottom:28px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;">
+    <div class="pasantes-banner" style="border-radius:20px;padding:32px 40px;margin-bottom:28px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;">
         <div style="position:absolute;top:-30px;right:-30px;width:200px;height:200px;background:rgba(255,255,255,0.05);border-radius:50%;"></div>
         <div style="display:flex;align-items:center;gap:16px;z-index:1;">
             <div style="background:rgba(255,255,255,0.15);border-radius:14px;padding:14px;">
@@ -289,7 +289,7 @@ sort($filtro_inst_nombres);
         </div>
         <div class="pasantes-banner-actions" style="display:flex; z-index:1; align-items:center;">
             <div style="background: rgba(0, 0, 0, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                <button onclick="SGPModal.buscar({rol: 3})" style="background:white;color:#1e3a8a;border:none;padding:12px 24px;border-radius:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:0.95rem;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <button onclick="SGPModal.buscar({rol: 3})" class="btn-search-pasante" style="background:white;color:#1e3a8a;border:none;padding:12px 24px;border-radius:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:0.95rem;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
                     <i class="ti ti-search" style="font-size: 1.1rem;"></i> Consulta Rápida
                 </button>
             </div>
@@ -307,7 +307,7 @@ sort($filtro_inst_nombres);
             ['label' => 'Culminados',      'val' => $culminados, 'color' => '#8b5cf6', 'boxShadow' => 'rgba(139,92,246,0.15)', 'icon' => 'ti-medal',        'sub' => 'este período', 'filtro' => 'Finalizado'],
         ];
         foreach ($kpis as $k): ?>
-        <div style="background:white;border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid <?= $k['color'] ?>;transition:all 0.3s;<?= $k['filtro'] ? 'cursor:pointer;' : '' ?>" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 25px <?= $k['boxShadow'] ?>'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.06)'" <?= $k['filtro'] ? "onclick=\"filtrarEstadoKPI('{$k['filtro']}')\" title=\"Ver {$k['label']}\"" : '' ?>>
+        <div class="kpi-card kpi-card-pasante" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid <?= $k['color'] ?>;transition:all 0.3s;<?= $k['filtro'] ? 'cursor:pointer;' : '' ?>" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 25px <?= $k['boxShadow'] ?>'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.06)'" <?= $k['filtro'] ? "onclick=\"filtrarEstadoKPI('{$k['filtro']}')\" title=\"Ver {$k['label']}\"" : '' ?>>
             <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                 <p style="color:#64748b;font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;"><?= $k['label'] ?></p>
                 <i class="ti <?= $k['icon'] ?>" style="color:<?= $k['color'] ?>;font-size:1.4rem;opacity:0.7;"></i>
@@ -353,7 +353,7 @@ sort($filtro_inst_nombres);
     </div>
 
     <!-- TABLA -->
-    <div style="background:white;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;">
+    <div class="pasantes-table-card" style="border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;">
         <div style="padding:20px 24px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;">
             <h3 style="font-size:1rem;font-weight:700;color:#1e293b;margin:0;">
                 <i class="ti ti-list-check" style="color:#2563eb;margin-right:6px;"></i>Pasantes Registrados

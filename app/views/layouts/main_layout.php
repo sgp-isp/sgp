@@ -106,7 +106,12 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
         --gradient-mid: <?= htmlspecialchars($_primaryColor) ?>;
         --gradient-end: <?= htmlspecialchars($_primaryColor) ?>;
     }
-    .admin-banner, .pasantes-banner, .users-banner, .dashboard-banner, .module-banner {
+    html:not([data-theme="dark"]) .admin-banner,
+    html:not([data-theme="dark"]) .pasantes-banner,
+    html:not([data-theme="dark"]) .users-banner,
+    html:not([data-theme="dark"]) .dashboard-banner,
+    html:not([data-theme="dark"]) .module-banner,
+    html:not([data-theme="dark"]) .asig-banner {
         background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%) !important;
     }
     </style>

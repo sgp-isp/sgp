@@ -103,10 +103,10 @@ $periodos           = $data['periodos']           ?? [];
 <div class="dashboard-bento">
     
     <!-- BANNER ESTANDARIZADO SGP -->
-    <div class="admin-banner" style="background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);border-radius:20px;padding:32px 40px;margin-bottom:28px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;">
+    <div class="admin-banner" style="border-radius:20px;padding:32px 40px;margin-bottom:28px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;">
         <div style="position:absolute;top:-30px;right:-30px;width:200px;height:200px;background:rgba(255,255,255,0.05);border-radius:50%;"></div>
         <div style="display:flex;align-items:center;gap:16px;z-index:1;">
-            <div style="background:rgba(255,255,255,0.15);border-radius:14px;padding:14px;">
+            <div class="banner-sparkle-icon" style="background:rgba(255,255,255,0.15);border-radius:14px;padding:14px;">
                 <i class="ti ti-sparkles" style="font-size:32px;color:white;"></i>
             </div>
             <div>
@@ -117,7 +117,7 @@ $periodos           = $data['periodos']           ?? [];
             </div>
         </div>
         <div style="display:flex; z-index:1; align-items:center;">
-            <div style="background: rgba(0, 0, 0, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50px; padding: 10px 24px; display: flex; align-items: center; gap: 20px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <div class="banner-clock" style="background: rgba(0, 0, 0, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50px; padding: 10px 24px; display: flex; align-items: center; gap: 20px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <i class="ti ti-calendar" style="color: rgba(255,255,255,0.8); font-size: 1.1rem;"></i> 
                     <span id="currentDate" style="font-size: 0.9rem; font-weight: 500; letter-spacing: 0.5px;"></span>
@@ -517,13 +517,12 @@ $periodos           = $data['periodos']           ?? [];
 <!-- ── Strip: Pasantías Cortas (flujo paralelo) ──────────── -->
 <?php if ((int)($cortosResumen->total ?? 0) > 0): ?>
 <a href="<?= URLROOT ?>/actividades/pasantias" style="text-decoration:none;display:block;margin-top:24px;margin-bottom:18px;">
-<div style="background:linear-gradient(135deg,#f5f3ff 0%,#ede9fe 100%);
-            border:1.5px solid #ddd6fe;border-radius:16px;
-            padding:14px 22px;display:flex;align-items:center;
+<div class="flujo-paralelo-strip"
+     style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border: 1.5px solid #ddd6fe; border-radius:16px;padding:14px 22px;display:flex;align-items:center;
             justify-content:space-between;flex-wrap:wrap;gap:12px;
-            transition:box-shadow .2s,transform .2s;cursor:pointer;"
-     onmouseover="this.style.boxShadow='0 6px 20px rgba(124,58,237,.15)';this.style.transform='translateY(-1px)'"
-     onmouseout="this.style.boxShadow='';this.style.transform=''">
+            transition:all .2s;cursor:pointer;"
+     onmouseover="this.style.transform='translateY(-2px)'"
+     onmouseout="this.style.transform=''">
     <div style="display:flex;align-items:center;gap:12px;">
         <div style="width:40px;height:40px;border-radius:11px;
                     background:linear-gradient(135deg,#7c3aed,#a78bfa);
@@ -534,7 +533,7 @@ $periodos           = $data['periodos']           ?? [];
         </div>
         <div>
             <div style="font-size:.72rem;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.5px;">Flujo Paralelo</div>
-            <div style="font-size:.92rem;font-weight:800;color:#3b0764;">Pasantías Cortas &amp; Act. Extras</div>
+            <div class="flujo-title" style="font-size:.92rem;font-weight:800;color:#3b0764;">Pasantías Cortas &amp; Act. Extras</div>
         </div>
     </div>
     <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
@@ -542,12 +541,12 @@ $periodos           = $data['periodos']           ?? [];
             <div style="font-size:1.6rem;font-weight:900;color:#7c3aed;line-height:1;"><?= (int)($cortosResumen->activos ?? 0) ?></div>
             <div style="font-size:.65rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin-top:2px;">Activos</div>
         </div>
-        <div style="width:1px;height:32px;background:#ddd6fe;"></div>
+        <div class="flujo-divider" style="width:1px;height:32px;background:#ddd6fe;"></div>
         <div style="text-align:center;">
             <div style="font-size:1.6rem;font-weight:900;color:#059669;line-height:1;"><?= (int)($cortosResumen->finalizados ?? 0) ?></div>
             <div style="font-size:.65rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin-top:2px;">Finalizados</div>
         </div>
-        <div style="width:1px;height:32px;background:#ddd6fe;"></div>
+        <div class="flujo-divider" style="width:1px;height:32px;background:#ddd6fe;"></div>
         <div style="text-align:center;">
             <?php $pp=(float)($cortosResumen->pct_promedio??0); $ppC=$pp>=80?'#059669':($pp>=50?'#d97706':'#7c3aed'); ?>
             <div style="font-size:1.6rem;font-weight:900;color:<?= $ppC ?>;line-height:1;"><?= $pp ?>%</div>
