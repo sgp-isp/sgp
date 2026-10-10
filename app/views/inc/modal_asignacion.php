@@ -125,7 +125,7 @@
                             <i class="ti ti-target" style="margin-right: 6px;"></i>Horas Meta
                         </label>
                         <div class="horas-wrapper">
-                            <input type="number" name="horas_meta" class="input-modern" id="inp-horas" value="1440" min="8" max="4000" oninput="recalcular()">
+                            <input type="number" name="horas_meta" class="input-modern" id="inp-horas" value="1440" min="8" max="4000" oninput="recalcularConFeriados()">
                             <button type="button" class="btn-reset-horas" onclick="resetHoras()">
                                 <i class="ti ti-refresh"></i> Recalcular por período
                             </button>

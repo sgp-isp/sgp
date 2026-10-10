@@ -1871,15 +1871,20 @@ class PeriodosController extends Controller
 
         $targetDias = (int)ceil($horas / 8);
 
-        // Cargar feriados no laborables
-        // Feriados NO se descuentan del conteo de horas (solo son para visualización)
+        // Cargar feriados no laborables reales
+        $this->db->query("SELECT fecha FROM dias_feriados WHERE es_laborable = 0");
+        $feriadosRows = $this->db->resultSet();
+        $feriados = array_column($feriadosRows, 'fecha');
+
         $cur      = new DateTime($inicio);
         $lv       = 0;
         $fechaFin = clone $cur;
 
         while ($lv < $targetDias) {
-            $dow = (int)$cur->format('N');
-            if ($dow < 6) {
+            $dow  = (int)$cur->format('N');
+            $fStr = $cur->format('Y-m-d');
+            // Días hábiles efectivos: L-V y no feriado no laborable
+            if ($dow < 6 && !in_array($fStr, $feriados, true)) {
                 $lv++;
                 $fechaFin = clone $cur;
             }
