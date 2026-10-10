@@ -93,15 +93,10 @@ class AsistenciasController extends Controller
         $finalizadosAnual = 0;
         $enCursoAnual     = 0;
 
-        // Cargar solo períodos que tengan al menos un pasante regular asignado
+        // Cargar períodos académicos para navegación en vistas históricas
         $this->db->query("
             SELECT pa.id, pa.nombre, pa.fecha_inicio, pa.fecha_fin, pa.estado
             FROM periodos_academicos pa
-            WHERE EXISTS (
-                SELECT 1 FROM datos_pasante dpa
-                WHERE dpa.periodo_id = pa.id
-                  AND COALESCE(dpa.tipo_pasantia, 'Regular') = 'Regular'
-            )
             ORDER BY pa.fecha_inicio DESC
         ");
         $periodosFiltro = $this->db->resultSet();
@@ -176,10 +171,19 @@ class AsistenciasController extends Controller
             }
         }
 
-        // Filtro por período (solo en vista anual)
-        $wherePeriodo = "";
+        // Filtro por período: en vista anual se usa el seleccionado; en operacionales, el activo
+        $wherePeriodo     = "";
+        $periodoActivo    = PeriodoService::getActivo();
+        $hayPeriodoActivo = ($periodoActivo !== null);
+
         if ($vista === 'anual' && isset($periodoIdSel) && $periodoIdSel > 0) {
             $wherePeriodo = " AND dpa.periodo_id = {$periodoIdSel} ";
+        } elseif ($vista !== 'anual') {
+            if ($hayPeriodoActivo) {
+                $wherePeriodo = " AND dpa.periodo_id = {$periodoActivo->id} ";
+            } else {
+                $wherePeriodo = " AND 1=0 "; // Sin período activo no hay cohortes operacionales
+            }
         }
 
         // Si es pasante, solo ve sus propios registros
@@ -370,30 +374,79 @@ class AsistenciasController extends Controller
         }
 
         // ==========================================
-        // PROCESADOR DE DATOS: VISTA ANUAL (Kpis)
+        // PROCESADOR DE DATOS: VISTA ANUAL (Cohorte & KPIs)
         // ==========================================
+        $resumenTotal   = [];
+        $retiradosAnual = 0;
         if ($vista === 'anual') {
-            $pasantesVistos = [];
-            foreach ($registrosLista as $reg) {
-                $pid = $reg->pasante_id;
-                if (!isset($pasantesVistos[$pid])) {
-                    $pasantesVistos[$pid] = [
-                        'presentes' => 0,
-                        'horas_meta' => (int)($reg->horas_meta ?? 1440)
+            if (isset($periodoIdSel) && $periodoIdSel > 0) {
+                $this->db->query("
+                    SELECT
+                        u.id AS pasante_id,
+                        u.cedula,
+                        u.avatar,
+                        u.estado AS estado_cuenta,
+                        COALESCE(dpa.estado_pasantia, 'Sin Asignar') AS estado_pasantia,
+                        dp.nombres,
+                        dp.apellidos,
+                        d.nombre AS departamento_nombre,
+                        COALESCE(inst.nombre, dpa.institucion_procedencia) AS institucion_nombre,
+                        pa.nombre AS periodo_nombre,
+                        COALESCE(NULLIF(dpa.horas_meta, 0), :horas_meta_default) AS horas_meta,
+                        COALESCE((
+                            SELECT COUNT(*)
+                            FROM asistencias a
+                            WHERE a.pasante_id = u.id
+                              AND a.estado IN ('Presente', 'Justificado')
+                              AND (a.fecha >= COALESCE(dpa.fecha_inicio_pasantia, pa.fecha_inicio))
+                              AND (a.fecha <= COALESCE(dpa.fecha_fin_estimada, pa.fecha_fin))
+                        ), 0) AS presentes,
+                        COALESCE((
+                            SELECT COUNT(*)
+                            FROM asistencias a
+                            WHERE a.pasante_id = u.id
+                              AND a.estado = 'Ausente'
+                              AND (a.fecha >= COALESCE(dpa.fecha_inicio_pasantia, pa.fecha_inicio))
+                              AND (a.fecha <= COALESCE(dpa.fecha_fin_estimada, pa.fecha_fin))
+                        ), 0) AS faltas
+                    FROM datos_pasante dpa
+                    INNER JOIN usuarios u ON u.id = dpa.usuario_id
+                    LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
+                    LEFT JOIN departamentos d ON d.id = COALESCE(dpa.departamento_asignado_id, u.departamento_id)
+                    LEFT JOIN instituciones inst ON inst.id = dpa.institucion_id
+                    LEFT JOIN periodos_academicos pa ON pa.id = dpa.periodo_id
+                    WHERE dpa.periodo_id = :periodo_id
+                    $whereTutor
+                    ORDER BY IFNULL(dp.apellidos, u.correo) ASC
+                ");
+                $this->db->bind(':horas_meta_default', $horasMetaPeriodo ?? 1440);
+                $this->db->bind(':periodo_id', $periodoIdSel);
+                $pasantesPeriodo = $this->db->resultSet();
+
+                foreach ($pasantesPeriodo as $p) {
+                    $pid = $p->pasante_id;
+                    $resumenTotal[$pid] = [
+                        'nombre'          => trim(($p->apellidos ?? '') . ', ' . ($p->nombres ?? '')),
+                        'nombres'         => $p->nombres ?? '',
+                        'apellidos'       => $p->apellidos ?? '',
+                        'cedula'          => $p->cedula ?? '',
+                        'departamento'    => $p->departamento_nombre ?? 'General',
+                        'avatar'          => $p->avatar ?? 'default.png',
+                        'institucion'     => $p->institucion_nombre ?? '',
+                        'periodo'         => $p->periodo_nombre ?? '',
+                        'estado_cuenta'   => $p->estado_cuenta ?? 'activo',
+                        'estado_pasantia' => $p->estado_pasantia ?? 'Sin Asignar',
+                        'presentes'       => (int)$p->presentes,
+                        'faltas'          => (int)$p->faltas,
+                        'justificados'    => 0,
+                        'horas_meta'      => (int)$p->horas_meta,
                     ];
                 }
-                if (strtolower($reg->estado) === 'presente' || strtolower($reg->estado) === 'justificado') {
-                    $pasantesVistos[$pid]['presentes']++;
-                }
-            }
-            $historicoAnual = count($pasantesVistos);
-            foreach ($pasantesVistos as $pData) {
-                $hrs = $pData['presentes'] * 8;
-                if ($hrs >= $pData['horas_meta']) {
-                    $finalizadosAnual++;
-                } else {
-                    $enCursoAnual++;
-                }
+
+                $historicoAnual   = count($pasantesPeriodo);
+                $finalizadosAnual = count(array_filter($pasantesPeriodo, fn($p) => $p->estado_pasantia === 'Finalizado'));
+                $enCursoAnual     = count(array_filter($pasantesPeriodo, fn($p) => $p->estado_pasantia === 'Activo'));
+                $retiradosAnual   = count(array_filter($pasantesPeriodo, fn($p) => $p->estado_pasantia === 'Retirado' || ($p->estado_cuenta === 'inactivo' && $p->estado_pasantia !== 'Finalizado')));
             }
         }
 
@@ -675,13 +728,18 @@ class AsistenciasController extends Controller
             'anioActual' => $anioActual,
             'urlAnt' => $urlAnt,
             'urlSig' => $urlSig,
-            'historicoAnual' => $historicoAnual,
-            'finalizadosAnual' => $finalizadosAnual,
-            'enCursoAnual' => $enCursoAnual,
-            'calPorDia'    => $calPorDia    ?? [],
-            'feriadosDia'  => $feriadosDia  ?? [],
-            'pctPorPasante'=> $pctPorPasante ?? [],
-            'ausenciasMes' => $ausenciasMes  ?? [],
+            'historicoAnual'      => $historicoAnual,
+            'finalizadosAnual'    => $finalizadosAnual,
+            'enCursoAnual'        => $enCursoAnual,
+            'retiradosAnual'      => $retiradosAnual,
+            'resumenTotal'        => $resumenTotal,
+            'hayPeriodoActivo'    => $hayPeriodoActivo,
+            'periodoActivo'       => $periodoActivo,
+            'totalHistoricos'     => PeriodoService::totalPasantesHistoricos(),
+            'calPorDia'           => $calPorDia    ?? [],
+            'feriadosDia'         => $feriadosDia  ?? [],
+            'pctPorPasante'       => $pctPorPasante ?? [],
+            'ausenciasMes'        => $ausenciasMes  ?? [],
             'todosDeptos'         => $todosDeptos        ?? [],
             'periodosFiltro'      => $periodosFiltro      ?? [],
             'periodoSeleccionado' => $periodoSeleccionado ?? null,

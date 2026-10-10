@@ -403,7 +403,11 @@ $periodos           = $data['periodos']           ?? [];
             </div>
             <div class="activity-list-scroll" style="overflow-y: auto; max-height: 380px; scrollbar-width: thin; padding-right: 8px;">
                 <?php if (empty($actividadReciente)): ?>
-                    <p style="text-align:center;color:#94a3b8;padding:24px;font-size:0.85rem;">Esperando actividad...</p>
+                    <div style="text-align:center;padding:36px 16px;color:#94a3b8;">
+                        <i class="ti ti-activity-heartbeat" style="font-size:2.2rem;display:block;margin-bottom:8px;color:#cbd5e1;"></i>
+                        <p style="margin:0;font-size:0.88rem;font-weight:600;color:#64748b;">Sin actividad reciente</p>
+                        <p style="margin:4px 0 0;font-size:0.75rem;color:#94a3b8;">No hay registros de asistencia en el período activo actual.</p>
+                    </div>
                 <?php else: ?>
                     <?php foreach (array_slice($actividadReciente, 0, 8) as $a): 
                         $metodo = $a->metodo ?? 'Kiosco'; 

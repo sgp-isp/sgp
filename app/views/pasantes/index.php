@@ -362,10 +362,40 @@ sort($filtro_inst_nombres);
         </div>
 
         <?php if (empty($pasantes)): ?>
-        <div style="padding:60px;text-align:center;color:#94a3b8;">
-            <i class="ti ti-users-off" style="font-size:3rem;display:block;margin-bottom:12px;"></i>
-            <p style="font-size:1rem;font-weight:600;">No hay pasantes registrados aún.</p>
-        </div>
+            <?php if (($totalHistoricos ?? 0) > 0): ?>
+            <!-- EMPTY STATE INTELIGENTE: Hay pasantes en el sistema pero no activos en el período actual -->
+            <div style="padding: 50px 30px; text-align: center; max-width: 650px; margin: 0 auto;">
+                <div style="width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); color: #2563eb; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(37,99,235,0.12);">
+                    <i class="ti ti-school" style="font-size: 2.2rem;"></i>
+                </div>
+                <h4 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin: 0 0 10px;">
+                    No hay pasantes activos en el período actual
+                </h4>
+                <p style="font-size: 0.92rem; color: #64748b; line-height: 1.6; margin: 0 0 24px;">
+                    Los <?= (int)$totalHistoricos ?> pasantes registrados en el sistema ya culminaron sus pasantías o corresponden a cohortes académicas anteriores. Puedes consultar sus expedientes, evaluaciones y asistencias desde el módulo de Períodos.
+                </p>
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <a href="<?= URLROOT ?>/periodos" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; background: #2563eb; color: #fff; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.9rem; box-shadow: 0 4px 14px rgba(37,99,235,0.25); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                        <i class="ti ti-calendar-event"></i> Ver Historial de Períodos
+                    </a>
+                    <a href="<?= URLROOT ?>/reportes" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #f8fafc; color: #334155; border: 1.5px solid #e2e8f0; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                        <i class="ti ti-file-analytics"></i> Centro de Reportes
+                    </a>
+                </div>
+            </div>
+            <?php else: ?>
+            <!-- EMPTY STATE: Sistema totalmente nuevo sin pasantes creados aún -->
+            <div style="padding: 60px 30px; text-align: center; color: #94a3b8;">
+                <div style="width: 64px; height: 64px; border-radius: 18px; background: #f8fafc; color: #94a3b8; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <i class="ti ti-users-off" style="font-size: 2.2rem;"></i>
+                </div>
+                <h4 style="font-size: 1.1rem; font-weight: 700; color: #475569; margin: 0 0 6px;">No hay pasantes registrados aún</h4>
+                <p style="font-size: 0.88rem; color: #94a3b8; margin: 0 0 20px;">Comienza creando pasantes o asignándolos al período académico vigente.</p>
+                <button type="button" class="btn btn-primary" onclick="SGPModal.crearPasante()" style="border-radius: 12px; padding: 10px 22px; font-weight: 700;">
+                    <i class="ti ti-user-plus"></i> Registrar Primer Pasante
+                </button>
+            </div>
+            <?php endif; ?>
         <?php else: ?>
         <!-- TABLA — solo en pantallas grandes (≥ 992px) -->
         <div class="table-responsive sgp-solo-desktop" style="padding: 20px;">

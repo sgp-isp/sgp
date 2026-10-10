@@ -36,18 +36,11 @@ class PasantesController extends Controller
      */
     public function index(): void
     {
-        // [BUG-02 FIX] getAll() ahora detecta el período activo automáticamente si no se pasa uno
-        $periodoId = (int)(Session::get('selected_periodo_id') ?? 0);
-        $pasantes = $this->pasanteModel->getAll($periodoId);
-
-        // Período activo actual (para el banner y filtros de vista)
-        $this->db->query("
-            SELECT id, nombre, estado, fecha_inicio, fecha_fin
-            FROM periodos_academicos
-            WHERE estado = 'Activo'
-            ORDER BY fecha_inicio DESC LIMIT 1
-        ");
-        $periodoActivo = $this->db->single();
+        // Usar PeriodoService centralizado para contexto y período activo
+        $periodoId       = PeriodoService::getIdContexto();
+        $pasantes        = $this->pasanteModel->getAll($periodoId);
+        $periodoActivo   = PeriodoService::getActivo();
+        $totalHistoricos = PeriodoService::totalPasantesHistoricos();
 
         // Contadores para KPI cards
         $total      = count($pasantes);
@@ -85,9 +78,10 @@ class PasantesController extends Controller
         $instituciones = $this->db->resultSet();
 
         $this->view('pasantes/index', [
-            'pasantes'      => $pasantes,
-            'periodoActivo' => $periodoActivo,
-            'total'         => $total,
+            'pasantes'        => $pasantes,
+            'periodoActivo'   => $periodoActivo,
+            'totalHistoricos' => $totalHistoricos,
+            'total'           => $total,
             'enCurso'       => $enCurso,
             'pendientes'    => $pendientes,
             'culminados'    => $culminados,

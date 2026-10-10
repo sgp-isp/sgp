@@ -104,6 +104,11 @@ class DashboardAdminModel
 
     public function getActividadReciente(int $limit = 5): array
     {
+        $periodoActivo = PeriodoService::getActivo();
+        if (!$periodoActivo) {
+            return [];
+        }
+
         $this->db->query("
             SELECT
                 a.id,
@@ -118,11 +123,18 @@ class DashboardAdminModel
             FROM asistencias a
             INNER JOIN usuarios u  ON u.id  = a.pasante_id
             LEFT  JOIN datos_personales dp ON dp.usuario_id = a.pasante_id
+            INNER JOIN datos_pasante dpa ON dpa.usuario_id = a.pasante_id
+                       AND dpa.estado_pasantia = 'Activo'
+                       AND dpa.periodo_id = :pid
+            WHERE a.fecha BETWEEN :fi AND LEAST(:ff, CURDATE())
             ORDER BY a.fecha DESC, a.hora_registro DESC
             LIMIT :limit
         ");
+        $this->db->bind(':pid',   $periodoActivo->id);
+        $this->db->bind(':fi',    $periodoActivo->fecha_inicio);
+        $this->db->bind(':ff',    $periodoActivo->fecha_fin);
         $this->db->bind(':limit', $limit, PDO::PARAM_INT);
-        return $this->db->resultSet();
+        return $this->db->resultSet() ?: [];
     }
 
     public function getEstadosPasantes(): array

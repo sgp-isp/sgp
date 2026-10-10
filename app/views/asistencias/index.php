@@ -25,6 +25,13 @@ $pasantesActivos = $data['pasantesActivos'] ?? [];
 $hoy             = $data['hoy']             ?? date('Y-m-d');
 $vistaActual     = $data['vistaActual']     ?? $data['vista'] ?? 'diaria';
 $tituloRango     = $data['tituloRango']     ?? 'del día';
+$hayPeriodoActivo = $data['hayPeriodoActivo'] ?? true;
+$periodoActivo   = $data['periodoActivo']   ?? null;
+$totalHistoricos = $data['totalHistoricos'] ?? 0;
+$historicoAnual   = $data['historicoAnual']   ?? 0;
+$finalizadosAnual = $data['finalizadosAnual'] ?? 0;
+$enCursoAnual     = $data['enCursoAnual']     ?? 0;
+$retiradosAnual   = $data['retiradosAnual']   ?? 0;
 
 $estadoConfig = [
     'Presente'    => ['bg' => '#dcfce7', 'color' => '#16a34a', 'icon' => 'ti-check'],
@@ -138,30 +145,6 @@ table.dataTable tbody tr:hover {
 
     <!-- ===== TARJETAS ESTADÍSTICAS (PREMIUM) ===== -->
     <?php if ($vistaActual === 'anual'): ?>
-        <?php
-            $historicoAnual = 0; $enCursoAnual = 0; $finalizadosAnual = 0;
-            if(!empty($registrosLista)) {
-                $pasantesAnual = [];
-                foreach($registrosLista as $reg) {
-                    $pid = $reg->pasante_id ?? 'P'.$reg->id;
-                    if(!isset($pasantesAnual[$pid])) {
-                        $pasantesAnual[$pid] = [
-                            'presentes'       => 0,
-                            'horas_meta'      => (int)($reg->horas_meta ?? 1440),
-                            'estado_pasantia' => $reg->estado_pasantia ?? 'Sin Asignar',
-                        ];
-                    }
-                    if(stripos($reg->estado, 'presente') !== false || stripos($reg->estado, 'justificado') !== false) {
-                        $pasantesAnual[$pid]['presentes']++;
-                    }
-                }
-                $historicoAnual = count($pasantesAnual);
-                foreach($pasantesAnual as $pid => $data) {
-                    if ($data['estado_pasantia'] === 'Finalizado') $finalizadosAnual++;
-                    else $enCursoAnual++;
-                }
-            }
-        ?>
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:20px;margin-bottom:32px;">
             <!-- Histórico Total (Azul) -->
             <div class="stat-card" style="background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.04);border-left:4px solid #3b82f6; transition: all 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.04)'">
@@ -169,7 +152,7 @@ table.dataTable tbody tr:hover {
                     <div>
                         <h2 style="font-size:2.2rem;font-weight:800;color:#3b82f6;margin:0;"><?= $historicoAnual ?></h2>
                         <p style="color:#64748b;font-size:0.85rem;margin:4px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Pasantes Históricos</p>
-                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">registrados en el año</p>
+                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">registrados en este período</p>
                     </div>
                     <div style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
                         <i class="ti ti-users" style="font-size:24px;color:#3b82f6;"></i>
@@ -182,7 +165,7 @@ table.dataTable tbody tr:hover {
                     <div>
                         <h2 style="font-size:2.2rem;font-weight:800;color:#10b981;margin:0;"><?= $finalizadosAnual ?></h2>
                         <p style="color:#64748b;font-size:0.85rem;margin:4px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Finalizados</p>
-                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">cumplieron <?= number_format($horasMetaPeriodo ?? 1440, 0, ',', '.') ?> hrs</p>
+                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">culminaron carga horaria</p>
                     </div>
                     <div style="background:linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
                         <i class="ti ti-certificate" style="font-size:24px;color:#10b981;"></i>
@@ -206,9 +189,9 @@ table.dataTable tbody tr:hover {
             <div class="stat-card opacity-75" style="background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.04);border-left:4px solid #64748b; transition: all 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.04)'">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                     <div>
-                        <h2 style="font-size:2.2rem;font-weight:800;color:#64748b;margin:0;">0</h2>
-                        <p style="color:#64748b;font-size:0.85rem;margin:4px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Retirados</p>
-                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">sin actividad reciente</p>
+                        <h2 style="font-size:2.2rem;font-weight:800;color:#64748b;margin:0;"><?= $retiradosAnual ?></h2>
+                        <p style="color:#64748b;font-size:0.85rem;margin:4px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Retirados / Inactivos</p>
+                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">sin completar</p>
                     </div>
                     <div style="background:linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
                         <i class="ti ti-user-off" style="font-size:24px;color:#64748b;"></i>
@@ -280,6 +263,31 @@ table.dataTable tbody tr:hover {
         </div>
     <?php endif; ?>
 
+    <!-- ===== BANNER RECESO PERÍODO (VISTAS OPERACIONALES) ===== -->
+    <?php if ($vistaActual !== 'anual' && !$hayPeriodoActivo): ?>
+    <div style="background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 22px 28px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 4px 15px -3px rgba(37,99,235,0.06);">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 48px; height: 48px; border-radius: 12px; background: #dbeafe; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-size: 1.5rem; flex-shrink: 0;">
+                <i class="ti ti-calendar-off"></i>
+            </div>
+            <div>
+                <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #1e3a8a;">Período Académico en Receso o Cerrado</h4>
+                <p style="margin: 4px 0 0; font-size: 0.85rem; color: #475569; line-height: 1.4;">
+                    Actualmente no hay un período académico activo con pasantes en curso. Puedes consultar el historial completo de cohortes anteriores en la vista Total.
+                </p>
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="<?= URLROOT ?>/asistencias?vista=anual" style="background: #1d4ed8; color: white; padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(29,78,216,0.25);">
+                <i class="ti ti-history"></i> Ver Histórico Total
+            </a>
+            <a href="<?= URLROOT ?>/periodos" style="background: white; color: #1e293b; border: 1px solid #cbd5e1; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="ti ti-calendar-plus"></i> Gestionar Períodos
+            </a>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- ===== ENRUTADOR DE VISTAS (TABLAS) ===== -->
     <div class="tablas-container">
         <?php if ($vistaActual === 'diaria' || empty($vistaActual)): ?>
@@ -300,7 +308,9 @@ table.dataTable tbody tr:hover {
             <?php if (empty($registrosHoy)): ?>
             <div style="padding:48px 24px;text-align:center;">
                 <i class="ti ti-calendar-off" style="font-size:48px;color:#cbd5e1;display:block;margin-bottom:12px;"></i>
-                <p style="color:#94a3b8;margin:0;font-size:0.95rem; font-weight:600;">Ningún pasante ha marcado aún hoy</p>
+                <p style="color:#94a3b8;margin:0;font-size:0.95rem; font-weight:600;">
+                    <?= $totalActivos === 0 ? 'Sin actividad en la jornada (no hay pasantes activos cursando)' : 'Ningún pasante ha marcado aún hoy' ?>
+                </p>
             </div>
             <?php else: ?>
             <div style="overflow-x:auto;max-height:380px;overflow-y:auto; scrollbar-width: thin;">
@@ -417,10 +427,18 @@ table.dataTable tbody tr:hover {
             <?php endif; ?>
 
             <?php if (empty($sinMarcar)): ?>
-            <div style="padding:48px 24px;text-align:center;">
-                <i class="ti ti-circle-check" style="font-size:48px;color:#10b981;display:block;margin-bottom:12px;"></i>
-                <p style="color:#10b981;margin:0;font-size:0.95rem;font-weight:700;">¡Todos los pasantes marcaron hoy! 🎉</p>
-            </div>
+                <?php if ($totalActivos === 0): ?>
+                <div style="padding:48px 24px;text-align:center;">
+                    <i class="ti ti-users-minus" style="font-size:48px;color:#cbd5e1;display:block;margin-bottom:12px;"></i>
+                    <p style="color:#64748b;margin:0;font-size:0.95rem;font-weight:700;">No hay pasantes activos en esta cohorte</p>
+                    <p style="color:#94a3b8;font-size:0.8rem;margin:6px 0 0;">Todos los pasantes están finalizados o no hay asignaciones vigentes.</p>
+                </div>
+                <?php else: ?>
+                <div style="padding:48px 24px;text-align:center;">
+                    <i class="ti ti-circle-check" style="font-size:48px;color:#10b981;display:block;margin-bottom:12px;"></i>
+                    <p style="color:#10b981;margin:0;font-size:0.95rem;font-weight:700;">¡Todos los pasantes marcaron hoy! 🎉</p>
+                </div>
+                <?php endif; ?>
             <?php else: ?>
             <div style="overflow-x:auto;max-height:380px;overflow-y:auto; scrollbar-width: thin;">
                 <table style="width: 100%; border-collapse: collapse;">
@@ -2949,8 +2967,8 @@ window.menMarcarMasivoConConfirmacion = async function(estado) {
 
             <?php 
             // VISTA TOTAL (ANUAL): Muro de Graduados (Card Grid)
-            $resumenTotal = [];
-            if(!empty($registrosLista)) {
+            $resumenTotal = !empty($data['resumenTotal']) ? $data['resumenTotal'] : [];
+            if(empty($resumenTotal) && !empty($registrosLista)) {
                 foreach($registrosLista as $reg) {
                     $pid = $reg->pasante_id ?? 'P'.$reg->id;
                     if(!isset($resumenTotal[$pid])) {
@@ -3034,21 +3052,21 @@ window.menMarcarMasivoConConfirmacion = async function(estado) {
                                            font-weight:700;font-family:inherit;transition:all .2s;
                                            background:linear-gradient(135deg,#2563eb,#3b82f6);
                                            color:white;box-shadow:0 2px 8px rgba(37,99,235,.35);">
-                                    <i class="ti ti-layout-grid" style="font-size:.85rem;"></i> Todos
+                                    <i class="ti ti-layout-grid" style="font-size:.85rem;"></i> Todos (<?= count($resumenTotal) ?>)
                                 </button>
                                 <button id="chip-activo" onclick="filterMuro('Activo',this)"
                                     style="display:inline-flex;align-items:center;gap:5px;padding:5px 14px;
                                            border-radius:24px;border:none;cursor:pointer;font-size:.78rem;
                                            font-weight:700;font-family:inherit;transition:all .2s;
                                            background:transparent;color:#475569;">
-                                    <i class="ti ti-activity" style="font-size:.85rem;"></i> Activos
+                                    <i class="ti ti-activity" style="font-size:.85rem;"></i> Activos (<?= $enCursoAnual ?>)
                                 </button>
                                 <button id="chip-finalizado" onclick="filterMuro('Finalizado',this)"
                                     style="display:inline-flex;align-items:center;gap:5px;padding:5px 14px;
                                            border-radius:24px;border:none;cursor:pointer;font-size:.78rem;
                                            font-weight:700;font-family:inherit;transition:all .2s;
                                            background:transparent;color:#475569;">
-                                    <i class="ti ti-certificate" style="font-size:.85rem;"></i> Finalizados
+                                    <i class="ti ti-certificate" style="font-size:.85rem;"></i> Finalizados (<?= $finalizadosAnual ?>)
                                 </button>
                             </div>
                         </div>

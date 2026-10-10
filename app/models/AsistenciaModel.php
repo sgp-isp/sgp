@@ -48,11 +48,9 @@ class AsistenciaModel
             LEFT  JOIN instituciones   inst ON inst.id = dpa.institucion_id
             LEFT  JOIN periodos_academicos pa ON pa.id = dpa.periodo_id
             WHERE  u.rol_id = 3
-              AND  u.estado = 'activo'
-              AND  COALESCE(dpa.estado_pasantia, 'Sin Asignar') = 'Activo'
               $whereTutor
               AND  (u.cedula LIKE :busqueda OR dp.nombres LIKE :busqueda OR dp.apellidos LIKE :busqueda)
-            ORDER BY IFNULL(dp.apellidos, u.correo) ASC
+            ORDER BY CASE WHEN dpa.estado_pasantia = 'Activo' THEN 0 ELSE 1 END, IFNULL(dp.apellidos, u.correo) ASC
             LIMIT 5
         ");
 
@@ -104,7 +102,8 @@ class AsistenciaModel
             LEFT  JOIN usuarios         t   ON t.id  = dpa.tutor_id
             LEFT  JOIN datos_personales td  ON td.usuario_id = t.id
             WHERE  u.id = :id
-            LIMIT 1
+            ORDER  BY CASE WHEN dpa.estado_pasantia = 'Activo' THEN 0 ELSE 1 END, dpa.id DESC
+            LIMIT  1
         ");
 
         $this->db->bind(':id', $id);
