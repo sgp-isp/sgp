@@ -680,11 +680,22 @@ function traducir_tabla($tabla)
     var grid;
 
     // [SGP-FIX-PJAX-BITACORA-GRID] DOMContentLoaded solo se dispara una vez por carga
-    // completa de página. En navegación PJAX este <script> se re-ejecuta sin recarga
-    // (execInlineScripts), así que el listener nunca se vuelve a disparar y la tabla
-    // queda vacía. Se invoca directamente cuando el DOM ya está listo (que es el caso
-    // en PJAX, porque el HTML nuevo ya fue inyectado antes de re-ejecutar el script).
+    // completa de página. En navegación PJAX este <script> se re-ejecuta sin recarga.
+    // Garantizamos existencia de gridjs y limpiamos el contenedor antes de renderizar.
     function initBitacoraGrid() {
+        const container = document.getElementById('bitacora-grid');
+        if (!container) return;
+
+        if (typeof gridjs === 'undefined') {
+            setTimeout(initBitacoraGrid, 60);
+            return;
+        }
+
+        container.innerHTML = '';
+        if (grid && typeof grid.destroy === 'function') {
+            try { grid.destroy(); } catch(e){}
+        }
+
         grid = new gridjs.Grid({
             columns: [
                 {
@@ -890,7 +901,7 @@ function traducir_tabla($tabla)
                 },
                 total: data => data.total || 0
             }
-        }).render(document.getElementById('bitacora-grid'));
+        }).render(container);
     }
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initBitacoraGrid);

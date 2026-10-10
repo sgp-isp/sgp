@@ -58,6 +58,8 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     <link rel="stylesheet" href="<?= URLROOT ?>/assets/libs/datatables/jquery.dataTables.min.css">
     <!-- DataTables Buttons (Excel/PDF/Print — Usuarios y Asignaciones) -->
     <link rel="stylesheet" href="<?= URLROOT ?>/assets/libs/datatables/buttons/buttons.dataTables.min.css">
+    <!-- Grid.js (Bitácora / Auditoría) -->
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/gridjs-mermaid.min.css">
     <!-- Modal Asignación CSS (componente reutilizable) -->
     <link rel="stylesheet" href="<?= URLROOT ?>/css/modal-asignacion.css">
 
@@ -246,6 +248,7 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     <script src="<?= URLROOT ?>/js/bootstrap.bundle.min.js"></script>
     <script src="<?= URLROOT ?>/js/apexcharts.min.js"></script>
     <script src="<?= URLROOT ?>/js/echarts.min.js"></script>
+    <script src="<?= URLROOT ?>/js/gridjs.umd.js"></script>
     <script src="<?= URLROOT ?>/js/modern-charts.js"></script>
     <script src="<?= URLROOT ?>/js/notifications.js?v=3"></script>
     <script src="<?= URLROOT ?>/js/sidebar.js?v=3"></script>

@@ -189,9 +189,9 @@ class BitacoraController extends Controller
         header('Content-Type: application/json');
         
         try {
-            // Grid.js envía limit y offset via GET
-            $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
-            $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+            // Grid.js envía limit y offset via GET (sanitizados y acotados)
+            $limit = max(1, min(100, (int)($_GET['limit'] ?? 10)));
+            $offset = max(0, (int)($_GET['offset'] ?? 0));
             
             // Filtros
             $action   = $_GET['accion']      ?? null;
@@ -289,7 +289,7 @@ class BitacoraController extends Controller
             ]);
             exit;
             
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             error_log("BitacoraController::apiGrid() Error: " . $e->getMessage());
             echo json_encode([
                 'data'  => [],
