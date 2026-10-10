@@ -85,7 +85,7 @@ $periodos           = $data['periodos']           ?? [];
 .gauge-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
 /* === MÓVIL (SGP Bento Mobile) === */
-@media (max-width: 991px) {
+@media (max-width: 768px) {
     .admin-banner {
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -95,7 +95,7 @@ $periodos           = $data['periodos']           ?? [];
     .admin-banner > div:first-child {
         display: none !important;
     }
-    /* Widget fecha/hora: ocultar en móvil */
+    /* Widget fecha/hora: ocultar en móvil pequeño */
     .admin-banner > div:last-child { display: none !important; }
 }
 </style>

@@ -463,37 +463,59 @@ body.sidebar-collapsed .nav-link:hover::before {
 /* ========================================
    [RESP-04] TABLET MINI-SIDEBAR (769px – 991px)
    El sidebar se contrae a solo íconos (72px).
-   El contenido se desplaza 72px en lugar de 0
-   para que el sidebar siga siendo visible y útil.
+   El contenido se ajusta a calc(100% - 72px)
+   para que no haya desbordamiento horizontal.
    ======================================== */
 @media (min-width: 769px) and (max-width: 991px) {
     .main-sidebar {
+        display: flex !important;
+        flex-direction: column !important;
         width: 72px !important;
         left: 0 !important;
         top: var(--header-height);
         height: calc(100vh - var(--header-height));
         transform: translateX(0) !important;
-        overflow: hidden;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        z-index: 1000 !important;
     }
 
-    /* Ocultar textos de navegación y el logo largo */
+    /* Ocultar textos de navegación, labels y textos de botones */
     .main-sidebar .nav-text,
+    .main-sidebar .menu-text,
     .main-sidebar .sidebar-brand-text,
     .main-sidebar .sidebar-section-label,
     .main-sidebar .nav-badge,
-    .main-sidebar .sidebar-footer-info {
+    .main-sidebar .sidebar-footer-info,
+    .main-sidebar .btn-logout span {
         display: none !important;
         opacity: 0;
         visibility: hidden;
     }
 
-    /* Centrar íconos */
+    /* Centrar íconos de navegación */
     .main-sidebar .nav-link {
         justify-content: center !important;
         padding: 12px !important;
+        position: relative;
     }
 
     .main-sidebar .nav-link i {
+        margin: 0 !important;
+        font-size: 20px !important;
+    }
+
+    /* Footer y botón logout centrado */
+    .main-sidebar .sidebar-footer {
+        padding: 12px 8px !important;
+    }
+
+    .main-sidebar .btn-logout {
+        justify-content: center !important;
+        padding: 10px !important;
+    }
+
+    .main-sidebar .btn-logout i {
         margin: 0 !important;
         font-size: 20px !important;
     }
@@ -511,16 +533,60 @@ body.sidebar-collapsed .nav-link:hover::before {
         height: auto !important;
     }
 
-    /* Tooltip nativo (title) visible al hover en modo mini */
-    .main-sidebar .nav-link {
-        position: relative;
+    /* Tooltips al hover en modo mini-sidebar (tablet / pantalla dividida) */
+    .main-sidebar .nav-link::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: calc(100% + 12px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: #1e293b;
+        color: white;
+        padding: 8px 14px;
+        border-radius: 8px;
+        white-space: nowrap;
+        font-size: 0.85rem;
+        font-weight: 500;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.15s ease, visibility 0.15s ease;
+        z-index: 2000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
-    /* Contenido desplazado 72px (sidebar mini visible) */
+    .main-sidebar .nav-link::before {
+        content: '';
+        position: absolute;
+        left: calc(100% + 4px);
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 6px 8px 6px 0;
+        border-color: transparent #1e293b transparent transparent;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.15s ease, visibility 0.15s ease;
+        z-index: 2000;
+    }
+
+    .main-sidebar .nav-link:hover::after,
+    .main-sidebar .nav-link:hover::before {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Contenido desplazado 72px exactamente, sin desbordar el viewport */
     .content-wrapper {
         margin-left: 72px !important;
+        width: calc(100% - 72px) !important;
+        max-width: calc(100% - 72px) !important;
+        box-sizing: border-box !important;
         margin-top: var(--header-height);
-        padding: 20px 18px;
+        padding: 20px 20px;
         min-height: calc(100vh - var(--header-height));
         background-color: #F8FAFC;
     }

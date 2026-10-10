@@ -73,9 +73,9 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
 
     <!-- IMPORTANTE: style.css debe cargar AL FINAL para tener prioridad sobre otros frameworks -->
     <link rel="stylesheet" href="<?= URLROOT ?>/css/style.css">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/sidebar.css">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/mobile-dock.css?v=6">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/topbar.css?v=2">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/sidebar.css?v=4">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/mobile-dock.css?v=7">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/topbar.css?v=3">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/loading.css">
     <!-- Dark Mode CSS (Fase 5) -->
     <link rel="stylesheet" href="<?= URLROOT ?>/css/dark-mode.css?v=1">
