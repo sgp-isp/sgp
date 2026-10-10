@@ -147,7 +147,7 @@ $estadoConfig = [
     </div>
 
     <!-- ===== PREMIUM SYSTEM TIP (UX) ===== -->
-    <div style="background: linear-gradient(to right, #f8fafc, #edf2f9); border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; border-radius: 12px; padding: 16px 24px; margin-bottom: 28px; display: flex; align-items: flex-start; gap: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+    <div style="background: linear-gradient(to right, #f8fafc, #edf2f9); border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; border-radius: 12px; padding: 16px 24px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
         <div style="background: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(37,99,235,0.15); flex-shrink: 0;">
             <i class="ti ti-bulb" style="color: #2563eb; font-size: 1.3rem;"></i>
         </div>
@@ -158,6 +158,28 @@ $estadoConfig = [
             </p>
         </div>
     </div>
+
+    <?php if (empty($data['periodoActivo'])): ?>
+    <!-- BANNER PERÍODO EN RECESO (Coherencia Multi-Período) -->
+    <div style="background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border: 1.5px solid #fde68a; border-radius: 16px; padding: 18px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;">
+                <i class="ti ti-calendar-off"></i>
+            </div>
+            <div>
+                <h4 style="margin: 0; color: #92400e; font-size: 0.95rem; font-weight: 800;">Receso Académico — Sin Período Activo</h4>
+                <p style="margin: 2px 0 0; color: #b45309; font-size: 0.82rem;">
+                    Actualmente no hay un período académico activo. Las cohortes anteriores concluyeron sus pasantías y sus expedientes están resguardados en el módulo de Períodos.
+                </p>
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="<?= URLROOT ?>/periodos" style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; background: #d97706; color: white; border-radius: 10px; font-weight: 700; font-size: 0.82rem; text-decoration: none; box-shadow: 0 4px 10px rgba(217,119,6,0.25);">
+                <i class="ti ti-calendar-event"></i> Gestionar Períodos
+            </a>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- ===== KPI CARDS (Asig Standard — Clase Aislada) ===== -->
     <div class="asig-stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 28px;">
@@ -218,9 +240,39 @@ $estadoConfig = [
     </div>
 
     <!-- ===== TABLA DE ASIGNACIONES (Boxy SaaS) ===== -->
+    <?php if (empty($asignaciones)): ?>
+    <!-- EMPTY STATE INTELIGENTE (Cero errores DataTables TN/18) -->
+    <div class="sgp-solo-desktop" style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); padding: 56px 30px; text-align: center; border: 0;">
+        <div style="width: 76px; height: 76px; border-radius: 22px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); color: #2563eb; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(37,99,235,0.12);">
+            <i class="ti ti-link-off" style="font-size: 2.3rem;"></i>
+        </div>
+        <h3 style="font-size: 1.3rem; font-weight: 800; color: #1e293b; margin: 0 0 10px;">
+            <?= empty($data['periodoActivo']) ? 'No hay asignaciones para el período actual' : 'No hay asignaciones registradas en este período' ?>
+        </h3>
+        <p style="font-size: 0.92rem; color: #64748b; line-height: 1.6; max-width: 580px; margin: 0 auto 26px;">
+            <?= empty($data['periodoActivo'])
+                ? 'Las cohortes anteriores ya culminaron sus pasantías exitosamente. Para comenzar a asignar nuevos pasantes a sus tutores y departamentos, activa un nuevo período o pulsa el botón a continuación.'
+                : 'Aún no se han asignado pasantes a tutores y departamentos en este período académico. Comienza formalizando la primera asignación.' ?>
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <button onclick="abrirModalAsignacion()"
+                style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 26px; background: #2563eb; color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 0.92rem; cursor: pointer; box-shadow: 0 4px 14px rgba(37,99,235,0.25); transition: transform 0.2s;"
+                onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <i class="ti ti-plus"></i> Nueva Asignación
+            </button>
+            <?php if (empty($data['periodoActivo'])): ?>
+            <a href="<?= URLROOT ?>/periodos"
+                style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; background: #f8fafc; color: #334155; border: 1.5px solid #e2e8f0; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.92rem; transition: background 0.2s;"
+                onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                <i class="ti ti-calendar-event"></i> Ver Historial de Períodos
+            </a>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php else: ?>
     <div class="sgp-solo-desktop" style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; border: 0;">
         <div class="table-responsive">
-            <table id="tablaAsignaciones" class="table table-hover align-middle mb-0" style="width: 100%; opacity: 0; transition: opacity 0.4s ease-in-out;">
+            <table id="tablaAsignaciones" class="table table-hover align-middle mb-0" style="width: 100%;">
                 <thead class="bg-light text-uppercase text-muted small fw-bold">
                     <tr>
                         <?php foreach (['Pasante', 'Cédula', 'Tutor Asignado', 'Departamento', 'Horario', 'Progreso', 'Estado', 'Acciones'] as $h): ?>
@@ -229,14 +281,6 @@ $estadoConfig = [
                     </tr>
                 </thead>
                 <tbody class="border-top-0">
-                    <?php if (empty($asignaciones)): ?>
-                    <tr>
-                        <td colspan="8" style="text-align: center; padding: 48px 20px; color: #94a3b8;">
-                            <i class="ti ti-link-off" style="font-size: 48px; display: block; margin-bottom: 12px;"></i>
-                            No hay asignaciones registradas aún.
-                        </td>
-                    </tr>
-                    <?php else: ?>
                     <?php foreach ($asignaciones as $a):
                         $estado    = $a->estado_pasantia ?? 'Sin Asignar';
                         $cfg       = $estadoConfig[$estado] ?? $estadoConfig['Sin Asignar'];
@@ -321,14 +365,29 @@ $estadoConfig = [
                         </td>
                     </tr>
                     <?php endforeach; ?>
-                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
+    <?php endif; ?>
 
     <!-- CARD VIEW — solo en móvil (< 992px) -->
     <div class="sgp-solo-mobile gap-3 px-1 pb-3" id="cardsAsignaciones">
+    <?php if (empty($asignaciones)): ?>
+        <div style="background: white; border-radius: 16px; padding: 32px 20px; text-align: center; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+            <div style="width: 56px; height: 56px; border-radius: 16px; background: #eff6ff; color: #2563eb; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+                <i class="ti ti-link-off" style="font-size: 1.8rem;"></i>
+            </div>
+            <p style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 6px;">No hay asignaciones registradas</p>
+            <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 18px;">
+                <?= empty($data['periodoActivo']) ? 'El período académico actual está cerrado o en receso.' : 'Aún no se han asignado pasantes en este período.' ?>
+            </p>
+            <button onclick="abrirModalAsignacion()"
+                style="padding: 10px 20px; background: #2563eb; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 0.85rem;">
+                <i class="ti ti-plus"></i> Nueva Asignación
+            </button>
+        </div>
+    <?php else: ?>
     <?php foreach ($asignaciones as $a):
         $estado    = $a->estado_pasantia ?? 'Sin Asignar';
         $cfg       = $estadoConfig[$estado] ?? $estadoConfig['Sin Asignar'];
@@ -414,6 +473,7 @@ $estadoConfig = [
 
     </div>
     <?php endforeach; ?>
+    <?php endif; ?>
     </div>
 
 </div><!-- /dashboard-container -->
@@ -423,46 +483,47 @@ $estadoConfig = [
 
 <script>
 // ── DataTables & Filtros ──────────────────────────────────
+// Suprimir popups intrusivos alert() de DataTables (TN/18 y derivados)
+if (typeof $ !== 'undefined' && $.fn && $.fn.dataTable && $.fn.dataTable.ext) {
+    $.fn.dataTable.ext.errMode = 'none';
+}
+
 $(document).ready(function() {
     var $tablaAsignaciones = $('#tablaAsignaciones');
-    var dt;
+    var dt = null;
 
-    // SGP-FIX: Solo iniciar DataTables si hay filas reales (evita TN/18 con tabla vacía)
-    var hayFilas = $tablaAsignaciones.find('tbody tr.fila-asignacion').length > 0;
-
-    if ($tablaAsignaciones.length && hayFilas && !$.fn.DataTable.isDataTable($tablaAsignaciones)) {
-        dt = $tablaAsignaciones.DataTable({
-            language: {
-                url: '<?= URLROOT ?>/assets/libs/datatables/es-ES.json'
-            },
-            pageLength: 10,
-            responsive: true,
-            dom: '<"top"f>rt<"bottom"ip><"clear">',
-            buttons: [
-                {
-                    extend: 'excel',
-                    className: 'btn btn-light btn-sm border rounded-3 me-2',
-                    text: '<i class="ti ti-file-spreadsheet text-success me-1"></i> Excel'
+    // SGP-FIX: Solo iniciar DataTables si el elemento existe en el DOM y tiene filas válidas
+    if ($tablaAsignaciones.length && $tablaAsignaciones.find('tbody tr.fila-asignacion').length > 0) {
+        if (!$.fn.DataTable.isDataTable($tablaAsignaciones)) {
+            dt = $tablaAsignaciones.DataTable({
+                language: {
+                    url: '<?= URLROOT ?>/assets/libs/datatables/es-ES.json'
                 },
-                {
-                    extend: 'pdf',
-                    className: 'btn btn-light btn-sm border rounded-3',
-                    text: '<i class="ti ti-file-type-pdf text-danger me-1"></i> PDF'
+                pageLength: 10,
+                responsive: true,
+                dom: '<"top"f>rt<"bottom"ip><"clear">',
+                buttons: [
+                    {
+                        extend: 'excel',
+                        className: 'btn btn-light btn-sm border rounded-3 me-2',
+                        text: '<i class="ti ti-file-spreadsheet text-success me-1"></i> Excel'
+                    },
+                    {
+                        extend: 'pdf',
+                        className: 'btn btn-light btn-sm border rounded-3',
+                        text: '<i class="ti ti-file-type-pdf text-danger me-1"></i> PDF'
+                    }
+                ],
+                columnDefs: [
+                    { orderable: false, targets: 7 } // Desactivar ordenamiento de Acciones
+                ],
+                initComplete: function(settings, json) {
+                    $(this.api().table().node()).css('opacity', '1');
                 }
-            ],
-            columnDefs: [
-                { orderable: false, targets: 7 } // Desactivar ordenamiento de Acciones
-            ],
-            initComplete: function(settings, json) {
-                $(this.api().table().node()).css('opacity', '1');
-            }
-        });
-    } else if ($tablaAsignaciones.length && $.fn.DataTable.isDataTable($tablaAsignaciones)) {
-        dt = $tablaAsignaciones.DataTable();
-        dt.draw(false);
-    } else {
-        // Tabla vacía: mostrar sin DataTables (sin error)
-        $tablaAsignaciones.css('opacity', '1');
+            });
+        } else {
+            dt = $tablaAsignaciones.DataTable();
+        }
     }
 
     // Conectar inputs de búsqueda visuales (Premium SGP) al core de DataTables
@@ -482,12 +543,14 @@ $(document).ready(function() {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     });
 
-    // SGP-FIX: recalcular columnas al pasar de móvil a desktop
+    // SGP-FIX: recalcular columnas al pasar de móvil a desktop con verificación estricta de DataTable
     var _dtAsigAdjusted = false;
     window.addEventListener('resize', function () {
         if (window.innerWidth >= 992 && !_dtAsigAdjusted) {
-            var _dt = $('#tablaAsignaciones').DataTable();
-            if (_dt) { _dt.columns.adjust().draw(false); }
+            if ($('#tablaAsignaciones').length && $.fn.DataTable.isDataTable('#tablaAsignaciones')) {
+                var _dt = $('#tablaAsignaciones').DataTable();
+                if (_dt) { _dt.columns.adjust().draw(false); }
+            }
             _dtAsigAdjusted = true;
         }
         if (window.innerWidth < 992) { _dtAsigAdjusted = false; }
@@ -496,12 +559,13 @@ $(document).ready(function() {
 
 // ── Filtros interactivos de KPIs ───────────────────────────────────
 window.filtrarPorEstado = function(estado) {
-    var dt = $('#tablaAsignaciones').DataTable();
-    if (!$.fn.DataTable.isDataTable('#tablaAsignaciones')) return;
-    if (estado === '') {
-        dt.column(6).search('').draw();
-    } else {
-        dt.column(6).search('^' + estado + '$', true, false).draw();
+    if ($('#tablaAsignaciones').length && $.fn.DataTable.isDataTable('#tablaAsignaciones')) {
+        var dt = $('#tablaAsignaciones').DataTable();
+        if (estado === '') {
+            dt.column(6).search('').draw();
+        } else {
+            dt.column(6).search('^' + estado + '$', true, false).draw();
+        }
     }
     
     // Sincronizar Vento Pills Visualmente
