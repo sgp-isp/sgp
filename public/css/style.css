@@ -80,21 +80,29 @@ a {
     margin-bottom: 32px;
 }
 
-.figma-card {
+/* === CAJAS FIGMA / BENTO DEL DASHBOARD (Modo Claro) === */
+.figma-card,
+.card.figma-card,
+.ausentes-mes-card,
+.activity-panel,
+.action-center-panel {
     background: #ffffff;
-    border-radius: 20px;
-    padding: 28px;
-    box-shadow: 0 10px 25px rgba(22, 38, 96, 0.08);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
+    border: 1.5px solid #bfdbfe !important;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.04);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(22, 38, 96, 0.05);
 }
 
-.figma-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(22, 38, 96, 0.12);
-    border-color: rgba(22, 38, 96, 0.1);
+.figma-card:hover,
+.card.figma-card:hover,
+.ausentes-mes-card:hover,
+.activity-panel:hover,
+.action-center-panel:hover {
+    transform: translateY(-3px);
+    border-color: #60a5fa !important;
+    box-shadow: 0 12px 28px -6px rgba(37, 99, 235, 0.18), 0 4px 12px rgba(37, 99, 235, 0.08) !important;
 }
 
 /* Cristaline variant */
@@ -210,6 +218,87 @@ a {
 }
 
 /* Bento Premium Actions (Phase 18) */
+/* === KPI CARDS ESTANDARIZADAS SGP (Estilo Inicio / Bento Universal) === */
+.kpi-card-blue,
+.kpi-card-yellow,
+.kpi-card-green,
+.kpi-card-red,
+.kpi-card-purple {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Bordes laterales distintivos */
+.kpi-card-blue   { border-left: 4px solid #2563eb !important; }
+.kpi-card-yellow { border-left: 4px solid #f59e0b !important; }
+.kpi-card-green  { border-left: 4px solid #10b981 !important; }
+.kpi-card-red    { border-left: 4px solid #dc2626 !important; }
+.kpi-card-purple { border-left: 4px solid #8b5cf6 !important; }
+
+/* Títulos y Números */
+.kpi-card-blue .kpi-title,
+.kpi-card-yellow .kpi-title,
+.kpi-card-green .kpi-title,
+.kpi-card-red .kpi-title,
+.kpi-card-purple .kpi-title {
+    color: #64748b;
+    font-size: 0.82rem;
+    margin: 0 0 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-card-blue .kpi-num   { color: #2563eb; font-size: 2.4rem; font-weight: 800; margin: 0; line-height: 1; }
+.kpi-card-yellow .kpi-num { color: #f59e0b; font-size: 2.4rem; font-weight: 800; margin: 0; line-height: 1; }
+.kpi-card-green .kpi-num  { color: #10b981; font-size: 2.4rem; font-weight: 800; margin: 0; line-height: 1; }
+.kpi-card-red .kpi-num    { color: #dc2626; font-size: 2.4rem; font-weight: 800; margin: 0; line-height: 1; }
+.kpi-card-purple .kpi-num { color: #8b5cf6; font-size: 2.4rem; font-weight: 800; margin: 0; line-height: 1; }
+
+/* Icon boxes */
+.kpi-icon-link {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.kpi-card-blue .kpi-icon-link   { background: #eff6ff; color: #2563eb; }
+.kpi-card-yellow .kpi-icon-link { background: #fffbeb; color: #d97706; }
+.kpi-card-green .kpi-icon-link  { background: #f0fdf4; color: #10b981; }
+.kpi-card-red .kpi-icon-link    { background: #fef2f2; color: #dc2626; }
+.kpi-card-purple .kpi-icon-link { background: #f5f3ff; color: #8b5cf6; }
+
+.kpi-card-blue:hover .kpi-icon-link,
+.kpi-card-yellow:hover .kpi-icon-link,
+.kpi-card-green:hover .kpi-icon-link,
+.kpi-card-red:hover .kpi-icon-link,
+.kpi-card-purple:hover .kpi-icon-link {
+    transform: scale(1.1);
+}
+
+/* Hover con elevación y resplandor cromático correspondiente */
+.kpi-card-blue:hover   { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(37, 99, 235, 0.5) !important; }
+.kpi-card-yellow:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(245, 158, 11, 0.5) !important; }
+.kpi-card-green:hover  { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(16, 185, 129, 0.5) !important; }
+.kpi-card-red:hover    { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(239, 68, 68, 0.5) !important; }
+.kpi-card-purple:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(139, 92, 246, 0.5) !important; }
+
 /* === KPI CARDS PREMIUM (Fixed Ribbons & Glow) === */
 .kpi-card {
     display: flex;

@@ -596,26 +596,55 @@
     // ==========================================================
     ?>
 
-    <!-- KPI CARDS ESTANDARIZADAS E INTERACTIVAS -->
+    <!-- KPI CARDS ESTANDARIZADAS E INTERACTIVAS (ESTILO INICIO) -->
     <div class="kpi-users-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:28px;">
-        <?php
-        $kpis = [
-            ['label' => 'Total Activos',      'val' => $activos,   'color' => '#10b981', 'boxShadow' => 'rgba(16,185,129,0.15)', 'icon' => 'ti-user-check',   'sub' => 'operando en sistema', 'filterVal' => 'activo'],
-            ['label' => 'Pasantes',           'val' => $pasantes,  'color' => '#2563eb', 'boxShadow' => 'rgba(37,99,235,0.15)',  'icon' => 'ti-school',       'sub' => 'métrica principal',   'filterVal' => 'Pasante'],
-            ['label' => 'Tutores Disponibles','val' => $tutores,   'color' => '#f59e0b', 'boxShadow' => 'rgba(245,158,11,0.15)', 'icon' => 'ti-briefcase',    'sub' => 'capacitadores',       'filterVal' => 'Tutor'],
-            ['label' => 'Inactivos',          'val' => $inactivos, 'color' => '#dc2626', 'boxShadow' => 'rgba(220,38,38,0.15)',  'icon' => 'ti-user-off',     'sub' => 'requiere atención',   'filterVal' => 'inactivo'],
-        ];
-        foreach ($kpis as $k): 
-        ?>
-        <div class="kpi-card kpi-card-user" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid <?= $k['color'] ?>;transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 25px <?= $k['boxShadow'] ?>'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.06)'">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                <p style="color:#64748b;font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;"><?= $k['label'] ?></p>
-                <i class="ti <?= $k['icon'] ?>" style="color:<?= $k['color'] ?>;font-size:1.4rem;opacity:0.7;"></i>
+        <div class="kpi-card-green" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #10b981;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="filtrarPorEstado('Activo')" title="Ver usuarios activos">
+            <div style="flex:1;">
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Total Activos</p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $activos ?>"><?= $activos ?></h2>
+                </div>
             </div>
-            <h2 style="font-size:2.4rem;font-weight:800;color:<?= $k['color'] ?>;margin:0;" data-kpi-value="<?= $k['val'] ?>"><?= $k['val'] ?></h2>
-            <p style="color:#94a3b8;font-size:0.8rem;margin:4px 0 0;"><?= $k['sub'] ?></p>
+            <div class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Usuarios Activos">
+                <i class="ti ti-user-check"></i>
+            </div>
         </div>
-        <?php endforeach; ?>
+
+        <div class="kpi-card-blue" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #2563eb;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="filtrarPorRol('Pasante')" title="Filtrar pasantes">
+            <div style="flex:1;">
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Pasantes</p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $pasantes ?>"><?= $pasantes ?></h2>
+                </div>
+            </div>
+            <div class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Pasantes">
+                <i class="ti ti-school"></i>
+            </div>
+        </div>
+
+        <div class="kpi-card-yellow" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #f59e0b;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="filtrarPorRol('Tutor')" title="Filtrar tutores">
+            <div style="flex:1;">
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Tutores Disponibles</p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $tutores ?>"><?= $tutores ?></h2>
+                </div>
+            </div>
+            <div class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Tutores">
+                <i class="ti ti-briefcase"></i>
+            </div>
+        </div>
+
+        <div class="kpi-card-red" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #dc2626;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="filtrarPorEstado('Inactivo')" title="Ver usuarios inactivos">
+            <div style="flex:1;">
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Inactivos</p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $inactivos ?>"><?= $inactivos ?></h2>
+                </div>
+            </div>
+            <div class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Inactivos">
+                <i class="ti ti-user-off"></i>
+            </div>
+        </div>
     </div>
     
     <!-- Filtros Rápidos (Cápsulas) + Buscador -->
@@ -766,7 +795,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="card-footer bg-white border-top border-light p-3">
+        <div class="card-footer border-top border-light p-0" style="background: transparent; border-color: rgba(255,255,255,0.05) !important;">
             <!-- DataTables pagination will be injected here -->
         </div>
     </div>
@@ -1826,6 +1855,38 @@ window.filtrarPorRol = function(rolSeleccionado) {
             p.style.background = '#f1f5f9';
             p.style.color = '#475569';
         }
+    });
+};
+
+window.filtrarPorEstado = function(estado) {
+    let dt = getSGPDataTable();
+    if (dt) {
+        dt.search('');
+        const globalSearchInput = document.getElementById('globalSearch');
+        if (globalSearchInput) globalSearchInput.value = '';
+        const clearSearchBtn = document.getElementById('clearSearch');
+        if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+
+        // Reset pills de rol a 'Todos'
+        document.querySelectorAll('.vento-pill').forEach(function(p) {
+            p.classList.remove('active');
+            p.style.background = '#f1f5f9';
+            p.style.color = '#475569';
+        });
+        const pillTodos = document.querySelector('.vento-pill[data-role=""]');
+        if (pillTodos) {
+            pillTodos.classList.add('active');
+            pillTodos.style.background = '#2563eb';
+            pillTodos.style.color = 'white';
+        }
+
+        dt.column(1).search('');
+        dt.column(3).search(estado ? '^\\s*' + estado + '\\s*$' : '', true, false, true).draw();
+    }
+    const cards = document.querySelectorAll('#cardsUsers .bcu-card');
+    cards.forEach(function(card) {
+        const cardEstado = (card.dataset.estado || '').toLowerCase();
+        card.style.display = (!estado || cardEstado.includes(estado.toLowerCase())) ? '' : 'none';
     });
 };
 

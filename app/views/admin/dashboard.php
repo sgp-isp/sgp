@@ -230,7 +230,7 @@ $periodos           = $data['periodos']           ?? [];
             <div style="flex:1;">
                 <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Activos</p>
                 <div style="display:flex;align-items:center;gap:12px;">
-                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;"><?= $totalActivos ?></h2>
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $totalActivos ?>"><?= $totalActivos ?></h2>
                 </div>
             </div>
             <a href="<?= URLROOT ?>/pasantes" class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Directorio">
@@ -242,7 +242,7 @@ $periodos           = $data['periodos']           ?? [];
             <div style="flex:1;">
                 <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Por Asignar</p>
                 <div style="display:flex;align-items:center;gap:12px;">
-                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;"><?= $pendientesAsignar ?></h2>
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $pendientesAsignar ?>"><?= $pendientesAsignar ?></h2>
                 </div>
             </div>
             <a href="<?= URLROOT ?>/asignaciones" class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Asignar">
@@ -254,7 +254,7 @@ $periodos           = $data['periodos']           ?? [];
             <div style="flex:1;">
                 <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">En Sitio Hoy</p>
                 <div style="display:flex;align-items:center;gap:12px;">
-                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;"><?= $asistenciasHoy ?></h2>
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $asistenciasHoy ?>"><?= $asistenciasHoy ?></h2>
                 </div>
             </div>
             <a href="<?= URLROOT ?>/asistencias" class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Registros">
@@ -266,7 +266,7 @@ $periodos           = $data['periodos']           ?? [];
             <div style="flex:1;">
                 <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Faltas Hoy</p>
                 <div style="display:flex;align-items:center;gap:12px;">
-                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;"><?= $faltasHoy ?></h2>
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $faltasHoy ?>"><?= $faltasHoy ?></h2>
                 </div>
             </div>
             <a href="<?= URLROOT ?>/asistencias" class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Justificar">
@@ -296,10 +296,14 @@ $periodos           = $data['periodos']           ?? [];
         </div>
 
         <div class="card figma-card" style="padding: 24px; border-radius: 16px;">
-            <div class="card-header-compact" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="card-header-compact" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 8px;">
                 <div>
-                    <h3 style="margin: 0; color: #162660; font-size: 1.1rem;">Desempeño Departamental</h3>
-                    <span style="font-size: 0.8rem; color: #94A3B8;">Rendimiento de asistencia</span>
+                    <h3 id="rendimiento-titulo" style="margin: 0; color: #162660; font-size: 1.1rem;">Desempeño Departamental</h3>
+                    <span id="rendimiento-subtitulo" style="font-size: 0.8rem; color: #94A3B8;">Rendimiento de asistencia</span>
+                </div>
+                <div class="time-toggles" style="display: inline-flex; padding: 3px; border-radius: 8px;">
+                    <button type="button" class="btn-micro active" id="btnToggleDept" onclick="cambiarVistaRendimiento('dept')">Deptos</button>
+                    <button type="button" class="btn-micro" id="btnToggleInst" onclick="cambiarVistaRendimiento('inst')">Instituciones</button>
                 </div>
             </div>
             <div class="chart-wrapper pt-3">
@@ -308,101 +312,200 @@ $periodos           = $data['periodos']           ?? [];
                 $labels     = $deptData['labels']   ?? [];
                 $series     = $deptData['series']   ?? [];
                 $pasantes   = $deptData['pasantes'] ?? [];
+
+                $instData   = $data['metricas_graficos']['asistenciaInstitucion'] ?? ['labels' => [], 'series' => [], 'pasantes' => [], 'tipos' => []];
+                $iLabels    = $instData['labels']   ?? [];
+                $iSeries    = $instData['series']   ?? [];
+                $iPasantes  = $instData['pasantes'] ?? [];
+                $iTipos     = $instData['tipos']    ?? [];
                 ?>
-                <?php if (empty($labels)): ?>
-                    <p class="text-center text-muted p-4" style="font-size:0.85rem;">No hay departamentos registrados</p>
-                <?php else: ?>
-                    <style>
-                        @keyframes fillProgressAnim { from { width: 0%; } }
-                        .progress-bar-animated { animation: fillProgressAnim 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-                        .kpi-card-blue, .kpi-card-yellow, .kpi-card-green, .kpi-card-red {
-                            background: #ffffff;
-                            border: 1px solid #e2e8f0;
-                            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-                        }
-                        .kpi-card-blue .kpi-title, .kpi-card-yellow .kpi-title, .kpi-card-green .kpi-title, .kpi-card-red .kpi-title { color: #64748b; }
-                        .kpi-card-blue .kpi-num { color: #2563eb; }
-                        .kpi-card-yellow .kpi-num { color: #f59e0b; }
-                        .kpi-card-green .kpi-num { color: #059669; }
-                        .kpi-card-red .kpi-num { color: #dc2626; }
-                        .kpi-card-blue .kpi-icon-link { background: #eff6ff; color: #2563eb; }
-                        .kpi-card-yellow .kpi-icon-link { background: #fffbeb; color: #d97706; }
-                        .kpi-card-green .kpi-icon-link { background: #f0fdf4; color: #059669; }
-                        .kpi-card-red .kpi-icon-link { background: #fef2f2; color: #dc2626; }
-                        .time-toggles { background: #F8FAFC; border: 1px solid #E2E8F0; }
-                        .time-toggles .btn-micro { background: transparent; color: #64748b; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: 600; }
-                        .time-toggles .btn-micro.active { background: #ffffff; color: #2563eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-                        .kpi-card-blue:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(37, 99, 235, 0.5) !important; }
-                        .kpi-card-yellow:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(245, 158, 11, 0.5) !important; }
-                        .kpi-card-green:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(16, 185, 129, 0.5) !important; }
-                        .kpi-card-red:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(239, 68, 68, 0.5) !important; }
-                        .dept-progress-item {
-                            padding: 8px;
-                            border-radius: 8px;
-                            transition: background-color 0.2s ease;
-                        }
-                        .dept-progress-item:hover { background-color: #f8fafc; }
-                        .dept-percentage {
-                            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-                        }
-                        .dept-progress-item:hover .dept-percentage {
-                            transform: scale(1.15);
-                            color: #1e293b !important;
-                        }
-                        .dept-empty-badge {
-                            font-size: 0.68rem;
-                            color: #94a3b8;
-                            background: #f1f5f9;
-                            border-radius: 20px;
-                            padding: 1px 8px;
-                            font-weight: 600;
-                        }
-                    </style>
-                    <?php
-                    $gradients = [
-                        ['full' => 'linear-gradient(90deg, #3b82f6, #8b5cf6)', 'muted' => 'linear-gradient(90deg, rgba(59,130,246,0.22), rgba(139,92,246,0.14))',  'pill_bg' => 'rgba(59,130,246,0.12)',  'pill_border' => 'rgba(59,130,246,0.35)',  'pill_color' => '#2563eb'],
-                        ['full' => 'linear-gradient(90deg, #10b981, #34d399)', 'muted' => 'linear-gradient(90deg, rgba(16,185,129,0.22), rgba(52,211,153,0.14))',  'pill_bg' => 'rgba(16,185,129,0.12)',  'pill_border' => 'rgba(16,185,129,0.35)',  'pill_color' => '#059669'],
-                        ['full' => 'linear-gradient(90deg, #f59e0b, #fbbf24)', 'muted' => 'linear-gradient(90deg, rgba(245,158,11,0.22), rgba(251,191,36,0.14))',  'pill_bg' => 'rgba(245,158,11,0.12)',  'pill_border' => 'rgba(245,158,11,0.35)',  'pill_color' => '#d97706'],
-                        ['full' => 'linear-gradient(90deg, #ec4899, #f43f5e)', 'muted' => 'linear-gradient(90deg, rgba(236,72,153,0.22), rgba(244,63,94,0.14))',   'pill_bg' => 'rgba(236,72,153,0.12)',  'pill_border' => 'rgba(236,72,153,0.35)',  'pill_color' => '#db2777'],
-                        ['full' => 'linear-gradient(90deg, #6366f1, #a855f7)', 'muted' => 'linear-gradient(90deg, rgba(99,102,241,0.22), rgba(168,85,247,0.14))',  'pill_bg' => 'rgba(99,102,241,0.12)',  'pill_border' => 'rgba(99,102,241,0.35)',  'pill_color' => '#4f46e5'],
-                        ['full' => 'linear-gradient(90deg, #06b6d4, #3b82f6)', 'muted' => 'linear-gradient(90deg, rgba(6,182,212,0.22), rgba(59,130,246,0.14))',   'pill_bg' => 'rgba(6,182,212,0.12)',   'pill_border' => 'rgba(6,182,212,0.35)',   'pill_color' => '#0891b2'],
-                    ];
-                    $colorIndex = 0;
-                    ?>
-                    <?php foreach ($labels as $index => $label):
-                        $porcentaje    = $series[$index] ?? 0;
-                        $totalPasantes = $pasantes[$index] ?? 0;
-                        $sinDatos      = $totalPasantes === 0;
-                        $g             = $gradients[$colorIndex % count($gradients)];
-                        $colorIndex++;
-                    ?>
-                        <div class="dept-progress-item mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-bold text-dark" style="font-size: 0.83rem; <?= $sinDatos ? 'opacity:0.65;' : '' ?>">
-                                    <?= htmlspecialchars($label) ?>
-                                </span>
-                                <?php if ($sinDatos): ?>
-                                    <span style="font-size:0.68rem;font-weight:700;padding:2px 9px;border-radius:20px;border:1px solid <?= $g['pill_border'] ?>;background:<?= $g['pill_bg'] ?>;color:<?= $g['pill_color'] ?>;">
-                                        Sin pasantes
+                <style>
+                    @keyframes fillProgressAnim { from { width: 0%; } }
+                    .progress-bar-animated { animation: fillProgressAnim 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+                    .kpi-card-blue, .kpi-card-yellow, .kpi-card-green, .kpi-card-red {
+                        background: #ffffff;
+                        border: 1px solid #e2e8f0;
+                        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+                    }
+                    .kpi-card-blue .kpi-title, .kpi-card-yellow .kpi-title, .kpi-card-green .kpi-title, .kpi-card-red .kpi-title { color: #64748b; }
+                    .kpi-card-blue .kpi-num { color: #2563eb; }
+                    .kpi-card-yellow .kpi-num { color: #f59e0b; }
+                    .kpi-card-green .kpi-num { color: #059669; }
+                    .kpi-card-red .kpi-num { color: #dc2626; }
+                    .kpi-card-blue .kpi-icon-link { background: #eff6ff; color: #2563eb; }
+                    .kpi-card-yellow .kpi-icon-link { background: #fffbeb; color: #d97706; }
+                    .kpi-card-green .kpi-icon-link { background: #f0fdf4; color: #059669; }
+                    .kpi-card-red .kpi-icon-link { background: #fef2f2; color: #dc2626; }
+                    .time-toggles { background: #F8FAFC; border: 1px solid #E2E8F0; }
+                    .time-toggles .btn-micro { background: transparent; color: #64748b; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: 600; font-size: 0.75rem; }
+                    .time-toggles .btn-micro.active { background: #ffffff; color: #2563eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+                    .kpi-card-blue:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(37, 99, 235, 0.5) !important; }
+                    .kpi-card-yellow:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(245, 158, 11, 0.5) !important; }
+                    .kpi-card-green:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(16, 185, 129, 0.5) !important; }
+                    .kpi-card-red:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(239, 68, 68, 0.5) !important; }
+                    .dept-progress-item {
+                        padding: 8px;
+                        border-radius: 8px;
+                        transition: background-color 0.2s ease;
+                    }
+                    .dept-progress-item:hover { background-color: #f8fafc; }
+                    .dept-percentage {
+                        transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    }
+                    .dept-progress-item:hover .dept-percentage {
+                        transform: scale(1.15);
+                        color: #1e293b !important;
+                    }
+                    .dept-empty-badge {
+                        font-size: 0.68rem;
+                        color: #94a3b8;
+                        background: #f1f5f9;
+                        border-radius: 20px;
+                        padding: 1px 8px;
+                        font-weight: 600;
+                    }
+                    [data-theme="dark"] .time-toggles {
+                        background: #0d1526 !important;
+                        border-color: #2a3b5c !important;
+                    }
+                    [data-theme="dark"] .time-toggles .btn-micro {
+                        color: #94a3b8 !important;
+                    }
+                    [data-theme="dark"] .time-toggles .btn-micro.active {
+                        background: #1e293b !important;
+                        color: #60a5fa !important;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
+                    }
+                    [data-theme="dark"] .dept-progress-item:hover {
+                        background-color: #162238 !important;
+                    }
+                    [data-theme="dark"] .dept-progress-item:hover .dept-percentage {
+                        color: #f8fafc !important;
+                    }
+                </style>
+                <?php
+                $gradients = [
+                    ['full' => 'linear-gradient(90deg, #3b82f6, #8b5cf6)', 'muted' => 'linear-gradient(90deg, rgba(59,130,246,0.22), rgba(139,92,246,0.14))',  'pill_bg' => 'rgba(59,130,246,0.12)',  'pill_border' => 'rgba(59,130,246,0.35)',  'pill_color' => '#2563eb'],
+                    ['full' => 'linear-gradient(90deg, #10b981, #34d399)', 'muted' => 'linear-gradient(90deg, rgba(16,185,129,0.22), rgba(52,211,153,0.14))',  'pill_bg' => 'rgba(16,185,129,0.12)',  'pill_border' => 'rgba(16,185,129,0.35)',  'pill_color' => '#059669'],
+                    ['full' => 'linear-gradient(90deg, #f59e0b, #fbbf24)', 'muted' => 'linear-gradient(90deg, rgba(245,158,11,0.22), rgba(251,191,36,0.14))',  'pill_bg' => 'rgba(245,158,11,0.12)',  'pill_border' => 'rgba(245,158,11,0.35)',  'pill_color' => '#d97706'],
+                    ['full' => 'linear-gradient(90deg, #ec4899, #f43f5e)', 'muted' => 'linear-gradient(90deg, rgba(236,72,153,0.22), rgba(244,63,94,0.14))',   'pill_bg' => 'rgba(236,72,153,0.12)',  'pill_border' => 'rgba(236,72,153,0.35)',  'pill_color' => '#db2777'],
+                    ['full' => 'linear-gradient(90deg, #6366f1, #a855f7)', 'muted' => 'linear-gradient(90deg, rgba(99,102,241,0.22), rgba(168,85,247,0.14))',  'pill_bg' => 'rgba(99,102,241,0.12)',  'pill_border' => 'rgba(99,102,241,0.35)',  'pill_color' => '#4f46e5'],
+                    ['full' => 'linear-gradient(90deg, #06b6d4, #3b82f6)', 'muted' => 'linear-gradient(90deg, rgba(6,182,212,0.22), rgba(59,130,246,0.14))',   'pill_bg' => 'rgba(6,182,212,0.12)',   'pill_border' => 'rgba(6,182,212,0.35)',   'pill_color' => '#0891b2'],
+                ];
+                ?>
+
+                <!-- VISTA 1: DEPARTAMENTOS -->
+                <div id="contenedor-dept">
+                    <?php if (empty($labels)): ?>
+                        <p class="text-center text-muted p-4" style="font-size:0.85rem;">No hay departamentos registrados</p>
+                    <?php else: ?>
+                        <?php $colorIndex = 0; ?>
+                        <?php foreach ($labels as $index => $label):
+                            $porcentaje    = $series[$index] ?? 0;
+                            $totalPasantes = $pasantes[$index] ?? 0;
+                            $sinDatos      = $totalPasantes === 0;
+                            $g             = $gradients[$colorIndex % count($gradients)];
+                            $colorIndex++;
+                        ?>
+                            <div class="dept-progress-item mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold text-dark" style="font-size: 0.83rem; <?= $sinDatos ? 'opacity:0.65;' : '' ?>">
+                                        <?= htmlspecialchars($label) ?>
                                     </span>
-                                <?php else: ?>
-                                    <span class="fw-bold dept-percentage" style="font-size: 0.85rem; color: #475569;"><?= $porcentaje ?>%</span>
-                                <?php endif; ?>
+                                    <?php if ($sinDatos): ?>
+                                        <span style="font-size:0.68rem;font-weight:700;padding:2px 9px;border-radius:20px;border:1px solid <?= $g['pill_border'] ?>;background:<?= $g['pill_bg'] ?>;color:<?= $g['pill_color'] ?>;">
+                                            Sin pasantes
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="fw-bold dept-percentage" style="font-size: 0.85rem; color: #475569;"><?= $porcentaje ?>%</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="progress" style="height: 12px; border-radius: 50rem; background-color: #f1f5f9; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
+                                    <?php if (!$sinDatos): ?>
+                                    <div class="progress-bar progress-bar-animated" role="progressbar"
+                                         style="width: <?= $porcentaje ?>%; border-radius: 50rem; background: <?= $g['full'] ?>;"
+                                         aria-valuenow="<?= $porcentaje ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <?php else: ?>
+                                    <div role="progressbar"
+                                         style="width:55%;border-radius:50rem;background:<?= $g['muted'] ?>;opacity:0.85;"
+                                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <?php endif; ?>
+                                </div>
                             </div>
-                            <div class="progress" style="height: 12px; border-radius: 50rem; background-color: #f1f5f9; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
-                                <?php if (!$sinDatos): ?>
-                                <div class="progress-bar progress-bar-animated" role="progressbar"
-                                     style="width: <?= $porcentaje ?>%; border-radius: 50rem; background: <?= $g['full'] ?>;"
-                                     aria-valuenow="<?= $porcentaje ?>" aria-valuemin="0" aria-valuemax="100"></div>
-                                <?php else: ?>
-                                <div role="progressbar"
-                                     style="width:55%;border-radius:50rem;background:<?= $g['muted'] ?>;opacity:0.85;"
-                                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                <?php endif; ?>
-                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+
+                <!-- VISTA 2: INSTITUCIONES -->
+                <div id="contenedor-inst" style="display: none;">
+                    <?php if (empty($iLabels)): ?>
+                        <div style="text-align: center; padding: 36px 16px; color: #94a3b8;">
+                            <i class="ti ti-school-off" style="font-size: 2.2rem; display: block; margin-bottom: 8px; color: #cbd5e1;"></i>
+                            <p style="margin: 0; font-size: 0.88rem; font-weight: 600; color: #64748b;">Sin pasantes activos por institución</p>
+                            <p style="margin: 4px 0 0; font-size: 0.75rem; color: #94a3b8;">Actualmente no hay pasantes activos asignados a instituciones en este período.</p>
                         </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                    <?php else: ?>
+                        <?php $colorIndex = 0; ?>
+                        <?php foreach ($iLabels as $index => $label):
+                            $porcentaje      = $iSeries[$index] ?? 0;
+                            $totalPasantes   = $iPasantes[$index] ?? 0;
+                            $tipoInstitucion = $iTipos[$index] ?? 'Institución';
+                            $isUniv          = (stripos($tipoInstitucion, 'Universidad') !== false);
+                            $badgeColor      = $isUniv ? '#7c3aed' : '#0284c7';
+                            $badgeBg         = $isUniv ? '#f5f3ff' : '#f0f9ff';
+                            $badgeBorder     = $isUniv ? '#ddd6fe' : '#bae6fd';
+                            $iconTipo        = $isUniv ? 'ti-school' : 'ti-tool';
+                            $g               = $gradients[$colorIndex % count($gradients)];
+                            $colorIndex++;
+                        ?>
+                            <div class="dept-progress-item mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap" style="gap: 4px;">
+                                    <div class="d-flex align-items-center gap-2 flex-wrap" style="max-width: 80%;">
+                                        <span class="fw-bold text-dark" style="font-size: 0.83rem;">
+                                            <?= htmlspecialchars($label) ?>
+                                        </span>
+                                        <span style="font-size: 0.65rem; font-weight: 700; padding: 1px 7px; border-radius: 12px; background: <?= $badgeBg ?>; color: <?= $badgeColor ?>; border: 1px solid <?= $badgeBorder ?>; display: inline-flex; align-items: center; gap: 3px;">
+                                            <i class="ti <?= $iconTipo ?>" style="font-size: 0.72rem;"></i> <?= htmlspecialchars($tipoInstitucion) ?>
+                                        </span>
+                                    </div>
+                                    <span class="fw-bold dept-percentage" style="font-size: 0.85rem; color: #475569;"><?= $porcentaje ?>% <small style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">(<?= $totalPasantes ?> pas.)</small></span>
+                                </div>
+                                <div class="progress" style="height: 12px; border-radius: 50rem; background-color: #f1f5f9; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
+                                    <div class="progress-bar progress-bar-animated" role="progressbar"
+                                         style="width: <?= $porcentaje ?>%; border-radius: 50rem; background: <?= $g['full'] ?>;"
+                                         aria-valuenow="<?= $porcentaje ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+
+                <script>
+                    function cambiarVistaRendimiento(tipo) {
+                        const btnDept = document.getElementById('btnToggleDept');
+                        const btnInst = document.getElementById('btnToggleInst');
+                        const boxDept = document.getElementById('contenedor-dept');
+                        const boxInst = document.getElementById('contenedor-inst');
+                        const title = document.getElementById('rendimiento-titulo');
+                        const subtitle = document.getElementById('rendimiento-subtitulo');
+
+                        if (tipo === 'dept') {
+                            if (btnDept) btnDept.classList.add('active');
+                            if (btnInst) btnInst.classList.remove('active');
+                            if (boxDept) boxDept.style.display = 'block';
+                            if (boxInst) boxInst.style.display = 'none';
+                            if (title) title.textContent = 'Desempeño Departamental';
+                            if (subtitle) subtitle.textContent = 'Rendimiento de asistencia';
+                        } else {
+                            if (btnInst) btnInst.classList.add('active');
+                            if (btnDept) btnDept.classList.remove('active');
+                            if (boxDept) boxDept.style.display = 'none';
+                            if (boxInst) boxInst.style.display = 'block';
+                            if (title) title.textContent = 'Desempeño Institucional';
+                            if (subtitle) subtitle.textContent = 'Rendimiento por institución de procedencia';
+                        }
+                    }
+                </script>
             </div>
         </div>
     </div>
@@ -518,46 +621,46 @@ $periodos           = $data['periodos']           ?? [];
 <?php if ((int)($cortosResumen->total ?? 0) > 0): ?>
 <a href="<?= URLROOT ?>/actividades/pasantias" style="text-decoration:none;display:block;margin-top:24px;margin-bottom:18px;">
 <div class="flujo-paralelo-strip"
-     style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border: 1.5px solid #ddd6fe; border-radius:16px;padding:14px 22px;display:flex;align-items:center;
+     style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1.5px solid #bfdbfe; border-radius:16px;padding:14px 22px;display:flex;align-items:center;
             justify-content:space-between;flex-wrap:wrap;gap:12px;
             transition:all .2s;cursor:pointer;"
      onmouseover="this.style.transform='translateY(-2px)'"
      onmouseout="this.style.transform=''">
     <div style="display:flex;align-items:center;gap:12px;">
         <div style="width:40px;height:40px;border-radius:11px;
-                    background:linear-gradient(135deg,#7c3aed,#a78bfa);
+                    background:linear-gradient(135deg,#1e3a8a,#2563eb);
                     display:flex;align-items:center;justify-content:center;
                     font-size:1.1rem;color:white;flex-shrink:0;
-                    box-shadow:0 3px 8px rgba(124,58,237,.3);">
+                    box-shadow:0 3px 8px rgba(37,99,235,.3);">
             <i class="ti ti-clock-bolt"></i>
         </div>
         <div>
-            <div style="font-size:.72rem;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.5px;">Flujo Paralelo</div>
-            <div class="flujo-title" style="font-size:.92rem;font-weight:800;color:#3b0764;">Pasantías Cortas &amp; Act. Extras</div>
+            <div style="font-size:.72rem;font-weight:800;color:#2563eb;text-transform:uppercase;letter-spacing:.5px;">Flujo Paralelo</div>
+            <div class="flujo-title" style="font-size:.92rem;font-weight:800;color:#162660;">Pasantías Cortas &amp; Act. Extras</div>
         </div>
     </div>
     <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
         <div style="text-align:center;">
-            <div style="font-size:1.6rem;font-weight:900;color:#7c3aed;line-height:1;"><?= (int)($cortosResumen->activos ?? 0) ?></div>
-            <div style="font-size:.65rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin-top:2px;">Activos</div>
+            <div style="font-size:1.6rem;font-weight:900;color:#1e3a8a;line-height:1;"><?= (int)($cortosResumen->activos ?? 0) ?></div>
+            <div style="font-size:.65rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-top:2px;">Activos</div>
         </div>
-        <div class="flujo-divider" style="width:1px;height:32px;background:#ddd6fe;"></div>
+        <div class="flujo-divider" style="width:1px;height:32px;background:#bfdbfe;"></div>
         <div style="text-align:center;">
             <div style="font-size:1.6rem;font-weight:900;color:#059669;line-height:1;"><?= (int)($cortosResumen->finalizados ?? 0) ?></div>
-            <div style="font-size:.65rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin-top:2px;">Finalizados</div>
+            <div style="font-size:.65rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-top:2px;">Finalizados</div>
         </div>
-        <div class="flujo-divider" style="width:1px;height:32px;background:#ddd6fe;"></div>
+        <div class="flujo-divider" style="width:1px;height:32px;background:#bfdbfe;"></div>
         <div style="text-align:center;">
-            <?php $pp=(float)($cortosResumen->pct_promedio??0); $ppC=$pp>=80?'#059669':($pp>=50?'#d97706':'#7c3aed'); ?>
+            <?php $pp=(float)($cortosResumen->pct_promedio??0); $ppC=$pp>=80?'#059669':($pp>=50?'#d97706':'#2563eb'); ?>
             <div style="font-size:1.6rem;font-weight:900;color:<?= $ppC ?>;line-height:1;"><?= $pp ?>%</div>
-            <div style="font-size:.65rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin-top:2px;">Progreso prom.</div>
+            <div style="font-size:.65rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-top:2px;">Progreso prom.</div>
         </div>
     </div>
     <div style="display:flex;align-items:center;gap:6px;
-                background:linear-gradient(135deg,#7c3aed,#a78bfa);
+                background:linear-gradient(135deg,#1e3a8a,#2563eb);
                 color:white;padding:8px 16px;border-radius:10px;
                 font-size:.8rem;font-weight:700;white-space:nowrap;
-                box-shadow:0 3px 10px rgba(124,58,237,.3);">
+                box-shadow:0 3px 10px rgba(37,99,235,.3);">
         Gestionar <i class="ti ti-arrow-right" style="font-size:.85rem;"></i>
     </div>
 </div>

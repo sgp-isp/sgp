@@ -224,6 +224,11 @@
         grid-template-columns: 1fr 1fr !important;
         gap: 10px !important;
     }
+}
+@media (max-width: 575px) {
+    .kpi-pasantes-grid {
+        grid-template-columns: 1fr !important;
+    }
     /* Barra de filtros: contenedor interior en columna */
     .pasantes-filter-bar {
         padding: 14px 16px !important;
@@ -288,34 +293,62 @@ sort($filtro_inst_nombres);
             </div>
         </div>
         <div class="pasantes-banner-actions" style="display:flex; z-index:1; align-items:center;">
-            <div style="background: rgba(0, 0, 0, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                <button onclick="SGPModal.buscar({rol: 3})" class="btn-search-pasante" style="background:white;color:#1e3a8a;border:none;padding:12px 24px;border-radius:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:0.95rem;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-                    <i class="ti ti-search" style="font-size: 1.1rem;"></i> Consulta Rápida
-                </button>
-            </div>
+            <button onclick="SGPModal.buscar({rol: 3})" class="btn-search-pasante" style="background:white;color:#1e3a8a;border:none;padding:12px 24px;border-radius:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:0.95rem;transition:all 0.2s;box-shadow:0 4px 10px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <i class="ti ti-search" style="font-size: 1.1rem;"></i> Consulta Rápida
+            </button>
         </div>
     </div>
 
 
-    <!-- KPI CARDS ESTANDARIZADAS -->
+    <!-- KPI CARDS ESTANDARIZADAS (ESTILO INICIO) -->
     <div class="kpi-pasantes-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:28px;">
-        <?php
-        $kpis = [
-            ['label' => 'Total Pasantes',  'val' => $total,      'color' => '#2563eb', 'boxShadow' => 'rgba(37,99,235,0.15)', 'icon' => 'ti-users',        'sub' => 'registrados', 'filtro' => ''],
-            ['label' => 'En Curso',        'val' => $enCurso,    'color' => '#10b981', 'boxShadow' => 'rgba(16,185,129,0.15)', 'icon' => 'ti-player-play',  'sub' => 'pasantías activas', 'filtro' => 'Activo'],
-            ['label' => 'Pendientes',      'val' => $pendientes, 'color' => '#f59e0b', 'boxShadow' => 'rgba(245,158,11,0.15)', 'icon' => 'ti-clock',        'sub' => 'por formalizar', 'filtro' => 'Pendiente|Sin Asignar'],
-            ['label' => 'Culminados',      'val' => $culminados, 'color' => '#8b5cf6', 'boxShadow' => 'rgba(139,92,246,0.15)', 'icon' => 'ti-medal',        'sub' => 'este período', 'filtro' => 'Finalizado'],
-        ];
-        foreach ($kpis as $k): ?>
-        <div class="kpi-card kpi-card-pasante" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid <?= $k['color'] ?>;transition:all 0.3s;<?= $k['filtro'] ? 'cursor:pointer;' : '' ?>" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 25px <?= $k['boxShadow'] ?>'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.06)'" <?= $k['filtro'] ? "onclick=\"filtrarEstadoKPI('{$k['filtro']}')\" title=\"Ver {$k['label']}\"" : '' ?>>
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                <p style="color:#64748b;font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;"><?= $k['label'] ?></p>
-                <i class="ti <?= $k['icon'] ?>" style="color:<?= $k['color'] ?>;font-size:1.4rem;opacity:0.7;"></i>
+        <div class="kpi-card-blue" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #2563eb;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="filtrarEstadoKPI('')" title="Ver todos los pasantes">
+            <div style="flex:1;">
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Total Pasantes</p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $total ?>">0</h2>
+                </div>
             </div>
-            <h2 style="font-size:2.4rem;font-weight:800;color:<?= $k['color'] ?>;margin:0;" data-kpi-value="<?= $k['val'] ?>">0</h2>
-            <p style="color:#94a3b8;font-size:0.8rem;margin:4px 0 0;"><?= $k['sub'] ?><?= $k['filtro'] ? ' <span style="font-size:0.7rem;opacity:0.7;">↗ ver</span>' : '' ?></p>
+            <div class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Directorio de Pasantes">
+                <i class="ti ti-users"></i>
+            </div>
         </div>
-        <?php endforeach; ?>
+
+        <div class="kpi-card-green" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #10b981;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="filtrarEstadoKPI('Activo')" title="Ver pasantes activos en curso">
+            <div style="flex:1;">
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">En Curso</p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $enCurso ?>">0</h2>
+                </div>
+            </div>
+            <div class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Pasantías en Curso">
+                <i class="ti ti-player-play"></i>
+            </div>
+        </div>
+
+        <div class="kpi-card-yellow" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #f59e0b;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="filtrarEstadoKPI('Pendiente|Sin Asignar')" title="Ver pasantes pendientes">
+            <div style="flex:1;">
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Pendientes</p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $pendientes ?>">0</h2>
+                </div>
+            </div>
+            <div class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Pendientes por Asignar">
+                <i class="ti ti-clock"></i>
+            </div>
+        </div>
+
+        <div class="kpi-card-purple" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #8b5cf6;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="filtrarEstadoKPI('Finalizado')" title="Ver pasantes culminados">
+            <div style="flex:1;">
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Culminados</p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $culminados ?>">0</h2>
+                </div>
+            </div>
+            <div class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Pasantías Culminadas">
+                <i class="ti ti-medal"></i>
+            </div>
+        </div>
     </div>
 
     <!-- Filtros Inteligentes (Bento UI) -->

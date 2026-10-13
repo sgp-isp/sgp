@@ -35,6 +35,9 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
             if (theme === 'dark') document.documentElement.classList.add('dark');
         })();
     </script>
+    <style>
+        html[data-theme="dark"], html[data-theme="dark"] body { background-color: #090e1a !important; color: #f8fafc !important; }
+    </style>
     <!-- SGP-FIX [sesión_inactividad / 1.1] CSRF meta tag para fetch() JS -->
     <?php echo CsrfHelper::meta(); ?>
     <title>SGP - Sistema de Gestión de Pasantías</title>
@@ -57,7 +60,7 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     <link rel="stylesheet" href="<?= URLROOT ?>/css/animations.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/notifications.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/modal-universal.css">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/datatables-sgp.css">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/datatables-sgp.css?v=2">
     <link rel="stylesheet" href="<?= URLROOT ?>/assets/libs/flatpickr/flatpickr.min.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/flatpickr-sgp.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/assets/libs/choices/choices.min.css">
@@ -72,13 +75,13 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     <link rel="stylesheet" href="<?= URLROOT ?>/css/modal-asignacion.css">
 
     <!-- IMPORTANTE: style.css debe cargar AL FINAL para tener prioridad sobre otros frameworks -->
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/style.css">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/style.css?v=3">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/sidebar.css?v=5">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/mobile-dock.css?v=7">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/topbar.css?v=3">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/topbar.css?v=6">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/loading.css">
     <!-- Dark Mode CSS (Fase 5) -->
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/dark-mode.css?v=2">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/dark-mode.css?v=19">
 
     <?php
     // Branding Dinámico (Fase 5)
@@ -309,7 +312,7 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     <script src="<?= URLROOT ?>/assets/libs/choices/choices.min.js"></script>
     <script src="<?= URLROOT ?>/js/choices-init.js"></script>
     <!-- SGP-PJAX: Navegación fluida sin recarga de página -->
-    <script src="<?= URLROOT ?>/js/sgp-pjax.js?v=3"></script>
+    <script src="<?= URLROOT ?>/js/sgp-pjax.js?v=4"></script>
     <!-- Rol del usuario autenticado (usado por scripts de notificaciones) -->
     <script>window.SGP_ROLE = <?= (int)Session::get('role_id') ?>;</script>
     <!-- Notificaciones de escritorio -->
