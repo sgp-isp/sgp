@@ -67,6 +67,7 @@ class Database
 
         // Soporte SSL TLS para TiDB Cloud / Bases de datos Serverless
         if ($this->ssl || $this->port === '4000' || strpos($this->host, 'tidbcloud.com') !== false) {
+            $options[PDO::MYSQL_ATTR_SSL_CA] = true;
             $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
         }
 
@@ -76,7 +77,7 @@ class Database
             $this->dbh->exec("SET time_zone = '-04:00'");
         } catch (PDOException $e) {
             // SGP-FIX-v2 [1.2] — Nunca exponer detalles de BD al usuario
-            error_log('[SGP-DB-ERROR] ' . date('Y-m-d H:i:s') . ' | ' . $e->getMessage());
+            error_log('[SGP-DB-ERROR] ' . date('Y-m-d H:i:s') . ' | Conectando a ' . $this->host . ':' . $this->port . ' (' . $this->user . ') | ' . $e->getMessage());
             $this->error = 'Error de conexión a la base de datos';
             throw new RuntimeException('Error de conexión a la base de datos', 0, $e);
         }

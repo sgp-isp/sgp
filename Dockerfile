@@ -49,6 +49,7 @@ RUN echo '<Directory /var/www/>\n\
 RUN echo 'upload_max_filesize = 15M\n\
 post_max_size = 20M\n\
 memory_limit = 256M\n\
+variables_order = "EGPCS"\n\
 date.timezone = America/Caracas\n\
 display_errors = Off\n\
 log_errors = On' > /usr/local/etc/php/conf.d/sgp-custom.ini
