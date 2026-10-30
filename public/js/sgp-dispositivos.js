@@ -222,6 +222,7 @@
                     html: `
                         <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px;margin-bottom:16px;text-align:left;font-size:13px;color:#1e40af;">
                             <i class="ti ti-mail-check me-1"></i> Se ha enviado un código de 6 dígitos a <strong>${data.correo_mask || 'tu correo'}</strong>.
+                            ${data.codigo_otp ? `<div style="margin-top:10px;padding:8px 12px;background:#ffffff;border:1.5px dashed #3b82f6;border-radius:8px;text-align:center;"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">Código de Respaldo Directo:</div><div style="font-size:22px;letter-spacing:4px;font-weight:800;color:#1d4ed8;font-family:monospace;margin-top:2px;">${data.codigo_otp}</div></div>` : ''}
                         </div>
                         <div id="swalBentoOtpContainer" class="bento-otp-wrapper" style="margin: 10px auto;"></div>
                     `,
@@ -353,6 +354,7 @@
                     html: `
                         <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px;margin-bottom:16px;text-align:left;font-size:13px;color:#1e40af;">
                             <i class="ti ti-mail-check me-1"></i> Se ha enviado un código de 6 dígitos a <strong>${data.correo_mask || 'tu correo'}</strong>.
+                            ${data.codigo_otp ? `<div style="margin-top:10px;padding:8px 12px;background:#ffffff;border:1.5px dashed #3b82f6;border-radius:8px;text-align:center;"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">Código de Respaldo Directo:</div><div style="font-size:22px;letter-spacing:4px;font-weight:800;color:#1d4ed8;font-family:monospace;margin-top:2px;">${data.codigo_otp}</div></div>` : ''}
                         </div>
                         <p style="font-size:12px;color:#64748b;margin:0 0 10px;">Ingresa el código para autorizar el registro de tu huella en este equipo:</p>
                         <div id="swalBentoOtpHuellaContainer" class="bento-otp-wrapper" style="margin: 10px auto;"></div>

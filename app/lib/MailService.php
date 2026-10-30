@@ -170,29 +170,39 @@ class MailService
         $user    = $cfg['user'];
         $pass    = $cfg['pass'];
         $secure  = strtolower($cfg['secure']);
-        $timeout = 8; // Conexión rápida (8 segundos máximo en vez de 25s)
+        $timeout = 8; // Conexión ágil (8 segundos)
 
-        // Optimización de red en la nube (Render / Docker):
-        // Forzar IPv4 directamente vía bindto 0.0.0.0:0 para eliminar los 15s de espera de timeout de IPv6 de Gmail
         $contextOptions = [
             'ssl' => [
                 'verify_peer'       => false,
                 'verify_peer_name'  => false,
                 'allow_self_signed' => true,
                 'peer_name'         => $host,
-            ],
-            'socket' => [
-                'bindto' => '0.0.0.0:0',
             ]
         ];
         $context = stream_context_create($contextOptions);
 
-        $target = ($secure === 'ssl') ? "ssl://{$host}:{$port}" : "tcp://{$host}:{$port}";
+        // Resolver IPv4 directamente para eliminar el timeout de IPv6 de Gmail en la nube sin usar bindto
+        $resolvedIp = gethostbyname($host);
+        $connHost = (!empty($resolvedIp) && $resolvedIp !== $host) ? $resolvedIp : $host;
+
+        $target = ($secure === 'ssl') ? "ssl://{$connHost}:{$port}" : "tcp://{$connHost}:{$port}";
         $socket = @stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
 
+        // Fallback inteligente: si puerto 587 STARTTLS falla, intentar puerto 465 SSL directo
+        if (!$socket && ($port === 587 || $secure === 'tls')) {
+            $fallbackTarget = "ssl://{$connHost}:465";
+            $socket = @stream_socket_client($fallbackTarget, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
+            if ($socket) {
+                $secure = 'ssl';
+                $port = 465;
+            }
+        }
+
         if (!$socket) {
-            error_log("[SGP-MAIL] Error de conexión socket: {$errstr} ({$errno})");
-            return ['success' => false, 'message' => "No se pudo conectar al servidor SMTP: {$errstr}"];
+            error_log("[SGP-MAIL] Error de conexión socket: {$errstr} ({$errno}) hacia {$target}");
+            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', "Socket error {$errno}: {$errstr}");
+            return ['success' => false, 'message' => "No se pudo conectar al servidor SMTP: {$errstr} ({$errno})"];
         }
 
         stream_set_timeout($socket, $timeout);
@@ -220,8 +230,8 @@ class MailService
             $read(); // Saludo inicial
             $cmd("EHLO " . gethostname(), 250);
 
-            // Iniciar STARTTLS si el puerto es 587 o seguro es tls
-            if ($secure === 'tls' || $port === 587) {
+            // Iniciar STARTTLS si el puerto es 587 o seguro es tls y no venimos por fallback SSL directo
+            if ($secure !== 'ssl' && ($secure === 'tls' || $port === 587)) {
                 $cmd("STARTTLS", 220);
                 $crypto = STREAM_CRYPTO_METHOD_TLS_CLIENT;
                 if (defined('STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT')) {
