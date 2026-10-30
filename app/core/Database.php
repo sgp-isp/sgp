@@ -58,17 +58,23 @@ class Database
         $this->ssl     = !empty($config['ssl']);
 
         $dsn     = 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->db_name . ';charset=' . $this->charset;
+        $isCloud = ($this->ssl || $this->port === '4000' || strpos($this->host, 'tidbcloud.com') !== false);
+
         $options = [
-            PDO::ATTR_PERSISTENT         => false, // [FIX-P2] Desactivado: conexiones persistentes agotan el pool de MySQL en Apache/mod_php sin pooler intermedio
+            PDO::ATTR_PERSISTENT         => $isCloud, // En nube: reutilizar túnel TLS existente para queries instantáneas
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_general_ci"
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_general_ci",
+            PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true
         ];
 
-        // Soporte SSL TLS para TiDB Cloud / Bases de datos Serverless
-        if ($this->ssl || $this->port === '4000' || strpos($this->host, 'tidbcloud.com') !== false) {
+        // Soporte SSL TLS y compresión de red para TiDB Cloud
+        if ($isCloud) {
             $options[PDO::MYSQL_ATTR_SSL_CA] = true;
             $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+            if (defined('PDO::MYSQL_ATTR_COMPRESS')) {
+                $options[PDO::MYSQL_ATTR_COMPRESS] = true; // Comprimir tráfico de red entre Render y TiDB Cloud
+            }
         }
 
         try {

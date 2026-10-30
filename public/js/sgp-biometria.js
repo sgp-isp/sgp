@@ -273,6 +273,10 @@
                 throw new Error('No se recibió respuesta del sensor biométrico');
             }
 
+            if (btn) {
+                btn.innerHTML = '<i class="ti ti-loader-2 ti-spin me-2"></i>¡Huella detectada! Accediendo...';
+            }
+
             // 4. Enviar firma al servidor para verificación
             const payload = {
                 credential_id: bufferToBase64Url(assertion.rawId),
@@ -403,6 +407,17 @@
             // 3. Solicitar registro de huella en el móvil
             const cred = await navigator.credentials.create({ publicKey: createOptions });
             if (!cred) throw new Error('No se generó la credencial en el dispositivo');
+
+            // Feedback visual instantáneo: Notificar al usuario que la huella fue leída exitosamente
+            if (window.Swal) {
+                Swal.fire({
+                    title: '¡Huella Detectada!',
+                    html: '<div style="margin:14px 0;"><i class="ti ti-fingerprint" style="font-size:48px;color:#2563eb;"></i></div><p style="font-size:14px;color:#64748b;margin:0;">Guardando credencial segura en el servidor...</p>',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+            }
 
             // 4. Extraer clave pública (SPKI DER) si está disponible en la API moderna
             let pubKeyDer = '';

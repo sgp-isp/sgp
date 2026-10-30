@@ -208,18 +208,33 @@ class BiometriaController extends Controller
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'
             ]);
 
-            // Alerta de confirmación por correo institucional
+            $response = json_encode([
+                'success' => true,
+                'message' => '¡Dispositivo biométrico (' . htmlspecialchars($deviceName) . ') registrado con éxito!'
+            ]);
+
+            // Responder inmediatamente al navegador para que la alerta salga al instante
+            if (function_exists('fastcgi_finish_request')) {
+                echo $response;
+                fastcgi_finish_request();
+            } else {
+                header('Content-Type: application/json');
+                header('Content-Length: ' . strlen($response));
+                header('Connection: close');
+                echo $response;
+                @ob_end_flush();
+                @ob_flush();
+                @flush();
+            }
+
+            // Alerta de confirmación por correo en segundo plano
             try {
                 $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
                 MailService::notifyBiometricEnrolled($userId, $deviceName, $ip);
             } catch (\Throwable $mErr) {
                 error_log('[SGP-BIOMETRIA] Error enviando correo de afiliación: ' . $mErr->getMessage());
             }
-
-            echo json_encode([
-                'success' => true,
-                'message' => '¡Dispositivo biométrico (' . htmlspecialchars($deviceName) . ') registrado con éxito!'
-            ]);
+            return;
 
         } catch (\Throwable $e) {
             error_log('[SGP-BIOMETRIA] registrar error: ' . $e->getMessage());
@@ -388,18 +403,6 @@ class BiometriaController extends Controller
                 'ip'          => $ip
             ]);
 
-            // Alerta de seguridad por correo institucional
-            try {
-                MailService::notifySecurityLogin(
-                    (int)$record->user_id,
-                    'Huella Digital / Biometría Móvil',
-                    (string)$record->device_name,
-                    $ip
-                );
-            } catch (\Throwable $te) {
-                error_log('[SGP-BIOMETRIA] mail-alert error: ' . $te->getMessage());
-            }
-
             // Determinar URL de redirección
             $redirect = URLROOT . '/dashboard';
             if ((int)$record->requiere_cambio_clave === 1 || !$perfilCompletado) {
@@ -421,12 +424,39 @@ class BiometriaController extends Controller
                 }
             }
 
-            echo json_encode([
+            $response = json_encode([
                 'success'   => true,
                 'user_name' => $fullName,
                 'cedula'    => (string)($record->cedula ?? ''),
                 'redirect'  => $redirect
             ]);
+
+            // Responder inmediatamente al navegador para login ultra-rápido
+            if (function_exists('fastcgi_finish_request')) {
+                echo $response;
+                fastcgi_finish_request();
+            } else {
+                header('Content-Type: application/json');
+                header('Content-Length: ' . strlen($response));
+                header('Connection: close');
+                echo $response;
+                @ob_end_flush();
+                @ob_flush();
+                @flush();
+            }
+
+            // Alerta de seguridad por correo institucional en background
+            try {
+                MailService::notifySecurityLogin(
+                    (int)$record->user_id,
+                    'Huella Digital / Biometría Móvil',
+                    (string)$record->device_name,
+                    $ip
+                );
+            } catch (\Throwable $te) {
+                error_log('[SGP-BIOMETRIA] mail-alert error: ' . $te->getMessage());
+            }
+            return;
 
         } catch (\Throwable $e) {
             error_log('[SGP-BIOMETRIA] verificar(): ' . $e->getMessage());

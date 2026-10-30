@@ -170,10 +170,25 @@ class MailService
         $user    = $cfg['user'];
         $pass    = $cfg['pass'];
         $secure  = strtolower($cfg['secure']);
-        $timeout = 25; // Más tiempo para adjuntos
+        $timeout = 8; // Conexión rápida (8 segundos máximo en vez de 25s)
+
+        // Optimización de red en la nube (Render / Docker):
+        // Forzar IPv4 directamente vía bindto 0.0.0.0:0 para eliminar los 15s de espera de timeout de IPv6 de Gmail
+        $contextOptions = [
+            'ssl' => [
+                'verify_peer'       => false,
+                'verify_peer_name'  => false,
+                'allow_self_signed' => true,
+                'peer_name'         => $host,
+            ],
+            'socket' => [
+                'bindto' => '0.0.0.0:0',
+            ]
+        ];
+        $context = stream_context_create($contextOptions);
 
         $target = ($secure === 'ssl') ? "ssl://{$host}:{$port}" : "tcp://{$host}:{$port}";
-        $socket = @stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT);
+        $socket = @stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
 
         if (!$socket) {
             error_log("[SGP-MAIL] Error de conexión socket: {$errstr} ({$errno})");
@@ -208,7 +223,11 @@ class MailService
             // Iniciar STARTTLS si el puerto es 587 o seguro es tls
             if ($secure === 'tls' || $port === 587) {
                 $cmd("STARTTLS", 220);
-                if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+                $crypto = STREAM_CRYPTO_METHOD_TLS_CLIENT;
+                if (defined('STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT')) {
+                    $crypto |= STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT;
+                }
+                if (!stream_socket_enable_crypto($socket, true, $crypto)) {
                     throw new \Exception("Negociación TLS fallida");
                 }
                 $cmd("EHLO " . gethostname(), 250);
