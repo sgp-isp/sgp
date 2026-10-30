@@ -1,10 +1,10 @@
 # ==============================================================================
 # Dockerfile para despliegue de Sistema de Gestión de Pasantes (SGP) en Render.com
-# PHP 8.2 con Apache, Composer, extensiones requeridas y soporte mod_rewrite
+# PHP 8.2 con Apache, Composer, fuentes TrueType y soporte mod_rewrite
 # ==============================================================================
 FROM php:8.2-apache
 
-# Actualizar repositorios e instalar dependencias del sistema requeridas
+# Actualizar repositorios e instalar dependencias del sistema y fuentes TTF para CAPTCHA
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev \
     libjpeg-dev \
@@ -15,6 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     ca-certificates \
     git \
+    fonts-dejavu-core \
+    fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 # Configurar e instalar extensiones de PHP necesarias para el SGP
@@ -33,18 +35,15 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Activar módulos de Apache requeridos
 RUN a2enmod rewrite headers ssl
 
-# Configurar Apache DocumentRoot a /var/www/html/public
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
-    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+# Copiar configuración limpia de Apache VirtualHost con DocumentRoot en /public
+COPY docker/apache-site.conf /etc/apache2/sites-available/000-default.conf
 
-# Habilitar AllowOverride All para soportar .htaccess
-RUN echo '<Directory /var/www/html/public>\n\
-    Options -Indexes +FollowSymLinks\n\
+# Asegurar permisos globales para /var/www/ en apache2.conf
+RUN echo '<Directory /var/www/>\n\
+    Options FollowSymLinks\n\
     AllowOverride All\n\
     Require all granted\n\
-</Directory>' > /etc/apache2/conf-available/sgp-override.conf \
-    && a2enconf sgp-override
+</Directory>' >> /etc/apache2/apache2.conf
 
 # Ajustes de PHP para producción
 RUN echo 'upload_max_filesize = 15M\n\

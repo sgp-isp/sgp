@@ -63,21 +63,39 @@ class CaptchaController extends Controller {
         $fontSize = 16; // Texto más pequeño
         $fontPath = $this->getFontPath();
         
-        // Dibujar cada carácter con rotación aleatoria y espaciado compacto
-        $x = 15; // Menos margen izquierdo
-        for ($i = 0; $i < strlen($code); $i++) {
-            $char = $code[$i];
-            $angle = rand(-12, 12); // Menos rotación para más compacto
-            $y = rand(38, 42); // Centrado vertical para font size 16px
-            
-            // Sombra del texto
-            $shadowColor = imagecolorallocatealpha($image, 0, 0, 0, 80);
-            imagettftext($image, $fontSize, $angle, $x + 2, $y + 2, $shadowColor, $fontPath, $char);
-            
-            // Texto principal
-            imagettftext($image, $fontSize, $angle, $x, $y, $textColor, $fontPath, $char);
-            
-            $x += 28; // Espaciado más compacto entre caracteres
+        if ($fontPath && function_exists('imagettftext')) {
+            // Dibujar cada carácter con rotación aleatoria y espaciado compacto usando TTF
+            $x = 15;
+            for ($i = 0; $i < strlen($code); $i++) {
+                $char = $code[$i];
+                $angle = rand(-12, 12);
+                $y = rand(38, 42);
+                
+                // Sombra del texto
+                $shadowColor = imagecolorallocatealpha($image, 0, 0, 0, 80);
+                @imagettftext($image, $fontSize, $angle, $x + 2, $y + 2, $shadowColor, $fontPath, $char);
+                
+                // Texto principal
+                @imagettftext($image, $fontSize, $angle, $x, $y, $textColor, $fontPath, $char);
+                
+                $x += 28;
+            }
+        } else {
+            // Fallback con fuentes integradas GD (funciona sin necesidad de fuentes TTF en cualquier SO)
+            $x = 22;
+            for ($i = 0; $i < strlen($code); $i++) {
+                $char = $code[$i];
+                $y = rand(20, 24);
+                
+                // Sombra
+                $shadowColor = imagecolorallocate($image, 0, 0, 0);
+                imagestring($image, 5, $x + 1, $y + 1, $char, $shadowColor);
+                
+                // Texto principal
+                imagestring($image, 5, $x, $y, $char, $textColor);
+                
+                $x += 26;
+            }
         }
         
         // Headers de no-caché agresivos (browser + proxies + IE/Edge-legacy)
@@ -96,17 +114,22 @@ class CaptchaController extends Controller {
     
     /**
      * Obtiene la ruta de la fuente TTF
-     * Intenta usar fuentes del sistema, fallback a fuente por defecto
+     * Intenta usar fuentes comunes de Linux (Debian), Windows y Mac
      * 
-     * @return string Ruta a la fuente TTF
+     * @return string|null Ruta a la fuente TTF o null para fallback GD
      */
     private function getFontPath() {
-        // Intentar fuentes comunes del sistema
         $fonts = [
+            // Linux Debian/Ubuntu (Docker / Render)
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+            '/usr/share/fonts/truetype/freefont/FreeSansBold.ttf',
+            // Windows
             'C:/Windows/Fonts/arial.ttf',
             'C:/Windows/Fonts/arialbd.ttf',
-            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
-            '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+            // macOS
             '/System/Library/Fonts/Helvetica.ttc',
         ];
         
@@ -116,8 +139,6 @@ class CaptchaController extends Controller {
             }
         }
         
-        // Si no encuentra ninguna, usar fuente GD por defecto (número 5)
-        // En este caso, usaremos imagestring en lugar de imagettftext
         return null;
     }
     
