@@ -87,16 +87,25 @@
 
     // ── Verificar si este dispositivo ya fue registrado y vinculado por el usuario ──
     async function checkDeviceVinculadoStatus() {
-        const localTrusted = localStorage.getItem('sgp_device_trusted') === 'true' 
-                          || localStorage.getItem('sgp_biometria_enrolled') === 'true';
+        const biometriaEnrolled = localStorage.getItem('sgp_biometria_enrolled') === 'true';
+        const localTrusted = localStorage.getItem('sgp_device_trusted') === 'true' || biometriaEnrolled;
         const deviceUuid = localStorage.getItem('sgp_device_uuid');
+
+        // Si ya tiene huella WebAuthn activa en este navegador, nunca borrarla ni depender de pasante_dispositivos
+        if (biometriaEnrolled) {
+            return {
+                vinculado: true,
+                metodo: 'huella',
+                cedula: localStorage.getItem('sgp_user_cedula') || ''
+            };
+        }
 
         // Si no está registrado localmente ni tiene UUID, retornar inmediatamente false
         if (!localTrusted && !deviceUuid) {
             return { vinculado: false };
         }
 
-        // Consultar al servidor para verificar si el dispositivo está activo y autorizado
+        // Consultar al servidor para verificar si el dispositivo está activo (módulo QR/Patrón)
         if (deviceUuid) {
             try {
                 const resp = await fetch(getBaseUrl() + '/dispositivos/estadoDispositivo', {
@@ -116,11 +125,14 @@
                             cedula: data.cedula || '',
                             dispositivo: data.dispositivo || ''
                         };
-                    } else if (localTrusted) {
-                        // El dispositivo fue desvinculado o revocado en el servidor
-                        localStorage.removeItem('sgp_device_trusted');
-                        localStorage.removeItem('sgp_biometria_enrolled');
-                        localStorage.removeItem('sgp_auth_method');
+                    } else {
+                        // Solo revocar si NO tiene huella dactilar activa
+                        if (!biometriaEnrolled) {
+                            localStorage.removeItem('sgp_device_trusted');
+                            if (localStorage.getItem('sgp_auth_method') === 'patron') {
+                                localStorage.removeItem('sgp_auth_method');
+                            }
+                        }
                         return { vinculado: false };
                     }
                 }
@@ -147,6 +159,57 @@
         return { vinculado: false };
     }
 
+    // ── Renderizar Botón Biométrico en Login ──────────────────────────
+    function renderBotonBiometrico(metodo, cedula, supported) {
+        const container = document.getElementById('biometria-login-container');
+        const btn = document.getElementById('btnBiometriaLogin');
+        const linkPatron = document.getElementById('linkLoginPatronAlt');
+        if (!container || !btn) return;
+
+        container.style.display = 'block';
+
+        if (metodo === 'huella' || supported) {
+            btn.style.display = 'inline-flex';
+            btn.className = 'btn-biometria-mobile';
+            btn.style.background = '#ffffff';
+            btn.style.borderColor = '#cbd5e1';
+            btn.style.color = '#0f172a';
+            btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.03)';
+            btn.innerHTML = '<i class="ti ti-fingerprint"></i><span>Ingresar con Huella Dactilar</span>';
+            btn.onclick = onBiometricLoginClick;
+
+            if (linkPatron) {
+                linkPatron.style.display = 'block';
+                linkPatron.innerHTML = '<a href="javascript:void(0)" style="font-size:0.78rem;color:#7c3aed;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px;"><i class="ti ti-grid-dots"></i>O ingresa con tu patrón gestual</a>';
+                linkPatron.onclick = function (e) {
+                    if (e) e.preventDefault();
+                    const idInput = document.getElementById('email') || document.getElementById('cedula') || document.querySelector('input[name="email"]');
+                    const val = idInput ? idInput.value.trim() : (cedula || localStorage.getItem('sgp_user_cedula') || '');
+                    if (window.SgpDispositivos && window.SgpDispositivos.abrirModalLoginPatron) {
+                        window.SgpDispositivos.abrirModalLoginPatron(val);
+                    }
+                };
+            }
+        } else {
+            btn.style.display = 'inline-flex';
+            btn.className = 'btn-biometria-mobile';
+            btn.style.background = 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)';
+            btn.style.borderColor = 'transparent';
+            btn.style.color = '#ffffff';
+            btn.style.boxShadow = '0 4px 14px rgba(124, 58, 237, 0.28)';
+            btn.innerHTML = '<i class="ti ti-grid-dots" style="color:#ffffff;"></i><span>Ingresar con Patrón de Seguridad</span>';
+            btn.onclick = function (e) {
+                if (e) e.preventDefault();
+                const idInput = document.getElementById('email') || document.getElementById('cedula') || document.querySelector('input[name="email"]');
+                const val = idInput ? idInput.value.trim() : (cedula || localStorage.getItem('sgp_user_cedula') || '');
+                if (window.SgpDispositivos && window.SgpDispositivos.abrirModalLoginPatron) {
+                    window.SgpDispositivos.abrirModalLoginPatron(val);
+                }
+            };
+            if (linkPatron) linkPatron.style.display = 'none';
+        }
+    }
+
     // ── Inicialización en la pantalla de Login ────────────────────────
     async function initLoginBiometrics() {
         const container = document.getElementById('biometria-login-container');
@@ -154,70 +217,52 @@
         const linkPatron = document.getElementById('linkLoginPatronAlt');
         if (!container && !btn) return;
 
-        // REGLA FUNDAMENTAL: Se activa ÚNICAMENTE si el dispositivo ya fue registrado y vinculado por el usuario
+        const supported = await isBiometricsAvailable();
+
+        // 1. Comprobar si el dispositivo ya está vinculado
         const estado = await checkDeviceVinculadoStatus();
-        if (!estado || !estado.vinculado) {
+        if (estado && estado.vinculado) {
+            const metodo = estado.metodo || localStorage.getItem('sgp_auth_method') || 'huella';
+            renderBotonBiometrico(metodo, estado.cedula, supported);
+        } else {
             if (container) container.style.display = 'none';
             if (btn) btn.style.display = 'none';
             if (linkPatron) linkPatron.style.display = 'none';
-            return;
         }
 
-        // Si el dispositivo SÍ está vinculado por el usuario:
-        const supported = await isBiometricsAvailable();
-        const metodo = estado.metodo || localStorage.getItem('sgp_auth_method') || 'huella';
+        // 2. Detección Inteligente: Si el usuario escribe su Cédula/Usuario en el input
+        const idInput = document.getElementById('email') || document.getElementById('cedula') || document.querySelector('input[name="email"]');
+        if (idInput && supported) {
+            let timeoutId = null;
+            const verificarCedula = async () => {
+                const val = idInput.value.trim();
+                if (val.length >= 6) {
+                    try {
+                        const checkResp = await fetchJsonSafe(getBaseUrl() + '/biometria/consultarUsuario', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ identifier: val })
+                        });
+                        if (checkResp && checkResp.success && checkResp.tiene_biometria) {
+                            localStorage.setItem('sgp_biometria_enrolled', 'true');
+                            localStorage.setItem('sgp_device_trusted', 'true');
+                            localStorage.setItem('sgp_user_cedula', val);
+                            renderBotonBiometrico('huella', val, supported);
+                        }
+                    } catch (e) { /* silencioso */ }
+                }
+            };
 
-        if (container) container.style.display = 'block';
+            idInput.addEventListener('input', () => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(verificarCedula, 600);
+            });
 
-        // Por indicación directa: RESTAURAR EL BOTÓN DE HUELLA DACTILAR
-        // Siempre que el método sea huella o el dispositivo cuente con soporte de huella/biometría
-        if (metodo === 'huella' || supported) {
-            if (btn) {
-                btn.style.display = 'inline-flex';
-                btn.className = 'btn-biometria-mobile';
-                btn.style.background = '#ffffff';
-                btn.style.borderColor = '#cbd5e1';
-                btn.style.color = '#0f172a';
-                btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.03)';
-                btn.innerHTML = '<i class="ti ti-fingerprint"></i><span>Ingresar con Huella Dactilar</span>';
-                btn.onclick = onBiometricLoginClick;
-            }
+            idInput.addEventListener('blur', verificarCedula);
 
-            // Enlace discreto para ingresar con patrón gestual como alternativa
-            if (linkPatron) {
-                linkPatron.style.display = 'block';
-                linkPatron.innerHTML = '<a href="javascript:void(0)" style="font-size:0.78rem;color:#7c3aed;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px;"><i class="ti ti-grid-dots"></i>O ingresa con tu patrón gestual</a>';
-                linkPatron.onclick = function (e) {
-                    if (e) e.preventDefault();
-                    const idInput = document.getElementById('email') || document.getElementById('cedula') || document.querySelector('input[name="email"]');
-                    const val = idInput ? idInput.value.trim() : (estado.cedula || localStorage.getItem('sgp_user_cedula') || '');
-                    if (window.SgpDispositivos && window.SgpDispositivos.abrirModalLoginPatron) {
-                        window.SgpDispositivos.abrirModalLoginPatron(val);
-                    }
-                };
-            }
-        } else {
-            // Caso donde el dispositivo vinculado NO cuenta con lector biométrico y fue vinculado con Patrón
-            if (btn) {
-                btn.style.display = 'inline-flex';
-                btn.className = 'btn-biometria-mobile';
-                btn.style.background = 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)';
-                btn.style.borderColor = 'transparent';
-                btn.style.color = '#ffffff';
-                btn.style.boxShadow = '0 4px 14px rgba(124, 58, 237, 0.28)';
-                btn.innerHTML = '<i class="ti ti-grid-dots" style="color:#ffffff;"></i><span>Ingresar con Patrón de Seguridad</span>';
-                btn.onclick = function (e) {
-                    if (e) e.preventDefault();
-                    const idInput = document.getElementById('email') || document.getElementById('cedula') || document.querySelector('input[name="email"]');
-                    const val = idInput ? idInput.value.trim() : (estado.cedula || localStorage.getItem('sgp_user_cedula') || '');
-                    if (window.SgpDispositivos && window.SgpDispositivos.abrirModalLoginPatron) {
-                        window.SgpDispositivos.abrirModalLoginPatron(val);
-                    }
-                };
-            }
-
-            if (linkPatron) {
-                linkPatron.style.display = 'none';
+            // Si el input ya viene con valor (autocompletado del navegador)
+            if (idInput.value.trim().length >= 6) {
+                setTimeout(verificarCedula, 300);
             }
         }
     }
@@ -445,6 +490,9 @@
                 localStorage.setItem('sgp_biometria_enrolled', 'true');
                 localStorage.setItem('sgp_device_trusted', 'true');
                 localStorage.setItem('sgp_auth_method', 'huella');
+                if (dataReg.cedula) {
+                    localStorage.setItem('sgp_user_cedula', dataReg.cedula);
+                }
                 if (window.Swal) {
                     await Swal.fire({
                         icon: 'success',

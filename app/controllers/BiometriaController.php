@@ -208,9 +208,15 @@ class BiometriaController extends Controller
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'
             ]);
 
+            $this->db->query("SELECT cedula FROM usuarios WHERE id = :uid LIMIT 1");
+            $this->db->bind(':uid', $userId);
+            $uRow = $this->db->single();
+            $userCedula = $uRow->cedula ?? '';
+
             $response = json_encode([
                 'success' => true,
-                'message' => '¡Dispositivo biométrico (' . htmlspecialchars($deviceName) . ') registrado con éxito!'
+                'message' => '¡Dispositivo biométrico (' . htmlspecialchars($deviceName) . ') registrado con éxito!',
+                'cedula'  => $userCedula
             ]);
 
             // Responder inmediatamente al navegador para que la alerta salga al instante
@@ -239,6 +245,40 @@ class BiometriaController extends Controller
         } catch (\Throwable $e) {
             error_log('[SGP-BIOMETRIA] registrar error: ' . $e->getMessage());
             echo json_encode(['success' => false, 'message' => 'Error de base de datos al guardar credencial']);
+        }
+    }
+
+    /**
+     * POST /biometria/consultarUsuario — Verifica si una cédula/usuario tiene biometría activa
+     */
+    public function consultarUsuario(): void
+    {
+        header('Content-Type: application/json');
+
+        $rawInput = file_get_contents('php://input');
+        $data = json_decode($rawInput, true) ?: $_POST;
+        $identifier = trim((string)($data['identifier'] ?? ''));
+
+        if ($identifier === '') {
+            echo json_encode(['success' => false, 'tiene_biometria' => false]);
+            return;
+        }
+
+        try {
+            $this->db->query("
+                SELECT COUNT(b.id) AS total
+                FROM usuarios_biometria b
+                JOIN usuarios u ON u.id = b.usuario_id
+                WHERE (u.cedula = :id1 OR u.correo = :id2) AND u.estado = 'activo'
+            ");
+            $this->db->bind(':id1', $identifier);
+            $this->db->bind(':id2', $identifier);
+            $res = $this->db->single();
+
+            $tiene = $res && ((int)$res->total > 0);
+            echo json_encode(['success' => true, 'tiene_biometria' => $tiene]);
+        } catch (\Throwable $e) {
+            echo json_encode(['success' => false, 'tiene_biometria' => false]);
         }
     }
 
