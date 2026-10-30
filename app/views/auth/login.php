@@ -355,7 +355,6 @@
                     <i class="ti ti-fingerprint"></i>
                     <span>Ingresar con Huella Dactilar</span>
                 </button>
-                <div id="linkLoginPatronAlt" style="display: none; margin-top: 9px;"></div>
             </div>
 
             <!-- Enlaces de Acción Rápida: ¿Olvidaste tu contraseña? y Regístrate aquí (Chips interactivos con micro-animaciones) -->
@@ -377,7 +376,6 @@
     <?php include_once APPROOT . '/views/layouts/footer.php'; ?>
     <script src="<?= URLROOT ?>/js/validation.js"></script>
     <script src="<?= URLROOT ?>/js/sgp-biometria.js?v=<?= @filemtime(APPROOT . '/../public/js/sgp-biometria.js') ?: time() ?>"></script>
-    <script src="<?= URLROOT ?>/js/sgp-pattern-lock.js?v=<?= @filemtime(APPROOT . '/../public/js/sgp-pattern-lock.js') ?: time() ?>"></script>
     <script src="<?= URLROOT ?>/js/bento-otp.js?v=<?= @filemtime(APPROOT . '/../public/js/bento-otp.js') ?: time() ?>"></script>
     <script src="<?= URLROOT ?>/js/sgp-dispositivos.js?v=<?= @filemtime(APPROOT . '/../public/js/sgp-dispositivos.js') ?: time() ?>"></script>
     

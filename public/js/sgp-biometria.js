@@ -159,16 +159,19 @@
         return { vinculado: false };
     }
 
-    // ── Renderizar Botón Biométrico en Login ──────────────────────────
+    // ── Renderizar Botón Biométrico en Login (Exclusivo Huella Dactilar) ──────
     function renderBotonBiometrico(metodo, cedula, supported) {
         const container = document.getElementById('biometria-login-container');
         const btn = document.getElementById('btnBiometriaLogin');
         const linkPatron = document.getElementById('linkLoginPatronAlt');
         if (!container || !btn) return;
 
-        container.style.display = 'block';
+        // Ocultar siempre enlace alternativo de patrón en login
+        if (linkPatron) linkPatron.style.display = 'none';
 
-        if (metodo === 'huella' || supported) {
+        // Solo mostrar botón si el dispositivo soporta sensor biométrico (Huella/FaceID)
+        if (supported) {
+            container.style.display = 'block';
             btn.style.display = 'inline-flex';
             btn.className = 'btn-biometria-mobile';
             btn.style.background = '#ffffff';
@@ -177,36 +180,9 @@
             btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.03)';
             btn.innerHTML = '<i class="ti ti-fingerprint"></i><span>Ingresar con Huella Dactilar</span>';
             btn.onclick = onBiometricLoginClick;
-
-            if (linkPatron) {
-                linkPatron.style.display = 'block';
-                linkPatron.innerHTML = '<a href="javascript:void(0)" style="font-size:0.78rem;color:#7c3aed;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px;"><i class="ti ti-grid-dots"></i>O ingresa con tu patrón gestual</a>';
-                linkPatron.onclick = function (e) {
-                    if (e) e.preventDefault();
-                    const idInput = document.getElementById('email') || document.getElementById('cedula') || document.querySelector('input[name="email"]');
-                    const val = idInput ? idInput.value.trim() : (cedula || localStorage.getItem('sgp_user_cedula') || '');
-                    if (window.SgpDispositivos && window.SgpDispositivos.abrirModalLoginPatron) {
-                        window.SgpDispositivos.abrirModalLoginPatron(val);
-                    }
-                };
-            }
         } else {
-            btn.style.display = 'inline-flex';
-            btn.className = 'btn-biometria-mobile';
-            btn.style.background = 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)';
-            btn.style.borderColor = 'transparent';
-            btn.style.color = '#ffffff';
-            btn.style.boxShadow = '0 4px 14px rgba(124, 58, 237, 0.28)';
-            btn.innerHTML = '<i class="ti ti-grid-dots" style="color:#ffffff;"></i><span>Ingresar con Patrón de Seguridad</span>';
-            btn.onclick = function (e) {
-                if (e) e.preventDefault();
-                const idInput = document.getElementById('email') || document.getElementById('cedula') || document.querySelector('input[name="email"]');
-                const val = idInput ? idInput.value.trim() : (cedula || localStorage.getItem('sgp_user_cedula') || '');
-                if (window.SgpDispositivos && window.SgpDispositivos.abrirModalLoginPatron) {
-                    window.SgpDispositivos.abrirModalLoginPatron(val);
-                }
-            };
-            if (linkPatron) linkPatron.style.display = 'none';
+            container.style.display = 'none';
+            btn.style.display = 'none';
         }
     }
 

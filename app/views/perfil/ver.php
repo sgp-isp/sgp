@@ -453,12 +453,12 @@ if (!isset($user) || empty($user)) {
                                     </div>
                                     <div>
                                         <h5 style="margin: 0; font-weight: 700; color: <?= !empty($tienePatron) ? '#4c1d95' : '#0f172a' ?>; font-size: 0.98rem;">Patrón de Seguridad</h5>
-                                        <p style="margin: 0; font-size: 0.8rem; color: <?= !empty($tienePatron) ? '#6d28d9' : '#64748b' ?>;">Acceso gestual (9 puntos)</p>
+                                        <p style="margin: 0; font-size: 0.8rem; color: <?= !empty($tienePatron) ? '#6d28d9' : '#64748b' ?>;">Confirmación de operaciones</p>
                                     </div>
                                 </div>
                                 <?php if (!empty($tienePatron)): ?>
                                     <span style="font-size: 0.72rem; font-weight: 800; background: #7c3aed; color: white; padding: 2px 8px; border-radius: 999px; text-transform: uppercase;">
-                                        Activo
+                                        Configurado
                                     </span>
                                 <?php else: ?>
                                     <span style="font-size: 0.72rem; font-weight: 700; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 999px;">
@@ -469,8 +469,8 @@ if (!isset($user) || empty($user)) {
 
                             <p style="margin: 0 0 14px; font-size: 0.82rem; color: #64748b; line-height: 1.4;">
                                 <?= !empty($tienePatron) 
-                                    ? 'Tienes un patrón gestual activo para acceder rápidamente sin contraseña desde tus dispositivos autorizados.' 
-                                    : 'Ideal para computadoras o teléfonos sin lector de huellas. Configúralo con autorización por correo.' ?>
+                                    ? 'Tienes un patrón gestual configurado para autorizar cambios sensibles de datos personales y operaciones críticas del sistema.' 
+                                    : 'Configura un patrón gestual de 9 puntos para autorizar cambios sensibles de forma ágil y segura.' ?>
                             </p>
                         </div>
 
