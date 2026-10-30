@@ -1,0 +1,651 @@
+/* ========================================
+   SGP SIDEBAR - PROFESSIONAL LAYOUT
+   Basado en respaldo + Mejoras UI/UX
+   ======================================== */
+
+:root {
+    --sidebar-width: 260px;
+    --header-height: 70px;
+    /* Topbar del dashboard (logos 50px + padding) */
+    --header-height-mobile: 60px;
+    /* Topbar móvil compacto */
+    --z-header: 1000;
+    --z-overlay: 1040;
+    --z-sidebar-mobile: 1050;
+
+    /* Gradient Profesional (Match Banner & Dynamic Branding) */
+    --gradient-start: var(--color-accent-brand, #2d4a9e);
+    --gradient-mid: var(--color-primary, #1e3a8a);
+    --gradient-end: var(--color-primary, #162660);
+
+    /* Colores WCAG */
+    --text-light: rgba(255, 255, 255, 0.8);
+    --text-white: #ffffff;
+    --text-dark: #1e2a5e;
+    --border-light: rgba(255, 255, 255, 0.3);
+    --danger: #ff4757;
+}
+
+/* ========================================
+   SIDEBAR BASE
+   ======================================== */
+
+.main-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: var(--sidebar-width);
+
+    /* GRADIENT VERTICAL */
+    background: linear-gradient(180deg,
+            var(--gradient-start) 0%,
+            var(--gradient-mid) 50%,
+            var(--gradient-end) 100%);
+
+    box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0 0 0; /* Top: 20px, Bottom: 0 para que el footer fije perfecto */
+    z-index: 1040;
+    overflow-y: hidden; /* El contenedor padre NO debe hacer scroll (fija el logout abajo) */
+    overflow-x: hidden;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Deshabilitar transiciones durante carga inicial */
+.main-sidebar.no-transition {
+    transition: none !important;
+}
+
+.no-transition .content-wrapper {
+    transition: none !important;
+}
+
+/* ========================================
+   NAVEGACIÓN & SCROLLBAR MINIMALISTA
+   ======================================== */
+
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 20px;
+    padding-right: 2px; /* Pequeño margen anti-clipping al hacer zoom */
+    
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* WebKit (Chrome, Safari, Edge) */
+.sidebar-nav::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+/* Mostrar thumb más brillante al pasar el mouse */
+.sidebar-nav:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.35);
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* ========================================================
+   NAVEGACIÓN LATERAL MODERNIZADA (SGP) - CONTRASTE PERFECTO
+======================================================== */
+
+/* 1. Ajuste de Ancho: Botón más corto para mostrar el borde derecho */
+.main-sidebar .nav-item>a,
+.main-sidebar .nav-link {
+    font-family: 'Inter', sans-serif !important;
+    /* Recupera tu fuente Vanilla original */
+    border-radius: 8px !important;
+    font-size: 0.85rem !important;
+    /* Más minimalista */
+
+    /* LA MAGIA PARA QUE NO SE CORTE EL LADO DERECHO: */
+    margin: 2px 16px !important;
+    /* Reducido el margen vertical */
+    width: auto !important;
+    /* Evita que el 100% rompa el contenedor */
+    display: block;
+    /* Mantiene la estructura del botón */
+
+    padding: 8px 14px;
+    /* Un poco más compacto */
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background-color: transparent !important;
+    color: rgba(255, 255, 255, 0.7);
+    overflow: hidden;
+}
+
+/* 2. La Barrita Indicadora (Color Cian/Celeste para máximo contraste) */
+.main-sidebar .nav-item>a::before,
+.main-sidebar .nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 15%;
+    height: 70%;
+    width: 5px;
+    background-color: var(--color-accent-brand, #0ea5e9);
+    /* Sincronizado con la paleta de colores activa */
+    border-radius: 0 4px 4px 0;
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    z-index: 2;
+}
+
+/* 3. El Efecto Hover (Glassmorphism visible) */
+.main-sidebar .nav-item>a:hover,
+.main-sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.18) !important;
+    color: #ffffff !important;
+}
+
+.main-sidebar .nav-item>a:hover::before,
+.main-sidebar .nav-link:hover::before {
+    transform: scaleY(1);
+    opacity: 0.9;
+    /* El cian brilla sobre el fondo oscuro */
+}
+
+/* 4. Ítem Activo (Fondo blanco con barrita Cian) */
+.main-sidebar .nav-item>a.active,
+.main-sidebar .nav-link.active,
+.main-sidebar .nav-item.active>a {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    font-weight: 500 !important;
+    /* Un negrita más suave para no distorsionar tu fuente */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.main-sidebar .nav-item>a.active::before,
+.main-sidebar .nav-link.active::before,
+.main-sidebar .nav-item.active>a::before {
+    transform: scaleY(1);
+    opacity: 1;
+    background-color: var(--color-accent-brand, #0ea5e9);
+    /* Se sincroniza dinámicamente con la paleta de colores activa */
+}
+
+/* Animación del ícono al pasar el cursor */
+.main-sidebar .nav-item>a i,
+.main-sidebar .nav-link i {
+    transition: transform 0.3s ease;
+}
+
+.main-sidebar .nav-item>a.active i,
+.main-sidebar .nav-link.active i,
+.main-sidebar .nav-item.active>a i {
+    color: var(--color-accent-brand, #1e3a8a) !important;
+}
+
+.main-sidebar .nav-item>a:hover i,
+.main-sidebar .nav-link:hover i {
+    transform: scale(1.15);
+}
+
+/* Deshabilitar transform en collapsed */
+body.sidebar-collapsed .main-sidebar .nav-link:hover:not(.active) i {
+    transform: none !important;
+}
+
+/* ========================================
+   SIDEBAR COLLAPSED STATE (Desktop Only)
+   ======================================== */
+
+/* ✅ FIX: Usar body.sidebar-collapsed para consistencia */
+body.sidebar-collapsed .main-sidebar {
+    width: 80px;
+    overflow-x: visible !important;
+}
+
+/* ✅ FIX: Asegurar que el foco no expanda el sidebar */
+body.sidebar-collapsed .main-sidebar:focus-within {
+    width: 80px !important;
+}
+
+body.sidebar-collapsed .nav-link {
+    justify-content: center;
+    padding: 16px 12px;
+    position: relative;
+
+    /* Margin flotante consistente en collapsed */
+    margin: 4px 12px !important;
+    border-radius: 99px !important;
+}
+
+body.sidebar-collapsed .nav-link i {
+    font-size: 1.5rem;
+    margin-right: 0;
+}
+
+body.sidebar-collapsed .menu-text {
+    display: none;
+}
+
+/* ✅ NUEVO: Active state en collapsed asegurando la barrita */
+body.sidebar-collapsed .nav-link.active {
+    justify-content: center;
+    margin: 4px 12px !important;
+}
+
+/* Ajuste de barrita en collapsed para que no se vea cortada y se pegue a la izquierda */
+body.sidebar-collapsed .nav-link:hover::before,
+body.sidebar-collapsed .nav-link.active::before {
+    left: -12px;
+}
+
+body.sidebar-collapsed .btn-logout span {
+    display: none;
+}
+
+body.sidebar-collapsed .btn-logout {
+    justify-content: center;
+    padding: 14px;
+}
+
+body.sidebar-collapsed .btn-logout i {
+    margin: 0;
+    font-size: 22px;
+}
+
+/* ========================================
+   TOOLTIPS (Collapsed State Only)
+   ======================================== */
+
+body.sidebar-collapsed .nav-link::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+
+    background: #1e293b;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    white-space: nowrap;
+
+    font-size: 0.875rem;
+    font-weight: 500;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    /* ✅ FIX: Transición más rápida */
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+    z-index: 2000;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Arrow del tooltip */
+body.sidebar-collapsed .nav-link::before {
+    content: '';
+    position: absolute;
+    left: calc(100% + 4px);
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 6px 8px 6px 0;
+    border-color: transparent #1e293b transparent transparent;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+    z-index: 2000;
+}
+
+body.sidebar-collapsed .nav-link:hover::after,
+body.sidebar-collapsed .nav-link:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ========================================
+   LOGOUT BUTTON
+   ======================================== */
+
+.sidebar-footer {
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.btn-logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
+    border: none;
+}
+
+.btn-logout:hover {
+    background-color: #dc3545;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.btn-logout i {
+    font-size: 18px;
+}
+
+/* ========================================
+   OVERLAY
+   ======================================== */
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: var(--z-overlay);
+    display: none;
+    backdrop-filter: blur(3px);
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* ========================================
+   DESKTOP (≥ 992px)
+   ======================================== */
+
+@media (min-width: 992px) {
+    .main-sidebar {
+        top: var(--header-height);
+        height: calc(100vh - var(--header-height));
+        left: 0;
+        transform: translateX(0);
+    }
+
+    .content-wrapper {
+        margin-left: var(--sidebar-width) !important;
+        margin-top: var(--header-height);
+        padding: 24px 28px;
+        min-height: calc(100vh - var(--header-height));
+        background-color: #F8FAFC;
+        transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Pantallas grandes: más espacio */
+    @media (min-width: 1440px) {
+        .content-wrapper {
+            padding: 30px 36px;
+        }
+    }
+
+    /* Content ajuste cuando sidebar está colapsado */
+    body.sidebar-collapsed .content-wrapper {
+        margin-left: 80px !important;
+    }
+
+    #sidebarToggle {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   TABLET / PANTALLAS MEDIAS (< 992px)
+   ======================================== */
+
+@media (max-width: 991px) {
+    .main-sidebar {
+        left: -100%;
+        top: 0;
+        height: 100vh;
+        z-index: var(--z-sidebar-mobile) !important;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .main-sidebar.show {
+        left: 0;
+    }
+
+    .content-wrapper {
+        margin-left: 0 !important;
+        width: 100%;
+        margin-top: var(--header-height-mobile);
+        padding: 20px 15px;
+        min-height: calc(100vh - var(--header-height-mobile));
+        background-color: #F8FAFC;
+    }
+}
+
+/* ========================================
+   [RESP-04] TABLET MINI-SIDEBAR (769px – 991px)
+   El sidebar se contrae a solo íconos (72px).
+   El contenido se ajusta a calc(100% - 72px)
+   para que no haya desbordamiento horizontal.
+   ======================================== */
+@media (min-width: 769px) and (max-width: 991px) {
+    .main-sidebar {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 72px !important;
+        left: 0 !important;
+        top: var(--header-height);
+        height: calc(100vh - var(--header-height));
+        transform: translateX(0) !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        z-index: 1000 !important;
+    }
+
+    /* Ocultar textos de navegación, labels y textos de botones */
+    .main-sidebar .nav-text,
+    .main-sidebar .menu-text,
+    .main-sidebar .sidebar-brand-text,
+    .main-sidebar .sidebar-section-label,
+    .main-sidebar .nav-badge,
+    .main-sidebar .sidebar-footer-info,
+    .main-sidebar .btn-logout span {
+        display: none !important;
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    /* Centrar íconos de navegación en caja perfecta 48x48 */
+    .main-sidebar .nav-link {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 48px !important;
+        height: 48px !important;
+        margin: 4px auto !important;
+        padding: 0 !important;
+        border-radius: 12px !important;
+        position: relative;
+        overflow: visible !important;
+        box-sizing: border-box !important;
+    }
+
+    .main-sidebar .nav-link i {
+        margin: 0 !important;
+        font-size: 22px !important;
+        line-height: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Ítem activo en mini-sidebar: caja blanca 48x48 perfectamente centrada */
+    .main-sidebar .nav-item>a.active,
+    .main-sidebar .nav-link.active,
+    .main-sidebar .nav-item.active>a {
+        width: 48px !important;
+        height: 48px !important;
+        margin: 4px auto !important;
+        background-color: #ffffff !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .main-sidebar .nav-item>a.active i,
+    .main-sidebar .nav-link.active i,
+    .main-sidebar .nav-item.active>a i {
+        color: #1e293b !important;
+    }
+
+    /* Desactivar barrita lateral que desalinea el centro */
+    .main-sidebar .nav-item>a::before,
+    .main-sidebar .nav-link::before {
+        display: none !important;
+    }
+
+    /* Footer y botón logout centrado */
+    .main-sidebar .sidebar-footer {
+        padding: 12px 0 !important;
+    }
+
+    .main-sidebar .btn-logout {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 48px !important;
+        height: 48px !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        border-radius: 12px !important;
+    }
+
+    .main-sidebar .btn-logout i {
+        margin: 0 !important;
+        font-size: 22px !important;
+    }
+
+    /* Logo compacto */
+    .main-sidebar .sidebar-logo,
+    .main-sidebar .sidebar-brand {
+        justify-content: center !important;
+        padding: 12px 0 !important;
+    }
+
+    .main-sidebar .sidebar-logo img,
+    .main-sidebar .sidebar-brand img {
+        width: 36px !important;
+        height: auto !important;
+    }
+
+    /* Tooltips al hover en modo mini-sidebar (tablet / pantalla dividida) */
+    .main-sidebar .nav-link::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: calc(100% + 12px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: #1e293b;
+        color: white;
+        padding: 8px 14px;
+        border-radius: 8px;
+        white-space: nowrap;
+        font-size: 0.85rem;
+        font-weight: 500;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.15s ease, visibility 0.15s ease;
+        z-index: 2000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .main-sidebar .nav-link::before {
+        content: '';
+        position: absolute;
+        left: calc(100% + 4px);
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 6px 8px 6px 0;
+        border-color: transparent #1e293b transparent transparent;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.15s ease, visibility 0.15s ease;
+        z-index: 2000;
+    }
+
+    .main-sidebar .nav-link:hover::after,
+    .main-sidebar .nav-link:hover::before {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Contenido desplazado 72px exactamente, sin desbordar el viewport */
+    .content-wrapper {
+        margin-left: 72px !important;
+        width: calc(100% - 72px) !important;
+        max-width: calc(100% - 72px) !important;
+        box-sizing: border-box !important;
+        margin-top: var(--header-height);
+        padding: 20px 20px;
+        min-height: calc(100vh - var(--header-height));
+        background-color: #F8FAFC;
+    }
+
+    /* Ocultar overlay en tablet (no hace falta en modo mini-sidebar) */
+    .sidebar-overlay {
+        display: none !important;
+    }
+}
+
+
+/* ========================================
+   WRAPPER LAYOUT
+   ======================================== */
+
+.wrapper {
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}

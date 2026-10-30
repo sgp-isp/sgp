@@ -57,6 +57,11 @@ $hoy             = date('Y-m-d');
         border-color: #cbd5e1;
     }
 
+    .cfg-card.cfg-kpi-green:hover  { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(16, 185, 129, 0.5) !important; border-color: #10b981 !important; }
+    .cfg-card.cfg-kpi-blue:hover   { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(37, 99, 235, 0.5) !important; border-color: #3b82f6 !important; }
+    .cfg-card.cfg-kpi-amber:hover  { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(245, 158, 11, 0.5) !important; border-color: #f59e0b !important; }
+    .cfg-card.cfg-kpi-kiosco:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(16, 185, 129, 0.5) !important; border-color: #10b981 !important; }
+
     .cg-3 {
         grid-column: span 3;
     }
@@ -83,6 +88,77 @@ $hoy             = date('Y-m-d');
 
     .cg-12 {
         grid-column: span 12;
+    }
+
+    /* ── RESPONSIVE BENTO GRID & MÓVIL ─────────── */
+    @media (max-width: 991px) {
+        .cfg-grid {
+            gap: 16px;
+        }
+        .cg-3, .cg-4, .cg-5, .cg-6, .cg-7, .cg-8 {
+            grid-column: span 12 !important;
+        }
+        .cfg-card {
+            padding: 18px 16px;
+            border-radius: 16px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .cfg-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .cg-3, .cg-4, .cg-5, .cg-6, .cg-7, .cg-8, .cg-12 {
+            width: 100% !important;
+            grid-column: auto !important;
+        }
+        .cfg-card {
+            padding: 16px 14px !important;
+            border-radius: 14px !important;
+        }
+        .cfg-card-header {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 12px !important;
+        }
+        .notif-bento-grid {
+            grid-template-columns: 1fr !important;
+            gap: 14px !important;
+        }
+        .notif-header-flex {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+        }
+        .notif-tab-pills {
+            width: 100% !important;
+            display: flex !important;
+        }
+        .notif-tab-pills button {
+            flex: 1 !important;
+            text-align: center !important;
+            justify-content: center !important;
+            padding: 7px 10px !important;
+        }
+        .notif-search-wrap {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+        }
+        .cfg-kpis-grid {
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+        }
+        .notif-history-item, .notif-proxima-item, .notif-user-card {
+            padding: 10px 10px !important;
+            gap: 10px !important;
+        }
+        .cfg-hist-title {
+            max-width: 180px;
+        }
     }
 
     /* ── KPI CARDS ──────────────────────────────── */
@@ -457,7 +533,7 @@ $hoy             = date('Y-m-d');
     <div class="cfg-grid">
 
         <!-- KPI: Departamentos -->
-        <div class="cfg-card cg-3" style="border-left:4px solid #059669;">
+        <div class="cfg-card cg-4 cfg-kpi-green" style="border-left:4px solid #059669;">
             <div class="cfg-kpi-icon" style="background:#f0fdf4;color:#059669;">
                 <i class="ti ti-building-community"></i>
             </div>
@@ -466,7 +542,7 @@ $hoy             = date('Y-m-d');
         </div>
 
         <!-- KPI: Instituciones -->
-        <div class="cfg-card cg-3" style="border-left:4px solid #2563eb;">
+        <div class="cfg-card cg-4 cfg-kpi-blue" style="border-left:4px solid #2563eb;">
             <div class="cfg-kpi-icon" style="background:#eff6ff;color:#2563eb;">
                 <i class="ti ti-school"></i>
             </div>
@@ -475,7 +551,7 @@ $hoy             = date('Y-m-d');
         </div>
 
         <!-- KPI: Kiosco -->
-        <div class="cfg-card cg-3" style="border-left:4px solid <?= $kioscoActivo ? '#22c55e' : '#dc2626' ?>;"
+        <div class="cfg-card cg-4 cfg-kpi-kiosco" style="border-left:4px solid <?= $kioscoActivo ? '#22c55e' : '#dc2626' ?>;"
             id="kpi-kiosco-card">
             <div class="cfg-kpi-icon"
                 style="background:<?= $kioscoActivo ? '#dcfce7' : '#fee2e2' ?>;color:<?= $kioscoActivo ? '#16a34a' : '#dc2626' ?>;"
@@ -488,16 +564,128 @@ $hoy             = date('Y-m-d');
             <div class="cfg-kpi-label">Estado del kiosco</div>
         </div>
 
-        <!-- KPI: Meta de horas -->
-        <div class="cfg-card cg-3" style="border-left:4px solid #f59e0b;">
-            <div class="cfg-kpi-icon" style="background:#fef3c7;color:#d97706;">
-                <i class="ti ti-clock-hour-4"></i>
-            </div>
-            <div class="cfg-kpi-value" style="color:#d97706;font-size:1.3rem;padding-top:4px;">Dinámica</div>
-            <div class="cfg-kpi-label">Horas meta por pasante</div>
-        </div>
+    </div><!-- /Fila KPIs -->
 
-    </div><!-- /KPIs -->
+    <!-- ===== FILA: Cartel QR Oficial (12 columnas) ===== -->
+    <div class="cfg-grid">
+        <div class="cfg-card cg-12 cfg-qr-card" style="background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%);border:2px solid #334155;color:#fff;padding:26px 28px;position:relative;overflow:hidden;box-shadow:0 15px 35px rgba(0,0,0,0.25);border-radius:20px;">
+            <!-- Glow background decorativo -->
+            <div style="position:absolute;top:-50px;right:-30px;width:240px;height:240px;background:radial-gradient(circle, rgba(16,185,129,0.22) 0%, transparent 70%);border-radius:50%;pointer-events:none;"></div>
+            <div style="position:absolute;bottom:-60px;left:35%;width:200px;height:200px;background:radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%);border-radius:50%;pointer-events:none;"></div>
+
+            <style>
+                .cfg-qr-card-inner {
+                    display: grid;
+                    grid-template-columns: auto 1fr auto;
+                    gap: 24px;
+                    align-items: center;
+                    position: relative;
+                    z-index: 2;
+                }
+                .cfg-qr-actions {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    min-width: 220px;
+                }
+                @media (max-width: 991px) {
+                    .cfg-qr-card-inner {
+                        grid-template-columns: 1fr !important;
+                        gap: 20px !important;
+                    }
+                    .cfg-qr-center-box {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        text-align: center;
+                    }
+                    .cfg-qr-actions {
+                        width: 100% !important;
+                        min-width: 0 !important;
+                    }
+                    .cfg-qr-actions a,
+                    .cfg-qr-actions button {
+                        width: 100% !important;
+                    }
+                }
+            </style>
+
+            <div class="cfg-qr-card-inner">
+                <!-- Columna 1: QR Preview Box -->
+                <div class="cfg-qr-center-box">
+                    <div style="background:#fff;padding:12px;border-radius:18px;border:3px solid #10b981;box-shadow:0 10px 25px rgba(16,185,129,0.3);display:inline-flex;align-items:center;justify-content:center;">
+                        <div id="cfgMiniQr" style="width:124px;height:124px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:10px;">
+                            <span style="font-size:0.75rem;color:#94a3b8;"><i class="ti ti-loader" style="animation:spin 1s linear infinite;"></i> Cargando...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna 2: Detalles y URL de Red -->
+                <div>
+                    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);color:#34d399;padding:4px 12px;border-radius:999px;font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">
+                        <i class="ti ti-qrcode"></i> Quiosco de Autogestión Móvil
+                    </div>
+                    <h2 style="color:#fff;font-size:1.35rem;font-weight:900;margin:0 0 6px;letter-spacing:-0.3px;">Punto de Asistencia y Cartel QR Oficial</h2>
+                    <p style="color:#94a3b8;font-size:0.84rem;margin:0 0 10px;line-height:1.45;">
+                        Los pasantes escanean este cartel QR desde sus teléfonos con datos móviles o red local para registrar su entrada y salida de forma rápida y autónoma.
+                    </p>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                        <span style="font-size:0.78rem;color:#cbd5e1;font-weight:600;">Token Activo de Seguridad:</span>
+                        <span style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);padding:4px 12px;border-radius:8px;font-family:monospace;font-size:0.82rem;font-weight:800;color:#38bdf8;letter-spacing:1px;" id="tokenBadgeHeader">
+                            <?= htmlspecialchars($data['kioscoQrToken'] ?? 'ISPEB-ASIST-2026-HQ') ?>
+                        </span>
+                    </div>
+
+                    <!-- Configuración de URL Pública / Túnel Móvil -->
+                    <div style="background:rgba(0,0,0,0.28);border:1px solid rgba(255,255,255,0.14);border-radius:12px;padding:12px 14px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                            <label style="font-size:0.74rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.6px;display:flex;align-items:center;gap:6px;margin:0;">
+                                <i class="ti ti-world" style="color:#38bdf8;font-size:0.95rem;"></i> URL de Red / Túnel para Datos Móviles:
+                            </label>
+                            <span style="font-size:0.7rem;color:#34d399;font-weight:700;" id="cfgUrlStatusBadge">
+                                <i class="ti ti-circle-check"></i> Activo
+                            </span>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <input type="url" id="cfgUrlPublicaInput"
+                                   value="<?= htmlspecialchars($data['urlPublica'] ?? '') ?>"
+                                   placeholder="<?= htmlspecialchars(rtrim(URLROOT, '/')) ?>"
+                                   style="flex:1;min-width:200px;background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.22);color:#fff;padding:8px 12px;border-radius:8px;font-size:0.83rem;outline:none;font-family:monospace;">
+                            <button type="button" onclick="guardarUrlPublica(this)"
+                                    style="background:linear-gradient(135deg, #2563eb, #1d4ed8);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;box-shadow:0 3px 10px rgba(37,99,235,0.35);">
+                                <i class="ti ti-device-floppy"></i> Guardar
+                            </button>
+                        </div>
+                        <div style="font-size:0.72rem;color:#64748b;margin-top:6px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+                            <span>Destino del Cartel: <code style="color:#38bdf8;font-weight:700;" id="cfgEffectiveUrlLabel"><?= htmlspecialchars(!empty($data['urlPublica']) ? $data['urlPublica'] : rtrim(URLROOT, '/')) ?></code></span>
+                            <a href="javascript:void(0)" onclick="restablecerUrlLocal()" style="color:#94a3b8;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:4px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">
+                                <i class="ti ti-rotate-2"></i> Usar Detección Local
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna 3: Acciones Rápidas -->
+                <div class="cfg-qr-actions">
+                    <a href="<?= URLROOT ?>/configuracion/cartelQr" target="_blank"
+                       style="padding:12px 20px;background:linear-gradient(135deg, #10b981 0%, #059669 100%);color:#fff;border-radius:12px;font-size:0.92rem;font-weight:800;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 20px rgba(16,185,129,0.35);transition:all 0.2s;"
+                       onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                        <i class="ti ti-printer" style="font-size:1.2rem;"></i> Imprimir Cartel Oficial
+                    </a>
+                    <button type="button" onclick="regenerarTokenQr(this)"
+                       style="padding:11px 18px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.2);color:#e2e8f0;border-radius:12px;font-size:0.86rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;"
+                       onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+                        <i class="ti ti-refresh" style="font-size:1.1rem;color:#f59e0b;"></i> Regenerar Token QR
+                    </button>
+                    <a href="<?= URLROOT ?>/kiosco" target="_blank"
+                       style="padding:10px 18px;background:transparent;border:1.5px dashed rgba(255,255,255,0.25);color:#94a3b8;border-radius:12px;font-size:0.82rem;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;"
+                       onmouseover="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,0.5)'" onmouseout="this.style.color='#94a3b8';this.style.borderColor='rgba(255,255,255,0.25)'">
+                        <i class="ti ti-external-link"></i> Abrir Vista del Quiosco
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ===== FILA 2: Departamentos + Instituciones ===== -->
     <div class="cfg-grid">
@@ -739,13 +927,65 @@ $hoy             = date('Y-m-d');
                     </div>
                 </div>
 
+                <!-- Toggle Geolocalización / Geocerca GPS -->
+                <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <i class="ti ti-map-pin" style="color:#0284c7;font-size:1.05rem;"></i>
+                            <p style="margin:0;font-weight:700;color:#1e293b;font-size:0.92rem;">Geolocalización GPS</p>
+                        </div>
+                        <p style="margin:3px 0 0;color:#64748b;font-size:0.78rem;">Exigir ubicación en sede ISPEB (200m) al marcar</p>
+                    </div>
+                    <label class="cfg-toggle-wrap">
+                        <input type="checkbox" id="geocercaToggle" <?= ($data['geocercaActiva'] ?? 1) ? 'checked' : '' ?>>
+                        <span class="cfg-toggle-track"></span>
+                        <span class="cfg-toggle-dot"></span>
+                    </label>
+                </div>
+
+                <div id="geocercaStatusBadge" style="background:<?= ($data['geocercaActiva'] ?? 1) ? '#e0f2fe' : '#fef3c7' ?>;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:9px;">
+                    <i class="ti <?= ($data['geocercaActiva'] ?? 1) ? 'ti-shield-check' : 'ti-shield-off' ?>" id="geocercaStatusIcon"
+                        style="color:<?= ($data['geocercaActiva'] ?? 1) ? '#0284c7' : '#d97706' ?>;font-size:1.15rem;flex-shrink:0;"></i>
+                    <div>
+                        <p style="margin:0;font-size:0.82rem;font-weight:700;color:<?= ($data['geocercaActiva'] ?? 1) ? '#0369a1' : '#92400e' ?>;" id="geocercaStatusText">
+                            <?= ($data['geocercaActiva'] ?? 1) ? 'Restricción GPS activa' : 'Modo Pruebas (GPS Desactivado)' ?>
+                        </p>
+                        <p style="margin:2px 0 0;font-size:0.73rem;color:<?= ($data['geocercaActiva'] ?? 1) ? '#075985' : '#78350f' ?>;" id="geocercaStatusSub">
+                            <?= ($data['geocercaActiva'] ?? 1) ? 'Solo se permite marcar dentro del radio de 200m de la institución' : 'Permite marcar asistencia desde cualquier ubicación (ideal para pruebas)' ?>
+                        </p>
+                    </div>
+                </div>
+
                 <div
                     style="background:#f1f5f9;border-radius:9px;padding:10px 13px;display:flex;align-items:flex-start;gap:8px;">
                     <i class="ti ti-info-circle" style="color:#64748b;font-size:1rem;flex-shrink:0;margin-top:1px;"></i>
                     <span style="font-size:0.76rem;color:#64748b;line-height:1.5;">
-                        El kiosco usa PIN de 4 dígitos para registrar entradas y salidas. El estado se mantiene durante
-                        la sesión actual.
+                        El quiosco permite registro automático mediante código QR oficial o PIN de 4 dígitos.
                     </span>
+                </div>
+
+                <!-- Cartel Oficial QR (Fase 5) -->
+                <div style="background:#f8fafc;border-radius:14px;padding:14px;border:1px solid #e2e8f0;display:flex;flex-direction:column;gap:10px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <span style="font-size:0.78rem;font-weight:700;color:#334155;">Token del Cartel:</span>
+                        <code id="displayQrToken" style="background:#e2e8f0;padding:2px 8px;border-radius:6px;font-size:0.76rem;font-weight:800;color:#0f172a;letter-spacing:0.5px;">
+                            <?= htmlspecialchars($data['kioscoQrToken'] ?? 'ISPEB-ASIST-2026-HQ') ?>
+                        </code>
+                    </div>
+                    
+                    <div style="display:flex;gap:8px;">
+                        <a href="<?= URLROOT ?>/configuracion/cartelQr" target="_blank"
+                           style="flex:1;padding:9px 12px;background:#1e3a8a;color:#ffffff;border-radius:9px;text-align:center;font-size:0.78rem;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;"
+                           onmouseover="this.style.background='#172554'" onmouseout="this.style.background='#1e3a8a'">
+                            <i class="ti ti-printer"></i> Imprimir Cartel
+                        </a>
+                        <button type="button" onclick="regenerarTokenQr(this)"
+                           style="padding:9px 12px;background:#ffffff;border:1.5px solid #cbd5e1;color:#475569;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all 0.2s;"
+                           title="Regenerar Token del Cartel"
+                           onmouseover="this.style.borderColor='#94a3b8';this.style.background='#f1f5f9';" onmouseout="this.style.borderColor='#cbd5e1';this.style.background='#ffffff';">
+                            <i class="ti ti-refresh"></i> Regenerar
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1391,47 +1631,225 @@ $hoy             = date('Y-m-d');
                         </span>
                     </div>
 
-                    <button type="button" onclick="abrirModalNotifTrazabilidad()" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:8px 14px;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;">
-                        <i class="ti ti-chart-dots-3"></i> Trazabilidad de Clics
-                    </button>
-
-                    <button type="button" onclick="abrirModalNotifUsuarios()" style="background:#f8fafc;color:#475569;border:1px solid #cbd5e1;padding:8px 14px;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;">
-                        <i class="ti ti-users"></i> Gestión por Usuario
-                    </button>
+                    <div style="font-size:0.78rem;color:#64748b;font-weight:600;">
+                        Control en tiempo real de alertas automáticas, historial de envíos y receptores activos.
+                    </div>
                 </div>
             </div>
 
-            <!-- Bento Sub-Grid KPIs -->
-            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;margin-top:20px;">
-                <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;">
+            <!-- Bento Sub-Grid KPIs (Interactivas) -->
+            <div class="cfg-kpis-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(min(100%, 200px), 1fr));gap:14px;margin-top:20px;">
+                <div id="kpi-todas" onclick="filtrarNotifsPorEstado('todas')" style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s, box-shadow .2s;" class="cfg-kpi-subcard" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" title="Clic para ver todas las notificaciones">
                     <div style="width:44px;height:44px;border-radius:12px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="ti ti-send"></i>
                     </div>
                     <div>
-                        <div style="font-size:1.4rem;font-weight:800;color:#1e293b;"><?= number_format($totalEnviadas) ?></div>
-                        <div style="font-size:0.74rem;color:#64748b;font-weight:600;text-transform:uppercase;">Total Enviadas</div>
+                        <div style="font-size:1.4rem;font-weight:800;color:#1e293b;" class="cfg-kpi-val"><?= number_format($totalEnviadas) ?></div>
+                        <div style="font-size:0.74rem;color:#64748b;font-weight:600;text-transform:uppercase;">Total Enviadas <span style="font-size:0.68rem;color:#3b82f6;">(Ver todas)</span></div>
                     </div>
                 </div>
 
-                <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;">
+                <div id="kpi-leidas" onclick="filtrarNotifsPorEstado('leidas')" style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s, box-shadow .2s;" class="cfg-kpi-subcard" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" title="Clic para filtrar por notificaciones leídas">
                     <div style="width:44px;height:44px;border-radius:12px;background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="ti ti-eye-check"></i>
                     </div>
                     <div>
                         <div style="font-size:1.4rem;font-weight:800;color:#16a34a;"><?= $tasaLectura ?>%</div>
-                        <div style="font-size:0.74rem;color:#64748b;font-weight:600;text-transform:uppercase;">Lectura (<?= number_format($totalLeidas) ?> leídas)</div>
+                        <div style="font-size:0.74rem;color:#64748b;font-weight:600;text-transform:uppercase;">Lectura (<?= number_format($totalLeidas) ?> leídas) <span style="font-size:0.68rem;color:#16a34a;">(Filtrar)</span></div>
                     </div>
                 </div>
 
-                <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;">
+                <div id="kpi-clics" onclick="filtrarNotifsPorEstado('clics')" style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s, box-shadow .2s;" class="cfg-kpi-subcard" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" title="Clic para filtrar por notificaciones con interacción">
                     <div style="width:44px;height:44px;border-radius:12px;background:#faf5ff;color:#9333ea;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="ti ti-pointer"></i>
                     </div>
                     <div>
                         <div style="font-size:1.4rem;font-weight:800;color:#9333ea;"><?= $tasaClicks ?>%</div>
-                        <div style="font-size:0.74rem;color:#64748b;font-weight:600;text-transform:uppercase;">Clics / Interacción (<?= number_format($totalClicks) ?> clics)</div>
+                        <div style="font-size:0.74rem;color:#64748b;font-weight:600;text-transform:uppercase;">Clics / Interacción (<?= number_format($totalClicks) ?> clics) <span style="font-size:0.68rem;color:#9333ea;">(Filtrar)</span></div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Bento Secciones: Historial/Próximas + Audiencia por Usuario -->
+            <?php
+            // Calcular próximas alertas automáticas a partir de feriados futuros
+            $hoyNotif = date('Y-m-d');
+            $proximasAlertas = [];
+            if (!empty($feriados)) {
+                foreach ($feriados as $f) {
+                    $fObj = is_array($f) ? (object)$f : $f;
+                    if ($fObj->fecha > $hoyNotif) {
+                        $diffDias = (int)round((strtotime($fObj->fecha) - strtotime($hoyNotif)) / 86400);
+                        $proximasAlertas[] = [
+                            'tipo' => 'feriado',
+                            'titulo' => 'Feriado: ' . $fObj->nombre,
+                            'fecha' => $fObj->fecha,
+                            'dias_restantes' => $diffDias,
+                            'detalle' => 'Alerta automática para todos los usuarios (' . ($fObj->tipo ?? 'Nacional') . ')'
+                        ];
+                    }
+                }
+            }
+            usort($proximasAlertas, fn($a, $b) => strcmp($a['fecha'], $b['fecha']));
+            $proximasAlertas = array_slice($proximasAlertas, 0, 10);
+            ?>
+            <div class="notif-bento-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr));gap:18px;margin-top:20px;">
+                
+                <!-- Panel 1: Historial de Envíos y Próximas Notificaciones -->
+                <div class="notif-box-panel" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;display:flex;flex-direction:column;min-width:0;">
+                    <div class="notif-header-flex" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+                        <div style="display:flex;gap:6px;background:#f1f5f9;padding:3px;border-radius:10px;" class="notif-tab-pills">
+                            <button type="button" id="tabBtnHistorialNotif" onclick="cambiarTabNotif('historial')" style="background:#ffffff;color:#1e293b;border:none;padding:5px 12px;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08);transition:all .2s;">
+                                <i class="ti ti-history"></i> Historial (<?= count($ultimasNotifs) ?>)
+                            </button>
+                            <button type="button" id="tabBtnProximasNotif" onclick="cambiarTabNotif('proximas')" style="background:transparent;color:#64748b;border:none;padding:5px 12px;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;">
+                                <i class="ti ti-calendar-time"></i> Próximas (<?= count($proximasAlertas) ?>)
+                            </button>
+                        </div>
+                        
+                        <div class="notif-search-wrap" style="position:relative;flex:1;max-width:220px;min-width:140px;">
+                            <input type="text" id="filtroHistorialInput" placeholder="Buscar alerta..." oninput="filtrarHistorialNotif(this.value)" style="width:100%;padding:6px 10px 6px 28px;border-radius:8px;border:1px solid #cbd5e1;font-size:0.76rem;background:#f8fafc;" class="cfg-input">
+                            <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.85rem;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Contenido Tab 1: Historial Reciente -->
+                    <div id="panelHistorialNotif" style="display:block;max-height:360px;overflow-y:auto;padding-right:4px;">
+                        <?php if (empty($ultimasNotifs)): ?>
+                            <div style="text-align:center;padding:36px 16px;color:#94a3b8;">
+                                <i class="ti ti-bell-off" style="font-size:2.2rem;opacity:0.4;display:block;margin-bottom:8px;"></i>
+                                <span style="font-size:0.84rem;font-weight:600;">No hay registro de notificaciones enviadas aún.</span>
+                            </div>
+                        <?php else: ?>
+                            <div style="display:flex;flex-direction:column;gap:8px;">
+                                <?php foreach ($ultimasNotifs as $n): 
+                                    $esLeida = ((int)($n['leida'] ?? 0) === 1);
+                                    $esClic = !empty($n['clickeado_at']);
+                                    $tipoN = $n['tipo'] ?? 'info';
+                                    $rolN = $n['rol_nombre'] ?? 'Usuario';
+                                    $destinatario = !empty(trim($n['usuario_nombre'] ?? '')) ? trim($n['usuario_nombre']) : ($n['correo'] ?? 'Usuario');
+                                ?>
+                                <div class="notif-history-item" data-leida="<?= $esLeida ? '1' : '0' ?>" data-clic="<?= $esClic ? '1' : '0' ?>" data-search="<?= strtolower(htmlspecialchars(($n['titulo'] ?? '') . ' ' . $destinatario . ' ' . $tipoN)) ?>" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;display:flex;gap:12px;align-items:flex-start;transition:background .2s;">
+                                    <div style="width:34px;height:34px;border-radius:9px;background:<?= $esLeida ? '#eff6ff' : '#fef3c7' ?>;color:<?= $esLeida ? '#2563eb' : '#d97706' ?>;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">
+                                        <i class="ti <?= $tipoN === 'feriado_hoy' ? 'ti-calendar-event' : 'ti-bell' ?>"></i>
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px;">
+                                            <span style="font-size:0.84rem;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" class="cfg-hist-title"><?= htmlspecialchars($n['titulo'] ?? 'Alerta') ?></span>
+                                            <span style="font-size:0.7rem;color:#94a3b8;white-space:nowrap;"><?= date('d/m/Y H:i', strtotime($n['created_at'])) ?></span>
+                                        </div>
+                                        <div style="font-size:0.75rem;color:#64748b;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                                            <span>Para: <strong style="color:#334155;"><?= htmlspecialchars($destinatario) ?></strong></span>
+                                            <span style="font-size:0.65rem;font-weight:700;padding:1px 6px;border-radius:6px;background:#e2e8f0;color:#475569;"><?= htmlspecialchars($rolN) ?></span>
+                                        </div>
+                                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:0.7rem;">
+                                            <span style="padding:2px 7px;border-radius:6px;font-weight:700;background:<?= $esLeida ? '#dcfce7' : '#fee2e2' ?>;color:<?= $esLeida ? '#16a34a' : '#dc2626' ?>;">
+                                                <i class="ti <?= $esLeida ? 'ti-check' : 'ti-clock' ?>"></i> <?= $esLeida ? 'Leída ' . ($n['leido_at'] ? date('H:i', strtotime($n['leido_at'])) : '') : 'No leída' ?>
+                                            </span>
+                                            <?php if ($esClic): ?>
+                                                <span style="padding:2px 7px;border-radius:6px;font-weight:700;background:#f3e8ff;color:#9333ea;">
+                                                    <i class="ti ti-pointer"></i> Interacción <?= date('H:i', strtotime($n['clickeado_at'])) ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Contenido Tab 2: Próximas Alertas Programadas -->
+                    <div id="panelProximasNotif" style="display:none;max-height:360px;overflow-y:auto;padding-right:4px;">
+                        <?php if (empty($proximasAlertas)): ?>
+                            <div style="text-align:center;padding:36px 16px;color:#94a3b8;">
+                                <i class="ti ti-calendar-off" style="font-size:2.2rem;opacity:0.4;display:block;margin-bottom:8px;"></i>
+                                <span style="font-size:0.84rem;font-weight:600;">No hay alertas programadas para los próximos días.</span>
+                            </div>
+                        <?php else: ?>
+                            <div style="display:flex;flex-direction:column;gap:8px;">
+                                <?php foreach ($proximasAlertas as $pa): 
+                                    $badgeTiempo = $pa['dias_restantes'] === 0 ? '¡Hoy!' : ($pa['dias_restantes'] === 1 ? 'Mañana' : "En {$pa['dias_restantes']} días");
+                                    $bgTiempo = $pa['dias_restantes'] === 0 ? '#fee2e2' : ($pa['dias_restantes'] <= 3 ? '#fef3c7' : '#eff6ff');
+                                    $colorTiempo = $pa['dias_restantes'] === 0 ? '#dc2626' : ($pa['dias_restantes'] <= 3 ? '#d97706' : '#2563eb');
+                                ?>
+                                <div class="notif-proxima-item" data-search="<?= strtolower(htmlspecialchars($pa['titulo'] . ' ' . $pa['detalle'])) ?>" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;display:flex;gap:12px;align-items:center;transition:background .2s;">
+                                    <div style="width:38px;height:38px;border-radius:10px;background:#f5f3ff;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+                                        <i class="ti ti-calendar-event"></i>
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px;">
+                                            <span style="font-size:0.84rem;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" class="cfg-hist-title"><?= htmlspecialchars($pa['titulo']) ?></span>
+                                            <span style="font-size:0.72rem;font-weight:800;padding:2px 8px;border-radius:8px;background:<?= $bgTiempo ?>;color:<?= $colorTiempo ?>;white-space:nowrap;"><?= $badgeTiempo ?></span>
+                                        </div>
+                                        <div style="font-size:0.74rem;color:#64748b;"><?= htmlspecialchars($pa['detalle']) ?></div>
+                                        <div style="font-size:0.7rem;color:#94a3b8;margin-top:2px;"><i class="ti ti-calendar"></i> Fecha: <?= date('d/m/Y', strtotime($pa['fecha'])) ?></div>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Audiencia y Control de Usuarios Receptores -->
+                <div class="notif-box-panel" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;display:flex;flex-direction:column;min-width:0;">
+                    <div class="notif-header-flex" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+                        <div>
+                            <div style="font-size:0.92rem;font-weight:800;color:#1e293b;" class="cfg-hist-title">Receptores de Alertas</div>
+                            <div style="font-size:0.72rem;color:#64748b;font-weight:500;">Permisos de entrega por usuario activo (<?= count($notifUsers) ?> registrados)</div>
+                        </div>
+                        <div class="notif-search-wrap" style="position:relative;flex:1;max-width:200px;min-width:140px;">
+                            <input type="text" id="filtroUsuariosInput" placeholder="Buscar usuario..." oninput="filtrarUsuariosNotif(this.value)" style="width:100%;padding:6px 10px 6px 28px;border-radius:8px;border:1px solid #cbd5e1;font-size:0.76rem;background:#f8fafc;" class="cfg-input">
+                            <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.85rem;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Lista Visible de Usuarios con Switch Granular -->
+                    <div style="max-height:360px;overflow-y:auto;padding-right:4px;">
+                        <?php if (empty($notifUsers)): ?>
+                            <div style="text-align:center;padding:36px 16px;color:#94a3b8;">
+                                <i class="ti ti-users-minus" style="font-size:2.2rem;opacity:0.4;display:block;margin-bottom:8px;"></i>
+                                <span style="font-size:0.84rem;font-weight:600;">No hay usuarios activos registrados.</span>
+                            </div>
+                        <?php else: ?>
+                            <div style="display:flex;flex-direction:column;gap:8px;">
+                                <?php foreach ($notifUsers as $u): 
+                                    $uId = (int)$u['id'];
+                                    $uHab = ((int)($u['notificaciones_habilitadas'] ?? 1) === 1);
+                                    $uNombre = !empty(trim($u['nombre_completo'] ?? '')) ? trim($u['nombre_completo']) : 'Usuario #' . $uId;
+                                    $uRol = $u['rol_nombre'] ?? 'Usuario';
+                                    $uInicial = strtoupper(substr($uNombre, 0, 1));
+                                    $rolColor = ($u['rol_id'] == 1 || $u['rol_id'] == 0) ? '#2563eb' : ($u['rol_id'] == 2 ? '#059669' : '#7c3aed');
+                                    $rolBg = ($u['rol_id'] == 1 || $u['rol_id'] == 0) ? '#eff6ff' : ($u['rol_id'] == 2 ? '#f0fdf4' : '#f5f3ff');
+                                ?>
+                                <div class="notif-user-card" data-search="<?= strtolower(htmlspecialchars($uNombre . ' ' . ($u['correo'] ?? '') . ' ' . $uRol)) ?>" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:background .2s;">
+                                    <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+                                        <div style="width:36px;height:36px;border-radius:50%;background:<?= $rolBg ?>;color:<?= $rolColor ?>;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;flex-shrink:0;">
+                                            <?= $uInicial ?>
+                                        </div>
+                                        <div style="min-width:0;flex:1;">
+                                            <div style="display:flex;align-items:center;gap:6px;">
+                                                <span style="font-size:0.84rem;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" class="cfg-hist-title"><?= htmlspecialchars($uNombre) ?></span>
+                                                <span style="font-size:0.65rem;font-weight:700;padding:1px 6px;border-radius:6px;background:<?= $rolBg ?>;color:<?= $rolColor ?>;white-space:nowrap;"><?= htmlspecialchars($uRol) ?></span>
+                                            </div>
+                                            <div style="font-size:0.73rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($u['correo'] ?? '') ?></div>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                                        <label class="cfg-toggle-wrap" style="margin:0;" title="<?= $uHab ? 'Notificaciones activas para este usuario' : 'Notificaciones silenciadas' ?>">
+                                            <input type="checkbox" onchange="toggleUserNotif(<?= $uId ?>, this)" <?= $uHab ? 'checked' : '' ?>>
+                                            <span class="cfg-toggle-track"></span>
+                                            <span class="cfg-toggle-dot"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div><!-- /Fila 5 -->
@@ -1520,11 +1938,11 @@ $hoy             = date('Y-m-d');
                             <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#059669;margin-left:-4px;"></span>
                             Salud Pública Esmeralda
                         </button>
-                        <button type="button" onclick="aplicarPresetColor('#312e81', '#6366f1', this)" class="preset-theme-btn"
+                        <button type="button" onclick="aplicarPresetColor('#4c1d95', '#7c3aed', this)" class="preset-theme-btn"
                             style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
-                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#312e81;"></span>
-                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#6366f1;margin-left:-4px;"></span>
-                            Índigo Ejecutivo
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#4c1d95;"></span>
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#7c3aed;margin-left:-4px;"></span>
+                            Morado / Violeta Eléctrico
                         </button>
                         <button type="button" onclick="aplicarPresetColor('#0f172a', '#0284c7', this)" class="preset-theme-btn"
                             style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
@@ -1602,69 +2020,77 @@ $hoy             = date('Y-m-d');
                 </div>
             </div>
 
-            <!-- Lista de Emblemas -->
-            <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px;">
+            <!-- Grid Armónico 2x2 de Emblemas -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));gap:12px;margin-top:14px;">
 
                 <!-- 1. Logo Principal -->
-                <div class="cfg-emblem-row" style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
-                    <div class="cfg-emblem-thumb" style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
-                        <img src="<?= URLROOT ?>/img/logo.png?v=<?= time() ?>" alt="Logo Principal" style="max-width:100%;max-height:100%;object-fit:contain;">
+                <div class="cfg-emblem-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;transition:all .15s;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="cfg-emblem-thumb" style="width:60px;height:48px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                            <img src="<?= URLROOT ?>/img/logo.png?v=<?= time() ?>" alt="Logo Principal" style="max-width:100%;max-height:100%;object-fit:contain;">
+                        </div>
+                        <div style="min-width:0;flex:1;">
+                            <div class="cfg-emblem-title" style="font-weight:800;font-size:0.86rem;color:#1e293b;line-height:1.2;">Logo SGP / ISP</div>
+                            <div class="cfg-emblem-file" style="font-size:0.68rem;color:#64748b;margin-top:4px;">Archivo: <code>logo.png</code></div>
+                        </div>
                     </div>
-                    <div style="flex:1;min-width:0;">
-                        <div class="cfg-emblem-title" style="font-weight:800;font-size:0.88rem;color:#1e293b;">Logo Principal SGP / ISP</div>
-                        <div class="cfg-emblem-desc" style="font-size:0.74rem;color:#64748b;margin-top:2px;">Visible en la cabecera, sidebar y pantalla de inicio de sesión</div>
-                        <div class="cfg-emblem-file" style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>logo.png</code> (PNG con fondo transparente recomendado)</div>
-                    </div>
+                    <div class="cfg-emblem-desc" style="font-size:0.72rem;color:#64748b;line-height:1.35;">Cabecera, barra lateral y pantalla de acceso.</div>
                     <button type="button" onclick="abrirModalLogo('logo_principal')" class="cfg-emblem-btn"
-                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;">
+                        style="width:100%;padding:7px 12px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:8px;font-size:0.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;">
                         <i class="ti ti-upload"></i> Cambiar
                     </button>
                 </div>
 
                 <!-- 2. Cintillo Oficial PDF -->
-                <div class="cfg-emblem-row" style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
-                    <div class="cfg-emblem-thumb" style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
-                        <img src="<?= URLROOT ?>/img/cintillo-salud.png?v=<?= time() ?>" alt="Cintillo Oficial para Reportes" style="max-width:100%;max-height:100%;object-fit:contain;">
+                <div class="cfg-emblem-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;transition:all .15s;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="cfg-emblem-thumb" style="width:60px;height:48px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                            <img src="<?= URLROOT ?>/img/cintillo-salud.png?v=<?= time() ?>" alt="Cintillo Reportes" style="max-width:100%;max-height:100%;object-fit:contain;">
+                        </div>
+                        <div style="min-width:0;flex:1;">
+                            <div class="cfg-emblem-title" style="font-weight:800;font-size:0.86rem;color:#1e293b;line-height:1.2;">Cintillo PDF</div>
+                            <div class="cfg-emblem-file" style="font-size:0.68rem;color:#64748b;margin-top:4px;">Archivo: <code>cintillo-salud.png</code></div>
+                        </div>
                     </div>
-                    <div style="flex:1;min-width:0;">
-                        <div class="cfg-emblem-title" style="font-weight:800;font-size:0.88rem;color:#1e293b;">Cintillo Oficial para Reportes</div>
-                        <div class="cfg-emblem-desc" style="font-size:0.74rem;color:#64748b;margin-top:2px;">Encabezado ministerial en reportes, constancias y planillas PDF</div>
-                        <div class="cfg-emblem-file" style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>cintillo-salud.png</code> (Proporción panorámica)</div>
-                    </div>
+                    <div class="cfg-emblem-desc" style="font-size:0.72rem;color:#64748b;line-height:1.35;">Cabecera en constancias y planillas PDF.</div>
                     <button type="button" onclick="abrirModalLogo('cintillo')" class="cfg-emblem-btn"
-                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;">
+                        style="width:100%;padding:7px 12px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:8px;font-size:0.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;">
                         <i class="ti ti-upload"></i> Cambiar
                     </button>
                 </div>
 
-                <!-- 3. Cintillo Oficial del Sistema (Login / Web) -->
-                <div class="cfg-emblem-row" style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
-                    <div class="cfg-emblem-thumb" style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
-                        <img src="<?= URLROOT ?>/img/cintillo.png?v=<?= time() ?>" alt="Cintillo Oficial del Sistema" style="max-width:100%;max-height:100%;object-fit:contain;">
+                <!-- 3. Cintillo Oficial del Sistema -->
+                <div class="cfg-emblem-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;transition:all .15s;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="cfg-emblem-thumb" style="width:60px;height:48px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                            <img src="<?= URLROOT ?>/img/cintillo.png?v=<?= time() ?>" alt="Cintillo Sistema" style="max-width:100%;max-height:100%;object-fit:contain;">
+                        </div>
+                        <div style="min-width:0;flex:1;">
+                            <div class="cfg-emblem-title" style="font-weight:800;font-size:0.86rem;color:#1e293b;line-height:1.2;">Cintillo Ministerial</div>
+                            <div class="cfg-emblem-file" style="font-size:0.68rem;color:#64748b;margin-top:4px;">Archivo: <code>cintillo.png</code></div>
+                        </div>
                     </div>
-                    <div style="flex:1;min-width:0;">
-                        <div class="cfg-emblem-title" style="font-weight:800;font-size:0.88rem;color:#1e293b;">Cintillo Oficial del Sistema</div>
-                        <div class="cfg-emblem-desc" style="font-size:0.74rem;color:#64748b;margin-top:2px;">Encabezado superior visible en la pantalla de inicio de sesión (Login) y vistas del sistema</div>
-                        <div class="cfg-emblem-file" style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>cintillo.png</code> (Proporción horizontal web)</div>
-                    </div>
+                    <div class="cfg-emblem-desc" style="font-size:0.72rem;color:#64748b;line-height:1.35;">Login institucional y portada del sistema.</div>
                     <button type="button" onclick="abrirModalLogo('cintillo_sistema')" class="cfg-emblem-btn"
-                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;">
+                        style="width:100%;padding:7px 12px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:8px;font-size:0.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;">
                         <i class="ti ti-upload"></i> Cambiar
                     </button>
                 </div>
 
                 <!-- 4. Logo Gobernación -->
-                <div class="cfg-emblem-row" style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;transition:all .15s;">
-                    <div class="cfg-emblem-thumb" style="width:68px;height:52px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
-                        <img src="<?= URLROOT ?>/img/gobe.png?v=<?= time() ?>" alt="Gobernación" style="max-width:100%;max-height:100%;object-fit:contain;">
+                <div class="cfg-emblem-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;transition:all .15s;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="cfg-emblem-thumb" style="width:60px;height:48px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                            <img src="<?= URLROOT ?>/img/gobe.png?v=<?= time() ?>" alt="Gobernación" style="max-width:100%;max-height:100%;object-fit:contain;">
+                        </div>
+                        <div style="min-width:0;flex:1;">
+                            <div class="cfg-emblem-title" style="font-weight:800;font-size:0.86rem;color:#1e293b;line-height:1.2;">Gobernación Bolívar</div>
+                            <div class="cfg-emblem-file" style="font-size:0.68rem;color:#64748b;margin-top:4px;">Archivo: <code>gobe.png</code></div>
+                        </div>
                     </div>
-                    <div style="flex:1;min-width:0;">
-                        <div class="cfg-emblem-title" style="font-weight:800;font-size:0.88rem;color:#1e293b;">Logo de la Gobernación de Bolívar</div>
-                        <div class="cfg-emblem-desc" style="font-size:0.74rem;color:#64748b;margin-top:2px;">Emblema gubernamental del estado aplicado en documentos institucionales</div>
-                        <div class="cfg-emblem-file" style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Archivo: <code>gobe.png</code> (PNG transparente)</div>
-                    </div>
+                    <div class="cfg-emblem-desc" style="font-size:0.72rem;color:#64748b;line-height:1.35;">Emblema gubernamental del estado.</div>
                     <button type="button" onclick="abrirModalLogo('gobernacion')" class="cfg-emblem-btn"
-                        style="padding:8px 14px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;">
+                        style="width:100%;padding:7px 12px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:8px;font-size:0.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;">
                         <i class="ti ti-upload"></i> Cambiar
                     </button>
                 </div>
@@ -1673,6 +2099,126 @@ $hoy             = date('Y-m-d');
         </div>
 
     </div><!-- /Fila 6 -->
+
+    <!-- ===== FILA 7: Servidor de Correo Electrónico Institucional (SMTP) & Biometría ===== -->
+    <div class="cfg-grid" id="correo">
+
+        <!-- CARD: Servidor SMTP de Correo Institucional (Centralizado) -->
+        <div class="cfg-card cg-8" style="border-top:4px solid #2563eb;">
+            <div class="cfg-card-header" style="flex-wrap:wrap;gap:12px;">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#eff6ff;color:#2563eb;">
+                        <i class="ti ti-mail" style="font-size:1.25rem;"></i>
+                    </div>
+                    <div>
+                        <div class="cfg-card-heading" style="font-weight:800;font-size:1.05rem;color:#1e293b;">
+                            Servidor de Correo Institucional (SMTP Relay)
+                        </div>
+                        <div class="cfg-card-subheading" style="font-size:0.75rem;color:#64748b;font-weight:500;margin-top:2px;">
+                            Despacho de alertas biométricas, evaluaciones y notificaciones oficiales
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <?php if (!empty($data['smtp']['activo'])): ?>
+                        <span class="cfg-badge" style="background:#dcfce7;color:#15803d;padding:5px 12px;font-weight:800;">
+                            <i class="ti ti-circle-check me-1"></i> SMTP Habilitado
+                        </span>
+                    <?php else: ?>
+                        <span class="cfg-badge" style="background:#fef3c7;color:#b45309;padding:5px 12px;font-weight:800;">
+                            <i class="ti ti-info-circle me-1"></i> Modo Simulación (Logs)
+                        </span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;padding:24px;margin-top:16px;">
+                <div style="display:flex;align-items:flex-start;gap:18px;">
+                    <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg, #2563eb, #1d4ed8);display:flex;align-items:center;justify-content:center;color:#ffffff;font-size:1.5rem;flex-shrink:0;box-shadow:0 6px 16px rgba(37,99,235,0.3);">
+                        <i class="ti ti-mail-cog"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <h4 style="margin:0;font-size:1rem;font-weight:800;color:#0f172a;">
+                                Módulo Centralizado de Notificaciones y Correos
+                            </h4>
+                            <span style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;">
+                                <i class="ti ti-shield-check me-1"></i> Exclusivo Super Administrador
+                            </span>
+                        </div>
+                        <p style="margin:8px 0 16px;font-size:0.84rem;color:#475569;line-height:1.55;">
+                            La configuración técnica del servidor SMTP (credenciales Gmail, host, puertos, cifrado TLS/SSL y diagnósticos en vivo) ha sido migrada al módulo especializado para mayor seguridad y control estricto de accesos.
+                        </p>
+                        
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:14px;border-top:1px solid #e2e8f0;">
+                            <div style="font-size:0.80rem;color:#64748b;">
+                                <strong>Host Activo:</strong> <?= htmlspecialchars($data['smtp']['host'] ?? 'smtp.gmail.com') ?> &bull; 
+                                <strong>Usuario:</strong> <?= htmlspecialchars($data['smtp']['user'] ?? 'sgp.ispeb@gmail.com') ?>
+                            </div>
+                            
+                            <a href="<?= URLROOT ?>/notificaciones/correos#smtp_card" style="padding:10px 22px;background:linear-gradient(135deg, #1e3a8a, #2563eb);color:#ffffff;text-decoration:none;border-radius:10px;font-size:0.84rem;font-weight:700;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(37,99,235,0.25);transition:all .2s;">
+                                <i class="ti ti-external-link"></i> Gestionar Servidor SMTP y Reglas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD: Seguridad Biométrica y Acceso Rápido -->
+        <div class="cfg-card cg-4" style="border-top:4px solid #16a34a;">
+            <div class="cfg-card-header">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#f0fdf4;color:#16a34a;">
+                        <i class="ti ti-fingerprint" style="font-size:1.25rem;"></i>
+                    </div>
+                    <div>
+                        <div class="cfg-card-heading" style="font-weight:800;font-size:1.05rem;color:#1e293b;">
+                            Seguridad Biométrica
+                        </div>
+                        <div class="cfg-card-subheading" style="font-size:0.75rem;color:#64748b;font-weight:500;margin-top:2px;">
+                            Acceso móvil sin contraseña
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Métricas Bento Biometría -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;margin-bottom:16px;">
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;text-align:center;">
+                    <div style="font-size:1.4rem;font-weight:900;color:#16a34a;">
+                        <?= (int)($data['biometriaStats']['total_dispositivos'] ?? 0) ?>
+                    </div>
+                    <div style="font-size:0.7rem;color:#64748b;font-weight:700;text-transform:uppercase;margin-top:2px;">Dispositivos Registrados</div>
+                </div>
+
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;text-align:center;">
+                    <div style="font-size:1.4rem;font-weight:900;color:#2563eb;">
+                        <?= (int)($data['biometriaStats']['usuarios_con_huella'] ?? 0) ?>
+                    </div>
+                    <div style="font-size:0.7rem;color:#64748b;font-weight:700;text-transform:uppercase;margin-top:2px;">Usuarios con Huella</div>
+                </div>
+            </div>
+
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px;margin-bottom:16px;">
+                <div style="display:flex;align-items:center;gap:6px;font-weight:700;font-size:0.82rem;color:#1e3a8a;margin-bottom:4px;">
+                    <i class="ti ti-shield-lock" style="color:#2563eb;font-size:1.1rem;"></i> Protocolo WebAuthn / FIDO2
+                </div>
+                <div style="font-size:0.75rem;color:#334155;line-height:1.45;">
+                    Permite a pasantes, tutores y directivos autenticarse tocando el lector de huellas o Face ID en su smartphone de forma instantánea.
+                </div>
+            </div>
+
+            <!-- Acceso Directo al Perfil -->
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:auto;">
+                <a href="<?= URLROOT ?>/perfil/ver" style="padding:10px 14px;background:linear-gradient(135deg, #16a34a 0%, #059669 100%);color:white;border-radius:10px;text-decoration:none;font-weight:700;font-size:0.84rem;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(22,163,74,0.25);">
+                    <i class="ti ti-fingerprint"></i> Configurar Mi Huella en Mi Perfil
+                </a>
+            </div>
+        </div>
+
+    </div><!-- /Fila 7 -->
 
 </div><!-- /container -->
 
@@ -2134,12 +2680,18 @@ $hoy             = date('Y-m-d');
         });
     }
 
-    // ── Spin animation ─────────────────────────────────────
-    const styleEl = document.createElement('style');
-    styleEl.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
-    document.head.appendChild(styleEl);
+    // ── Spin animation (encapsulado para PJAX) ─────────────
+    (function() {
+        if (!document.getElementById('sgp-spin-style')) {
+            var s = document.createElement('style');
+            s.id = 'sgp-spin-style';
+            s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+            document.head.appendChild(s);
+        }
+    })();
 </script>
 
+<script src="<?= URLROOT ?>/js/qrcode.min.js"></script>
 <script>
     // ── Flash messages ──────────────────────────────────────────
     <?php if ($flashSuccess): ?>
@@ -2235,6 +2787,247 @@ $hoy             = date('Y-m-d');
             applyState(toggle.checked); // estado inicial visual
         }
     })();
+
+    // ── Geocerca GPS toggle (Modo Pruebas) ───────────────────────
+    (function () {
+        const toggle = document.getElementById('geocercaToggle');
+        const badge = document.getElementById('geocercaStatusBadge');
+        const icon = document.getElementById('geocercaStatusIcon');
+        const text = document.getElementById('geocercaStatusText');
+        const sub = document.getElementById('geocercaStatusSub');
+
+        function applyGeoState(active) {
+            if (!badge || !icon || !text || !sub) return;
+            if (active) {
+                badge.style.background = '#e0f2fe';
+                icon.className = 'ti ti-shield-check';
+                icon.style.color = '#0284c7';
+                text.style.color = '#0369a1';
+                text.textContent = 'Restricción GPS activa';
+                sub.style.color = '#075985';
+                sub.textContent = 'Solo se permite marcar dentro del radio de 200m de la institución';
+            } else {
+                badge.style.background = '#fef3c7';
+                icon.className = 'ti ti-shield-off';
+                icon.style.color = '#d97706';
+                text.style.color = '#92400e';
+                text.textContent = 'Modo Pruebas (GPS Desactivado)';
+                sub.style.color = '#78350f';
+                sub.textContent = 'Permite marcar asistencia desde cualquier ubicación (ideal para pruebas)';
+            }
+        }
+
+        if (toggle) {
+            toggle.addEventListener('change', function () {
+                const nuevoEstado = this.checked ? 1 : 0;
+
+                fetch('<?= URLROOT ?>/configuracion/toggleGeocerca', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: 'activo=' + nuevoEstado
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        applyGeoState(nuevoEstado === 1);
+                        NotificationService.success(data.message);
+                    } else {
+                        toggle.checked = !toggle.checked;
+                        NotificationService.error(data.message || 'Error al cambiar geocerca');
+                    }
+                })
+                .catch(() => {
+                    toggle.checked = !toggle.checked;
+                    NotificationService.error('Error de conexión al cambiar geocerca.');
+                });
+            });
+
+            applyGeoState(toggle.checked);
+        }
+    })();
+
+    // ── Regenerar Token QR del Kiosco (Fase 5) ───────────────────
+    function regenerarTokenQr(btn) {
+        Swal.fire({
+            icon: 'warning',
+            title: '¿Regenerar Cartel QR?',
+            html: 'Al generar un nuevo código, el cartel QR actual en la oficina <strong>dejará de funcionar de inmediato</strong>.<br><br><small style="color:#64748b;">Deberás imprimir el nuevo cartel y colocarlo en la sede del ISPEB.</small>',
+            showCancelButton: true,
+            confirmButtonColor: '#1e3a8a',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="ti ti-refresh"></i> Sí, regenerar token',
+            cancelButtonText: 'Cancelar'
+        }).then((res) => {
+            if (!res.isConfirmed) return;
+
+            btn.disabled = true;
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ti ti-loader spinner"></i>';
+
+            const formData = new FormData();
+            formData.append('_csrf', '<?= CsrfHelper::generate() ?>');
+
+            fetch('<?= URLROOT ?>/configuracion/regenerarQrToken', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(d => {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+
+                if (d.success) {
+                    const dispEl = document.getElementById('displayQrToken');
+                    if (dispEl) dispEl.textContent = d.nuevo_token;
+                    const badgeEl = document.getElementById('tokenBadgeHeader');
+                    if (badgeEl) badgeEl.textContent = d.nuevo_token;
+
+                    renderMiniQr(d.nuevo_token);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Token Regenerado!',
+                        html: `Nuevo Token: <code>${d.nuevo_token}</code><br><br>${d.message}`,
+                        confirmButtonText: '<i class="ti ti-printer"></i> Ver Cartel para Imprimir',
+                        showCancelButton: true,
+                        cancelButtonText: 'Cerrar',
+                        confirmButtonColor: '#10b981',
+                        cancelButtonColor: '#64748b'
+                    }).then((r2) => {
+                        if (r2.isConfirmed) {
+                            window.open('<?= URLROOT ?>/configuracion/cartelQr', '_blank');
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: d.message || 'No se pudo regenerar el token.',
+                        confirmButtonColor: '#1e3a8a'
+                    });
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de red',
+                    text: 'No se pudo comunicar con el servidor.',
+                    confirmButtonColor: '#1e3a8a'
+                });
+            });
+        });
+    }
+
+    // ── Gestión de URL Pública / Túnel para Cartel QR ───────────
+    let cfgCurrentBaseUrl = "<?= !empty($data['urlPublica']) ? htmlspecialchars($data['urlPublica']) : rtrim(URLROOT, '/') ?>";
+
+    function guardarUrlPublica(btn) {
+        const input = document.getElementById('cfgUrlPublicaInput');
+        const urlVal = input ? input.value.trim() : '';
+
+        btn.disabled = true;
+        const origHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="ti ti-loader spinner"></i>';
+
+        const formData = new FormData();
+        formData.append('_csrf', '<?= CsrfHelper::generate() ?>');
+        formData.append('url_publica', urlVal);
+
+        fetch('<?= URLROOT ?>/configuracion/guardarUrlPublica', {
+            method: 'POST',
+            body: formData
+        })
+        .then(r => r.json())
+        .then(d => {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+
+            if (d.success) {
+                cfgCurrentBaseUrl = d.url_efectiva;
+                const lbl = document.getElementById('cfgEffectiveUrlLabel');
+                if (lbl) lbl.textContent = cfgCurrentBaseUrl;
+
+                const tokenVal = document.getElementById('tokenBadgeHeader')?.textContent.trim() || '<?= htmlspecialchars($data['kioscoQrToken'] ?? 'ISPEB-ASIST-2026-HQ') ?>';
+                renderMiniQr(tokenVal);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'URL de Red Configurada',
+                    text: d.message,
+                    confirmButtonColor: '#1e3a8a',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: d.message || 'No se pudo guardar la URL.',
+                    confirmButtonColor: '#1e3a8a'
+                });
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo comunicar con el servidor.',
+                confirmButtonColor: '#1e3a8a'
+            });
+        });
+    }
+
+    function restablecerUrlLocal() {
+        const input = document.getElementById('cfgUrlPublicaInput');
+        if (input) input.value = '';
+        guardarUrlPublica(document.querySelector('button[onclick="guardarUrlPublica(this)"]'));
+    }
+
+    // ── Mini QR Code en la cabecera de Configuración (Auto-reintento robusto para PJAX) ──
+    let miniQrObj = null;
+    function renderMiniQr(token) {
+        const el = document.getElementById("cfgMiniQr");
+        if (!el) return;
+
+        let attempts = 0;
+        function tryRender() {
+            if (typeof QRCode === 'undefined') {
+                attempts++;
+                if (attempts < 30) {
+                    setTimeout(tryRender, 60);
+                }
+                return;
+            }
+            el.innerHTML = '';
+            let targetBase = (typeof cfgCurrentBaseUrl !== 'undefined' && cfgCurrentBaseUrl ? cfgCurrentBaseUrl : URLROOT).replace(/\/+$/, '');
+            if (!targetBase.toLowerCase().endsWith('/sgp')) {
+                targetBase += '/SGP';
+            }
+            try {
+                miniQrObj = new QRCode(el, {
+                    text: targetBase + "/auth/login?token=" + encodeURIComponent(token),
+                    width: 124,
+                    height: 124,
+                    colorDark: "#0f172a",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            } catch(e) {
+                console.warn('[SGP-QR] Error al generar mini QR:', e);
+            }
+        }
+        tryRender();
+    }
+
+    const _kioscoTokenActual = "<?= htmlspecialchars($data['kioscoQrToken'] ?? 'ISPEB-ASIST-2026-HQ') ?>";
+    renderMiniQr(_kioscoTokenActual);
+    document.addEventListener('DOMContentLoaded', () => renderMiniQr(_kioscoTokenActual));
+    document.addEventListener('pjax:complete', () => renderMiniQr(_kioscoTokenActual));
+    document.addEventListener('sgp:pjax-success', () => renderMiniQr(_kioscoTokenActual));
 </script>
 
 <!-- ═══════════════════════════════════════════════════════
@@ -2770,20 +3563,87 @@ $hoy             = date('Y-m-d');
         });
     }
 
-    // ── Filtro rápido de usuarios en modal ─────────────────
-    function filtrarUsuariosNotif(input) {
-        const query = (input.value || '').toLowerCase().trim();
-        const filas = document.querySelectorAll('.user-notif-row');
-        filas.forEach(f => {
-            const txt = (f.textContent || '').toLowerCase();
-            f.style.display = txt.includes(query) ? '' : 'none';
+    // ── Notificaciones: Tabs (Historial vs Próximas) ────────
+    function cambiarTabNotif(tab) {
+        const btnHist = document.getElementById('tabBtnHistorialNotif');
+        const btnProx = document.getElementById('tabBtnProximasNotif');
+        const panelHist = document.getElementById('panelHistorialNotif');
+        const panelProx = document.getElementById('panelProximasNotif');
+
+        if (tab === 'historial') {
+            if (btnHist) {
+                btnHist.style.background = '#ffffff';
+                btnHist.style.color = '#1e293b';
+                btnHist.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+            }
+            if (btnProx) {
+                btnProx.style.background = 'transparent';
+                btnProx.style.color = '#64748b';
+                btnProx.style.boxShadow = 'none';
+            }
+            if (panelHist) panelHist.style.display = 'block';
+            if (panelProx) panelProx.style.display = 'none';
+        } else {
+            if (btnProx) {
+                btnProx.style.background = '#ffffff';
+                btnProx.style.color = '#1e293b';
+                btnProx.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+            }
+            if (btnHist) {
+                btnHist.style.background = 'transparent';
+                btnHist.style.color = '#64748b';
+                btnHist.style.boxShadow = 'none';
+            }
+            if (panelHist) panelHist.style.display = 'none';
+            if (panelProx) panelProx.style.display = 'block';
+        }
+    }
+
+    // ── Filtro rápido de historial y próximas ───────────────
+    function filtrarHistorialNotif(val) {
+        const q = (val || '').toLowerCase().trim();
+        document.querySelectorAll('.notif-history-item, .notif-proxima-item').forEach(el => {
+            const searchData = el.getAttribute('data-search') || '';
+            el.style.display = searchData.includes(q) ? 'flex' : 'none';
+        });
+    }
+
+    // ── Filtrado interactivo por Tarjetas KPI (Todas / Leídas / Clics) ──
+    function filtrarNotifsPorEstado(filtro) {
+        cambiarTabNotif('historial');
+        document.querySelectorAll('.cfg-kpi-subcard').forEach(c => c.style.boxShadow = 'none');
+        const kpiActive = document.getElementById('kpi-' + filtro);
+        if (kpiActive) {
+            kpiActive.style.boxShadow = '0 0 0 2px #3b82f6, 0 6px 16px rgba(59,130,246,0.25)';
+        }
+
+        const inputBusqueda = document.getElementById('filtroHistorialInput');
+        if (inputBusqueda) inputBusqueda.value = '';
+
+        document.querySelectorAll('.notif-history-item').forEach(el => {
+            if (filtro === 'todas') {
+                el.style.display = 'flex';
+            } else if (filtro === 'leidas') {
+                el.style.display = (el.getAttribute('data-leida') === '1') ? 'flex' : 'none';
+            } else if (filtro === 'clics') {
+                el.style.display = (el.getAttribute('data-clic') === '1') ? 'flex' : 'none';
+            }
+        });
+    }
+
+    // ── Filtro rápido de usuarios receptores ────────────────
+    function filtrarUsuariosNotif(val) {
+        const q = (val || '').toLowerCase().trim();
+        document.querySelectorAll('.notif-user-card').forEach(el => {
+            const searchData = el.getAttribute('data-search') || '';
+            el.style.display = searchData.includes(q) ? 'flex' : 'none';
         });
     }
 
     // ── Branding y Personalización de Tema (Fase 5) ──────────
-    const colorOriginalPrimario = '<?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>';
-    const colorOriginalAcento   = '<?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>';
-    let hayCambiosSinGuardar = false;
+    var colorOriginalPrimario = '<?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>';
+    var colorOriginalAcento   = '<?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>';
+    var hayCambiosSinGuardar = false;
 
     function sincronizarColor(tipo, val) {
         if (!val) return;
@@ -2856,13 +3716,33 @@ $hoy             = date('Y-m-d');
         if (activado) {
             if (label) label.innerHTML = '<i class="ti ti-eye-check" style="color:#34d399;"></i> Proyectando en vivo';
             proyectarEnInterfaz(cp, ca);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'Vista previa proyectada en la interfaz',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }
         } else {
             if (label) label.innerHTML = '<i class="ti ti-eye"></i> Proyectar en la interfaz';
-            proyectarEnInterfaz(colorOriginalPrimario, colorOriginalAcento);
+            proyectarEnInterfaz(colorOriginalPrimario, colorOriginalAcento, true);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Vista previa restaurada',
+                    showConfirmButton: false,
+                    timer: 1600
+                });
+            }
         }
     }
 
-    function proyectarEnInterfaz(cp, ca) {
+    function proyectarEnInterfaz(cp, ca, restaurar = false) {
         // Variables globales en :root
         document.documentElement.style.setProperty('--color-primary', cp);
         document.documentElement.style.setProperty('--color-accent-brand', ca);
@@ -2877,17 +3757,43 @@ $hoy             = date('Y-m-d');
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || document.documentElement.classList.contains('dark');
         const sidebar = document.querySelector('.main-sidebar');
         if (sidebar) {
-            if (!isDark) {
-                sidebar.style.background = 'linear-gradient(180deg, ' + ca + ' 0%, ' + cp + ' 50%, ' + cp + ' 100%)';
+            if (restaurar) {
+                sidebar.style.removeProperty('background');
+            } else if (!isDark) {
+                sidebar.style.setProperty('background', 'linear-gradient(180deg, ' + ca + ' 0%, ' + cp + ' 50%, ' + cp + ' 100%)', 'important');
             } else {
-                sidebar.style.background = '';
+                sidebar.style.setProperty('background', 'linear-gradient(180deg, #090e1a 0%, ' + cp + '33 50%, #070b14 100%)', 'important');
             }
         }
+
+        // Proyectar en botón primario de configuración
+        document.querySelectorAll('.cfg-btn-primary').forEach(btn => {
+            if (restaurar) {
+                btn.style.removeProperty('background');
+            } else {
+                btn.style.setProperty('background', 'linear-gradient(135deg, ' + cp + ', ' + ca + ')', 'important');
+            }
+        });
+
+        // Sincronizar dock móvil (FAB central y acentos activos)
+        document.querySelectorAll('.dock-fab').forEach(fab => {
+            if (restaurar) {
+                fab.style.removeProperty('background');
+            } else {
+                fab.style.setProperty('background', 'linear-gradient(135deg, ' + cp + ' 0%, ' + cp + ' 45%, ' + ca + ' 100%)', 'important');
+            }
+        });
 
         // Sincronizar acentos del menú lateral (indicador activo e íconos)
         document.querySelectorAll('.main-sidebar .nav-item > a.active, .main-sidebar .nav-link.active').forEach(el => {
             const icon = el.querySelector('i');
-            if (icon) icon.style.color = ca;
+            if (icon) {
+                if (restaurar) {
+                    icon.style.removeProperty('color');
+                } else {
+                    icon.style.setProperty('color', ca, 'important');
+                }
+            }
         });
     }
 
@@ -3298,4 +4204,85 @@ $hoy             = date('Y-m-d');
         </form>
 
     </div>
-</div>
+</div>
+
+<!-- Scripts de Diagnóstico SMTP y Biometría -->
+<script>
+function toggleInputPass(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'ti ti-eye-off';
+    } else {
+        input.type = 'password';
+        icon.className = 'ti ti-eye';
+    }
+}
+
+async function ejecutarPruebaSmtp() {
+    const emailInput = document.getElementById('emailPruebaSmtp');
+    const email = emailInput ? emailInput.value.trim() : '';
+
+    if (!email) {
+        if (window.Swal) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Correo Requerido',
+                text: 'Por favor, ingresa una dirección de correo para recibir el mensaje de prueba.',
+                confirmButtonColor: '#2563eb'
+            });
+        } else {
+            alert('Por favor, ingresa una dirección de correo para recibir el mensaje de prueba.');
+        }
+        return;
+    }
+
+    const btn = document.getElementById('btnProbarSmtp');
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader-2 ti-spin me-1"></i> Transmitiendo prueba...';
+
+    const fd = new FormData();
+    fd.append('email_destino', email);
+    fd.append('_csrf', '<?= Session::getCsrfToken() ?>');
+
+    try {
+        const resp = await fetch('<?= URLROOT ?>/configuracion/probarSmtp', {
+            method: 'POST',
+            body: fd
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+            if (window.Swal) {
+                Swal.fire({
+                    icon: res.simulated ? 'info' : 'success',
+                    title: res.simulated ? 'Modo Simulación (Logs)' : '¡Conexión Exitosa!',
+                    text: res.message,
+                    confirmButtonColor: '#16a34a'
+                });
+            } else {
+                alert(res.message);
+            }
+        } else {
+            throw new Error(res.message || 'Error transmitiendo mensaje');
+        }
+    } catch (err) {
+        if (window.Swal) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Fallo de Envío SMTP',
+                text: err.message,
+                confirmButtonColor: '#2563eb'
+            });
+        } else {
+            alert(err.message);
+        }
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+}
+</script>

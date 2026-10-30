@@ -20,7 +20,12 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
     overflow: hidden;
     animation: fpSGPSlideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 99999 !important;
+    z-index: 100000000 !important;
+}
+
+.flatpickr-calendar.open,
+.flatpickr-calendar.animate.open {
+    z-index: 100000000 !important;
 }
 
 @keyframes fpSGPSlideIn {

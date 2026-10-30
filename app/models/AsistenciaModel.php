@@ -50,6 +50,7 @@ class AsistenciaModel
             WHERE  u.rol_id = 3
               $whereTutor
               AND  (u.cedula LIKE :busqueda OR dp.nombres LIKE :busqueda OR dp.apellidos LIKE :busqueda)
+            GROUP BY u.id
             ORDER BY CASE WHEN dpa.estado_pasantia = 'Activo' THEN 0 ELSE 1 END, IFNULL(dp.apellidos, u.correo) ASC
             LIMIT 5
         ");
@@ -143,7 +144,7 @@ class AsistenciaModel
      * @param int         $pasanteId ID del usuario/pasante
      * @param int         $horasMeta Meta en horas (default: 1440 = 180 días × 8h)
      * @param string|null $fechaFin  Fecha de fin efectiva (si no se pasa, se consulta la BD)
-     * @return object { dias_presentes, horas_mostradas, horas_meta, porcentaje }
+     * @return object
      */
     public function calcularProgresoProRata(int $pasanteId, int $horasMeta = 1440, ?string $fechaFin = null): object
     {

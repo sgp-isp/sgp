@@ -139,6 +139,7 @@
 #notificationList {
     max-height: 400px;
     overflow-y: auto;
+    overflow-x: hidden !important;
     padding: 8px 0;
 }
 
@@ -170,12 +171,14 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .notification-item:hover {
     background: rgba(22, 38, 96, 0.05);
     border-left-color: var(--color-primary);
-    transform: translateX(2px);
+    transform: none;
 }
 
 /* Notificación no leída */
@@ -360,6 +363,31 @@
     opacity: 0;
 }
 
+/* === RESPONSIVE MÓVIL TOASTS === */
+@media (max-width: 768px) {
+    #sgp-toast-container {
+        top: 14px;
+        left: 12px;
+        right: 12px;
+        width: auto;
+        z-index: 999999;
+        align-items: center;
+    }
+    .sgp-toast {
+        width: 100%;
+        max-width: 440px;
+        transform: translateY(-40px);
+        box-shadow: 0 12px 36px rgba(15, 23, 42, 0.22);
+    }
+    .sgp-toast.toast-show {
+        transform: translateY(0);
+    }
+    .sgp-toast.toast-hide {
+        transform: translateY(-40px);
+        opacity: 0;
+    }
+}
+
 /* === TOAST CONTENT === */
 .toast-icon {
     font-size: 1.5rem;
@@ -413,7 +441,7 @@
 .toast-progress-bar {
     height: 100%;
     width: 100%;
-    animation: toast-shrink 5s linear forwards;
+    animation: toast-shrink 2.8s linear forwards;
 }
 
 @keyframes toast-shrink {

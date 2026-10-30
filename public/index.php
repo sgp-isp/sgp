@@ -7,6 +7,12 @@ ini_set('display_errors', '0');
 ini_set('display_startup_errors', '0');
 error_reporting(E_ALL); // Mantener E_ALL para que set_error_handler los capture en log
 
+// [OPTIMIZACIÓN RED MÓVIL] Compresión automática GZIP para reducir transferencia de datos en un 75%
+if (!headers_sent() && extension_loaded('zlib') && !ini_get('zlib.output_compression')) {
+    ini_set('zlib.output_compression', 'On');
+    ini_set('zlib.output_compression_level', '5');
+}
+
 // NOTE: Content-Type is NOT set globally here — each controller/endpoint sets its own headers.
 //       Previously, the `header('Content-Type: text/html')` here was overriding application/json endpoints.
 require_once '../app/config/config.php';
@@ -14,12 +20,21 @@ require_once '../app/config/config.php';
 // Define App Root
 define('APPROOT', dirname(dirname(__FILE__)) . '/app');
 
-// Auto-detect URLROOT for mobile access support
+// Auto-detect URLROOT for mobile and Cloudflare Tunnel access support
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
     || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
     ? 'https://' : 'http://';
-$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+// Detectar Host soportando encabezados de proxy/túnel de Cloudflare
+$rawHost = $_SERVER['HTTP_X_FORWARDED_HOST']
+    ?? $_SERVER['HTTP_HOST']
+    ?? 'localhost';
+$host = trim(explode(',', $rawHost)[0]);
+
 $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+// Normalizar si la ruta raíz es '/' (cuando Cloudflare apunta directo a public)
+$scriptDir = ($scriptDir === '/' || $scriptDir === '\\') ? '' : rtrim($scriptDir, '/');
+
 define('URLROOT', $protocol . $host . $scriptDir);
 
 
@@ -36,6 +51,9 @@ require_once '../app/libraries/UrlSecurity.php';
 require_once '../app/models/NotificationModel.php'; // Modelo de notificaciones
 require_once '../app/models/AuditModel.php'; // Modelo de auditoría (Global)
 require_once '../app/models/FeriadoModel.php'; // Modelo de días feriados
+require_once '../app/lib/MailService.php'; // Servicio global de correos
+require_once '../app/helpers/RateLimitMiddleware.php';
+RateLimitMiddleware::check();
 require_once '../app/core/App.php';
 
 // ============================================
@@ -47,6 +65,8 @@ set_exception_handler(function (\Throwable $e) {
     if (!headers_sent()) {
         http_response_code(500);
     }
+
+    $errDetails = $e->getMessage() . ' (' . basename($e->getFile()) . ':' . $e->getLine() . ')';
 
     $view500 = defined('APPROOT')
         ? APPROOT . '/views/errors/500.php'

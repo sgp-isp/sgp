@@ -38,7 +38,9 @@ class Database
     private string $db_name;
     private string $user;
     private string $pass;
+    private string $port;
     private string $charset;
+    private bool $ssl;
 
     private $dbh;
     private $stmt;
@@ -51,15 +53,22 @@ class Database
         $this->db_name = $config['name'];    // 'name' — clave real del config.php SGP
         $this->user    = $config['user'];
         $this->pass    = $config['pass'];
-        $this->charset = $config['charset'];
+        $this->port    = (string)($config['port'] ?? '3306');
+        $this->charset = $config['charset'] ?? 'utf8mb4';
+        $this->ssl     = !empty($config['ssl']);
 
-        $dsn     = 'mysql:host=' . $this->host . ';dbname=' . $this->db_name . ';charset=' . $this->charset;
+        $dsn     = 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->db_name . ';charset=' . $this->charset;
         $options = [
             PDO::ATTR_PERSISTENT         => false, // [FIX-P2] Desactivado: conexiones persistentes agotan el pool de MySQL en Apache/mod_php sin pooler intermedio
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_general_ci"
         ];
+
+        // Soporte SSL TLS para TiDB Cloud / Bases de datos Serverless
+        if ($this->ssl || $this->port === '4000' || strpos($this->host, 'tidbcloud.com') !== false) {
+            $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+        }
 
         try {
             $this->dbh = new PDO($dsn, $this->user, $this->pass, $options);

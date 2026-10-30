@@ -694,6 +694,17 @@ class AsistenciasController extends Controller
             }
         }
 
+        // Conteo consolidado de Pasantes Egresados para botón de acceso directo
+        $this->db->query("
+            SELECT COUNT(*) as cnt
+            FROM usuarios u
+            LEFT JOIN datos_pasante dpa ON u.id = dpa.usuario_id
+            LEFT JOIN periodos_academicos pa ON pa.id = dpa.periodo_id
+            WHERE u.rol_id = 3
+              AND (COALESCE(pa.estado, '') = 'Cerrado' OR COALESCE(dpa.estado_pasantia, '') = 'Finalizado' OR u.estado = 'inactivo')
+        ");
+        $totalEgresados = (int)($this->db->single()->cnt ?? 0);
+
         $this->view('asistencias/index', [
             'title'         => 'Asistencias — ' . ucfirst($vista),
             'vista'         => $vista,
@@ -732,6 +743,7 @@ class AsistenciasController extends Controller
             'finalizadosAnual'    => $finalizadosAnual,
             'enCursoAnual'        => $enCursoAnual,
             'retiradosAnual'      => $retiradosAnual,
+            'totalEgresados'      => $totalEgresados,
             'resumenTotal'        => $resumenTotal,
             'hayPeriodoActivo'    => $hayPeriodoActivo,
             'periodoActivo'       => $periodoActivo,
@@ -2029,20 +2041,26 @@ class AsistenciasController extends Controller
 
 
 
-        // Timeline — días HÁBILES (L-V), coherente con horas_meta
-        // horas_meta / 8h por día = total de días laborables de la pasantía
-        // Ej: 1440h / 8 = 180 días hábiles (no 252 días calendario)
+        // Timeline — días HÁBILES (L-V) reales en el calendario de la pasantía
         $diasTrans = 0; $diasTotal = 0; $diasRest = 0; $pctTiempo = 0;
         if ($pasante->fecha_inicio) {
             $fI = new DateTime($pasante->fecha_inicio);
             $fF = $pasante->fecha_fin ? new DateTime($pasante->fecha_fin) : null;
             $fH = new DateTime($hoy);
             if ($fF) {
-                // Total de días hábiles = horas_meta / 8h por día laboral
-                $diasTotal = max(1, (int)round($horasMeta / 8));
+                // Total días hábiles (L-V) en el período de la pasantía (calendario real entre inicio y fin)
+                $curTot = clone $fI;
+                $habilesCalendario = 0;
+                while ($curTot <= $fF) {
+                    if ((int)$curTot->format('N') <= 5) {
+                        $habilesCalendario++;
+                    }
+                    $curTot->modify('+1 day');
+                }
+                $diasMeta  = max(1, (int)round($horasMeta / 8));
+                $diasTotal = max($diasMeta, $habilesCalendario);
 
-                // Contar días hábiles (lunes a viernes) desde inicio hasta hoy (inclusive)
-                // Se limita al fin estimado para no exceder el 100%
+                // Días hábiles transcurridos desde inicio hasta hoy (inclusive)
                 if ($fH >= $fI) {
                     $cursor = clone $fI;
                     $limite = clone ($fH < $fF ? $fH : $fF);
@@ -2056,8 +2074,31 @@ class AsistenciasController extends Controller
                     $diasTrans = min($diasTotal, $conteo);
                 }
 
-                $diasRest  = max(0, $diasTotal - $diasTrans);
-                $pctTiempo = round($diasTrans / $diasTotal * 100, 1);
+                // Días hábiles restantes en el calendario antes de fecha_fin
+                // Si hoy es laborable y aún no tiene registro de asistencia computable,
+                // hoy todavía está disponible para sumar horas.
+                $this->db->query("
+                    SELECT 1 FROM asistencias 
+                    WHERE pasante_id = :pid AND fecha = :hoy AND estado != 'Anulado' AND horas_calculadas > 0
+                    LIMIT 1
+                ");
+                $this->db->bind(':pid', $pasanteId);
+                $this->db->bind(':hoy', $hoy);
+                $hoyConRegistro = (bool)$this->db->single();
+
+                $cursorRest = clone $fH;
+                if ($hoyConRegistro || (int)$fH->format('N') > 5) {
+                    $cursorRest->modify('+1 day');
+                }
+                $diasRest = 0;
+                while ($cursorRest <= $fF) {
+                    if ((int)$cursorRest->format('N') <= 5) {
+                        $diasRest++;
+                    }
+                    $cursorRest->modify('+1 day');
+                }
+
+                $pctTiempo = $diasTotal > 0 ? round($diasTrans / $diasTotal * 100, 1) : 0;
             }
         }
 

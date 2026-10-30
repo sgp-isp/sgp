@@ -36,10 +36,10 @@ abstract class Controller
     protected function view($view, $data = [], $useMasterLayout = true)
     {
         // Check for view file
-        $viewPath = '../app/views/' . $view . '.php';
+        $viewPath = defined('APPROOT') ? (APPROOT . '/views/' . $view . '.php') : ('../app/views/' . $view . '.php');
 
         if (!file_exists($viewPath)) {
-            die("View {$view} does not exist");
+            die("View {$view} does not exist: {$viewPath}");
         }
 
         // Extract data for the view

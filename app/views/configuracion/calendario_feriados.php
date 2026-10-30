@@ -360,8 +360,7 @@ $diasSemana = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
 </div>
 
-<!-- Modal para Configurar Feriado -->
-<div id="modalFeriadoUnico123" class="sgp-modal-overlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(15,23,42,0.8);backdrop-filter:blur(4px);z-index:9999999;align-items:center;justify-content:center;">
+<div id="modalFeriadoUnico123" class="sgp-modal-overlay" style="display:none;position:fixed;top:-20px;left:-20px;right:-20px;bottom:-20px;inset:-20px;width:calc(100% + 40px);height:calc(100% + 40px);background:rgba(15,23,42,0.8);backdrop-filter:blur(4px);z-index:99999999;align-items:center;justify-content:center;">
     <div class="sgp-modal-card" style="background:#fff;width:100%;max-width:480px;border-radius:24px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); font-family: 'Inter', sans-serif;">
         
         <!-- Header del Modal -->
@@ -625,7 +624,7 @@ window.abrirModalFeriado = function(fecha, esFeriado, id, nombre, tipo, esLabora
             document.body.appendChild(modal);
         }
         
-        modal.setAttribute("style", "display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(15,23,42,0.8) !important; backdrop-filter: blur(4px) !important; z-index: 2147483647 !important; align-items: center !important; justify-content: center !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important;");
+        modal.setAttribute("style", "display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100% !important; height: 100% !important; background: rgba(15,23,42,0.8) !important; backdrop-filter: blur(4px) !important; z-index: 2147483647 !important; align-items: center !important; justify-content: center !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important;");
         
     } catch(err) {
         console.error("Excepción atrapada al configurar el modal:", err);

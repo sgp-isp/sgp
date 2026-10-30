@@ -12,7 +12,7 @@ $csrfToken        = $data['csrfToken']        ?? '';
 
 .inst-wrap { width:100%; }
 
-.inst-banner { background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);border-radius:20px;padding:28px 36px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:relative;overflow:hidden; }
+.inst-banner { background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--gradient-mid, #1e3a8a) 50%,var(--color-accent-brand, #2563eb) 100%);border-radius:20px;padding:28px 36px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:relative;overflow:hidden; }
 .inst-banner::before { content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:rgba(255,255,255,0.04);border-radius:50%; }
 .inst-back { display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);backdrop-filter:blur(10px);color:white;padding:8px 16px;border-radius:9px;font-size:.82rem;font-weight:700;text-decoration:none;transition:all .2s; }
 .inst-back:hover { background:rgba(255,255,255,0.25);color:white; }
@@ -54,7 +54,7 @@ $csrfToken        = $data['csrfToken']        ?? '';
 .inst-modal-overlay { display:none;position:fixed;inset:0;background:rgba(15,23,42,.7);backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center; }
 .inst-modal-overlay.active { display:flex; }
 .inst-modal-box { background:white;border-radius:22px;width:90%;max-width:480px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(15,23,42,.3);animation:inst-fadeUp .3s ease; }
-.im-head { background:linear-gradient(135deg,#172554,#2563eb);padding:22px 26px;display:flex;justify-content:space-between;align-items:center; }
+.im-head { background:linear-gradient(135deg,var(--color-primary, #172554),var(--color-accent-brand, #2563eb));padding:22px 26px;display:flex;justify-content:space-between;align-items:center; }
 .im-head h2 { font-size:1rem;font-weight:700;margin:0;color:white; }
 .im-body { padding:22px 26px;overflow-y:auto; }
 .im-close { background:rgba(255,255,255,.2);border:none;color:white;width:30px;height:30px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center; }
@@ -64,12 +64,62 @@ $csrfToken        = $data['csrfToken']        ?? '';
 .f-input:focus { outline:none;border-color:#2563eb;background:white; }
 .f-group { margin-bottom:14px; }
 .f-row2  { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
-.f-btn-primary { width:100%;padding:11px;border:none;border-radius:9px;cursor:pointer;background:linear-gradient(135deg,#172554,#2563eb);color:white;font-size:.88rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;font-family:inherit; }
+.f-btn-primary { width:100%;padding:11px;border:none;border-radius:9px;cursor:pointer;background:linear-gradient(135deg,var(--color-primary, #172554),var(--color-accent-brand, #2563eb));color:white;font-size:.88rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;font-family:inherit; }
 .f-btn-primary:hover { transform:translateY(-1px);box-shadow:0 6px 16px rgba(37,99,235,.3); }
 .f-btn-cancel { flex:1;padding:10px;background:#f1f5f9;color:#475569;border:2px solid #e2e8f0;border-radius:9px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit; }
 .f-btn-cancel:hover { background:#e2e8f0; }
 
 @media(max-width:900px){ .inst-layout{grid-template-columns:1fr;} }
+@media(max-width:640px){ 
+    .inst-banner { padding:20px 16px; border-radius:16px; }
+    .inst-action-btn { width: 100%; justify-content: center; }
+}
+
+/* ── Dark Mode Instituciones Aliadas ── */
+[data-theme="dark"] .inst-banner {
+    background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%) !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+[data-theme="dark"] .inst-card,
+[data-theme="dark"] .donut-card,
+[data-theme="dark"] .inst-kpi-mini {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .inst-card > div:first-child,
+[data-theme="dark"] .donut-card > div:first-child,
+[data-theme="dark"] .inst-kpi-mini > div:first-child {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .inst-search {
+    background: #0d1526 !important;
+    border-color: #1e293b !important;
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .pill-filter {
+    background: #0d1526 !important;
+    border-color: #1e293b !important;
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .pill-filter.active {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+}
+[data-theme="dark"] .inst-row {
+    border-bottom: 1px solid #1e293b !important;
+}
+[data-theme="dark"] .inst-name {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .inst-meta {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .inst-meta span {
+    color: #cbd5e1 !important;
+}
 </style>
 
 <div class="inst-wrap">
@@ -256,7 +306,7 @@ var INST_CSRF = '<?= $csrfToken ?>';
     if(leg) leg.innerHTML=datos.map(t=>`<div class="donut-leg-row"><div class="donut-dot" style="background:${colors[t.tipo]||'#94a3b8'}"></div><span style="color:#64748b;flex:1">${t.tipo}</span><strong>${t.total}</strong></div>`).join('');
 })();
 
-let tipoFiltro='Todos';
+var tipoFiltro = 'Todos';
 function filtrarPorTipo(btn){
     document.querySelectorAll('.pill-filter').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active'); tipoFiltro=btn.dataset.tipo; filtrarInstituciones();

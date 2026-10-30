@@ -10,19 +10,27 @@ Options -MultiViews
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "SAMEORIGIN"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
-    # HSTS: los navegadores solo la aplican sobre HTTPS real; en HTTP local (XAMPP) se ignora sin efecto.
-    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
+    # HSTS desactivado en local (se habilitará al montar en producción en la nube)
+    # <If "%{HTTP_HOST} !~ /^(localhost|127\.0\.0\.1)(:[0-9]+)?$/ && %{HTTPS} == 'on'">
+    #     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    # </If>
+
+    # [OPTIMIZACIÓN RED MÓVIL] Caché persistente de recursos estáticos (CSS, JS, Fuentes, Imágenes)
+    <FilesMatch "\.(css|js|woff|woff2|ttf|eot|svg|png|jpg|jpeg|gif|webp|ico)$">
+        Header set Cache-Control "public, max-age=604800, stale-while-revalidate=86400"
+    </FilesMatch>
 </IfModule>
 
 RewriteEngine On
-# [FIX-PORTABILIDAD] Antes: "RewriteBase /proyecto_sgp/sgp/public/" — ruta
-# fija que solo funcionaba si el proyecto vivía exactamente en esa carpeta.
-# Al copiar la app a otra carpeta o a otro equipo, el enrutamiento fallaba
-# (404 en todo excepto la portada). Se quita el RewriteBase fijo: Apache
-# infiere la base automáticamente a partir de dónde vive físicamente este
-# .htaccess, por lo que la app funciona sin importar el nombre/ruta de la
-# carpeta en la que se coloque.
+
+# ==============================================================
+# SEGURIDAD CLOUDFLARE TUNNEL (ACCESO WEB COMPLETO)
+# Permite acceso al quiosco, inicio de sesión y portal del pasante/personal.
+# Bloquea acceso directo a archivos sensibles o de configuración (.env, .git, etc.)
+# ==============================================================
+RewriteRule ^(\.git|\.env|composer\.|package\.) - [F,L]
+
 
 # Servir archivos estáticos de uploads/ directamente sin pasar por el router
 RewriteRule ^uploads/ - [L,NC]

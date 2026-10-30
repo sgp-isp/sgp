@@ -96,7 +96,7 @@ class ExamenesController extends Controller
             ? round(((int)$tmpKpi->aprobados / (int)$tmpKpi->total) * 100, 1)
             : 0.0;
 
-        // Distribución de puntajes en 5 rangos
+        // Distribución de puntajes en rangos
         $this->db->query("
             SELECT
                 SUM(CASE WHEN porcentaje <  20 THEN 1 ELSE 0 END) AS r0,
@@ -107,6 +107,27 @@ class ExamenesController extends Controller
             FROM examen_intentos WHERE enviado_at IS NOT NULL
         ");
         $dist = $this->db->single();
+
+        // Rendimiento y distribución por cada institución
+        $this->db->query("
+            SELECT
+                COALESCE(inst.id, 0) AS institucion_id,
+                COALESCE(inst.nombre, 'Otras Instituciones') AS institucion_nombre,
+                COUNT(ei.id) AS total_intentos,
+                ROUND(AVG(ei.porcentaje), 1) AS promedio_pct,
+                SUM(CASE WHEN ei.porcentaje < 40 THEN 1 ELSE 0 END) AS deficiente,
+                SUM(CASE WHEN ei.porcentaje >= 40 AND ei.porcentaje < 60 THEN 1 ELSE 0 END) AS regular,
+                SUM(CASE WHEN ei.porcentaje >= 60 AND ei.porcentaje < 80 THEN 1 ELSE 0 END) AS bueno,
+                SUM(CASE WHEN ei.porcentaje >= 80 THEN 1 ELSE 0 END) AS excelente
+            FROM examen_intentos ei
+            INNER JOIN usuarios u ON u.id = ei.pasante_id
+            LEFT JOIN datos_pasante dpa ON dpa.usuario_id = u.id
+            LEFT JOIN instituciones inst ON inst.id = COALESCE(NULLIF(dpa.institucion_id, 0), CASE WHEN dpa.institucion_procedencia REGEXP '^[0-9]+$' THEN CAST(dpa.institucion_procedencia AS UNSIGNED) ELSE NULL END)
+            WHERE ei.enviado_at IS NOT NULL
+            GROUP BY COALESCE(inst.id, 0), COALESCE(inst.nombre, 'Otras Instituciones')
+            ORDER BY promedio_pct DESC
+        ");
+        $institucionesStats = $this->db->resultSet();
 
         // Top 5 pasantes por mejor puntaje
         $this->db->query("
@@ -152,16 +173,17 @@ class ExamenesController extends Controller
         $recientes = $this->db->resultSet();
 
         $this->view('examenes/index', [
-            'examenes'        => $examenes,
-            'periodos'        => $periodos,
-            'totalActivos'    => $totalActivos,
-            'totalEvaluados'  => $totalEvaluados,
-            'avgScore'        => $avgScore,
-            'tasaAprobacion'  => $tasaAprobacion,
-            'dist'            => $dist,
-            'top5'            => $top5,
-            'examenesActivos' => $examenesActivos,
-            'recientes'       => $recientes,
+            'examenes'           => $examenes,
+            'periodos'           => $periodos,
+            'totalActivos'       => $totalActivos,
+            'totalEvaluados'     => $totalEvaluados,
+            'avgScore'           => $avgScore,
+            'tasaAprobacion'     => $tasaAprobacion,
+            'dist'               => $dist,
+            'institucionesStats' => $institucionesStats,
+            'top5'               => $top5,
+            'examenesActivos'    => $examenesActivos,
+            'recientes'          => $recientes,
         ]);
     }
 
@@ -333,7 +355,12 @@ class ExamenesController extends Controller
                 try {
                     $notif   = new NotificationModel($this->db);
                     $urlDest = URLROOT . '/pasante/misExamenes';
-                    $this->db->query("SELECT id FROM usuarios WHERE rol_id = 3 AND estado = 'activo'");
+                    $this->db->query("
+                        SELECT u.id 
+                        FROM usuarios u
+                        JOIN datos_pasante dp ON dp.usuario_id = u.id
+                        WHERE u.rol_id = 3 AND u.estado = 'activo' AND dp.estado_pasantia = 'Activo'
+                    ");
                     foreach (($this->db->resultSet() ?: []) as $pas) {
                         $notif->create(
                             (int)$pas->id,
@@ -343,6 +370,10 @@ class ExamenesController extends Controller
                             $urlDest
                         );
                     }
+
+                    // Enviar alerta por correo institucional / móvil a pasantes
+                    require_once APPROOT . '/lib/MailService.php';
+                    MailService::notifyNewExam($titulo, $fechaFin, $urlDest);
                 } catch (\Throwable $ne) {
                     error_log('[SGP-EXAMENES] guardar-notif: ' . $ne->getMessage());
                 }
@@ -487,7 +518,12 @@ class ExamenesController extends Controller
                     $notif    = new NotificationModel($this->db);
                     $titulo   = $prev->titulo;
                     $urlDest  = URLROOT . '/pasante/misExamenes';
-                    $this->db->query("SELECT id FROM usuarios WHERE rol_id = 3 AND estado = 'activo'");
+                    $this->db->query("
+                        SELECT u.id 
+                        FROM usuarios u
+                        JOIN datos_pasante dp ON dp.usuario_id = u.id
+                        WHERE u.rol_id = 3 AND u.estado = 'activo' AND dp.estado_pasantia = 'Activo'
+                    ");
                     foreach (($this->db->resultSet() ?: []) as $pas) {
                         $notif->create(
                             (int)$pas->id,
@@ -497,6 +533,10 @@ class ExamenesController extends Controller
                             $urlDest
                         );
                     }
+
+                    // Enviar alerta por correo institucional / móvil a pasantes
+                    require_once APPROOT . '/lib/MailService.php';
+                    MailService::notifyNewExam($titulo, null, $urlDest);
                 } catch (\Throwable $ne) {
                     error_log('[SGP-EXAMENES] publicar-notif: ' . $ne->getMessage());
                 }

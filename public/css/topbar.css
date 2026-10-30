@@ -122,22 +122,29 @@
 
 /* PERFIL USUARIO */
 .profile-avatar {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #162660 0%, #0d1a3d 100%);
+    background: linear-gradient(135deg, var(--color-primary, #162660) 0%, var(--color-accent-brand, #0d1a3d) 100%);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     box-shadow: 0 2px 5px rgba(22, 38, 96, 0.2);
+    flex-shrink: 0;
 }
 
 .user-profile-link {
-    padding: 6px 12px;
-    border-radius: 8px;
+    padding: 4px 12px !important;
+    border-radius: 9px !important;
+    height: 42px !important;
+    max-height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: auto 0 !important;
     transition: background 0.2s;
     cursor: pointer;
 }
@@ -211,11 +218,12 @@
         padding: 0 15px;
     }
 
-    /* Logos centrales: ocultar para no solapar con topbar estrecho */
+    /* Logos centrales: ocultar en pantalla dividida y tablet (< 1280px) para no solapar con controles */
     .main-header .institutional-strip-center {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
+        pointer-events: none !important;
     }
 
     .institutional-strip {
@@ -235,6 +243,16 @@
     /* Ocultar texto del perfil en tablet */
     .user-profile-link .d-none.d-md-block {
         display: none !important;
+    }
+}
+
+/* Ocultar cintillo central institucional en resoluciones de pantalla dividida (hasta 1280px) */
+@media (max-width: 1280px) {
+    .main-header .institutional-strip-center {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
     }
 }
 
@@ -371,4 +389,63 @@
 
 .dropdown-divider {
     margin: 8px 0;
+}
+
+/* ========================================
+   CONTROL DE ESCALA GLOBAL (ZOOM WIDGET)
+   ======================================== */
+.sgp-zoom-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    padding: 2px 4px;
+    height: 32px;
+    transition: all 0.2s ease;
+}
+[data-theme="dark"] .sgp-zoom-pill {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+.sgp-zoom-pill:hover {
+    border-color: var(--color-accent-brand, #2563eb);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+}
+.btn-zoom-adjust {
+    border: none;
+    background: transparent;
+    padding: 2px 6px;
+    cursor: pointer;
+    color: var(--text-body, #64748b);
+    font-size: 11px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.15s ease;
+}
+.btn-zoom-adjust:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--color-primary, #162660);
+}
+[data-theme="dark"] .btn-zoom-adjust:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+.btn-zoom-label {
+    border: none;
+    background: transparent;
+    padding: 2px 4px;
+    cursor: pointer;
+    font-size: 0.74rem;
+    font-weight: 800;
+    font-family: monospace;
+    color: var(--color-primary, #162660);
+    min-width: 40px;
+    text-align: center;
+}
+[data-theme="dark"] .btn-zoom-label {
+    color: #93c5fd;
 }

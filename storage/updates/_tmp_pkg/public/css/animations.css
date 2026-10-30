@@ -1,0 +1,268 @@
+/**
+ * ============================================
+ * ANIMACIONES CSS - Sistema SGP
+ * ============================================
+ * 
+ * Todas las animaciones @keyframes del sistema.
+ * Optimizadas para performance (GPU-accelerated).
+ */
+
+/* ==================== NOTIFICACIONES ==================== */
+
+/**
+ * Animación de Campana (Shake)
+ * Uso: Cuando hay notificaciones nuevas
+ */
+@keyframes bellShake {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: rotate(-10deg);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: rotate(10deg);
+    }
+}
+
+/**
+ * Animación de Badge (Pulse)
+ * Uso: Badge de contador de notificaciones
+ */
+@keyframes badgePulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/**
+ * Animación de Badge (Ripple)
+ * Uso: Efecto de onda en badge
+ */
+@keyframes badgeRipple {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+    }
+
+    100% {
+        box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+    }
+}
+
+/**
+ * Animación de Bounce (Entrada)
+ * Uso: Cuando aparece una nueva notificación
+ */
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    70% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/**
+ * Animación de Shake (Error)
+ * Uso: Cuando hay un error en un input (CAPTCHA incorrecto, validación fallida)
+ */
+@keyframes shakeError {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-8px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(8px);
+    }
+}
+
+/* ==================== FADE ANIMATIONS ==================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==================== SLIDE ANIMATIONS ==================== */
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ==================== SPIN ANIMATIONS ==================== */
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spinSlow {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==================== UTILITY CLASSES ==================== */
+
+.animate-shake {
+    animation: bellShake 0.5s ease-in-out;
+}
+
+.animate-pulse {
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+.animate-bounce-in {
+    animation: bounceIn 0.5s ease-out;
+}
+
+.shake-error {
+    animation: shakeError 0.5s ease-in-out;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* ==================== HOVER ANIMATIONS ==================== */
+
+.hover-lift {
+    transition: transform var(--transition-fast) ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+}
+
+.hover-scale {
+    transition: transform var(--transition-fast) ease;
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.hover-glow {
+    transition: box-shadow var(--transition-fast) ease;
+}
+
+.hover-glow:hover {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+}

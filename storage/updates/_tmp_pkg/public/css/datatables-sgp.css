@@ -1,0 +1,730 @@
+/* =====================================================
+   SGP GLOBAL DATATABLE & ACTION BUTTONS STYLES
+   Premium Edition — v2.0
+   ===================================================== */
+
+/* ─────────────────────────────────────────────────────
+   1. DataTable Core Overrides
+   ───────────────────────────────────────────────────── */
+table.dataTable {
+    border-collapse: separate !important;
+    border-spacing: 0;
+    width: 100% !important;
+}
+
+table.dataTable thead th {
+    border-bottom: 1px solid #e2e8f0 !important;
+    color: #64748b !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-weight: 700 !important;
+    padding: 16px 12px !important;
+    white-space: nowrap;
+    user-select: none;
+    background: transparent;
+    /* Quitar fondo viejo */
+}
+
+table.dataTable thead th.sorting::after,
+table.dataTable thead th.sorting_asc::after,
+table.dataTable thead th.sorting_desc::after {
+    opacity: 0.6;
+}
+
+table.dataTable tbody tr {
+    transition: background-color 0.15s ease !important;
+    border-bottom: 1px dashed #e2e8f0 !important;
+}
+
+html:not([data-theme="dark"]) table.dataTable tbody tr:hover,
+body:not(.dark-mode) table.dataTable tbody tr:hover {
+    background-color: #f8fafc !important;
+    /* Gris ultra claro */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04) !important;
+    position: relative;
+    z-index: 5;
+}
+
+table.dataTable tbody td {
+    vertical-align: middle !important;
+    padding: 12px !important;
+    border: none !important;
+    /* Quitamos bordes verticales y feos */
+    color: #1e293b;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Orden Perfecto en la Columna de Acciones (Flexbox) */
+table.dataTable tbody td:last-child,
+.dt-row-actions,
+td.acciones-cell {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    /* Alineados a la derecha */
+    gap: 8px !important;
+    /* Espaciado idéntico entre cada botón */
+    padding-right: 15px !important;
+}
+
+/* Cell helpers */
+.dt-cell-primary {
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.3;
+}
+
+.dt-cell-secondary {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+.dt-cell-truncate {
+    display: block; /* [SGP-FIX-PASANTES-ALTURA-FILA] sin esto, max-width/overflow no truncan un <span> inline */
+    max-width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Avatar en tabla */
+.dt-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #172554 0%, #2563eb 100%);
+    color: white;
+    font-weight: 800;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.dt-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ─────────────────────────────────────────────────────
+   2. Toolbar Unificado (reemplaza el search de DT)
+   ───────────────────────────────────────────────────── */
+.dt-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    flex-wrap: wrap;
+}
+
+.dt-search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 8px 14px;
+    transition: all 0.2s ease;
+    min-width: 220px;
+    flex: 1;
+    max-width: 320px;
+}
+
+.dt-search-box:focus-within {
+    background: #fff;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(22, 38, 96, 0.08);
+}
+
+.dt-search-box i {
+    color: #94a3b8;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.dt-search-box input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-size: 0.88rem;
+    color: #374151;
+}
+
+.dt-search-box input::placeholder {
+    color: #94a3b8;
+}
+
+.dt-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.dt-count-badge {
+    background: linear-gradient(135deg, rgba(22, 38, 96, 0.07), rgba(37, 99, 235, 0.07));
+    color: var(--color-primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(22, 38, 96, 0.1);
+    white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────────────
+   3. Action Buttons — Sistema Semántico de Color
+   ───────────────────────────────────────────────────── */
+/* Botones de Acción Ultra-Redondeados e Interactivos */
+table.dataTable tbody td .btn,
+table.dataTable tbody td .btn-action,
+.btn-action {
+    width: 35px !important;
+    height: 35px !important;
+    border-radius: 50% !important;
+    /* Magia circular */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    border: none !important;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    /* Efecto rebote */
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    color: white;
+    /* Base color para asegurar constraste */
+}
+
+/* Animación al pasar el mouse */
+table.dataTable tbody td .btn:hover,
+table.dataTable tbody td .btn-action:hover,
+.btn-action:hover {
+    transform: scale(1.15) translateY(-2px) !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
+    z-index: 10 !important;
+}
+
+table.dataTable tbody td .btn:active,
+table.dataTable tbody td .btn-action:active,
+.btn-action:active {
+    transform: scale(0.95) !important;
+}
+
+table.dataTable tbody td .btn i,
+table.dataTable tbody td .btn-action i,
+.btn-action i {
+    position: relative;
+    z-index: 1;
+    font-size: 15px;
+}
+
+/* ── Variantes de botones ── */
+/* Ver / Detalles → Slate neutro */
+.btn-view {
+    background: linear-gradient(135deg, #475569 0%, #334155 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(71, 85, 105, 0.25);
+}
+
+/* Editar → Azul primario */
+.btn-edit {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Reset PIN / Clave → Amber / Precaución */
+.btn-reset {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+/* Desactivar / Eliminar → Rojo destructivo */
+.btn-delete {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Activar → Verde semántico (acción positiva) */
+.btn-status {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+}
+
+/* Estado/Configurar → Neutral slate */
+.btn-config {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(100, 116, 139, 0.25);
+}
+
+/* ─────────────────────────────────────────────────────
+   4. Status Badges
+   ───────────────────────────────────────────────────── */
+.badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.badge-activo,
+.badge-presente,
+.badge-Activo,
+.badge-Finalizado {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-activo::before,
+.badge-presente::before,
+.badge-Activo::before,
+.badge-Finalizado::before {
+    background: #10B981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+    animation: pulse-dot 2s infinite;
+}
+
+.badge-inactivo,
+.badge-ausente,
+.badge-retirado,
+.badge-Retirado {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.08) 100%);
+    color: #DC2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badge-inactivo::before,
+.badge-ausente::before,
+.badge-retirado::before,
+.badge-Retirado::before {
+    background: #EF4444;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+}
+
+.badge-pendiente,
+.badge-justificado,
+.badge-Pendiente {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.08) 100%);
+    color: #ca8a04;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badge-pendiente::before,
+.badge-justificado::before,
+.badge-Pendiente::before {
+    background: #f59e0b;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+}
+
+@keyframes pulse-dot {
+
+    0%,
+    100% {
+        box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.9);
+    }
+}
+
+/* ─────────────────────────────────────────────────────
+   5. Paginación Premium
+   ───────────────────────────────────────────────────── */
+.dataTables_wrapper .dataTables_paginate {
+    padding: 12px 0;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 9px !important;
+    margin: 0 2px !important;
+    transition: all 0.2s ease !important;
+    padding: 6px 13px !important;
+    border: 1.5px solid transparent !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    min-width: 36px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 12px rgba(22, 38, 96, 0.3) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
+    background: #f1f5f9 !important;
+    color: var(--color-primary) !important;
+    border-color: #e2e8f0 !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+    color: #d1d5db !important;
+    cursor: not-allowed !important;
+    background: transparent !important;
+}
+
+.dataTables_info {
+    color: #64748b !important;
+    font-size: 0.83rem !important;
+    font-weight: 600 !important;
+    padding: 14px 0 0 !important;
+}
+
+/* Hide default DT search (reemplazado por dt-toolbar) */
+.dataTables_wrapper .dataTables_filter {
+    display: none !important;
+}
+
+/* ─────────────────────────────────────────────────────
+   5.5 Botones de Exportación Modernos (Excel / PDF)
+   ───────────────────────────────────────────────────── */
+/* Adiós al diseño gris viejo de DataTables */
+.dt-buttons .dt-button,
+.dt-buttons .btn {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    padding: 8px 16px !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.dt-buttons .buttons-excel {
+    background: #10B981 !important;
+    /* Verde moderno */
+    color: white !important;
+}
+
+.dt-buttons .buttons-pdf {
+    background: #EF4444 !important;
+    /* Rojo moderno */
+    color: white !important;
+}
+
+.dt-buttons .dt-button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+    opacity: 0.9 !important;
+}
+
+/* ─────────────────────────────────────────────────────
+   6. Empty State Premium
+   ───────────────────────────────────────────────────── */
+.dt-empty-state {
+    padding: 64px 20px;
+    text-align: center;
+    animation: fadeInUp 0.4s ease;
+}
+
+.dt-empty-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 2rem;
+    color: #94a3b8;
+}
+
+.dt-empty-state h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #475569;
+    margin: 0 0 8px;
+}
+
+.dt-empty-state p {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    margin: 0 0 20px;
+}
+
+/* ─────────────────────────────────────────────────────
+   7. Skeleton Loading Shimmer
+   ───────────────────────────────────────────────────── */
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.dt-skeleton td {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e9eef5 50%, #f1f5f9 75%) !important;
+    background-size: 200% 100% !important;
+    animation: shimmer 1.5s infinite !important;
+    border-radius: 6px !important;
+    color: transparent !important;
+    pointer-events: none !important;
+    border-bottom: 1px solid #f8fafc !important;
+}
+
+.dt-skeleton td * {
+    visibility: hidden !important;
+}
+
+/* ─────────────────────────────────────────────────────
+   8. Animaciones globales
+   ───────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dt-row-enter {
+    animation: fadeInUp 0.3s ease both;
+}
+
+/* ─────────────────────────────────────────────────────
+   9. Mobile Responsive
+   ───────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .dt-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .dt-search-box {
+        max-width: 100%;
+    }
+
+    .dt-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 0.75rem;
+    }
+
+    .btn-action {
+        min-width: 32px;
+        height: 32px;
+        padding: 6px 9px;
+    }
+
+    .btn-action i {
+        font-size: 14px;
+    }
+
+    table.dataTable thead th {
+        font-size: 0.75rem;
+        padding: 12px 10px !important;
+    }
+
+    table.dataTable tbody td {
+        padding: 11px 10px !important;
+        font-size: 0.85rem;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 5px 9px !important;
+        min-width: 30px !important;
+        font-size: 0.8rem !important;
+    }
+
+    .dt-count-badge {
+        display: none;
+    }
+}
+
+/* ─────────────────────────────────────────────────────
+   10. DataTables Filter Input (para vistas que usen el filtro nativo)
+   ───────────────────────────────────────────────────── */
+.dataTables_wrapper .dataTables_length select {
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 6px 28px 6px 10px;
+    font-size: 0.85rem;
+    color: #374151;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+}
+
+.dataTables_wrapper .dataTables_length select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(22, 38, 96, 0.08);
+}
+
+.dataTables_wrapper .dataTables_length label {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ─────────────────────────────────────────────────────
+   11. [RESP-02] Scroll horizontal en móvil para tablas
+   ───────────────────────────────────────────────────── */
+.dataTables_wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ─────────────────────────────────────────────────────
+   12. [RESP-01] Grid KPI adaptativo global
+   Reemplaza todos los grid locales con auto-fit.
+   Usar: class="sgp-kpi-grid" en el contenedor de KPIs.
+   ───────────────────────────────────────────────────── */
+.sgp-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-gap, 24px);
+}
+
+@media (max-width: 480px) {
+    .sgp-kpi-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 360px) {
+    .sgp-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ─────────────────────────────────────────────────────
+   13. [RESP-03] Modales: scroll interno en pantallas pequeñas
+   ───────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 8px auto !important;
+        max-height: calc(100vh - 16px);
+    }
+
+    .modal-content {
+        max-height: calc(100vh - 32px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-body {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        flex: 1;
+    }
+
+    /* Modal fullscreen en móvil para modales grandes */
+    .modal-dialog-responsive {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    .modal-dialog-responsive .modal-content {
+        border-radius: 0 !important;
+        min-height: 100vh;
+    }
+}
+
+/* ─────────────────────────────────────────────────────
+   14. [RESP-08] Barras de filtros: envolver en columna en móvil
+   ───────────────────────────────────────────────────── */
+.sgp-filter-bar,
+.filter-bar,
+.search-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+@media (max-width: 576px) {
+    .sgp-filter-bar,
+    .filter-bar,
+    .search-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .sgp-filter-bar > *,
+    .filter-bar > *,
+    .search-row > * {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
+
+/* ─────────────────────────────────────────────────────
+   15. [RESP-05] Topbar: evitar colapso de elementos en móvil muy pequeño
+   ───────────────────────────────────────────────────── */
+.topbar-actions,
+.topbar-right {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (max-width: 400px) {
+    .topbar-brand-text,
+    .topbar-subtitle {
+        display: none !important;
+    }
+}

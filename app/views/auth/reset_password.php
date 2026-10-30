@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SGP - Restablecer Contraseña</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="<?= URLROOT ?>/img/favicon.png">
+    <link rel="icon" type="image/png" href="<?= URLROOT ?>/img/favicon.png?v=3">
 
     <!-- CSS Assets -->
     <link rel="stylesheet" href="<?= URLROOT ?>/css/bootstrap.min.css">

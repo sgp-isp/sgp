@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * DateHelper — Utilidades de Fechas y Dias Habiles para SGP
  * ===========================================================
@@ -98,17 +98,16 @@ class DateHelper
         $conteo = 0;
 
         while ($conteo < $diasHabiles) {
-            $fecha->modify('+1 day');
             $dow = (int)$fecha->format('N');
+            $fechaStr = $fecha->format('Y-m-d');
 
-            if ($dow >= 6) {
-                continue;
+            if ($dow < 6 && !in_array($fechaStr, $feriados, true)) {
+                $conteo++;
+                if ($conteo >= $diasHabiles) {
+                    break;
+                }
             }
-            if (in_array($fecha->format('Y-m-d'), $feriados, true)) {
-                continue;
-            }
-
-            $conteo++;
+            $fecha->modify('+1 day');
         }
 
         return $fecha->format('Y-m-d');

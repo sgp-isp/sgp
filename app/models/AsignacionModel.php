@@ -9,7 +9,11 @@ class AsignacionModel {
     private $db;
 
     public function __construct() {
-        $config = require '../app/config/config.php';
+        if (defined('APPROOT')) {
+            require_once APPROOT . '/config/config.php';
+        } else {
+            require_once __DIR__ . '/../config/config.php';
+        }
         $this->db = Database::getInstance(); // SGP-FIX-v2 [6/2.1] aplicado
     }
 
@@ -64,7 +68,7 @@ class AsignacionModel {
                 u.cedula,
                 dp.nombres,
                 dp.apellidos,
-                COALESCE(inst.nombre, dpa.institucion_procedencia) AS institucion_procedencia,
+                COALESCE(inst.nombre, NULLIF(dpa.institucion_procedencia, ''), 'No registrada') AS institucion_procedencia,
                 COALESCE(dpa.estado_pasantia, 'Sin Asignar')       AS estado_pasantia,
                 COALESCE((
                     SELECT COUNT(*) * 8
@@ -91,7 +95,7 @@ class AsignacionModel {
             LEFT JOIN departamentos     d    ON d.id  = dpa.departamento_asignado_id
             LEFT JOIN usuarios          tu   ON tu.id = dpa.tutor_id
             LEFT JOIN datos_personales  tup  ON tup.usuario_id  = tu.id
-            LEFT JOIN instituciones     inst ON dpa.institucion_procedencia = inst.id
+            LEFT JOIN instituciones     inst ON (dpa.institucion_id = inst.id OR dpa.institucion_procedencia = inst.nombre)
             WHERE u.rol_id = 3
               AND COALESCE(dpa.tipo_pasantia, 'Regular') = 'Regular'
               {$periodoCondicion}
@@ -125,7 +129,22 @@ class AsignacionModel {
             $hasUq = (int)($this->db->single()->total ?? 0);
 
             if ($hasUq === 0) {
-                // Verificar si existe el índice UNIQUE previo sobre usuario_id
+                // 1. Agregar un índice regular en usuario_id para que la Foreign Key fk_pasante_usuario
+                //    no impida eliminar el índice UNIQUE viejo (MySQL error 1553).
+                $this->db->query("
+                    SELECT COUNT(*) AS total
+                    FROM information_schema.STATISTICS
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME = 'datos_pasante'
+                      AND INDEX_NAME = 'idx_usuario_id_tmp'
+                ");
+                $hasTmpIdx = (int)($this->db->single()->total ?? 0);
+                if ($hasTmpIdx === 0) {
+                    $this->db->query("ALTER TABLE `datos_pasante` ADD KEY `idx_usuario_id_tmp` (`usuario_id`)");
+                    $this->db->execute();
+                }
+
+                // 2. Eliminar el índice UNIQUE previo sobre usuario_id (si existe)
                 $this->db->query("
                     SELECT COUNT(*) AS total
                     FROM information_schema.STATISTICS
@@ -140,7 +159,12 @@ class AsignacionModel {
                     $this->db->execute();
                 }
 
+                // 3. Crear el nuevo índice compuesto UNIQUE para el historial multi-período
                 $this->db->query("ALTER TABLE `datos_pasante` ADD UNIQUE KEY `uq_pasante_periodo` (`usuario_id`, `periodo_id`)");
+                $this->db->execute();
+
+                // 4. Retirar el índice temporal (uq_pasante_periodo ya cubre usuario_id por ser su primera columna)
+                $this->db->query("ALTER TABLE `datos_pasante` DROP INDEX `idx_usuario_id_tmp`");
                 $this->db->execute();
             }
         } catch (\Throwable $e) {
@@ -167,21 +191,30 @@ class AsignacionModel {
                 dp.apellidos,
                 COALESCE(inst.nombre, dpa.institucion_procedencia) AS institucion_procedencia,
                 COALESCE(dpa.estado_pasantia, 'Sin Asignar') AS estado_pasantia,
-                COALESCE(dpa.horas_acumuladas, 0)            AS horas_acumuladas,
+                COALESCE((
+                    SELECT COUNT(*) * 8
+                    FROM asistencias a
+                    WHERE a.pasante_id = u.id
+                      AND a.estado != 'Anulado'
+                      AND a.fecha BETWEEN COALESCE(pa.fecha_inicio, '1970-01-01')
+                                      AND COALESCE(pa.fecha_fin, CURDATE())
+                ), 0)                                        AS horas_acumuladas,
                 COALESCE(dpa.horas_meta, 1440)               AS horas_meta,
                 dpa.fecha_inicio_pasantia,
                 dpa.fecha_fin_estimada,
                 dpa.observaciones,
                 dpa.periodo_id,
+                pa.nombre                                    AS periodo_nombre,
                 d.nombre           AS departamento_nombre,
                 tup.nombres        AS tutor_nombres,
                 tup.apellidos      AS tutor_apellidos
             FROM usuarios u
-            LEFT JOIN datos_personales dp  ON dp.usuario_id  = u.id
-            LEFT JOIN datos_pasante    dpa ON dpa.usuario_id = u.id
-            LEFT JOIN departamentos    d   ON d.id = dpa.departamento_asignado_id
-            LEFT JOIN usuarios         tu  ON tu.id = dpa.tutor_id
-            LEFT JOIN datos_personales tup ON tup.usuario_id = tu.id
+            LEFT JOIN datos_personales dp   ON dp.usuario_id  = u.id
+            LEFT JOIN datos_pasante    dpa  ON dpa.usuario_id = u.id
+            LEFT JOIN periodos_academicos pa ON pa.id = dpa.periodo_id
+            LEFT JOIN departamentos    d    ON d.id = dpa.departamento_asignado_id
+            LEFT JOIN usuarios         tu   ON tu.id = dpa.tutor_id
+            LEFT JOIN datos_personales tup  ON tup.usuario_id = tu.id
             LEFT JOIN instituciones    inst ON dpa.institucion_procedencia = inst.id
             WHERE u.id = :uid
             {$periodoFilter}

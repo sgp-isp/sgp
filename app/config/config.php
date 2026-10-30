@@ -5,12 +5,13 @@ if (!defined('SESSION_TIMEOUT_SECONDS')) {
 }
 return [
     'db' => [
-        // conexion a la base de datos 
-        'host' => $_ENV['MYSQLHOST'] ?? 'localhost',
-        'name' => $_ENV['MYSQLDATABASE'] ?? 'proyecto_sgp', // Tu base de datos local
-        'user' => $_ENV['MYSQLUSER'] ?? 'root',            // Tu usuario local
-        'pass' => $_ENV['MYSQLPASSWORD'] ?? '',             // Tu contraseña local (vacía)
-        'port' => $_ENV['MYSQLPORT'] ?? '3306',
+        // Conexión a la base de datos (Compatible con Local XAMPP y Cloud: Render / TiDB Cloud)
+        'host'    => $_ENV['MYSQLHOST'] ?? $_ENV['DB_HOST'] ?? 'localhost',
+        'name'    => $_ENV['MYSQLDATABASE'] ?? $_ENV['DB_NAME'] ?? 'proyecto_sgp',
+        'user'    => $_ENV['MYSQLUSER'] ?? $_ENV['DB_USER'] ?? 'root',
+        'pass'    => $_ENV['MYSQLPASSWORD'] ?? $_ENV['DB_PASS'] ?? '',
+        'port'    => $_ENV['MYSQLPORT'] ?? $_ENV['DB_PORT'] ?? '3306',
+        'ssl'     => isset($_ENV['MYSQLSSL']) ? filter_var($_ENV['MYSQLSSL'], FILTER_VALIDATE_BOOLEAN) : null,
         'charset' => 'utf8mb4'
     ],
-    ];
+];

@@ -1,0 +1,9 @@
+# [FIX-ED-2] Los archivos de evidencia ya no se guardan aquí — se sirven vía
+# ActividadesController::verEvidencia() desde app/storage/uploads/evidencias_actividad/,
+# fuera del árbol público. Esta carpeta queda bloqueada como defensa adicional.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Deny from all
+</IfModule>

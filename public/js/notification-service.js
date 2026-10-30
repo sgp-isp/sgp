@@ -41,7 +41,7 @@ if (typeof window.NotificationService === 'undefined') {
             }
         }
 
-        show(type, title, message, duration = 5000) {
+        show(type, title, message, duration = 2800) {
             this._ensureContainer();
             this._enforceStackLimit();
 

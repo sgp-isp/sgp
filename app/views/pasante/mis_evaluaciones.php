@@ -63,7 +63,7 @@ $ringColor = notaColor($promGlobal);
 
 /* ── hero ── */
 .ev-hero{
-    background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);
+    background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--color-primary, #1e3a8a) 45%,var(--color-accent-brand, #2563eb) 100%);
     border-radius:24px;padding:32px 36px;position:relative;overflow:hidden;
     display:flex;align-items:center;gap:20px;flex-wrap:wrap;
     box-shadow:0 8px 32px rgba(30,58,138,.35);
@@ -187,9 +187,99 @@ $ringColor = notaColor($promGlobal);
     margin:0 auto 18px;font-size:2rem;color:#1e3a8a;
 }
 
-/* ── sparkline-bar mensual ── */
-.ev-spark{width:100%;height:6px;background:#f1f5f9;border-radius:4px;overflow:hidden;margin-top:4px}
-.ev-spark-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+/* ── mobile responsive ── */
+@media(max-width:768px){
+    .ev-hero {
+        padding: 20px 18px;
+        border-radius: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .ev-hero-icon {
+        padding: 12px;
+        border-radius: 14px;
+    }
+    .ev-perf {
+        padding: 20px 16px;
+        border-radius: 16px;
+    }
+    .ev-list-card {
+        padding: 18px 16px;
+        border-radius: 16px;
+    }
+}
+
+/* ─── DARK MODE SUPPORT (MIS EVALUACIONES) ───────────── */
+[data-theme="dark"] .ev-hero {
+    background: linear-gradient(135deg, #090d16 0%, #0f1c3f 45%, #1e3a8a 100%) !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+[data-theme="dark"] .ev-kpi {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+[data-theme="dark"] .ev-kpi-val {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .ev-kpi-label,
+[data-theme="dark"] .ev-kpi-sub {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .ev-perf {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+[data-theme="dark"] .ev-ring-score {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .ev-ring-label {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .ev-ring-denom {
+    color: #64748b !important;
+}
+[data-theme="dark"] .ev-ring-wrap circle:first-child {
+    stroke: #1e293b !important;
+}
+[data-theme="dark"] .ev-list-card {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+[data-theme="dark"] .ev-list-header {
+    border-bottom-color: #1e293b !important;
+}
+[data-theme="dark"] .ev-list-header h3 {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .ev-item {
+    background: #0d1526 !important;
+    border-color: #1e293b !important;
+}
+[data-theme="dark"] .ev-item-lapso {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .ev-item-meta {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .ev-item-obs {
+    background: #141f36 !important;
+    border-left-color: #38bdf8 !important;
+    color: #cbd5e1 !important;
+}
+[data-theme="dark"] .ev-spark {
+    background: #1e293b !important;
+}
+[data-theme="dark"] .ev-empty h2 {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .ev-empty p {
+    color: #94a3b8 !important;
+}
 </style>
 
 <div class="ev-wrap">

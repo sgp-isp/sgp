@@ -24,7 +24,7 @@ $porcHoy            = $pasantesActivos > 0 ? round($presentesHoy / $pasantesActi
 
 /* ── Hero ── */
 .td-hero {
-    background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 45%,#3b82f6 100%);
+    background:linear-gradient(135deg,var(--color-primary, #0f172a) 0%,var(--gradient-mid, #1e3a8a) 45%,var(--color-accent-brand, #3b82f6) 100%);
     border-radius:24px; padding:0; overflow:hidden; position:relative;
     box-shadow:0 20px 60px rgba(30,58,138,.28);
 }

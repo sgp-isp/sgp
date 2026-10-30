@@ -1,0 +1,23 @@
+/* ── Fuentes locales SGP ── */
+
+/* Geist Sans */
+@font-face { font-family: 'Geist'; font-style: normal; font-weight: 300; font-display: swap;
+    src: url('../assets/fonts/Geist-Light.woff2') format('woff2'); }
+@font-face { font-family: 'Geist'; font-style: normal; font-weight: 400; font-display: swap;
+    src: url('../assets/fonts/Geist-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Geist'; font-style: normal; font-weight: 500; font-display: swap;
+    src: url('../assets/fonts/Geist-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'Geist'; font-style: normal; font-weight: 600; font-display: swap;
+    src: url('../assets/fonts/Geist-SemiBold.woff2') format('woff2'); }
+@font-face { font-family: 'Geist'; font-style: normal; font-weight: 700; font-display: swap;
+    src: url('../assets/fonts/Geist-Bold.woff2') format('woff2'); }
+
+/* JetBrains Mono */
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400; font-display: swap;
+    src: url('../assets/fonts/JetBrainsMono-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 500; font-display: swap;
+    src: url('../assets/fonts/JetBrainsMono-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 600; font-display: swap;
+    src: url('../assets/fonts/JetBrainsMono-SemiBold.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 700; font-display: swap;
+    src: url('../assets/fonts/JetBrainsMono-Bold.woff2') format('woff2'); }

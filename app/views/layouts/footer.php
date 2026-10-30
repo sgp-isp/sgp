@@ -6,13 +6,70 @@
 
 <!-- Footer Institucional sobre fondo oscuro -->
 <footer class="auth-institutional-footer">
-    <p class="copyright" style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap;">
-        <span>Copyleft <?= date('Y') ?> Instituto de Salud Pública. Algunos derechos reservados.</span>
-        <button type="button" onclick="abrirAyudaLogin()" data-tooltip="Guía de uso del sistema" class="sgp-help-btn">
-            <i class="ti ti-help-circle"></i> ¿Necesitas ayuda?
-        </button>
+    <div class="auth-footer-legal">
+        <a href="<?= URLROOT ?>/legal/terminos" target="_blank" class="auth-footer-link">Términos de Servicio</a>
+        <span class="auth-footer-dot">•</span>
+        <a href="<?= URLROOT ?>/legal/privacidad" target="_blank" class="auth-footer-link">Política de Privacidad</a>
+    </div>
+    <p class="auth-footer-copyleft">
+        Copyleft <?= date('Y') ?> Instituto de Salud Pública. Algunos derechos reservados.
     </p>
 </footer>
+
+<!-- Botón Acoplado en la Esquina Inferior Derecha: ¿Necesitas ayuda? -->
+<div class="sgp-help-docked">
+    <button type="button" onclick="abrirAyudaLogin()" data-tooltip="Guía de uso del sistema" class="sgp-help-btn" aria-label="Abrir guía de ayuda del sistema">
+        <i class="ti ti-help-circle"></i>
+        <span>¿Necesitas ayuda?</span>
+    </button>
+</div>
+
+<!-- Banner Discreto de Consentimiento de Cookies (Ubicado en esquina izquierda para no interferir con ayuda) -->
+<div id="sgpCookieBanner" style="display: none; position: fixed; bottom: 20px; left: 20px; max-width: 380px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 14px 18px; color: #f8fafc; font-size: 0.82rem; box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 999999; animation: fadeInUp 0.4s ease-out;">
+    <div style="display: flex; align-items: flex-start; gap: 10px;">
+        <span style="font-size: 1.3rem; line-height: 1;">🍪</span>
+        <div style="flex: 1;">
+            <div style="font-weight: 600; margin-bottom: 3px; color: #ffffff;">Uso de Cookies Técnicas</div>
+            <p style="margin: 0 0 10px 0; color: #94a3b8; line-height: 1.4;">
+                Este portal utiliza únicamente cookies técnicas y de sesión estrictamente necesarias para la seguridad del acceso.
+            </p>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" onclick="aceptarCookiesSGP()" style="background: #2563eb; color: #ffffff; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer;">
+                    Entendido
+                </button>
+                <a href="<?= URLROOT ?>/legal/privacidad" target="_blank" style="color: #60a5fa; font-size: 0.75rem; text-decoration: none;">
+                    Más información
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    try {
+        if (!localStorage.getItem('sgp_cookie_consent')) {
+            setTimeout(function() {
+                var b = document.getElementById('sgpCookieBanner');
+                if (b) b.style.display = 'block';
+            }, 1000);
+        }
+    } catch (e) {}
+})();
+
+function aceptarCookiesSGP() {
+    try {
+        localStorage.setItem('sgp_cookie_consent', 'accepted');
+    } catch (e) {}
+    var b = document.getElementById('sgpCookieBanner');
+    if (b) {
+        b.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        b.style.opacity = '0';
+        b.style.transform = 'translateY(10px)';
+        setTimeout(function() { b.style.display = 'none'; }, 300);
+    }
+}
+</script>
 
 <script>
 // [FIX-UX] Cache-busting para las capturas de /img/ayuda/: sin esto, el

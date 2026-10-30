@@ -15,7 +15,7 @@ $csrfToken       = $data['csrfToken']       ?? '';
 .sc-wrap { width:100%; }
 
 /* Banner */
-.sc-banner { background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);border-radius:20px;padding:28px 36px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:relative;overflow:hidden; }
+.sc-banner { background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--gradient-mid, #1e3a8a) 50%,var(--color-accent-brand, #2563eb) 100%);border-radius:20px;padding:28px 36px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:relative;overflow:hidden; }
 .sc-banner::before { content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:rgba(255,255,255,0.06);border-radius:50%; }
 .sc-back { display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);backdrop-filter:blur(10px);color:white;padding:8px 16px;border-radius:9px;font-size:.82rem;font-weight:700;text-decoration:none;transition:all .2s; }
 .sc-back:hover { background:rgba(255,255,255,0.25);color:white; }
@@ -43,7 +43,7 @@ $csrfToken       = $data['csrfToken']       ?? '';
 .sc-prog-bar { height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden;margin:8px 0; }
 .sc-prog-fill { height:100%;border-radius:3px; }
 .sc-foot { padding:10px 18px;border-top:1px solid #f1f5f9;background:#fafafa;display:flex;justify-content:space-between;align-items:center; }
-.btn-ver-sc { display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#172554,#2563eb);color:white;border:none;padding:7px 14px;border-radius:8px;font-weight:600;font-size:.8rem;text-decoration:none;cursor:pointer;transition:all .2s; }
+.btn-ver-sc { display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,var(--color-primary, #172554),var(--color-accent-brand, #2563eb));color:white;border:none;padding:7px 14px;border-radius:8px;font-weight:600;font-size:.8rem;text-decoration:none;cursor:pointer;transition:all .2s; }
 .btn-ver-sc:hover { opacity:.9;color:white; }
 .btn-del-sc { display:inline-flex;align-items:center;gap:5px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:7px 12px;border-radius:8px;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .2s; }
 .btn-del-sc:hover { background:#dc2626;color:white;border-color:#dc2626; }
@@ -86,7 +86,7 @@ $csrfToken       = $data['csrfToken']       ?? '';
 
 /* ── Header premium ── */
 .sm-head {
-    background:linear-gradient(135deg,#0f2460 0%,#1e3a8a 45%,#2563eb 100%);
+    background:linear-gradient(135deg,var(--color-primary, #0f2460) 0%,var(--gradient-mid, #1e3a8a) 45%,var(--color-accent-brand, #2563eb) 100%);
     padding:22px 26px 18px;
     display:flex;justify-content:space-between;align-items:flex-start;
     flex-shrink:0;position:relative;overflow:hidden;
@@ -120,7 +120,7 @@ $csrfToken       = $data['csrfToken']       ?? '';
 
 /* ── Step progress bar ── */
 .sm-progress {
-    background:linear-gradient(135deg,#0f2460,#1e3a8a);
+    background:linear-gradient(135deg,var(--color-primary, #0f2460),var(--gradient-mid, #1e3a8a));
     padding:0 26px 20px;display:flex;align-items:center;flex-shrink:0;
 }
 .sm-prog-track { flex:1;display:flex;align-items:center;gap:0; }
@@ -174,7 +174,7 @@ $csrfToken       = $data['csrfToken']       ?? '';
 /* Botones */
 .f-btn-primary {
     flex:2;padding:12px 20px;border:none;border-radius:11px;cursor:pointer;
-    background:linear-gradient(135deg,#1e3a8a,#2563eb);
+    background:linear-gradient(135deg,var(--color-primary, #1e3a8a),var(--color-accent-brand, #2563eb));
     color:white;font-size:.88rem;font-weight:700;
     display:flex;align-items:center;justify-content:center;gap:7px;
     transition:all .2s;font-family:inherit;
@@ -247,7 +247,61 @@ $csrfToken       = $data['csrfToken']       ?? '';
 .eb-otra { background:#fef9c3;color:#b45309; }
 
 @media(max-width:1100px){ .sc-grid{grid-template-columns:1fr 1fr;} }
-@media(max-width:640px)  { .sc-grid{grid-template-columns:1fr;} .sc-kpi-row{grid-template-columns:1fr;} }
+@media(max-width:640px)  { 
+    .sc-grid{grid-template-columns:1fr;} 
+    .sc-kpi-row{grid-template-columns:1fr;} 
+    .sc-banner { padding:20px 16px; border-radius:16px; }
+    .sc-action-btn { width: 100%; justify-content: center; }
+}
+
+/* ── Dark Mode Servicio Comunitario ── */
+[data-theme="dark"] .sc-banner {
+    background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%) !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+[data-theme="dark"] .sc-kpi,
+[data-theme="dark"] .sc-card,
+[data-theme="dark"] .sc-list-card,
+[data-theme="dark"] .timeline-card {
+    background: #111a2e !important;
+    border-color: #1e293b !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .sc-kpi p,
+[data-theme="dark"] .tl-meta {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .sc-card-title,
+[data-theme="dark"] .tl-title,
+[data-theme="dark"] .timeline-card > div:first-child,
+[data-theme="dark"] .sc-list-row > div:nth-child(2) > div:first-child {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .sc-row {
+    color: #cbd5e1 !important;
+}
+[data-theme="dark"] .sc-prog-bar {
+    background: #0d1526 !important;
+}
+[data-theme="dark"] .sc-foot {
+    background: #0d1526 !important;
+    border-top: 1px solid #1e293b !important;
+}
+[data-theme="dark"] .view-toggle {
+    background: #0d1526 !important;
+    border: 1px solid #1e293b !important;
+}
+[data-theme="dark"] .vt-btn {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .vt-btn.active {
+    background: #1e293b !important;
+    color: #60a5fa !important;
+}
+[data-theme="dark"] .tl-item::before {
+    background: #1e293b !important;
+}
 </style>
 
 <div class="sc-wrap">
@@ -278,17 +332,17 @@ $csrfToken       = $data['csrfToken']       ?? '';
 
 <!-- KPIs -->
 <div class="sc-kpi-row">
-    <div class="sc-kpi" style="border-left:4px solid #059669;" onmouseover="this.style.boxShadow='0 12px 24px rgba(5,150,105,.2)'" onmouseout="this.style.boxShadow=''">
+    <div class="sc-kpi" style="border-left:4px solid #059669;" onmouseover="this.style.boxShadow='0 12px 20px -8px rgba(5,150,105,.5)'" onmouseout="this.style.boxShadow=''">
         <div><p style="color:#64748b;font-size:.75rem;margin:0 0 5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Actividades en Curso</p>
         <h2 style="font-size:2rem;font-weight:800;color:#059669;margin:0;"><?= $statActivas ?></h2></div>
         <div style="background:#f0fdf4;color:#059669;width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;"><i class="ti ti-activity"></i></div>
     </div>
-    <div class="sc-kpi" style="border-left:4px solid #2563eb;" onmouseover="this.style.boxShadow='0 12px 24px rgba(37,99,235,.2)'" onmouseout="this.style.boxShadow=''">
+    <div class="sc-kpi" style="border-left:4px solid #2563eb;" onmouseover="this.style.boxShadow='0 12px 20px -8px rgba(37,99,235,.5)'" onmouseout="this.style.boxShadow=''">
         <div><p style="color:#64748b;font-size:.75rem;margin:0 0 5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Total Participantes</p>
         <h2 style="font-size:2rem;font-weight:800;color:#2563eb;margin:0;"><?= $statParticip ?></h2></div>
         <div style="background:#eff6ff;color:#2563eb;width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;"><i class="ti ti-users"></i></div>
     </div>
-    <div class="sc-kpi" style="border-left:4px solid #64748b;" onmouseover="this.style.boxShadow='0 12px 24px rgba(100,116,139,.2)'" onmouseout="this.style.boxShadow=''">
+    <div class="sc-kpi" style="border-left:4px solid #64748b;" onmouseover="this.style.boxShadow='0 12px 20px -8px rgba(100,116,139,.45)'" onmouseout="this.style.boxShadow=''">
         <div><p style="color:#64748b;font-size:.75rem;margin:0 0 5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Finalizadas</p>
         <h2 style="font-size:2rem;font-weight:800;color:#64748b;margin:0;"><?= $statFinalizadas ?></h2></div>
         <div style="background:#f1f5f9;color:#64748b;width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;"><i class="ti ti-check"></i></div>

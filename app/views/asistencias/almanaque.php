@@ -715,21 +715,21 @@ $diasNombreCorto = ['lunes','martes','miércoles','jueves','viernes','sábado','
 <!-- ═══ KPIs ═══════════════════════════════════════════════════════════ -->
 <div class="alm-kpis">
 
-    <div class="alm-kpi" style="border-left:4px solid <?= $kpiColor ?>;">
+    <div class="alm-kpi" style="border-left:4px solid <?= $kpiColor ?>;" title="Porcentaje de asistencia sobre los <?= $laborablesAnio ?> días transcurridos a la fecha. El avance total de la meta es <?= $pctHoras ?>% (<?= $horasAcum ?>h / <?= $horasMeta ?>h).">
         <div class="alm-kpi-val" style="color:<?= $kpiColor ?>;"><?= $pct ?>%</div>
         <div class="alm-kpi-lbl" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
             <?php if ($estadoPas === 'Activo'): ?>
-            Asistencia hasta hoy
-            <span style="font-size:.6rem;background:#fef9c3;color:#854d0e;border-radius:10px;padding:1px 6px;font-weight:700;white-space:nowrap;">en curso</span>
+            Puntualidad a la Fecha
+            <span style="font-size:.6rem;background:#eff6ff;color:#1d4ed8;border-radius:10px;padding:1px 6px;font-weight:700;white-space:nowrap;">en curso</span>
             <?php else: ?>
             Asistencia <?= $anio ?>
             <?php endif; ?>
         </div>
-        <div style="font-size:.68rem;color:#94a3b8;margin-top:2px;">
+        <div style="font-size:.68rem;color:#64748b;margin-top:2px;">
             <?php if ($estadoPas === 'Activo'): ?>
-            de los <?= $laborablesAnio ?> días hábiles en <?= $anio ?>
+            <strong><?= ($stats['P'] + $stats['J']) ?></strong> de <strong><?= $laborablesAnio ?></strong> días transcurridos asistidos
             <?php else: ?>
-            <?= $diasTrans ?> de <?= $diasTotal ?> días transcurridos
+            <strong><?= $diasTrans ?></strong> de <strong><?= $diasTotal ?></strong> días transcurridos
             <?php endif; ?>
         </div>
         <div style="height:5px;border-radius:20px;background:#e2e8f0;overflow:hidden;margin-top:6px;">
@@ -808,7 +808,8 @@ $diasNombreCorto = ['lunes','martes','miércoles','jueves','viernes','sábado','
         $horasFaltantes    = $horasMeta - $horasAcum;
         $horasPosiblesTot  = $diasRest * 8;           // máximo alcanzable antes de fecha fin
         $metaAlcanzable    = $horasPosiblesTot >= $horasFaltantes;
-        $promH = $diasTrans > 0 ? round($horasAcum / $diasTrans, 1) : 8.0;
+        $diasMarcados      = ($stats['P'] ?? 0) + ($stats['J'] ?? 0) + ($stats['A'] ?? 0);
+        $promH             = $diasMarcados > 0 ? round($horasAcum / $diasMarcados, 1) : ($diasTrans > 0 ? round($horasAcum / $diasTrans, 1) : 8.0);
         ?>
         <?php if ($horasFaltantes > 0): ?>
         <?php if ($metaAlcanzable): ?>
@@ -1556,9 +1557,9 @@ $mesesEs2 = ['01'=>'Ene','02'=>'Feb','03'=>'Mar','04'=>'Abr','05'=>'May','06'=>'
 
 })();
 
-/* ── Filtro Historial con DataTables ── */
-let tableHistorial = null;
-let fpHistorial = null;
+/* ── Filtro Historial con DataTables (var para PJAX) ── */
+var tableHistorial = null;
+var fpHistorial = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('histTable')) {

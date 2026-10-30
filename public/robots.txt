@@ -1,0 +1,26 @@
+# SGP ISPEB - Protocolo de Exclusión para Motores de Búsqueda
+User-agent: *
+# Permitir indexación de accesos públicos e informativos
+Allow: /
+Allow: /auth/login
+Allow: /kiosco
+Allow: /legal/terminos
+Allow: /legal/privacidad
+
+# Proteger áreas administrativas, gestión interna, API y almacenamiento
+Disallow: /admin
+Disallow: /superadmin
+Disallow: /actualizaciones
+Disallow: /seguridad
+Disallow: /api/
+Disallow: /storage/
+Disallow: /app/
+Disallow: /database/
+Disallow: /users/
+Disallow: /pasantes/
+Disallow: /asistencias/
+Disallow: /reportes/
+Disallow: /backup/
+Disallow: /bitacora/
+
+Sitemap: /sitemap.xml

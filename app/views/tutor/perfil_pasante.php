@@ -21,7 +21,7 @@ $estadoClass = match($pasante->estado_pasantia ?? '') {
 .tpp { padding:1.5rem 2rem; }
 /* Banner */
 .tpp-banner {
-    background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);
+    background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--gradient-mid, #1e3a8a) 50%,var(--color-accent-brand, #2563eb) 100%);
     border-radius:20px; padding:22px 30px; margin-bottom:1.5rem;
     display:flex; align-items:center; justify-content:space-between;
     position:relative; overflow:hidden; gap:16px;

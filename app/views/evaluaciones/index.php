@@ -15,9 +15,13 @@ $periodoActivo   = $data['periodoActivo']   ?? null;
 
 // ─── KPIs ──────────────────────────────────────────────────────────────────
 $promedioGlobal = 0;
+$promedioTexto  = '—';
+$promedioSub    = 'Sin evaluaciones aún';
 if (!empty($evaluaciones)) {
     $suma = array_sum(array_map(fn($e) => (float)($e->promedio_final ?? 0), $evaluaciones));
     $promedioGlobal = round($suma / count($evaluaciones), 2);
+    $promedioTexto  = $promedioGlobal . '/5';
+    $promedioSub    = (float)$promedioGlobal >= 3 ? 'Rendimiento positivo' : 'Requiere atención';
 }
 $totalEvaluados  = count(array_unique(array_map(fn($e) => (int)($e->pasante_id ?? 0), $evaluaciones)));
 $sinEvaluar      = array_values(array_filter($pasantes, fn($p) => (int)($p->total_evaluaciones ?? 0) === 0));
@@ -88,12 +92,104 @@ $totalCriterios = array_sum(array_map(fn($c) => count($c['items']), $categorias)
     gap: 16px;
     margin-bottom: 24px;
 }
-.ev-banner {
-    background: linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);
-    border-radius: 20px; padding: 28px 36px; margin-bottom: 24px;
-    position: relative; overflow: hidden;
-    display: flex; align-items: center; justify-content: space-between;
+.ev-kpi-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px 22px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
+    cursor: default;
 }
+.ev-kpi-card:hover { transform: translateY(-4px); }
+.ev-kpi-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.ev-kpi-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; }
+.ev-kpi-val { font-size: 2.3rem; font-weight: 900; line-height: 1; margin-top: 2px; }
+.ev-kpi-sub { font-size: .74rem; color: #94a3b8; font-weight: 500; }
+.ev-kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+
+.ev-kpi-card::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    opacity: .07;
+    pointer-events: none;
+}
+
+.ev-kpi-card.ev-kpi-blue   { border-top: 3px solid #2563eb; } .ev-kpi-card.ev-kpi-blue::after   { background: #2563eb; }
+.ev-kpi-card.ev-kpi-yellow { border-top: 3px solid #f59e0b; } .ev-kpi-card.ev-kpi-yellow::after { background: #f59e0b; }
+.ev-kpi-card.ev-kpi-green  { border-top: 3px solid #059669; } .ev-kpi-card.ev-kpi-green::after  { background: #059669; }
+.ev-kpi-card.ev-kpi-red    { border-top: 3px solid #dc2626; } .ev-kpi-card.ev-kpi-red::after    { background: #dc2626; }
+
+.ev-kpi-card.ev-kpi-blue:hover   { box-shadow: 0 12px 22px -6px rgba(37, 99, 235, 0.55) !important; }
+.ev-kpi-card.ev-kpi-yellow:hover { box-shadow: 0 12px 22px -6px rgba(245, 158, 11, 0.55) !important; }
+.ev-kpi-card.ev-kpi-green:hover  { box-shadow: 0 12px 22px -6px rgba(5, 150, 105, 0.55) !important; }
+.ev-kpi-card.ev-kpi-red:hover    { box-shadow: 0 12px 22px -6px rgba(220, 38, 38, 0.55) !important; }
+
+/* Modo oscuro */
+[data-theme="dark"] .ev-kpi-card {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .ev-kpi-card.ev-kpi-blue   { border-top: 3px solid #3b82f6 !important; }
+[data-theme="dark"] .ev-kpi-card.ev-kpi-yellow { border-top: 3px solid #f59e0b !important; }
+[data-theme="dark"] .ev-kpi-card.ev-kpi-green  { border-top: 3px solid #10b981 !important; }
+[data-theme="dark"] .ev-kpi-card.ev-kpi-red    { border-top: 3px solid #ef4444 !important; }
+
+[data-theme="dark"] .ev-kpi-card:hover.ev-kpi-blue   { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(59, 130, 246, 0.5) !important; border-top-color: #60a5fa !important; }
+[data-theme="dark"] .ev-kpi-card:hover.ev-kpi-yellow { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(245, 158, 11, 0.5) !important; border-top-color: #fbbf24 !important; }
+[data-theme="dark"] .ev-kpi-card:hover.ev-kpi-green  { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(16, 185, 129, 0.5) !important; border-top-color: #34d399 !important; }
+[data-theme="dark"] .ev-kpi-card:hover.ev-kpi-red    { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(239, 68, 68, 0.5) !important; border-top-color: #f87171 !important; }
+
+[data-theme="dark"] .ev-kpi-val { color: #f8fafc !important; }
+[data-theme="dark"] .ev-kpi-label,
+[data-theme="dark"] .ev-kpi-sub { color: #94a3b8 !important; }
+
+.ev-banner {
+    background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%) !important;
+    border-radius: 20px; padding: 32px 36px; margin-bottom: 24px; color: #fff;
+    position: relative; overflow: hidden; box-shadow: 0 8px 32px rgba(15, 23, 42, .35);
+    display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+}
+.ev-banner::before {
+    content: ''; position: absolute; top: -60px; right: -60px; width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(255, 255, 255, .12) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%; pointer-events: none;
+}
+.ev-banner::after {
+    content: ''; position: absolute; bottom: -80px; left: 30%; width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255, 255, 255, .07) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%; pointer-events: none;
+}
+.ev-banner-main { display: flex; align-items: center; gap: 20px; z-index: 1; min-width: 0; }
+.ev-banner-icon {
+    width: 60px; height: 60px; border-radius: 16px; background: rgba(255, 255, 255, .18);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center; font-size: 1.9rem; flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, .25); color: #fff;
+}
+.ev-banner-icon i { font-size: 1.9rem; color: #fff; }
+.ev-banner-title { font-size: 1.9rem; font-weight: 800; margin: 0 0 5px; letter-spacing: -0.5px; color: #fff; }
+.ev-banner-sub { font-size: 0.95rem; opacity: .82; margin: 0; color: #fff; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ev-btn-new-hero {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255, 255, 255, .18); backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, .35); color: #fff;
+    padding: 11px 22px; border-radius: 12px; font-weight: 700; font-size: .88rem;
+    cursor: pointer; transition: all .2s; white-space: nowrap; flex-shrink: 0;
+}
+.ev-btn-new-hero:hover { background: rgba(255, 255, 255, .28); transform: translateY(-2px); color: #fff; }
+
 /* El slide ocupa el 50% del slider (200% de ancho total) */
 #evalOuter          { height: calc(100vh - 310px); min-height: 420px; }
 #vistaDashboard     { width: 50%; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 100%; box-sizing: border-box; padding-bottom: 16px; }
@@ -103,28 +199,61 @@ $totalCriterios = array_sum(array_map(fn($c) => count($c['items']), $categorias)
 .ev-panel-b-grid { display: grid; grid-template-columns: 1fr 290px; gap: 16px; align-items: start; }
 .ev-sidebar      { position: sticky; top: 86px; display: flex; flex-direction: column; gap: 14px; }
 
-/* ── TABLET ≤ 991px ────────────────────────────────────────────────── */
+/* ── TABLET ≤ 991px & MÓVIL ────────────────────────────────────────── */
 @media (max-width: 991px) {
     .ev-banner {
         flex-direction: column;
         align-items: flex-start;
         padding: 20px 18px;
-        gap: 14px;
+        gap: 16px;
+        border-radius: 18px;
     }
-    .ev-banner-deco   { display: none !important; }
-    .ev-banner-btn    { width: 100%; }
-    .ev-banner-btn button { width: 100%; justify-content: center; }
-    .ev-kpi-grid      { grid-template-columns: 1fr 1fr; gap: 12px; }
-    #evalOuter        { height: calc(100vh - 460px); min-height: 320px; }
+    .ev-banner-main { width: 100%; gap: 14px; }
+    .ev-banner-icon { width: 48px; height: 48px; font-size: 1.4rem; border-radius: 14px; }
+    .ev-banner-icon i { font-size: 1.4rem; }
+    .ev-banner-title { font-size: 1.4rem; line-height: 1.25; }
+    .ev-banner-sub { font-size: 0.82rem; }
+    .ev-banner-btn { width: 100%; }
+    .ev-banner-btn .ev-btn-new-hero { width: 100%; justify-content: center; padding: 12px 16px; min-height: 42px; }
+    .ev-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; margin-bottom: 20px; }
+    .ev-kpi-card { padding: 16px 14px !important; border-radius: 16px !important; }
+    .ev-kpi-val { font-size: 1.8rem !important; }
+    .ev-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
+    #evalOuter { height: calc(100vh - 460px); min-height: 320px; }
+}
+
+@media (max-width: 480px) {
+    .ev-banner {
+        padding: 18px 16px !important;
+        border-radius: 18px !important;
+        margin-bottom: 18px !important;
+        gap: 14px !important;
+    }
+    .ev-banner-main { gap: 12px !important; }
+    .ev-banner-icon { width: 44px !important; height: 44px !important; border-radius: 13px !important; }
+    .ev-banner-icon i { font-size: 1.3rem !important; }
+    .ev-banner-title { font-size: 1.35rem !important; }
+    .ev-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+    .ev-kpi-card { padding: 14px 12px !important; }
+    .ev-kpi-val { font-size: 1.6rem !important; }
+    .ev-kpi-label { font-size: 0.68rem !important; }
+    .ev-kpi-sub { font-size: 0.68rem !important; }
+}
+
+[data-theme="dark"] .ev-banner {
+    background: linear-gradient(135deg, #090d16 0%, #0f1c3f 50%, #1e3a8a 100%) !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
 }
 
 /* ── MÓVIL ≤ 767px — Navegación push nativa ─────────────────────── */
 @media (max-width: 767px) {
 
     /* ── Panel A ── */
-    .ev-kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    .ev-kpi-grid .ev-kpi-card { padding: 14px 12px !important; }
-    .ev-kpi-grid .ev-kpi-val  { font-size: 1.5rem !important; }
+    .ev-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; margin-bottom: 20px !important; }
+    .ev-kpi-grid .ev-kpi-card { padding: 16px 14px !important; border-radius: 16px !important; }
+    .ev-kpi-grid .ev-kpi-val  { font-size: 1.8rem !important; }
+    .ev-kpi-grid .ev-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
     #vistaDashboard { grid-template-columns: 1fr !important; gap: 12px !important; width: 100% !important; height: auto !important; padding-bottom: 0 !important; }
     #vistaDashboard > div { height: auto !important; }
     .ev-list-scroll { height: 280px !important; min-height: 160px !important; flex: none !important; }
@@ -429,23 +558,28 @@ $totalCriterios = array_sum(array_map(fn($c) => count($c['items']), $categorias)
 <!-- ═══ BANNER ════════════════════════════════════════════════════════════════ -->
 <div class="ev-banner">
     <div class="ev-banner-deco" style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:rgba(255,255,255,0.04);border-radius:50%;pointer-events:none;"></div>
-    <div style="display:flex;align-items:center;gap:16px;z-index:1;">
-        <div style="background:rgba(255,255,255,0.15);border-radius:14px;padding:12px;flex-shrink:0;">
-            <i class="ti ti-star" style="font-size:28px;color:white;"></i>
+    <div class="ev-banner-main">
+        <div class="ev-banner-icon">
+            <i class="ti ti-star"></i>
         </div>
         <div>
-            <h1 style="color:white;font-size:1.65rem;font-weight:700;margin:0;">Evaluaciones de Pasantes</h1>
-            <p style="color:rgba(255,255,255,0.7);margin:4px 0 0;font-size:0.85rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <h1 class="ev-banner-title">Evaluaciones de Pasantes</h1>
+            <p class="ev-banner-sub">
                 <i class="ti ti-clipboard-check"></i>
                 <span>Gestión y Seguimiento Académico</span>
+                <?php if ($hayPeriodoActivo && !empty($periodoActivo->nombre)): ?>
+                <span style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.25);border-radius:50px;padding:3px 12px;color:white;font-weight:700;font-size:0.78rem;">
+                    <i class="ti ti-calendar" style="margin-right:3px;"></i><?= htmlspecialchars($periodoActivo->nombre) ?>
+                </span>
+                <?php endif; ?>
                 <?php if ($total > 0): ?>
                 <span style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:50px;padding:3px 12px;color:white;font-weight:700;font-size:0.78rem;"><?= $total ?> registradas</span>
                 <?php endif; ?>
             </p>
         </div>
     </div>
-    <div class="ev-banner-btn" style="background:rgba(0,0,0,0.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:5px;z-index:1;">
-        <button onclick="EvalApp.nuevaDesdeBoton()" style="background:white;color:#1e3a8a;border:none;padding:11px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;font-size:0.9rem;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+    <div class="ev-banner-btn" style="z-index:1;">
+        <button onclick="EvalApp.nuevaDesdeBoton()" class="ev-btn-new-hero">
             <i class="ti ti-plus"></i> Nueva Evaluación
         </button>
     </div>
@@ -475,21 +609,25 @@ $totalCriterios = array_sum(array_map(fn($c) => count($c['items']), $categorias)
 
 <!-- ═══ KPIs ═════════════════════════════════════════════════════════════════ -->
 <div class="ev-kpi-grid">
-<?php foreach ([
-    ['label' => 'Total Evaluaciones', 'value' => $total,              'sub' => 'realizadas',       'color' => '#2563eb', 'icon' => 'ti-file-analytics'],
-    ['label' => 'Promedio Global',    'value' => $promedioGlobal.'/5','sub' => 'rendimiento',      'color' => '#f59e0b', 'icon' => 'ti-star'],
-    ['label' => 'Evaluados',          'value' => $totalEvaluados,     'sub' => 'con evaluación',   'color' => '#10b981', 'icon' => 'ti-circle-check'],
-    ['label' => 'Pendientes',         'value' => count($sinEvaluar),  'sub' => 'sin evaluar',      'color' => '#ef4444', 'icon' => 'ti-alert-circle'],
-] as $k): ?>
-<div class="ev-kpi-card" style="background:white;border-radius:16px;padding:18px 20px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid <?= $k['color'] ?>;transition:all .25s;"
-     onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 10px 24px rgba(0,0,0,.09)'"
-     onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.06)'">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <p style="color:#64748b;font-size:0.75rem;margin:0 0 6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;"><?= $k['label'] ?></p>
-        <i class="ti <?= $k['icon'] ?>" style="color:<?= $k['color'] ?>;font-size:1.3rem;opacity:0.65;"></i>
+<?php
+$evKpis = [
+    ['label' => 'Total Evaluaciones', 'value' => $total,              'sub' => $total === 1 ? '1 realizada' : "$total realizadas",    'color' => '#2563eb', 'bg' => '#eff6ff', 'icon' => 'ti-file-analytics', 'type' => 'blue'],
+    ['label' => 'Promedio Global',    'value' => $promedioTexto,      'sub' => $promedioSub,                                         'color' => '#f59e0b', 'bg' => '#fef3c7', 'icon' => 'ti-star',           'type' => 'yellow'],
+    ['label' => 'Pasantes Evaluados', 'value' => $totalEvaluados,     'sub' => $totalEvaluados === 1 ? '1 con evaluación' : "$totalEvaluados con evaluación", 'color' => '#059669', 'bg' => '#f0fdf4', 'icon' => 'ti-circle-check',   'type' => 'green'],
+    ['label' => 'Pendientes',         'value' => count($sinEvaluar),  'sub' => count($sinEvaluar) === 1 ? '1 sin evaluar' : count($sinEvaluar)." sin evaluar", 'color' => '#dc2626', 'bg' => '#fee2e2', 'icon' => 'ti-alert-circle',  'type' => 'red'],
+];
+foreach ($evKpis as $k): ?>
+<div class="ev-kpi-card ev-kpi-<?= $k['type'] ?>">
+    <div class="ev-kpi-top">
+        <div>
+            <div class="ev-kpi-label"><?= $k['label'] ?></div>
+            <div class="ev-kpi-val" style="color:<?= $k['color'] ?>;"><?= $k['value'] ?></div>
+            <div class="ev-kpi-sub"><?= $k['sub'] ?></div>
+        </div>
+        <div class="ev-kpi-icon" style="background:<?= $k['bg'] ?>;">
+            <i class="ti <?= $k['icon'] ?>" style="color:<?= $k['color'] ?>;"></i>
+        </div>
     </div>
-    <h2 class="ev-kpi-val" style="font-size:2.1rem;font-weight:800;color:<?= $k['color'] ?>;margin:0 0 2px;"><?= $k['value'] ?></h2>
-    <p style="color:#94a3b8;font-size:0.75rem;margin:0;"><?= $k['sub'] ?></p>
 </div>
 <?php endforeach; ?>
 </div>
@@ -509,7 +647,7 @@ $totalCriterios = array_sum(array_map(fn($c) => count($c['items']), $categorias)
     <div id="vistaDashboard">
 
         <!-- ─── Card Pendientes por Evaluar ─────────────────────────────── -->
-        <div style="background:white;border-radius:16px;box-shadow:0 4px 6px rgba(0,0,0,0.04);overflow:hidden;border:1px solid #f1f5f9;display:flex;flex-direction:column;min-height:280px;">
+        <div class="ev-card-pendientes" style="border-radius:16px;box-shadow:0 4px 6px rgba(0,0,0,0.04);overflow:hidden;border:1px solid #f1f5f9;display:flex;flex-direction:column;min-height:280px;">
             <div style="padding:20px 24px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
                 <h3 style="font-size:0.95rem;font-weight:700;color:#1e293b;margin:0;">
                     <i class="ti ti-alert-circle" style="color:#ef4444;margin-right:8px;"></i>
@@ -565,7 +703,7 @@ $totalCriterios = array_sum(array_map(fn($c) => count($c['items']), $categorias)
                         'periodo_nombre'  => $p->periodo_nombre ?? '',
                     ]), ENT_QUOTES);
                 ?>
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid #f8fafc;transition:background .15s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">
+                <div class="ev-pend-row" style="display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid #f8fafc;transition:background .15s;">
                     <div style="display:flex;align-items:center;gap:10px;min-width:0;">
                         <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#162660,#2563eb);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.78rem;flex-shrink:0;"><?= $ini ?></div>
                         <div style="min-width:0;">
@@ -588,7 +726,7 @@ $totalCriterios = array_sum(array_map(fn($c) => count($c['items']), $categorias)
         </div>
 
         <!-- ─── Card Historial de Evaluaciones ──────────────────────────── -->
-        <div style="background:white;border-radius:16px;box-shadow:0 4px 6px rgba(0,0,0,0.04);overflow:hidden;border:1px solid #f1f5f9;display:flex;flex-direction:column;min-height:280px;">
+        <div class="ev-card-historial" style="border-radius:16px;box-shadow:0 4px 6px rgba(0,0,0,0.04);overflow:hidden;border:1px solid #f1f5f9;display:flex;flex-direction:column;min-height:280px;">
             <div style="padding:20px 24px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
                 <h3 style="font-size:0.95rem;font-weight:700;color:#1e293b;margin:0;">
                     <i class="ti ti-list-details" style="color:#2563eb;margin-right:8px;"></i>
@@ -609,8 +747,8 @@ $totalCriterios = array_sum(array_map(fn($c) => count($c['items']), $categorias)
                         </svg>
                     </div>
                     <div style="text-align:center;">
-                        <p style="font-weight:700;color:#475569;font-size:0.95rem;margin:0 0 6px;">Sin evaluaciones aún</p>
-                        <p style="color:#94a3b8;font-size:0.82rem;margin:0;line-height:1.5;">Las evaluaciones registradas<br>aparecerán aquí.</p>
+                        <p style="font-weight:700;color:#475569;font-size:0.95rem;margin:0 0 6px;">Sin evaluaciones en este período</p>
+                        <p style="color:#94a3b8;font-size:0.82rem;margin:0;line-height:1.5;">Aún no se han registrado evaluaciones<br>para los pasantes del período activo actual.</p>
                     </div>
                 </div>
                 <?php else: ?>
@@ -622,7 +760,7 @@ $totalCriterios = array_sum(array_map(fn($c) => count($c['items']), $categorias)
                     $pc   = $prom >= 4 ? '#10b981' : ($prom >= 3 ? '#d97706' : ($prom >= 2 ? '#ea580c' : '#ef4444'));
                     $pb   = $prom >= 4 ? '#dcfce7'  : ($prom >= 3 ? '#fef3c7' : ($prom >= 2 ? '#ffedd5' : '#fee2e2'));
                 ?>
-                <div class="ev-hist-row" style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #f8fafc;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                <div class="ev-hist-row" style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #f8fafc;transition:background .15s;">
                     <div class="ev-hist-avatar" style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#162660,#2563eb);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.78rem;flex-shrink:0;"><?= $ini ?></div>
                     <div class="ev-hist-info" style="flex:1;min-width:0;">
                         <div style="font-weight:600;color:#1e293b;font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($pNom) ?></div>

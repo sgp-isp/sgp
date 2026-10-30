@@ -1,0 +1,245 @@
+/**
+ * Tema Personalizado SGP para Choices.js
+ * Adaptado a la paleta institucional (Azul: #162660, Acento: #2563eb, Verde: #10B981)
+ */
+
+/* ==========================================================
+   Contenedor Principal
+   ========================================================== */
+.choices {
+    position: relative;
+    margin-bottom: 0;
+    /* Let form-group handle margins */
+    font-size: 0.95rem;
+}
+
+.choices[data-type*="select-one"] .choices__inner {
+    padding-bottom: 5.5px;
+}
+
+/* El area clickeable del input */
+.choices__inner {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 48px;
+    /* Altura consistente con SGP inputs */
+    padding: 8px 14px;
+    /* Padding interior */
+    padding-right: 32px;
+    /* Espacio para la flechita */
+    background-color: #f9fafb;
+    /* Fondo claro */
+    border: 1.5px solid #e5e7eb;
+    /* Borde sutil */
+    border-radius: 12px;
+    /* Border radius premium de SGP */
+    font-size: 0.95rem;
+    color: #1f2937;
+    transition: all 0.3s ease;
+    /* Transición suave en hover/focus */
+}
+
+/* Hover State */
+.choices:hover .choices__inner {
+    border-color: #d1d5db;
+    /* Borde ligeramente más oscuro en hover */
+    background-color: #f3f4f6;
+}
+
+/* Focus State (Abierto o Activo) */
+.choices.is-focused .choices__inner,
+.choices.is-open .choices__inner {
+    border-color: #2563eb;
+    /* Azul acento SGP */
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    /* Anillo brillante */
+    background-color: #ffffff;
+    /* Fondo blanco al enfocar */
+    border-bottom-left-radius: 0;
+    /* Elimina curva al abrir hacia abajo */
+    border-bottom-right-radius: 0;
+}
+
+/* Si abre hacia arriba */
+.choices.is-flipped.is-open .choices__inner {
+    border-radius: 12px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+/* El texto o item seleccionado */
+.choices__list--single {
+    padding: 0;
+    width: 100%;
+}
+
+.choices[data-type*="select-one"] .choices__list--single {
+    padding-top: 2px;
+}
+
+/* ==========================================================
+   El Menú Desplegable (Dropdown)
+   ========================================================== */
+.choices__list--dropdown,
+.choices__list[aria-expanded] {
+    margin-top: -1.5px;
+    /* Superponer sobre el borde del input ligeramente */
+    background-color: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-top: 1.5px solid #2563eb;
+    /* Top border accent */
+    border-bottom-left-radius: 12px;
+    /* Mantener esquinas redondeadas */
+    border-bottom-right-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+    /* Sombra elegante SGP */
+    z-index: 1050;
+    /* Z-index alto para modales */
+    word-break: break-word;
+    overflow: hidden;
+}
+
+/* Si el dropdown se abre hacia arriba */
+.choices.is-flipped .choices__list--dropdown,
+.choices.is-flipped .choices__list[aria-expanded] {
+    margin-bottom: -1.5px;
+    border-radius: 12px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: 1.5px solid #2563eb;
+    /* Bottom border accent */
+    border-top: 1.5px solid #e5e7eb;
+    box-shadow: 0 -10px 25px -5px rgba(15, 23, 42, 0.1);
+}
+
+/* Barra de Búsqueda dentro del menú */
+.choices__list--dropdown .choices__input,
+.choices__list[aria-expanded] .choices__input {
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    margin: 10px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    width: calc(100% - 20px);
+}
+
+.choices__list--dropdown .choices__input:focus,
+.choices__list[aria-expanded] .choices__input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background-color: white;
+}
+
+/* Lista de opciones */
+.choices__list--dropdown .choices__list,
+.choices__list[aria-expanded] .choices__list {
+    max-height: 250px;
+    /* Limitar altura */
+    -webkit-overflow-scrolling: touch;
+    will-change: scroll-position;
+}
+
+/* ==========================================================
+   Opciones (Items Individuales)
+   ========================================================== */
+.choices__list--dropdown .choices__item,
+.choices__list[aria-expanded] .choices__item {
+    font-size: 0.95rem;
+    padding: 12px 16px;
+    /* Aumentar padding para que sea más "tapabble" */
+    color: #374151;
+    /* Color de texto gris oscuro */
+    transition: background-color 0.15s, color 0.15s;
+    position: relative;
+}
+
+/* Opciones No Seleccionables o Grupos */
+.choices__list--dropdown .choices__item--selectable,
+.choices__list[aria-expanded] .choices__item--selectable {
+    padding-right: 16px;
+}
+
+/* Hover en las opciones */
+.choices__list--dropdown .choices__item--selectable.is-highlighted,
+.choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
+    background-color: #eff6ff;
+    /* Azul SGP muy claro */
+    color: #1e3a8a;
+    /* Azul institucional SGP para el texto */
+    font-weight: 500;
+}
+
+/* Ítem Seleccionado actualmente de la lista */
+.choices__list--dropdown .choices__item--selectable.is-selected,
+.choices__list[aria-expanded] .choices__item--selectable.is-selected {
+    background-color: #dbeafe;
+    /* Azul un poco mas intenso */
+    color: #1e3a8a;
+    font-weight: 600;
+}
+
+/* Quitar padding innecesario al hacer search placeholder */
+.choices__list--dropdown .choices__item--choice,
+.choices__list[aria-expanded] .choices__item--choice {
+    padding-left: 16px;
+}
+
+/* ==========================================================
+   Flechita Mágica (Chevron) SGP
+   ========================================================== */
+.choices[data-type*="select-one"]::after {
+    border: none;
+    content: '';
+    width: 20px;
+    height: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' stroke-width='2' stroke='%2364748b' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpolyline points='6 9 12 15 18 9' /%3E%3C/svg%3E");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    margin-top: -10px;
+    /* Centrado perfecto */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    /* Dejar que el click pase al select */
+    z-index: 4;
+}
+
+/* Flechita rota 180 grados al abrir */
+.choices[data-type*="select-one"].is-open::after {
+    transform: rotate(180deg);
+    margin-top: -10px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' stroke-width='2' stroke='%232563eb' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpolyline points='6 9 12 15 18 9' /%3E%3C/svg%3E");
+    /* Flechita azul al abrir */
+}
+
+/* Estado deshabilitado / solo lectura */
+.choices.is-disabled .choices__inner,
+.choices.is-disabled .choices__input {
+    background-color: #f1f5f9;
+    /* Fondo gris readonly SGP */
+    color: #94a3b8;
+    border-color: #e2e8f0;
+    cursor: not-allowed;
+}
+
+/* Invalid form state (integración con form-group de SGP si aplica) */
+.form-group.invalid .choices__inner {
+    border-color: #ef4444;
+    /* Rojo Error SGP */
+    background-color: #fef2f2;
+}
+
+/* Texto de "No hay resultados" */
+.choices__list--dropdown .choices__item--no-results,
+.choices__list--dropdown .choices__item--no-choices {
+    color: #64748b;
+    font-style: italic;
+    text-align: center;
+    padding: 16px;
+}

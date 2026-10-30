@@ -104,13 +104,16 @@ class PasanteModel
                     d.nombre                                             AS departamento_nombre,
                     COALESCE(inst.nombre, dpa.institucion_procedencia)   AS institucion_nombre,
                     inst.representante_nombre                            AS institucion_representante,
-                    pa.nombre                                            AS periodo_nombre
+                    pa.nombre                                            AS periodo_nombre,
+                    disp.nombre_dispositivo                              AS dispositivo_nombre,
+                    disp.id                                              AS dispositivo_id
                 FROM usuarios u
                 LEFT JOIN datos_personales   dp   ON dp.usuario_id  = u.id
                 LEFT JOIN datos_pasante      dpa  ON dpa.usuario_id = u.id
                 LEFT JOIN departamentos      d    ON d.id = dpa.departamento_asignado_id
                 LEFT JOIN instituciones      inst ON inst.id = dpa.institucion_id
                 LEFT JOIN periodos_academicos pa  ON pa.id = dpa.periodo_id
+                LEFT JOIN pasante_dispositivos disp ON disp.usuario_id = u.id AND disp.estado = 'activo'
                 WHERE u.rol_id = 3 {$periodoWhere}
             ) AS t
             ORDER BY

@@ -36,7 +36,7 @@ $esTutor = ($rolId === 2);
 
 /* ── BANNER PREMIUM ── */
 .p-banner {
-    background: linear-gradient(135deg, #162660 0%, #1e3a8a 50%, #2563eb 100%);
+    background: linear-gradient(135deg, var(--color-primary, #162660) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%);
     border-radius: 24px; padding: 30px 40px; margin-bottom: 30px;
     display: flex; align-items: center; justify-content: space-between;
     box-shadow: 0 10px 30px rgba(23,37,84,0.15);
@@ -114,27 +114,67 @@ $esTutor = ($rolId === 2);
 }
 
 .sgp-modal-view-report { 
-    max-width: 540px; 
-    border-radius: 28px; 
+    max-width: 580px; 
+    width: 95%;
+    border-radius: 24px; 
     border: 1px solid rgba(255, 255, 255, 0.7);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     background: #FFFFFF;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#formReportes {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.sgp-modal-view-report .sgp-modal-body {
+    overflow-y: auto !important;
+    flex: 1;
+    padding: 20px 24px !important;
+}
+
+.sgp-modal-view-report .sgp-modal-actions {
+    flex-shrink: 0;
+    padding: 16px 24px 20px !important;
+    border-top: 1px solid #f1f5f9;
+    background: #ffffff;
 }
 
 .p-modal-premium-header {
-    padding: 30px 32px 10px;
+    padding: 22px 26px 16px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     position: relative;
-    border-left: 5px solid var(--p-blue);
-    margin-top: 20px;
+    border-left: none;
+    margin-top: 0;
+    flex-shrink: 0;
 }
 
-.r-form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-.r-form-group label { font-size: 0.72rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; margin-left: 4px; }
-.r-form-control { width: 100%; padding: 14px 18px; border: 2px solid #f1f5f9; border-radius: 16px; font-size: 0.95rem; font-family: var(--p-font); outline: none; background: #f8fafc; color: var(--p-ink); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-.r-form-control:focus { border-color: var(--p-blue); background: #fff; box-shadow: 0 0 0 5px var(--p-blue-dim); }
+.r-form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.r-form-group label { font-size: 0.72rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; margin-left: 2px; }
+.r-form-control { width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 12px; font-size: 0.88rem; font-family: var(--p-font); outline: none; background: #ffffff; color: var(--p-ink); transition: all 0.2s ease; font-weight: 500; }
+.r-form-control:focus { border-color: var(--p-blue); background: #fff; box-shadow: 0 0 0 3px var(--p-blue-dim); }
+
+/* Estilos de inputs y selects modernos Bento */
+.sgp-input-box { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.sgp-input-box label { font-size: 0.72rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; display: flex; align-items: center; gap: 4px; }
+.sgp-input-modern, .sgp-select-modern {
+    width: 100%; height: 42px; padding: 0 12px; border: 1.5px solid #cbd5e1; border-radius: 12px;
+    font-size: 0.88rem; font-weight: 600; color: #0f172a; background: #ffffff; outline: none;
+    transition: all 0.2s ease; box-sizing: border-box; font-family: var(--p-font);
+}
+.sgp-input-modern:focus, .sgp-select-modern:focus {
+    border-color: #2563eb; background: #ffffff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.sgp-input-modern::placeholder { color: #94a3b8; font-weight: 400; }
 
 /* ── Pill Toggle — período ejecutivo ── */
 .ej-periodo-grupo { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 6px; }
@@ -375,8 +415,13 @@ $esTutor = ($rolId === 2);
             <div class="p-icon-ring" style="color: var(--p-green);">
                 <i class="ti ti-award" style="font-size: 2.5rem;"></i>
             </div>
-            <div class="p-card-footer">
-                <button class="btn-p-soft btn-soft-pdf" onclick="abrirModal('constancias', 'pdf')"><i class="ti ti-file-type-pdf"></i> EMITIR CARTA</button>
+            <div class="p-card-footer" style="gap:8px;">
+                <button class="btn-p-soft btn-soft-pdf" onclick="abrirModal('constancias', 'pdf')" style="flex:1.2;">
+                    <i class="ti ti-file-type-pdf"></i> EMITIR CARTA
+                </button>
+                <button type="button" class="btn-p-soft" onclick="abrirModalHistorialConstancias()" style="flex:1; background:rgba(22,38,96,0.06); color:#162660; border-color:rgba(22,38,96,0.15);" title="Ver constancias emitidas y respaldadas">
+                    <i class="ti ti-archive"></i> HISTORIAL
+                </button>
             </div>
         </div>
 
@@ -563,10 +608,195 @@ $esTutor = ($rolId === 2);
     </div>
 </div>
 
+<!-- ── MODAL HISTORIAL DE CONSTANCIAS EMITIDAS (RESPALDO INSTITUCIONAL) ── -->
+<div class="sgp-modal-overlay" id="modalHistorialConstancias" onclick="if(event.target===this)cerrarModalHistorialConstancias()">
+    <div class="sgp-modal" style="max-width: 980px; width: 95%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);">
+        <!-- Encabezado Bento Premium -->
+        <div style="background: linear-gradient(135deg, #162660 0%, #1e3a8a 60%, #2563eb 100%); padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <div style="width:42px; height:42px; border-radius:12px; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; color:#fff;">
+                    <i class="ti ti-archive" style="font-size:1.4rem;"></i>
+                </div>
+                <div>
+                    <h3 style="color:#ffffff; font-weight: 800; font-size: 1.25rem; margin: 0; display:flex; align-items:center; gap:8px;">
+                        Libro de Registro de Constancias
+                        <span id="badgeTotalHistorial" style="font-size:0.72rem; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:20px; font-weight:700;">0 guardadas</span>
+                    </h3>
+                    <p style="color:rgba(255,255,255,0.75); font-size: 0.82rem; margin: 3px 0 0;">Respaldos oficiales de cartas de culminación y constancias de servicio emitidas</p>
+                </div>
+            </div>
+            <button class="btn-close-ghost-red" onclick="cerrarModalHistorialConstancias()" style="color:rgba(255,255,255,0.85);" onmouseenter="this.style.background='rgba(255,255,255,0.15)';this.style.color='#fff';" onmouseleave="this.style.background='transparent';this.style.color='rgba(255,255,255,0.85)';">
+                <i class="ti ti-x" style="font-size:1.3rem;"></i>
+            </button>
+        </div>
+
+        <!-- Barra de Filtros y Búsqueda Rápida -->
+        <div style="background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:12px 28px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; flex-shrink:0;">
+            <div style="position:relative; flex:1; min-width:240px; max-width:400px;">
+                <i class="ti ti-search" style="position:absolute; left:12px; top:11px; color:#94a3b8; font-size:1rem; pointer-events:none;"></i>
+                <input type="text" id="filtroHistorialTexto" class="sgp-input-modern" placeholder="Buscar por pasante, cédula o código..." style="padding-left:36px; height:38px; font-size:0.83rem;" oninput="filtrarHistorialConstanciasLocal()">
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <select id="filtroHistorialTipo" class="sgp-select-modern" style="height:38px; padding:0 12px; font-size:0.82rem; width:auto;" onchange="filtrarHistorialConstanciasLocal()">
+                    <option value="">Todos los tipos</option>
+                    <option value="culminacion">Carta de Culminación</option>
+                    <option value="servicio">Constancia de Servicio</option>
+                </select>
+                <button type="button" onclick="cargarHistorialConstancias(true)" class="btn-p-soft" style="height:38px; padding:0 14px; background:#ffffff; border:1px solid #cbd5e1; color:#1e293b; font-size:0.82rem; font-weight:700;">
+                    <i class="ti ti-refresh"></i> Actualizar
+                </button>
+            </div>
+        </div>
+
+        <!-- Cuerpo del Historial con Scroll -->
+        <div class="sgp-modal-body" style="padding: 16px 28px; overflow-y:auto; flex:1; min-height:300px; max-height:calc(90vh - 150px);" id="contenedorTablaHistorial">
+            <div style="text-align:center; padding:40px 20px; color:#64748b;">
+                <i class="ti ti-loader-2" style="font-size:2rem; animation:spin 1s linear infinite; display:inline-block; margin-bottom:8px; color:#2563eb;"></i>
+                <p style="font-size:0.9rem; margin:0; font-weight:600;">Cargando libro de constancias respaldadas...</p>
+            </div>
+        </div>
+
+        <!-- Pie del Modal -->
+        <div style="background:#ffffff; border-top:1px solid #f1f5f9; padding:12px 28px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+            <div style="font-size:0.75rem; color:#64748b;">
+                <i class="ti ti-shield-check" style="color:#059669;"></i> Cada constancia cuenta con respaldo institucional y número de control único verificable.
+            </div>
+            <button type="button" class="sgp-btn-action sgp-btn-close-action" onclick="cerrarModalHistorialConstancias()" style="padding:8px 20px;">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ── MODAL DE EDICIÓN EN VIVO DE CONSTANCIA ── -->
+<div class="sgp-modal-overlay" id="modalEditarConstancia" onclick="if(event.target===this)cerrarEditorConstancia()">
+    <div class="sgp-modal" style="max-width: 960px; width: 95%; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);">
+        <!-- Encabezado -->
+        <div style="background: linear-gradient(135deg, #162660 0%, #1e3a8a 60%, #2563eb 100%); padding: 18px 28px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:40px; height:40px; border-radius:12px; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; color:#fff;">
+                    <i class="ti ti-edit" style="font-size:1.3rem;"></i>
+                </div>
+                <div>
+                    <h3 style="color:#ffffff; font-weight: 800; font-size: 1.2rem; margin: 0; display:flex; align-items:center; gap:10px;">
+                        Editor en Vivo de Constancia
+                        <span id="editBadgeCodigo" style="font-family:monospace; font-size:0.75rem; background:rgba(255,255,255,0.2); padding:3px 10px; border-radius:8px; font-weight:800; letter-spacing:0.5px;">CST-XXXX</span>
+                    </h3>
+                    <p style="color:rgba(255,255,255,0.75); font-size: 0.8rem; margin: 2px 0 0;">Modifique los datos y el texto del documento. Los cambios se reflejarán en el PDF oficial.</p>
+                </div>
+            </div>
+            <button class="btn-close-ghost-red" onclick="cerrarEditorConstancia()" style="color:rgba(255,255,255,0.85);" onmouseenter="this.style.background='rgba(255,255,255,0.15)';this.style.color='#fff';" onmouseleave="this.style.background='transparent';this.style.color='rgba(255,255,255,0.85)';">
+                <i class="ti ti-x" style="font-size:1.3rem;"></i>
+            </button>
+        </div>
+
+        <form id="formEditarConstancia" onsubmit="guardarEdicionConstancia(event)" style="display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; margin:0;">
+            <input type="hidden" name="id" id="editConstanciaId">
+            <input type="hidden" name="tipo_constancia" id="editTipoConstancia">
+
+            <!-- Cuerpo con scroll -->
+            <div class="sgp-modal-body" style="padding: 20px 28px; overflow-y:auto; flex:1;">
+                
+                <!-- Bento Grid de Datos Principales -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:14px; margin-bottom:16px;">
+                    <div style="font-size:0.75rem; font-weight:800; color:#1e3a8a; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                        <i class="ti ti-id"></i> Datos del Pasante e Institución
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns: 1.4fr 1fr 1fr; gap:10px; margin-bottom:10px;">
+                        <div class="sgp-input-box" style="margin-bottom:0;">
+                            <label class="sgp-label-modern"><i class="ti ti-user"></i> Nombres y Apellidos</label>
+                            <input type="text" id="editNombreCompleto" name="nombre_completo" class="sgp-input-modern" required>
+                        </div>
+                        <div class="sgp-input-box" style="margin-bottom:0;">
+                            <label class="sgp-label-modern"><i class="ti ti-id"></i> Cédula</label>
+                            <input type="text" id="editCedula" name="cedula" class="sgp-input-modern" required>
+                        </div>
+                        <div class="sgp-input-box" style="margin-bottom:0;">
+                            <label class="sgp-label-modern"><i class="ti ti-clock"></i> Período / Duración</label>
+                            <input type="text" id="editPeriodoTexto" name="periodo_texto" class="sgp-input-modern" placeholder="Ej. 6 Meses (Período 2024 – 2025)">
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:10px;">
+                        <div class="sgp-input-box" style="margin-bottom:0;">
+                            <label class="sgp-label-modern"><i class="ti ti-school"></i> Institución</label>
+                            <input type="text" id="editInstitucion" name="institucion" class="sgp-input-modern">
+                        </div>
+                        <div class="sgp-input-box" style="margin-bottom:0;">
+                            <label class="sgp-label-modern"><i class="ti ti-building-community"></i> Departamento</label>
+                            <input type="text" id="editDepartamento" name="departamento" class="sgp-input-modern">
+                        </div>
+                        <div class="sgp-input-box" style="margin-bottom:0;">
+                            <label class="sgp-label-modern"><i class="ti ti-hourglass"></i> Carga Horaria (Horas)</label>
+                            <input type="number" id="editHorasMeta" name="horas_meta" class="sgp-input-modern" value="960">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Firmante y Cargo -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:14px; margin-bottom:16px;">
+                    <div style="font-size:0.75rem; font-weight:800; color:#1e3a8a; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                        <i class="ti ti-signature"></i> Responsable Firmante
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:10px;">
+                        <div class="sgp-input-box" style="margin-bottom:0;">
+                            <label class="sgp-label-modern"><i class="ti ti-user-check"></i> Nombre del Firmante</label>
+                            <input type="text" id="editTutorNombre" name="tutor_nombre" class="sgp-input-modern" required>
+                        </div>
+                        <div class="sgp-input-box" style="margin-bottom:0;">
+                            <label class="sgp-label-modern"><i class="ti ti-badge"></i> Cargo Oficial</label>
+                            <input type="text" id="editTutorCargo" name="tutor_cargo" class="sgp-input-modern" value="Jefe de la División de Soporte Técnico de la Dirección de Telemática" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editor de Párrafos / Redacción en Vivo -->
+                <div style="margin-bottom:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <label class="sgp-label-modern" style="margin:0; font-size:0.82rem;">
+                            <i class="ti ti-file-text" style="color:var(--p-blue);"></i> Redacción del Documento (Texto Oficial Editable)
+                        </label>
+                        <button type="button" onclick="regenerarTextoPredeterminado()" style="background:none; border:none; color:#1D4ED8; font-weight:700; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:4px; text-decoration:underline;">
+                            <i class="ti ti-refresh"></i> Regenerar redacción base
+                        </button>
+                    </div>
+
+                    <div style="background:#ffffff; border:1.5px solid #cbd5e1; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.03);">
+                        <p style="font-size:0.72rem; color:#64748b; margin:0 0 8px; line-height:1.4;">
+                            <i class="ti ti-info-circle"></i> Puede modificar libremente el texto de los párrafos a continuación. Si deja el campo con su redacción personalizada, el PDF se generará exactamente con este contenido.
+                        </p>
+                        <textarea id="editCuerpoPersonalizado" name="cuerpo_personalizado" rows="7" 
+                                  style="width:100%; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px; font-family:Helvetica, Arial, sans-serif; font-size:0.86rem; line-height:1.7; color:#0f172a; resize:vertical; outline:none; box-sizing:border-box;"
+                                  placeholder="Escriba o modifique aquí la redacción de la constancia..."></textarea>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer de Acciones -->
+            <div style="background:#ffffff; border-top:1px solid #f1f5f9; padding:14px 28px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+                <button type="button" class="sgp-btn-action sgp-btn-close-action" onclick="cerrarEditorConstancia()" style="padding:10px 20px;">
+                    Cancelar
+                </button>
+                <div style="display:flex; gap:10px;">
+                    <button type="button" class="btn-p-soft btn-soft-excel" id="btnGuardarYDescargar" onclick="guardarYDescargarPdf()" style="padding:10px 18px;">
+                        <i class="ti ti-download"></i> Guardar y Descargar PDF
+                    </button>
+                    <button type="submit" class="btn-p-soft btn-soft-pdf" id="btnGuardarCambios" style="padding:10px 22px;">
+                        <i class="ti ti-device-floppy"></i> Guardar Cambios
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 var departamentos = <?= json_encode($data['departamentos'] ?? [], JSON_HEX_TAG | JSON_HEX_QUOT) ?>;
 var instituciones = <?= json_encode($data['instituciones'] ?? [], JSON_HEX_TAG | JSON_HEX_QUOT) ?>;
 var pasantes = <?= json_encode($data['pasantes'] ?? [], JSON_HEX_TAG | JSON_HEX_QUOT) ?>;
+var tutores = <?= json_encode($data['tutores'] ?? [], JSON_HEX_TAG | JSON_HEX_QUOT) ?>;
 
 function abrirModal(modulo, formato) {
     document.getElementById('mModulo').value = modulo;
@@ -783,17 +1013,184 @@ function abrirModal(modulo, formato) {
             }, 80);
             break;
         }
-        case 'constancias':
+        case 'constancias': {
+            const currY = new Date().getFullYear();
+            let aniosInicioOpts = '';
+            let aniosFinOpts = '';
+            for (let y = currY; y >= currY - 8; y--) {
+                const selIni = (y === currY - 2) ? 'selected' : '';
+                const selFin = (y === currY - 1) ? 'selected' : '';
+                aniosInicioOpts += `<option value="${y}" ${selIni}>${y}</option>`;
+                aniosFinOpts    += `<option value="${y}" ${selFin}>${y}</option>`;
+            }
+
             htmlFiltros = `
-                <div class="r-form-group">
-                    <label>Tipo de Documento</label>
-                    <select name="tipo_constancia" class="r-form-control">
-                        <option value="culminacion">Carta de Culminación</option>
-                        <option value="servicio">Constancia de Servicio</option>
-                    </select>
+                <!-- Switcher de Modo de Emisión (Bento Selector) -->
+                <div class="sgp-input-box" style="margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <label class="sgp-label-modern" style="margin:0;"><i class="ti ti-layers-subtract" style="color:var(--p-blue);"></i> Modo de Emisión</label>
+                        <button type="button" onclick="cerrarModal(); abrirModalHistorialConstancias();" style="background:none; border:none; color:#1D4ED8; font-weight:800; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:4px; padding:0; text-decoration:underline;">
+                            <i class="ti ti-archive"></i> Ver constancias guardadas
+                        </button>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <button type="button" id="btnModoRegistrado" onclick="cambiarModoConstancia('registrado')"
+                                style="padding:10px 12px; border-radius:14px; border:2px solid #1D4ED8; background:rgba(29,78,216,0.06); text-align:left; cursor:pointer; transition:all 0.2s ease;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:34px; height:34px; border-radius:10px; background:rgba(29,78,216,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <i class="ti ti-user-check" style="color:#1D4ED8; font-size:1.15rem;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight:800; font-size:0.84rem; color:#1D4ED8;">Pasante Registrado</div>
+                                    <div style="font-size:0.71rem; color:#64748b;">Cohorte activa en el sistema</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button type="button" id="btnModoManual" onclick="cambiarModoConstancia('manual')"
+                                style="padding:10px 12px; border-radius:14px; border:1.5px solid #e2e8f0; background:#f8fafc; text-align:left; cursor:pointer; transition:all 0.2s ease;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:34px; height:34px; border-radius:10px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <i class="ti ti-history" style="color:#64748b; font-size:1.15rem;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight:800; font-size:0.84rem; color:#475569;">Emisión Histórica / Manual</div>
+                                    <div style="font-size:0.71rem; color:#64748b;">Egresados o períodos anteriores</div>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                    <input type="hidden" name="modo_emision" id="modoEmisionConstancia" value="registrado">
+                </div>
+
+                <!-- MODO 1: REGISTRADO -->
+                <div id="boxConstRegistrado">
+                    <div class="sgp-input-box" style="margin-bottom:12px;">
+                        <label class="sgp-label-modern"><i class="ti ti-file-certificate" style="color:var(--p-blue);"></i> Tipo de Documento</label>
+                        <select name="tipo_constancia" id="selTipoConstanciaReg" class="sgp-select-modern">
+                            <option value="culminacion">Carta de Culminación de Pasantías</option>
+                            <option value="servicio">Constancia de Prestación de Servicio</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- MODO 2: MANUAL / HISTÓRICO CON DATOS HEREDADOS -->
+                <div id="boxConstManual" style="display:none;">
+                    <div style="background:linear-gradient(135deg, rgba(29,78,216,0.06), rgba(37,99,235,0.02)); border:1px solid #bfdbfe; border-radius:14px; padding:10px 14px; margin-bottom:12px; display:flex; align-items:center; gap:12px;">
+                        <div style="width:36px; height:36px; border-radius:10px; background:#1D4ED8; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff;">
+                            <i class="ti ti-certificate" style="font-size:1.25rem;"></i>
+                        </div>
+                        <div style="font-size:0.77rem; color:#1e3a8a; line-height:1.4;">
+                            <strong>Constancia Rápida con Datos Heredados:</strong> Seleccione el lapso temporal y herede automáticamente los técnicos del sistema e instituciones sin necesidad de crear períodos pasados.
+                        </div>
+                    </div>
+
+                    <!-- Tipo de Documento -->
+                    <div class="sgp-input-box" style="margin-bottom:10px;">
+                        <label class="sgp-label-modern"><i class="ti ti-file-text" style="color:var(--p-blue);"></i> Tipo de Constancia a Emitir</label>
+                        <select name="manual_tipo_constancia" id="selTipoConstanciaMan" class="sgp-select-modern" onchange="document.getElementById('selTipoConstanciaReg').value = this.value;">
+                            <option value="culminacion">Carta de Culminación de Pasantías</option>
+                            <option value="servicio">Constancia de Prestación de Servicio</option>
+                        </select>
+                    </div>
+
+                    <!-- Datos del Pasante (Nombre y Cédula) en Bento Grid -->
+                    <div style="display:grid; grid-template-columns: 1.35fr 1fr; gap:10px; margin-bottom:10px;">
+                        <div class="sgp-input-box" style="margin-bottom:0;">
+                            <label class="sgp-label-modern"><i class="ti ti-user" style="color:var(--p-blue);"></i> Nombres y Apellidos <span style="color:#dc2626;">*</span></label>
+                            <input type="text" id="manualNombreCompleto" name="manual_nombre_completo" class="sgp-input-modern" placeholder="Ej. Juan Carlos Pérez" autocomplete="off">
+                        </div>
+                        <div class="sgp-input-box" style="margin-bottom:0;">
+                            <label class="sgp-label-modern"><i class="ti ti-id" style="color:var(--p-blue);"></i> Cédula de Identidad <span style="color:#dc2626;">*</span></label>
+                            <input type="text" id="manualCedula" name="manual_cedula" class="sgp-input-modern" placeholder="Ej. V-25.123.456" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN PERÍODO Y DURACIÓN (SOPORTE 2024-2025) -->
+                    <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:12px; margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <label class="sgp-label-modern" style="margin:0;"><i class="ti ti-clock-hour-4" style="color:var(--p-blue);"></i> Duración y Lapso del Período</label>
+                            <span id="badgePeriodoVisual" style="font-size:0.73rem; color:#1D4ED8; font-weight:800; background:rgba(29,78,216,0.08); padding:3px 10px; border-radius:8px; border:1px solid rgba(29,78,216,0.2);">
+                                6 Meses (Período 2024 – 2025)
+                            </span>
+                        </div>
+
+                        <!-- Botones 3, 6, 9 meses -->
+                        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:10px;" id="gridDuracionMeses">
+                            <button type="button" class="btn-duracion-mes" data-meses="3" onclick="seleccionarDuracionMeses(3, this)"
+                                    style="padding:8px 6px; border-radius:10px; border:1.5px solid #e2e8f0; background:#ffffff; font-weight:700; font-size:0.82rem; color:#475569; cursor:pointer; text-align:center; transition:all 0.2s;">
+                                <i class="ti ti-clock" style="display:block; font-size:1.15rem; margin-bottom:2px; color:#64748b;"></i>
+                                3 Meses
+                                <div style="font-size:0.67rem; font-weight:500; color:#94a3b8; margin-top:2px;">480 Horas</div>
+                            </button>
+                            <button type="button" class="btn-duracion-mes activo" data-meses="6" onclick="seleccionarDuracionMeses(6, this)"
+                                    style="padding:8px 6px; border-radius:10px; border:2px solid #1D4ED8; background:rgba(29,78,216,0.06); font-weight:800; font-size:0.82rem; color:#1D4ED8; cursor:pointer; text-align:center; transition:all 0.2s;">
+                                <i class="ti ti-clock-play" style="display:block; font-size:1.15rem; margin-bottom:2px; color:#1D4ED8;"></i>
+                                6 Meses
+                                <div style="font-size:0.67rem; font-weight:700; color:#2563eb; margin-top:2px;">960 Horas</div>
+                            </button>
+                            <button type="button" class="btn-duracion-mes" data-meses="9" onclick="seleccionarDuracionMeses(9, this)"
+                                    style="padding:8px 6px; border-radius:10px; border:1.5px solid #e2e8f0; background:#ffffff; font-weight:700; font-size:0.82rem; color:#475569; cursor:pointer; text-align:center; transition:all 0.2s;">
+                                <i class="ti ti-clock-check" style="display:block; font-size:1.15rem; margin-bottom:2px; color:#64748b;"></i>
+                                9 Meses
+                                <div style="font-size:0.67rem; font-weight:500; color:#94a3b8; margin-top:2px;">1440 Horas</div>
+                            </button>
+                        </div>
+                        <input type="hidden" name="manual_duracion_meses" id="manualDuracionMeses" value="6">
+
+                        <!-- Selectores de Año (Desde - Hasta) para períodos como 2024 a 2025 -->
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; background:#ffffff; padding:10px; border-radius:10px; border:1px solid #e2e8f0;">
+                            <div>
+                                <label style="font-size:0.72rem; font-weight:700; color:#64748b; margin-bottom:4px; display:block;">Desde el año:</label>
+                                <select name="manual_anio_inicio" id="manualAnioInicio" class="sgp-select-modern" style="padding:6px 10px; font-size:0.82rem;" onchange="actualizarPrevisualizacionPeriodo()">
+                                    ${aniosInicioOpts}
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:0.72rem; font-weight:700; color:#64748b; margin-bottom:4px; display:block;">Hasta el año:</label>
+                                <select name="manual_anio_fin" id="manualAnioFin" class="sgp-select-modern" style="padding:6px 10px; font-size:0.82rem;" onchange="actualizarPrevisualizacionPeriodo()">
+                                    ${aniosFinOpts}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Institución Heredada + Departamento -->
+                    <div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:10px; margin-bottom:10px;">
+                        <div class="sgp-input-box" style="margin-bottom:0;">
+                            <label class="sgp-label-modern"><i class="ti ti-school" style="color:var(--p-blue);"></i> Institución Universitaria</label>
+                            <select name="manual_institucion" id="manualInstitucion" class="sgp-select-modern" onchange="cambiarInstitucionManual(this.value)">
+                                <option value="">— Seleccionar del sistema —</option>
+                                ${instituciones.map(i => `<option value="${i.nombre}">${i.nombre} (${i.categoria || i.tipo || 'Institución'})</option>`).join('')}
+                                <option value="__OTRA__">+ Otra institución (Escribir)...</option>
+                            </select>
+                            <input type="text" id="manualInstitucionOtra" name="manual_institucion_otra" class="sgp-input-modern" placeholder="Especifique el nombre de la institución" style="display:none; margin-top:6px;" autocomplete="off">
+                        </div>
+                        <div class="sgp-input-box" style="margin-bottom:0;">
+                            <label class="sgp-label-modern"><i class="ti ti-building-community" style="color:var(--p-blue);"></i> Departamento Asignado</label>
+                            <select name="manual_departamento" id="manualDepartamento" class="sgp-select-modern">
+                                ${departamentos.map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tutor / Técnico Heredado del Sistema -->
+                    <div class="sgp-input-box" style="margin-bottom:6px;">
+                        <label class="sgp-label-modern">
+                            <i class="ti ti-user-star" style="color:var(--p-blue);"></i> Tutor Asignado (Técnicos del Sistema)
+                            <span style="font-size:0.68rem; color:#64748b; font-weight:500; margin-left:auto;">Hereda cédula y cargo oficial</span>
+                        </label>
+                        <select name="manual_tutor_id" id="selTutorManual" class="sgp-select-modern">
+                            <option value="0">— Tutor de División / Soporte Técnico —</option>
+                            ${tutores.map(t => `<option value="${t.id}">${t.nombre} — ${t.cargo} (C.I. ${t.cedula})</option>`).join('')}
+                        </select>
+                    </div>
                 </div>`;
             mFechas.style.display = 'none';
+            setTimeout(() => {
+                actualizarPrevisualizacionPeriodo();
+            }, 60);
             break;
+        }
 
         case 'constancias_grupal': {
             const deptosOpts = <?= json_encode(array_map(fn($d) => ['id'=>$d->id,'nombre'=>$d->nombre], $data['departamentos'] ?? []), JSON_HEX_TAG) ?>;
@@ -862,6 +1259,9 @@ function abrirModal(modulo, formato) {
     const modulosConBuscador = ['evaluaciones', 'constancias'];
     if (modulosConBuscador.includes(modulo)) {
         evaluarBusqueda(modulo === 'evaluaciones' ? 'evaluaciones_isp' : 'constancias');
+        if (modulo === 'constancias') {
+            cambiarModoConstancia('registrado');
+        }
     } else {
         // Asegurar que el buscador quede limpio en otros módulos
         limpiarPasante();
@@ -870,6 +1270,8 @@ function abrirModal(modulo, formato) {
     }
 
     document.getElementById('modalConfig').classList.add('active');
+    const mBody = document.querySelector('.sgp-modal-body');
+    if (mBody) mBody.scrollTop = 0;
 
     inicializarPlugins();
 }
@@ -973,6 +1375,477 @@ function evaluarBusqueda(tipo) {
         }
     }
 }
+
+function cambiarModoConstancia(modo) {
+    const btnReg = document.getElementById('btnModoRegistrado');
+    const btnMan = document.getElementById('btnModoManual');
+    const boxReg = document.getElementById('boxConstRegistrado');
+    const boxMan = document.getElementById('boxConstManual');
+    const boxBusc = document.getElementById('boxBuscadorPasante');
+    const hiddenModo = document.getElementById('modoEmisionConstancia');
+
+    if (hiddenModo) hiddenModo.value = modo;
+
+    if (modo === 'registrado') {
+        if (btnReg) {
+            btnReg.style.borderColor = '#1D4ED8';
+            btnReg.style.background = 'rgba(29,78,216,0.06)';
+            const ico = btnReg.querySelector('.ti');
+            if (ico) ico.style.color = '#1D4ED8';
+            const tit = btnReg.querySelector('div > div:first-child');
+            if (tit) tit.style.color = '#1D4ED8';
+        }
+        if (btnMan) {
+            btnMan.style.borderColor = '#e2e8f0';
+            btnMan.style.background = '#f8fafc';
+            const ico = btnMan.querySelector('.ti');
+            if (ico) ico.style.color = '#64748b';
+            const tit = btnMan.querySelector('div > div:first-child');
+            if (tit) tit.style.color = '#475569';
+        }
+        if (boxReg) boxReg.style.display = 'block';
+        if (boxMan) boxMan.style.display = 'none';
+        if (boxBusc) boxBusc.style.display = 'block';
+    } else {
+        if (btnMan) {
+            btnMan.style.borderColor = '#1D4ED8';
+            btnMan.style.background = 'rgba(29,78,216,0.06)';
+            const ico = btnMan.querySelector('.ti');
+            if (ico) ico.style.color = '#1D4ED8';
+            const tit = btnMan.querySelector('div > div:first-child');
+            if (tit) tit.style.color = '#1D4ED8';
+        }
+        if (btnReg) {
+            btnReg.style.borderColor = '#e2e8f0';
+            btnReg.style.background = '#f8fafc';
+            const ico = btnReg.querySelector('.ti');
+            if (ico) ico.style.color = '#64748b';
+            const tit = btnReg.querySelector('div > div:first-child');
+            if (tit) tit.style.color = '#475569';
+        }
+        if (boxReg) boxReg.style.display = 'none';
+        if (boxMan) boxMan.style.display = 'block';
+        if (boxBusc) boxBusc.style.display = 'none';
+
+    }
+}
+
+function seleccionarDuracionMeses(meses, btn) {
+    const input = document.getElementById('manualDuracionMeses');
+    if (input) input.value = meses;
+
+    const lbl = document.getElementById('labelHorasCalculadas');
+    const horasMap = { 3: '480 Horas', 6: '960 Horas (Estándar)', 9: '1440 Horas (Completo)' };
+    if (lbl) lbl.textContent = horasMap[meses] || (meses * 160 + ' Horas');
+
+    document.querySelectorAll('.btn-duracion-mes').forEach(b => {
+        b.style.borderColor = '#e2e8f0';
+        b.style.background = '#f8fafc';
+        b.style.color = '#475569';
+        b.style.fontWeight = '700';
+        const ico = b.querySelector('.ti');
+        if (ico) ico.style.color = '#64748b';
+        const sub = b.querySelector('div');
+        if (sub) { sub.style.color = '#94a3b8'; sub.style.fontWeight = '500'; }
+    });
+
+    if (btn) {
+        btn.style.borderColor = '#1D4ED8';
+        btn.style.background = 'rgba(29,78,216,0.06)';
+        btn.style.color = '#1D4ED8';
+        btn.style.fontWeight = '800';
+        const ico = btn.querySelector('.ti');
+        if (ico) ico.style.color = '#1D4ED8';
+        const sub = btn.querySelector('div');
+        if (sub) { sub.style.color = '#2563eb'; sub.style.fontWeight = '700'; }
+    }
+
+    actualizarPrevisualizacionPeriodo();
+}
+
+function actualizarPrevisualizacionPeriodo() {
+    const inputMeses = document.getElementById('manualDuracionMeses');
+    const selInicio  = document.getElementById('manualAnioInicio');
+    const selFin     = document.getElementById('manualAnioFin');
+    const badge      = document.getElementById('badgePeriodoVisual');
+    if (!badge || !selInicio || !selFin) return;
+
+    const meses = inputMeses ? (parseInt(inputMeses.value) || 6) : 6;
+    const aIni  = parseInt(selInicio.value) || new Date().getFullYear();
+    const aFin  = parseInt(selFin.value) || aIni;
+
+    let texto = '';
+    if (aIni !== aFin) {
+        texto = `${meses} Meses (Período ${aIni} – ${aFin})`;
+    } else {
+        texto = `${meses} Meses (Año ${aIni})`;
+    }
+    badge.textContent = texto;
+}
+
+function cambiarInstitucionManual(val) {
+    const inputOtra = document.getElementById('manualInstitucionOtra');
+    if (!inputOtra) return;
+    if (val === '__OTRA__') {
+        inputOtra.style.display = 'block';
+        inputOtra.focus();
+    } else {
+        inputOtra.style.display = 'none';
+        inputOtra.value = '';
+    }
+}
+
+// ══════════════════════════════════════════════════════════════
+// HISTORIAL Y LIBRO DE REGISTRO DE CONSTANCIAS RESPALDADAS
+// ══════════════════════════════════════════════════════════════
+window._historialConstanciasData = [];
+
+function abrirModalHistorialConstancias() {
+    const modal = document.getElementById('modalHistorialConstancias');
+    if (!modal) return;
+    modal.classList.add('active');
+    cargarHistorialConstancias(true);
+}
+
+function cerrarModalHistorialConstancias() {
+    const modal = document.getElementById('modalHistorialConstancias');
+    if (modal) modal.classList.remove('active');
+}
+
+function cargarHistorialConstancias(mostrarSpinner = false) {
+    const contenedor = document.getElementById('contenedorTablaHistorial');
+    if (mostrarSpinner && contenedor) {
+        contenedor.innerHTML = `
+            <div style="text-align:center; padding:50px 20px; color:#64748b;">
+                <i class="ti ti-loader-2" style="font-size:2rem; animation:spin 1s linear infinite; display:inline-block; margin-bottom:10px; color:#2563eb;"></i>
+                <p style="font-size:0.9rem; margin:0; font-weight:700; color:#1e293b;">Cargando libro de constancias emitidas...</p>
+                <span style="font-size:0.75rem; color:#94a3b8;">Recuperando registros oficiales de la base de datos</span>
+            </div>`;
+    }
+
+    fetch(URLROOT + '/reportes/historialConstancias')
+        .then(r => r.json())
+        .then(res => {
+            if (res.success && Array.isArray(res.data)) {
+                window._historialConstanciasData = res.data;
+                const badge = document.getElementById('badgeTotalHistorial');
+                if (badge) badge.textContent = `${res.data.length} guardadas`;
+                filtrarHistorialConstanciasLocal();
+            } else {
+                if (contenedor) {
+                    contenedor.innerHTML = `
+                        <div style="text-align:center; padding:40px 20px; color:#dc2626;">
+                            <i class="ti ti-alert-triangle" style="font-size:2rem; margin-bottom:8px;"></i>
+                            <p style="font-weight:700;">No se pudo cargar el historial.</p>
+                        </div>`;
+                }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            if (contenedor) {
+                contenedor.innerHTML = `
+                    <div style="text-align:center; padding:40px 20px; color:#dc2626;">
+                        <i class="ti ti-alert-circle" style="font-size:2rem; margin-bottom:8px;"></i>
+                        <p style="font-weight:700;">Error de comunicación al consultar los respaldos.</p>
+                    </div>`;
+            }
+        });
+}
+
+function filtrarHistorialConstanciasLocal() {
+    const texto = (document.getElementById('filtroHistorialTexto')?.value || '').toLowerCase().trim();
+    const tipoFiltro = (document.getElementById('filtroHistorialTipo')?.value || '').toLowerCase().trim();
+
+    let filtrados = window._historialConstanciasData || [];
+
+    if (tipoFiltro) {
+        filtrados = filtrados.filter(item => (item.tipo_constancia || '').toLowerCase() === tipoFiltro);
+    }
+
+    if (texto) {
+        filtrados = filtrados.filter(item => {
+            const nom = (item.nombre_completo || '').toLowerCase();
+            const ced = (item.cedula || '').toLowerCase();
+            const cod = (item.codigo_constancia || '').toLowerCase();
+            const inst = (item.institucion || '').toLowerCase();
+            return nom.includes(texto) || ced.includes(texto) || cod.includes(texto) || inst.includes(texto);
+        });
+    }
+
+    renderizarHistorialConstancias(filtrados);
+}
+
+function renderizarHistorialConstancias(lista) {
+    const contenedor = document.getElementById('contenedorTablaHistorial');
+    if (!contenedor) return;
+
+    if (!lista || lista.length === 0) {
+        contenedor.innerHTML = `
+            <div style="text-align:center; padding:50px 20px; background:#f8fafc; border:1.5px dashed #cbd5e1; border-radius:18px; margin:10px 0;">
+                <div style="width:60px; height:60px; border-radius:16px; background:#eff6ff; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:#2563eb;">
+                    <i class="ti ti-folder-off" style="font-size:2rem;"></i>
+                </div>
+                <h4 style="font-size:1.05rem; font-weight:800; color:#1e293b; margin:0 0 6px;">No hay constancias registradas</h4>
+                <p style="font-size:0.83rem; color:#64748b; max-width:440px; margin:0 auto 14px; line-height:1.5;">
+                    Cada vez que generes una Carta de Culminación o Constancia de Servicio (sea de un pasante actual o histórico), se respaldará automáticamente en este libro.
+                </p>
+                <button type="button" class="btn-p-soft btn-soft-pdf" onclick="cerrarModalHistorialConstancias(); abrirModal('constancias', 'pdf');" style="display:inline-flex; width:auto; padding:10px 22px;">
+                    <i class="ti ti-plus"></i> Emitir Primera Constancia
+                </button>
+            </div>`;
+        return;
+    }
+
+    let html = `
+        <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:separate; border-spacing:0 8px; font-size:0.84rem;">
+                <thead>
+                    <tr style="color:#64748b; font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; text-align:left;">
+                        <th style="padding:8px 12px;">N° Control</th>
+                        <th style="padding:8px 12px;">Fecha Emisión</th>
+                        <th style="padding:8px 12px;">Pasante</th>
+                        <th style="padding:8px 12px;">Tipo / Modo</th>
+                        <th style="padding:8px 12px;">Período / Carga</th>
+                        <th style="padding:8px 12px;">Emitido Por</th>
+                        <th style="padding:8px 12px; text-align:center;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    lista.forEach(r => {
+        const esCulm = (r.tipo_constancia === 'culminacion');
+        const badgeTipo = esCulm
+            ? `<span style="background:rgba(5,150,105,0.08); color:#059669; font-weight:800; font-size:0.72rem; padding:3px 8px; border-radius:6px; border:1px solid rgba(5,150,105,0.2); display:inline-flex; align-items:center; gap:4px;"><i class="ti ti-certificate"></i> Culminación</span>`
+            : `<span style="background:rgba(29,78,216,0.08); color:#1d4ed8; font-weight:800; font-size:0.72rem; padding:3px 8px; border-radius:6px; border:1px solid rgba(29,78,216,0.2); display:inline-flex; align-items:center; gap:4px;"><i class="ti ti-file-text"></i> Servicio</span>`;
+
+        const badgeModo = (r.modo_emision === 'manual')
+            ? `<span style="background:#f1f5f9; color:#475569; font-size:0.68rem; font-weight:700; padding:2px 6px; border-radius:4px; margin-left:4px;">Histórico</span>`
+            : `<span style="background:#eff6ff; color:#2563eb; font-size:0.68rem; font-weight:700; padding:2px 6px; border-radius:4px; margin-left:4px;">Sistema</span>`;
+
+        const f = new Date(r.created_at.replace(' ', 'T'));
+        const fStr = isNaN(f) ? r.created_at : f.toLocaleDateString('es-VE', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+        const urlVer = URLROOT + '/reportes/reimprimirConstancia?codigo=' + encodeURIComponent(r.codigo_constancia);
+
+        html += `
+            <tr style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.02); transition:all 0.15s ease;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#ffffff'">
+                <td style="padding:12px; font-weight:800; color:#1e3a8a; border-radius:12px 0 0 12px; border-left:3px solid #2563eb;">
+                    <div style="font-family:monospace; font-size:0.83rem;">${_esc(r.codigo_constancia)}</div>
+                </td>
+                <td style="padding:12px; color:#475569; font-size:0.78rem;">
+                    <i class="ti ti-calendar" style="color:#94a3b8;"></i> ${fStr}
+                </td>
+                <td style="padding:12px;">
+                    <div style="font-weight:800; color:#0f172a;">${_esc(r.nombre_completo)}</div>
+                    <div style="font-size:0.72rem; color:#64748b;">C.I. ${_esc(r.cedula)} · <span style="color:#94a3b8;">${_esc(r.institucion || 'N/D')}</span></div>
+                </td>
+                <td style="padding:12px;">
+                    ${badgeTipo} ${badgeModo}
+                </td>
+                <td style="padding:12px;">
+                    <div style="font-weight:700; color:#1e293b; font-size:0.78rem;">${_esc(r.periodo_texto || (r.duracion_meses + ' Meses'))}</div>
+                    <div style="font-size:0.70rem; color:#64748b;">${r.horas_meta || 960} Horas</div>
+                </td>
+                <td style="padding:12px; color:#64748b; font-size:0.75rem;">
+                    <i class="ti ti-user-check" style="color:#10b981;"></i> ${_esc(r.emitido_por_nombre || 'Admin')}
+                </td>
+                <td style="padding:10px 12px; text-align:center; border-radius:0 12px 12px 0; white-space:nowrap;">
+                    <div style="display:inline-flex; gap:5px; justify-content:center; align-items:center;">
+                        <a href="${urlVer}" target="_blank" class="btn-p-soft" style="width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; border-radius:8px; text-decoration:none; transition:all 0.15s ease;" title="Ver documento en visor PDF" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 3px 8px rgba(21,128,61,0.2)';" onmouseout="this.style.transform='none';this.style.boxShadow='none';">
+                            <i class="ti ti-eye" style="font-size:1.05rem;"></i>
+                        </a>
+                        <a href="${urlVer}&download=1" target="_blank" class="btn-p-soft" style="width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:8px; text-decoration:none; transition:all 0.15s ease;" title="Descargar archivo PDF directamente" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 3px 8px rgba(29,78,216,0.2)';" onmouseout="this.style.transform='none';this.style.boxShadow='none';">
+                            <i class="ti ti-download" style="font-size:1.05rem;"></i>
+                        </a>
+                        <button type="button" onclick="abrirEditorConstancia(${r.id})" class="btn-p-soft" style="width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:#fffbeb; color:#b45309; border:1px solid #fde68a; border-radius:8px; cursor:pointer; transition:all 0.15s ease;" title="Editar texto y datos del documento" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 3px 8px rgba(180,83,9,0.2)';" onmouseout="this.style.transform='none';this.style.boxShadow='none';">
+                            <i class="ti ti-edit" style="font-size:1.05rem;"></i>
+                        </button>
+                        <button type="button" onclick="eliminarConstancia(${r.id}, '${_esc(r.codigo_constancia)}', '${_esc(r.nombre_completo)}')" class="btn-p-soft" style="width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:8px; cursor:pointer; transition:all 0.15s ease;" title="Eliminar constancia respaldada" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 3px 8px rgba(220,38,38,0.2)';" onmouseout="this.style.transform='none';this.style.boxShadow='none';">
+                            <i class="ti ti-trash" style="font-size:1.05rem;"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+    contenedor.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// EDICIÓN EN VIVO DE CONSTANCIAS RESPALDADAS
+// ══════════════════════════════════════════════════════════════
+function abrirEditorConstancia(id) {
+    const item = (window._historialConstanciasData || []).find(x => parseInt(x.id) === parseInt(id));
+    if (!item) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se encontraron los datos de la constancia.' });
+        return;
+    }
+
+    document.getElementById('editConstanciaId').value = item.id;
+    document.getElementById('editTipoConstancia').value = item.tipo_constancia;
+    document.getElementById('editBadgeCodigo').textContent = item.codigo_constancia;
+
+    document.getElementById('editNombreCompleto').value = item.nombre_completo || '';
+    document.getElementById('editCedula').value = item.cedula || '';
+    document.getElementById('editPeriodoTexto').value = item.periodo_texto || '';
+    document.getElementById('editInstitucion').value = item.institucion || '';
+    document.getElementById('editDepartamento').value = item.departamento || '';
+    document.getElementById('editHorasMeta').value = item.horas_meta || 960;
+    document.getElementById('editTutorNombre').value = item.tutor_nombre || 'Joel Acosta';
+    document.getElementById('editTutorCargo').value = item.tutor_cargo || 'Jefe de la División de Soporte Técnico de la Dirección de Telemática';
+
+    const areaTexto = document.getElementById('editCuerpoPersonalizado');
+    if (item.cuerpo_personalizado && item.cuerpo_personalizado.trim().length > 0) {
+        areaTexto.value = item.cuerpo_personalizado;
+    } else {
+        areaTexto.value = construirRedaccionBase(item);
+    }
+
+    const modal = document.getElementById('modalEditarConstancia');
+    if (modal) modal.classList.add('active');
+}
+
+function cerrarEditorConstancia() {
+    const modal = document.getElementById('modalEditarConstancia');
+    if (modal) modal.classList.remove('active');
+}
+
+function regenerarTextoPredeterminado() {
+    const datos = {
+        tipo_constancia: document.getElementById('editTipoConstancia').value,
+        nombre_completo: document.getElementById('editNombreCompleto').value,
+        cedula: document.getElementById('editCedula').value,
+        departamento: document.getElementById('editDepartamento').value,
+        periodo_texto: document.getElementById('editPeriodoTexto').value,
+        horas_meta: document.getElementById('editHorasMeta').value
+    };
+    document.getElementById('editCuerpoPersonalizado').value = construirRedaccionBase(datos);
+}
+
+function construirRedaccionBase(data) {
+    const esCulm = (data.tipo_constancia === 'culminacion');
+    const nom = (data.nombre_completo || 'NOMBRE DEL PASANTE').toUpperCase();
+    const ciRaw = data.cedula || '';
+    const ci = (ciRaw.startsWith('V-') || ciRaw.startsWith('E-')) ? ciRaw : ('V-' + ciRaw);
+    const depto = data.departamento || 'Soporte Técnico';
+    const horas = data.horas_meta || 960;
+    const periodo = data.periodo_texto ? `durante un período de ${data.periodo_texto}, ` : '';
+
+    const hoy = new Date();
+    const mesesEs = ['', 'enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const dia = hoy.getDate();
+    const mes = mesesEs[hoy.getMonth() + 1];
+    const anio = hoy.getFullYear();
+
+    if (esCulm) {
+        return `Quien suscribe, en su carácter de responsable del ${depto}, adscrito a la División de Soporte Técnico de la Dirección de Telemática del Instituto de Salud Pública del Estado Bolívar, certifica por medio de la presente que el/la ciudadano/a ${nom}, titular de la Cédula de Identidad Nro. ${ci}, ha culminado satisfactoriamente sus Pasantías Profesionales en la institución bajo la supervisión del área de ${depto}, ${periodo}completando una carga horaria de ${horas} horas cumpliendo con las ${horas} horas requeridas.\n\nSe expide la presente carta a petición de la parte interesada, a los ${dia} días del mes de ${mes} de ${anio}, en Ciudad Bolívar, Estado Bolívar.`;
+    } else {
+        return `Quien suscribe, en su carácter de responsable del ${depto}, adscrito a la División de Soporte Técnico de la Dirección de Telemática del Instituto de Salud Pública del Estado Bolívar, hace constar por medio de la presente que el/la ciudadano/a ${nom}, titular de la Cédula de Identidad Nro. ${ci}, se encuentra realizando pasantías en la institución bajo la supervisión del área de ${depto}, cumpliendo una carga horaria de ${horas} horas correspondiente a un período de ${data.periodo_texto || '6 Meses'}.\n\nLa presente constancia se expide a petición de la parte interesada, a los ${dia} días del mes de ${mes} de ${anio}, en Ciudad Bolívar, Estado Bolívar.`;
+    }
+}
+
+function guardarEdicionConstancia(event, callback) {
+    if (event) event.preventDefault();
+
+    const form = document.getElementById('formEditarConstancia');
+    const fd = new FormData(form);
+    const btnGuardar = document.getElementById('btnGuardarCambios');
+    const htmlOrig = btnGuardar ? btnGuardar.innerHTML : '';
+    if (btnGuardar) {
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i> Guardando...';
+    }
+
+    fetch(URLROOT + '/reportes/actualizarConstancia', {
+        method: 'POST',
+        body: fd
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = htmlOrig;
+        }
+
+        if (res.success) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Constancia Actualizada',
+                    text: 'Los cambios y la redacción personalizada fueron guardados correctamente.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+            cerrarEditorConstancia();
+            cargarHistorialConstancias(false);
+            if (typeof callback === 'function') callback();
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error', text: res.error || 'No se pudieron guardar los cambios.' });
+        }
+    })
+    .catch(err => {
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = htmlOrig;
+        }
+        console.error(err);
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Error de conexión al guardar los cambios.' });
+    });
+}
+
+function guardarYDescargarPdf() {
+    const id = document.getElementById('editConstanciaId').value;
+    guardarEdicionConstancia(null, function() {
+        window.open(URLROOT + '/reportes/reimprimirConstancia?id=' + encodeURIComponent(id) + '&download=1', '_blank');
+    });
+}
+
+function eliminarConstancia(id, codigo, pasante) {
+    Swal.fire({
+        title: '¿Eliminar constancia?',
+        html: `¿Estás seguro de eliminar el registro <strong>${codigo}</strong> de <strong>${pasante}</strong>?<br><small style="color:#64748b;">Esta acción no se puede deshacer.</small>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then(result => {
+        if (result.isConfirmed) {
+            const fd = new FormData();
+            fd.append('id', id);
+
+            fetch(URLROOT + '/reportes/eliminarConstancia', {
+                method: 'POST',
+                body: fd
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Eliminada',
+                        text: 'El registro de constancia ha sido eliminado del libro oficial.',
+                        timer: 1800,
+                        showConfirmButton: false
+                    });
+                    cargarHistorialConstancias(false);
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: res.error || 'No se pudo eliminar.' });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Error al procesar la eliminación.' });
+            });
+        }
+    });
+}
+
+
 
 function activarModoAsistencia(modo) {
     const btnGrupal     = document.getElementById('modoGrupal');
@@ -1427,49 +2300,71 @@ async function submitConFormato(formato, btn) {
     const fechaInicio = document.getElementById('fechaInicioInput').value.trim();
     const fechaFin    = (document.getElementById('fechaFinInput').disabled ? fechaInicio : document.getElementById('fechaFinInput').value.trim()) || fechaInicio;
 
+    const htmlOriginal = btn.innerHTML;
+
     // ── Validar pasante seleccionado en módulos con buscador ─────────────────
     const modulosConPasante = ['evaluaciones', 'constancias'];
     if (modulosConPasante.includes(modulo)) {
-        const pid = document.getElementById('pasanteIdHidden').value;
-        if (!pid) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    html: `
-                        <div style="text-align:center; padding: 8px 0;">
-                            <div style="width:64px;height:64px;border-radius:16px;
-                                        background:rgba(245,158,11,0.1);
-                                        display:flex;align-items:center;justify-content:center;
-                                        margin:0 auto 14px;">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <line x1="12" y1="8" x2="12" y2="12"/>
-                                    <circle cx="12" cy="16" r="0.5" fill="#f59e0b"/>
-                                </svg>
-                            </div>
-                            <div style="font-size:1rem;font-weight:800;color:#0D1424;margin-bottom:6px;">
-                                Seleccionar Pasante
-                            </div>
-                            <div style="font-size:0.83rem;color:#64748b;line-height:1.5;">
-                                Debe buscar y seleccionar un pasante antes de generar el documento.
-                            </div>
-                        </div>`,
-                    showConfirmButton: true,
-                    confirmButtonText: 'Entendido',
-                    confirmButtonColor: '#162660',
-                    customClass: { popup: 'swal2-bento-popup' },
-                    background: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '20px'
-                });
+        const modoConstancia = (document.getElementById('modoEmisionConstancia') || {}).value;
+        if (modulo === 'constancias' && modoConstancia === 'manual') {
+            const nom = (document.getElementById('manualNombreCompleto') || {}).value || '';
+            const ced = (document.getElementById('manualCedula') || {}).value || '';
+            if (!nom.trim() || !ced.trim()) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Datos requeridos',
+                        text: 'Por favor ingrese el Nombre y la Cédula del pasante para emitir la constancia.',
+                        confirmButtonColor: '#162660'
+                    });
+                } else {
+                    alert('Debe ingresar Nombre y Cédula del pasante.');
+                }
+                btn.disabled = false;
+                btn.innerHTML = htmlOriginal;
+                return;
             }
-            btn.disabled = false;
-            btn.innerHTML = htmlOriginal;
-            return;
+        } else {
+            const pid = document.getElementById('pasanteIdHidden').value;
+            if (!pid) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        html: `
+                            <div style="text-align:center; padding: 8px 0;">
+                                <div style="width:64px;height:64px;border-radius:16px;
+                                            background:rgba(245,158,11,0.1);
+                                            display:flex;align-items:center;justify-content:center;
+                                            margin:0 auto 14px;">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="12" y1="8" x2="12" y2="12"/>
+                                        <circle cx="12" cy="16" r="0.5" fill="#f59e0b"/>
+                                    </svg>
+                                </div>
+                                <div style="font-size:1rem;font-weight:800;color:#0D1424;margin-bottom:6px;">
+                                    Seleccionar Pasante
+                                </div>
+                                <div style="font-size:0.83rem;color:#64748b;line-height:1.5;">
+                                    Debe buscar y seleccionar un pasante antes de generar el documento.
+                                </div>
+                            </div>`,
+                        showConfirmButton: true,
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#162660',
+                        customClass: { popup: 'swal2-bento-popup' },
+                        background: '#ffffff',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '20px'
+                    });
+                }
+                btn.disabled = false;
+                btn.innerHTML = htmlOriginal;
+                return;
+            }
         }
     }
 
     // ── Spinner en el botón ──────────────────────────────────────────────
-    const htmlOriginal = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i> Verificando...';
 

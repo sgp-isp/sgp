@@ -40,10 +40,10 @@ else
 // Cintillo como Base64 con altura controlada
 $baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(__DIR__)) . '/public/img/';
 $cintilloCandidates = [
-    $baseImgDir . 'cintillo-salud.png',
+    $baseImgDir . 'cintillo.png',
     $baseImgDir . 'cintillo_isp_bolivar.jpg',
     $baseImgDir . 'cintillo_pdf.png',
-    $baseImgDir . 'cintillo.png'
+    $baseImgDir . 'cintillo-salud.png'
 ];
 $bCintillo = '';
 foreach ($cintilloCandidates as $candidate) {

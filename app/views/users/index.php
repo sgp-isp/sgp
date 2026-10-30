@@ -572,9 +572,19 @@
             </div>
         </div>
         <div class="users-banner-actions" style="display:flex; gap:16px; z-index:1; align-items:center;">
+            <!-- Botón Egresados -->
+            <a href="<?= URLROOT ?>/users/egresados" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 12px 20px; border-radius: 10px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'" title="Ver archivo histórico de pasantes egresados">
+                <i class="ti ti-school" style="font-size: 1.1rem;"></i> Egresados (<?= $kpis['egresados'] ?? 0 ?>)
+            </a>
+
             <!-- Botón Secundario: Consulta Rápida -->
             <button onclick="openSearchModal()" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
                 <i class="ti ti-search" style="font-size: 1.1rem;"></i> Consulta Rápida
+            </button>
+
+            <!-- Botón Registro Grupal (Dedicado) -->
+            <button onclick="openBatchModal()" class="btn-batch-user" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1.5px solid rgba(255,255,255,0.4); color: white; padding: 12px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.32)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='none';" title="Registrar múltiples pasantes de una misma institución">
+                <i class="ti ti-users-group" style="font-size: 1.15rem;"></i> Carga Grupal
             </button>
 
             <!-- Botón Principal: Nuevo Usuario (Destacado en Blanco) -->
@@ -592,7 +602,7 @@
     $activos   = $kpis['activos'] ?? 0;
     $pasantes  = $kpis['pasantes'] ?? 0;
     $tutores   = count(array_filter($users, fn($u) => strtolower($u['role_name']) === 'tutor'));
-    $inactivos = $kpis['inactivos'] ?? 0;
+    $egresados = $kpis['egresados'] ?? 0;
     // ==========================================================
     ?>
 
@@ -612,7 +622,7 @@
 
         <div class="kpi-card-blue" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #2563eb;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="filtrarPorRol('Pasante')" title="Filtrar pasantes">
             <div style="flex:1;">
-                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Pasantes</p>
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Pasantes en curso</p>
                 <div style="display:flex;align-items:center;gap:12px;">
                     <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $pasantes ?>"><?= $pasantes ?></h2>
                 </div>
@@ -634,15 +644,15 @@
             </div>
         </div>
 
-        <div class="kpi-card-red" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #dc2626;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="filtrarPorEstado('Inactivo')" title="Ver usuarios inactivos">
+        <div class="kpi-card-red" style="border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #7c3aed;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="window.location.href='<?= URLROOT ?>/users/egresados'" title="Ver archivo de pasantes egresados">
             <div style="flex:1;">
-                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Inactivos</p>
+                <p class="kpi-title" style="font-size:0.82rem;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#7c3aed;">Pasantes Egresados</p>
                 <div style="display:flex;align-items:center;gap:12px;">
-                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;" data-kpi-value="<?= $inactivos ?>"><?= $inactivos ?></h2>
+                    <h2 class="kpi-num" style="font-size:2.4rem;font-weight:800;margin:0;line-height:1;color:#7c3aed;" data-kpi-value="<?= $egresados ?>"><?= $egresados ?></h2>
                 </div>
             </div>
-            <div class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Inactivos">
-                <i class="ti ti-user-off"></i>
+            <div class="kpi-icon-link" style="width:48px;height:48px;border-radius:12px;background:#f5f3ff;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'" title="Ver Egresados">
+                <i class="ti ti-school"></i>
             </div>
         </div>
     </div>
@@ -686,37 +696,64 @@
             <button class="vento-pill" data-role="Pasante" onclick="filtrarPorRol('Pasante')" style="background: #f1f5f9; color: #475569; border: none; padding: 7px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="if(!this.classList.contains('active')) {this.style.background='#e2e8f0'}" onmouseout="if(!this.classList.contains('active')) {this.style.background='#f1f5f9'}">
                 Pasantes
             </button>
+            <a href="<?= URLROOT ?>/users/egresados" class="vento-pill" style="background: #f1f5f9; color: #475569; border: none; padding: 7px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px;" onmouseover="this.style.background='#e2e8f0';this.style.color='#1e293b';" onmouseout="this.style.background='#f1f5f9';this.style.color='#475569';" title="Ver pasantes de períodos cerrados">
+                <i class="ti ti-school" style="font-size: 1rem; color: #7c3aed;"></i> Egresados (<?= $kpis['egresados'] ?? 0 ?>)
+            </a>
         </div>
     </div>
 
     <!-- BLOQUE 3: TABLA DE DATOS — solo en desktop (≥ 992px) -->
-    <div class="card border-0 shadow-soft rounded-xl overflow-hidden sgp-solo-desktop">
-        <div class="table-responsive">
-            <table id="usersTable" class="table table-hover align-middle mb-0" style="width:100%; opacity: 0; transition: opacity 0.4s ease-in-out;">
-                <thead class="bg-light text-uppercase text-muted small fw-bold">
+    <div class="card border-0 shadow-soft rounded-xl overflow-hidden sgp-solo-desktop" style="background: #ffffff; border: 1px solid #e2e8f0 !important; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+        <div class="table-responsive" style="overflow-x: hidden;">
+            <table id="usersTable" class="table table-hover align-middle mb-0" style="width: 100% !important; table-layout: fixed; opacity: 0; transition: opacity 0.4s ease-in-out;">
+                <colgroup>
+                    <col style="width: 29%;">
+                    <col style="width: 14%;">
+                    <col style="width: 23%;">
+                    <col style="width: 13%;">
+                    <col style="width: 21%;">
+                </colgroup>
+                <thead class="bg-light text-uppercase text-muted small fw-bold" style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                     <tr>
-                        <th class="px-4 py-3 border-0">Nombre</th>
-                        <th class="px-4 py-3 border-0">Rol</th>
-                        <th class="px-4 py-3 border-0">Departamento / Institución</th>
-                        <th class="px-4 py-3 border-0">Estado</th>
-                        <th class="px-4 py-3 border-0 text-center">Acciones</th>
+                        <th class="px-3 py-3 border-0">Usuario / Identidad</th>
+                        <th class="px-3 py-3 border-0">Rol</th>
+                        <th class="px-3 py-3 border-0">Departamento / Institución</th>
+                        <th class="px-3 py-3 border-0">Estado</th>
+                        <th class="px-3 py-3 border-0 text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="border-top-0">
                     <?php foreach ($users as $user):
                         $inicial = strtoupper(mb_substr($user['name'] ?? 'U', 0, 1));
+                        $avRoleClass = 'av-admin';
+                        if (($user['role_name'] ?? '') === 'Tutor') {
+                            $avRoleClass = 'av-tutor';
+                        } elseif (($user['role_name'] ?? '') === 'Pasante') {
+                            $avRoleClass = 'av-pasante';
+                        }
                     ?>
                     <tr>
-                        <td class="px-4 py-3">
+                        <td class="px-3 py-2.5">
                             <div class="dt-name-cell">
-                                <div class="dt-avatar"><?= $inicial ?></div>
-                                <div>
-                                    <div class="dt-cell-primary"><?= htmlspecialchars($user['name']) ?></div>
-                                    <div class="dt-cell-secondary"><?= htmlspecialchars($user['email']) ?></div>
+                                <div class="dt-avatar <?= $avRoleClass ?>"><?= $inicial ?></div>
+                                <div style="min-width: 0; overflow: hidden; flex: 1;">
+                                    <div class="dt-cell-primary text-truncate" title="<?= htmlspecialchars($user['name']) ?>">
+                                        <?= htmlspecialchars($user['name']) ?>
+                                    </div>
+                                    <div class="dt-cell-sub">
+                                        <?php if (!empty($user['cedula'])): ?>
+                                            <span class="dt-cedula-badge" title="Cédula: <?= htmlspecialchars($user['cedula']) ?>">
+                                                <i class="ti ti-id"></i> <?= htmlspecialchars($user['cedula']) ?>
+                                            </span>
+                                        <?php endif; ?>
+                                        <span class="dt-email-sub text-truncate" style="max-width: 140px;" title="<?= htmlspecialchars($user['email']) ?>">
+                                            <i class="ti ti-mail"></i> <?= htmlspecialchars($user['email']) ?>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-3 py-2.5">
                             <?php
                                 $rolMap = [
                                     'Administrador' => ['bg' => '#eff6ff', 'color' => '#2563eb', 'icon' => 'ti-shield-check'],
@@ -725,11 +762,11 @@
                                 ];
                                 $rCfg = $rolMap[$user['role_name']] ?? ['bg' => '#f1f5f9', 'color' => '#64748b', 'icon' => 'ti-user'];
                             ?>
-                            <span class="badge" style="background:<?= $rCfg['bg'] ?>; color:<?= $rCfg['color'] ?>; padding: 6px 12px; font-weight: 700; border-radius: 8px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
-                                <i class="ti <?= $rCfg['icon'] ?>" style="font-size: 1rem;"></i> <?= htmlspecialchars($user['role_name']) ?>
+                            <span class="badge" style="background:<?= $rCfg['bg'] ?>; color:<?= $rCfg['color'] ?>; padding: 5px 10px; font-weight: 700; border-radius: 8px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="ti <?= $rCfg['icon'] ?>" style="font-size: 0.95rem;"></i> <?= htmlspecialchars($user['role_name']) ?>
                             </span>
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-3 py-2.5">
                             <?php
                                 $infoContextual = '';
                                 $icon = 'ti-building';
@@ -742,7 +779,7 @@
                                 }
                             ?>
                             <?php if (!empty($infoContextual)): ?>
-                                <span class="dt-cell-truncate text-dark fw-medium" title="<?= htmlspecialchars($infoContextual) ?>">
+                                <span class="dt-cell-truncate text-dark fw-medium d-inline-block text-truncate" style="max-width: 100%;" title="<?= htmlspecialchars($infoContextual) ?>">
                                     <i class="ti <?= $icon ?> text-muted me-1"></i>
                                     <?= htmlspecialchars($infoContextual) ?>
                                 </span>
@@ -752,7 +789,7 @@
                                 </span>
                             <?php endif; ?>
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-3 py-2.5">
                             <?php
                                 $estadoMap = [
                                     'activo'   => ['bg' => '#eff6ff', 'color' => '#2563eb', 'text' => 'Activo',   'dot' => 'active'],
@@ -761,32 +798,32 @@
                                 $eStr = strtolower($user['estado']);
                                 $eCfg = $estadoMap[$eStr] ?? ['bg' => '#f1f5f9', 'color' => '#64748b', 'text' => ucfirst($eStr), 'dot' => 'inactive'];
                             ?>
-                            <span class="badge" style="background:<?= $eCfg['bg'] ?>; color:<?= $eCfg['color'] ?>; padding: 6px 12px; font-weight: 700; border-radius: 8px; font-size: 0.85rem; display: inline-flex; align-items: center;">
+                            <span class="badge" style="background:<?= $eCfg['bg'] ?>; color:<?= $eCfg['color'] ?>; padding: 5px 10px; font-weight: 700; border-radius: 8px; font-size: 0.8rem; display: inline-flex; align-items: center;">
                                 <span class="status-dot <?= $eCfg['dot'] ?>"></span> <?= $eCfg['text'] ?>
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-center align-middle">
-                            <div class="d-flex justify-content-center" style="gap: 12px;">
-                                <button class="btn btn-sm border-0 shadow-sm transition-all" data-bs-toggle="tooltip" title="Ver Perfil" onclick="SGPModal.verUsuario(<?= $user['id'] ?>)" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #2563eb; color: #ffffff; border-radius: 6px !important;">
-                                    <i class="ti ti-eye fs-5 text-white"></i>
+                        <td class="px-3 py-2.5 text-center align-middle">
+                            <div class="sgp-action-capsule">
+                                <button type="button" class="sgp-act-btn act-blue" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Perfil" onclick="SGPModal.verUsuario(<?= $user['id'] ?>)">
+                                    <i class="ti ti-eye"></i>
                                 </button>
-                                <button class="btn btn-sm border-0 shadow-sm transition-all" data-bs-toggle="tooltip" title="Editar Usuario" onclick="editUser('<?= UrlSecurity::encrypt($user['id']) ?>')" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #f59e0b; color: #ffffff; border-radius: 6px !important;">
-                                    <i class="ti ti-pencil fs-5 text-white"></i>
+                                <button type="button" class="sgp-act-btn act-amber" data-bs-toggle="tooltip" data-bs-placement="top" title="Editar Usuario" onclick="editUser('<?= UrlSecurity::encrypt($user['id']) ?>')">
+                                    <i class="ti ti-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm border-0 shadow-sm transition-all" data-bs-toggle="tooltip" title="Cambiar Clave" onclick="resetUser('<?= UrlSecurity::encrypt($user['id']) ?>')" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #64748b; color: #ffffff; border-radius: 6px !important;">
-                                    <i class="ti ti-key fs-5 text-white"></i>
+                                <button type="button" class="sgp-act-btn act-slate" data-bs-toggle="tooltip" data-bs-placement="top" title="Cambiar Clave" onclick="resetUser('<?= UrlSecurity::encrypt($user['id']) ?>')">
+                                    <i class="ti ti-key"></i>
                                 </button>
                                 <?php if($user['estado'] == 'activo'): ?>
-                                    <button class="btn btn-sm border-0 shadow-sm transition-all" data-bs-toggle="tooltip" title="Desactivar" onclick="toggleUser('<?= UrlSecurity::encrypt($user['id']) ?>', 'desactivar')" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #dc2626; color: #ffffff; border-radius: 6px !important;">
-                                        <i class="ti ti-user-off fs-5 text-white"></i>
+                                    <button type="button" class="sgp-act-btn act-red" data-bs-toggle="tooltip" data-bs-placement="top" title="Desactivar" onclick="toggleUser('<?= UrlSecurity::encrypt($user['id']) ?>', 'desactivar')">
+                                        <i class="ti ti-user-off"></i>
                                     </button>
                                 <?php else: ?>
-                                    <button class="btn btn-sm border-0 shadow-sm transition-all" data-bs-toggle="tooltip" title="Activar" onclick="toggleUser('<?= UrlSecurity::encrypt($user['id']) ?>', 'activar')" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #16a34a; color: #ffffff; border-radius: 6px !important;">
-                                        <i class="ti ti-user-check fs-5 text-white"></i>
+                                    <button type="button" class="sgp-act-btn act-green" data-bs-toggle="tooltip" data-bs-placement="top" title="Activar" onclick="toggleUser('<?= UrlSecurity::encrypt($user['id']) ?>', 'activar')">
+                                        <i class="ti ti-user-check"></i>
                                     </button>
                                 <?php endif; ?>
-                                <button class="btn btn-sm border-0 shadow-sm transition-all" data-bs-toggle="tooltip" title="Eliminar Permanente" onclick="confirmarEliminarUsuario('<?= UrlSecurity::encrypt($user['id']) ?>', '<?= addslashes(htmlspecialchars(($user['nombres'] ?? '') . ' ' . ($user['apellidos'] ?? $user['correo'] ?? ''))) ?>', <?= intval($user['role_id']) ?>)" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 6px !important;">
-                                    <i class="ti ti-trash fs-5"></i>
+                                <button type="button" class="sgp-act-btn act-danger-subtle" data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar Permanente" onclick="confirmarEliminarUsuario('<?= UrlSecurity::encrypt($user['id']) ?>', '<?= addslashes(htmlspecialchars(($user['nombres'] ?? '') . ' ' . ($user['apellidos'] ?? $user['correo'] ?? ''))) ?>', <?= intval($user['role_id']) ?>)">
+                                    <i class="ti ti-trash"></i>
                                 </button>
                             </div>
                         </td>
@@ -985,6 +1022,26 @@
                     <?php endforeach; ?>
                 </select>
             </div>
+
+            <!-- Alerta Preventiva: Pasante sin Período Activo -->
+            <div id="alerta-sin-periodo" style="display: none; background: #fffbeb; border: 1.5px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; animation: slideUp 0.25s ease;">
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                    <div style="width: 32px; height: 32px; min-width: 32px; border-radius: 8px; background: #fef3c7; color: #b45309; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                        <i class="ti ti-alert-triangle"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 4px; color: #92400e; font-size: 0.88rem; font-weight: 700;">Sin Período Académico Activo</h4>
+                        <p style="margin: 0; color: #b45309; font-size: 0.8rem; line-height: 1.45;">
+                            Actualmente no hay ningún período académico activo en el sistema. Podrás crear este usuario, pero <strong>no podrás asignarle departamento, tutor ni registrar sus asistencias</strong> hasta activar o crear un período.
+                        </p>
+                        <div style="margin-top: 10px;">
+                            <a href="<?= URLROOT ?>/periodos" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: #fef3c7; border: 1px solid #fde68a; color: #92400e; padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#fde68a'" onmouseout="this.style.background='#fef3c7'">
+                                <i class="ti ti-calendar-plus"></i> Ir a Períodos Académicos <i class="ti ti-external-link" style="font-size:0.75rem;"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <!-- Departamento (solo para Tutores) -->
             <div class="form-group" id="departamento-group" style="margin-bottom: 24px; display: none;">
@@ -1020,6 +1077,107 @@
                 <i class="ti ti-check"></i> Crear Usuario
             </button>
         </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Registro Grupal de Pasantes -->
+<div id="batchModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 950px; width: 95%;">
+        <div class="modal-head">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white;">
+                    <i class="ti ti-users-group"></i>
+                </div>
+                <div>
+                    <h2 style="font-size: 1.35rem; font-weight: 700; margin: 0; color: white !important;">Registro Grupal de Pasantes</h2>
+                    <p style="font-size: 0.85rem; margin: 2px 0 0; color: rgba(255,255,255,0.8) !important;">Registra múltiples pasantes de una misma institución en una sola operación</p>
+                </div>
+            </div>
+            <button type="button" class="btn-close-modal" onclick="closeBatchModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <div class="modal-body" style="padding: 24px 28px; max-height: calc(90vh - 100px); overflow-y: auto;">
+            <form id="batchUserForm" onsubmit="submitBatchUsers(event)">
+                <input type="hidden" name="csrf_token" value="<?= Session::generateCsrfToken() ?>">
+
+                <!-- Configuración Común: Institución -->
+                <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 18px 20px; margin-bottom: 22px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                        <label style="font-weight: 700; color: var(--color-primary); font-size: 0.92rem; display: flex; align-items: center; gap: 8px; margin: 0;">
+                            <i class="ti ti-building-community" style="color: #7c3aed; font-size: 1.1rem;"></i> Institución de Procedencia (Común para todo el lote)
+                        </label>
+                        <span style="font-size: 0.78rem; background: #e0f2fe; color: #0284c7; padding: 3px 10px; border-radius: 20px; font-weight: 700;">
+                            Rol: Pasante
+                        </span>
+                    </div>
+                    <select name="institucion_id" id="batch_institucion_id" class="input-modern" style="width: 100%; background: white;">
+                        <option value="">Sin especificar (los pasantes la completarán en su perfil)</option>
+                        <?php foreach ($instituciones ?? [] as $inst): ?>
+                            <option value="<?= $inst->id ?>"><?= htmlspecialchars($inst->nombre) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Alerta Preventiva: Período -->
+                <?php if (empty($periodoActivo)): ?>
+                <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <i class="ti ti-alert-triangle" style="font-size: 1.2rem; color: #d97706; flex-shrink: 0; margin-top: 2px;"></i>
+                        <div style="font-size: 0.82rem; color: #92400e; line-height: 1.45;">
+                            <strong>Aviso importante:</strong> Actualmente no hay ningún período académico activo. Las cuentas se crearán de inmediato, pero para asignar departamento, tutor y registrar asistencias deberás <a href="<?= URLROOT ?>/periodos" target="_blank" style="color: #2563eb; font-weight: 700; text-decoration: underline;">activar un período</a>.
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <!-- Toolbar de la Tabla -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h4 style="margin: 0; color: #1e293b; font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                            Lista de Pasantes <span id="batchCountBadge" style="background: #eff6ff; color: #2563eb; font-size: 0.78rem; padding: 2px 10px; border-radius: 12px; font-weight: 700;">3 pasantes</span>
+                        </h4>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" onclick="addBatchRow()" style="background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; padding: 7px 14px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                            <i class="ti ti-plus"></i> Agregar Fila
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla de Carga Dinámica -->
+                <div style="border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                    <div style="overflow-x: auto; max-height: 380px;">
+                        <table id="batchTable" style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+                            <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 2;">
+                                <tr>
+                                    <th style="padding: 10px 12px; font-weight: 700; color: #64748b; width: 40px; text-align: center;">#</th>
+                                    <th style="padding: 10px 12px; font-weight: 700; color: #1e293b; min-width: 130px;">Cédula *</th>
+                                    <th style="padding: 10px 12px; font-weight: 700; color: #1e293b; min-width: 160px;">Nombres *</th>
+                                    <th style="padding: 10px 12px; font-weight: 700; color: #1e293b; min-width: 160px;">Apellidos *</th>
+                                    <th style="padding: 10px 12px; font-weight: 700; color: #1e293b; min-width: 200px;">Correo Electrónico *</th>
+                                    <th style="padding: 10px 12px; font-weight: 700; color: #64748b; width: 50px; text-align: center;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batchTableBody">
+                                <!-- Filas generadas dinámicamente con JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 18px;">
+                    <button type="button" onclick="closeBatchModal()" style="background: #f1f5f9; color: #475569; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnSubmitBatch" class="btn-primary" style="background: linear-gradient(135deg, #172554 0%, #1e3a8a 50%, #2563eb 100%); color: white; border: none; padding: 12px 26px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(37,99,235,0.25); transition: all 0.2s;">
+                        <i class="ti ti-check"></i> Registrar Pasantes (<span id="batchSubmitCount">3</span>)
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -1093,11 +1251,11 @@
                     </select>
                 </div>
                 
-                <!-- Departamento (Solo para Tutores) -->
+                <!-- Departamento (Para Tutores y Administradores) -->
                 <div id="edit-departamento-group" class="form-group" style="margin-bottom: 24px; display: none;">
-                    <label>Departamento</label>
+                    <label>Departamento <span id="edit_departamento_req" style="color:#ef4444;">*</span></label>
                     <select name="departamento_id" id="edit_departamento_id" class="input-modern">
-                        <option value="">Seleccione...</option>
+                        <option value="">Sin departamento / Seleccione...</option>
                         <?php foreach ($departamentos as $depto): ?>
                             <option value="<?= $depto->id ?>"><?= htmlspecialchars($depto->nombre) ?></option>
                         <?php endforeach; ?>
@@ -1234,6 +1392,9 @@
     });
     
     // Create Modal Functions
+    // Período activo actual desde PHP
+    window.SGP_HAS_ACTIVE_PERIOD = <?= !empty($periodoActivo) ? 'true' : 'false' ?>;
+
     function openCreateModal() {
         document.getElementById('createModal').classList.add('active');
     }
@@ -1243,11 +1404,13 @@
         document.getElementById('createUserForm').reset();
         setFieldFeedback('cedulaCreate', 'cedulaFeedback', '', 'clear');
         setFieldFeedback('correoCreate', 'correoFeedback', '', 'clear');
-        // Reset campos condicionales
+        // Reset campos condicionales y alerta de período
         const ig = document.getElementById('institucion-group');
         const dg = document.getElementById('departamento-group');
+        const alertaP = document.getElementById('alerta-sin-periodo');
         if (ig) ig.style.display = 'none';
         if (dg) dg.style.display = 'none';
+        if (alertaP) alertaP.style.display = 'none';
     }
 
     // ── Validación en tiempo real: cédula y correo ─────────────────
@@ -1423,7 +1586,7 @@
     var _editRolOriginal = null; // [SGP-FIX-PJAX-REDECL]
 
     function rolFamilia(rolId) {
-        // Familia A: Admin(1) y Tutor(2)  |  Familia B: Pasante(3)
+        // Familia A: SuperAdmin(0), Admin(1) y Tutor(2)  |  Familia B: Pasante(3)
         return parseInt(rolId) === 3 ? 'B' : 'A';
     }
 
@@ -1431,12 +1594,12 @@
         if (_editRolOriginal === null) return;
         const nuevoRol = this.value;
         if (nuevoRol && rolFamilia(nuevoRol) !== rolFamilia(_editRolOriginal)) {
-            const nombres = {1:'Administrador', 2:'Tutor', 3:'Pasante'};
+            const nombres = {0:'SuperAdministrador', 1:'Administrador', 2:'Tutor', 3:'Pasante'};
             Swal.fire({
                 icon: 'error',
                 title: 'Cambio de rol no permitido',
-                html: `No es posible cambiar de <strong>${nombres[_editRolOriginal]}</strong>
-                       a <strong>${nombres[nuevoRol]}</strong>.<br><br>
+                html: `No es posible cambiar de <strong>${nombres[_editRolOriginal] || 'Rol actual'}</strong>
+                       a <strong>${nombres[nuevoRol] || 'Nuevo rol'}</strong>.<br><br>
                        Cada perfil requiere datos distintos (PIN, institución, cargo, departamento).
                        Si necesitas hacer este cambio, elimina el usuario y créalo de nuevo con el rol correcto.`,
                 confirmButtonText: 'Entendido',
@@ -1455,10 +1618,18 @@
     function syncDeptoGroup(rolId) {
         const editDeptoGroup  = document.getElementById('edit-departamento-group');
         const editDeptoSelect = document.getElementById('edit_departamento_id');
-        if (rolId == '2') {
+        const editDeptoReq    = document.getElementById('edit_departamento_req');
+        if (!editDeptoGroup || !editDeptoSelect) return;
+
+        if (rolId == '2') { // Tutor: Obligatorio
             editDeptoGroup.style.display = 'block';
             editDeptoSelect.required = true;
-        } else {
+            if (editDeptoReq) editDeptoReq.style.display = 'inline';
+        } else if (rolId == '1' || rolId == '0') { // Admin / SuperAdmin: Opcional
+            editDeptoGroup.style.display = 'block';
+            editDeptoSelect.required = false;
+            if (editDeptoReq) editDeptoReq.style.display = 'none';
+        } else { // Pasante
             editDeptoGroup.style.display = 'none';
             editDeptoSelect.required = false;
             editDeptoSelect.value = '';
@@ -1488,17 +1659,10 @@
                     document.getElementById('edit_rol_id').value = data.data.rol_id;
 
                     // Handle department visibility and value
-                    const editDeptoGroup = document.getElementById('edit-departamento-group');
+                    syncDeptoGroup(data.data.rol_id);
                     const editDeptoSelect = document.getElementById('edit_departamento_id');
-
-                    if (data.data.rol_id == '2') { // Tutor
-                        editDeptoGroup.style.display = 'block';
-                        editDeptoSelect.required = true;
+                    if (editDeptoSelect) {
                         editDeptoSelect.value = data.data.departamento_id || '';
-                    } else {
-                        editDeptoGroup.style.display = 'none';
-                        editDeptoSelect.required = false;
-                        editDeptoSelect.value = '';
                     }
 
                     document.getElementById('editModal').classList.add('active');
@@ -1702,43 +1866,270 @@
         createRolSelect.addEventListener('change', function() {
             const rol = this.value;
 
-            // Tutor → mostrar departamento
+            // Tutor o Admin → mostrar departamento
             if (rol == '2') {
                 departamentoGroup.style.display = 'block';
                 departamentoSelect.required = true;
+            } else if (rol == '1' || rol == '0') {
+                departamentoGroup.style.display = 'block';
+                departamentoSelect.required = false;
             } else {
                 departamentoGroup.style.display = 'none';
                 departamentoSelect.required = false;
                 departamentoSelect.value = '';
             }
 
-            // Pasante → mostrar institución
+            // Pasante → mostrar institución y verificar si hay período activo
+            const alertaSinPeriodo = document.getElementById('alerta-sin-periodo');
             if (rol == '3') {
                 if (institucionGroup) institucionGroup.style.display = 'block';
+                if (alertaSinPeriodo) {
+                    alertaSinPeriodo.style.display = (!window.SGP_HAS_ACTIVE_PERIOD) ? 'block' : 'none';
+                }
             } else {
                 if (institucionGroup) {
                     institucionGroup.style.display = 'none';
                     if (institucionSelect) institucionSelect.value = '';
                 }
+                if (alertaSinPeriodo) alertaSinPeriodo.style.display = 'none';
             }
         });
     }
-    
-    // Department field visibility control (Edit Modal)
-    var editRolSelect = document.getElementById('edit_rol_id'); // [SGP-FIX-PJAX-REDECL]
-    var editDepartamentoGroup = document.getElementById('edit-departamento-group');
-    var editDepartamentoSelect = document.getElementById('edit_departamento_id');
 
-    if (editRolSelect) {
-        editRolSelect.addEventListener('change', function() {
-            if (this.value == '2') { // Tutor
-                editDepartamentoGroup.style.display = 'block';
-                editDepartamentoSelect.required = true;
-            } else {
-                editDepartamentoGroup.style.display = 'none';
-                editDepartamentoSelect.required = false;
-                editDepartamentoSelect.value = '';
+    // ==========================================================
+    // ── LÓGICA DE REGISTRO GRUPAL / MASIVO DE PASANTES ────────
+    // ==========================================================
+    var batchRowCount = 0; // [SGP-FIX-PJAX-REDECL]
+
+    function openBatchModal() {
+        document.getElementById('batchModal').classList.add('active');
+        const tbody = document.getElementById('batchTableBody');
+        if (tbody && tbody.children.length === 0) {
+            batchRowCount = 0;
+            addBatchRow();
+            addBatchRow();
+            addBatchRow();
+        }
+        updateBatchCount();
+    }
+
+    function closeBatchModal() {
+        document.getElementById('batchModal').classList.remove('active');
+    }
+
+    function addBatchRow(data = {}) {
+        batchRowCount++;
+        const tbody = document.getElementById('batchTableBody');
+        if (!tbody) return;
+
+        const tr = document.createElement('tr');
+        tr.className = 'batch-row';
+        tr.style.borderBottom = '1px solid #f1f5f9';
+
+        tr.innerHTML = `
+            <td style="padding: 10px; text-align: center; color: #94a3b8; font-weight: 700;" class="row-num">
+                ${tbody.children.length + 1}
+            </td>
+            <td style="padding: 8px 10px;">
+                <input type="text" name="batch_cedula[]" class="input-modern batch-cedula"
+                       placeholder="12345678" maxlength="8" inputmode="numeric" pattern="[0-9]{7,8}"
+                       value="${data.cedula || ''}" required
+                       style="padding: 8px 12px; font-size: 0.85rem; width: 100%; box-sizing: border-box;"
+                       oninput="this.value = this.value.replace(/\\D/g, '')">
+            </td>
+            <td style="padding: 8px 10px;">
+                <input type="text" name="batch_nombres[]" class="input-modern batch-nombres"
+                       placeholder="Nombres" value="${data.nombres || ''}" required
+                       style="padding: 8px 12px; font-size: 0.85rem; width: 100%; box-sizing: border-box;">
+            </td>
+            <td style="padding: 8px 10px;">
+                <input type="text" name="batch_apellidos[]" class="input-modern batch-apellidos"
+                       placeholder="Apellidos" value="${data.apellidos || ''}" required
+                       style="padding: 8px 12px; font-size: 0.85rem; width: 100%; box-sizing: border-box;">
+            </td>
+            <td style="padding: 8px 10px;">
+                <input type="email" name="batch_correo[]" class="input-modern batch-correo"
+                       placeholder="estudiante@correo.com" value="${data.correo || ''}" required
+                       style="padding: 8px 12px; font-size: 0.85rem; width: 100%; box-sizing: border-box;">
+            </td>
+            <td style="padding: 8px 10px; text-align: center;">
+                <button type="button" onclick="removeBatchRow(this)" title="Eliminar fila"
+                        style="background: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                        onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+                    <i class="ti ti-trash"></i>
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+        renumberBatchRows();
+        updateBatchCount();
+    }
+
+    function removeBatchRow(btn) {
+        const tbody = document.getElementById('batchTableBody');
+        if (!tbody) return;
+        if (tbody.children.length <= 1) {
+            NotificationService.warning('Debe mantener al menos una fila en la lista.');
+            return;
+        }
+        btn.closest('tr').remove();
+        renumberBatchRows();
+        updateBatchCount();
+    }
+
+    function renumberBatchRows() {
+        const rows = document.querySelectorAll('#batchTableBody .batch-row');
+        rows.forEach((r, i) => {
+            const numEl = r.querySelector('.row-num');
+            if (numEl) numEl.textContent = i + 1;
+        });
+    }
+
+    function updateBatchCount() {
+        const total = document.querySelectorAll('#batchTableBody .batch-row').length;
+        const badge = document.getElementById('batchCountBadge');
+        const submitCount = document.getElementById('batchSubmitCount');
+        if (badge) badge.textContent = `${total} pasante${total === 1 ? '' : 's'}`;
+        if (submitCount) submitCount.textContent = total;
+    }
+
+    async function submitBatchUsers(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmitBatch');
+        const originalText = btn.innerHTML;
+
+        const institucionId = document.getElementById('batch_institucion_id').value;
+        const rows = document.querySelectorAll('#batchTableBody .batch-row');
+
+        const pasantes = [];
+        let erroresLocales = [];
+
+        rows.forEach((r, idx) => {
+            const cedula = r.querySelector('.batch-cedula').value.trim();
+            const nombres = r.querySelector('.batch-nombres').value.trim();
+            const apellidos = r.querySelector('.batch-apellidos').value.trim();
+            const correo = r.querySelector('.batch-correo').value.trim();
+
+            if (!cedula && !nombres && !apellidos && !correo) return; // omitir fila vacía
+
+            if (cedula.length < 7 || cedula.length > 8) {
+                erroresLocales.push(`Fila #${idx + 1}: Cédula '${cedula}' debe tener 7 u 8 dígitos.`);
             }
+            if (!nombres) erroresLocales.push(`Fila #${idx + 1}: Nombre requerido.`);
+            if (!apellidos) erroresLocales.push(`Fila #${idx + 1}: Apellido requerido.`);
+            if (!correo || !correo.includes('@')) erroresLocales.push(`Fila #${idx + 1}: Correo no válido.`);
+
+            pasantes.push({ cedula, nombres, apellidos, correo });
+        });
+
+        if (pasantes.length === 0) {
+            NotificationService.error('Ingresa los datos de al menos un pasante.');
+            return;
+        }
+
+        if (erroresLocales.length > 0) {
+            NotificationService.error(erroresLocales[0]);
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ti ti-loader"></i> Procesando registro grupal...';
+
+        try {
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const formData = new FormData();
+            formData.append('csrf_token', csrfMeta ? csrfMeta.getAttribute('content') : '');
+            formData.append('institucion_id', institucionId);
+            formData.append('pasantes', JSON.stringify(pasantes));
+
+            const resp = await fetch('<?= URLROOT ?>/users/crearGrupal', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+
+            const data = await resp.json();
+
+            if (data.success) {
+                closeBatchModal();
+                mostrarResumenCredenciales(data.data.creados);
+            } else {
+                NotificationService.error(data.message || 'Error al procesar el lote.');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        } catch (err) {
+            console.error('Error:', err);
+            NotificationService.error('Error de comunicación con el servidor.');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+
+    function mostrarResumenCredenciales(creados) {
+        let textoPortapapeles = "=== CREDENCIALES DE PASANTES CREADOS (SGP) ===\\n\\n";
+        let filasHtml = '';
+
+        creados.forEach((c, i) => {
+            textoPortapapeles += `${i + 1}. ${c.nombre}\\n   C.I: ${c.cedula}\\n   Correo: ${c.correo}\\n   Contraseña Temporal: ${c.password}\\n\\n`;
+            filasHtml += `
+                <tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:10px;font-weight:700;color:#1e293b;">${c.nombre}</td>
+                    <td style="padding:10px;color:#475569;">V-${c.cedula}</td>
+                    <td style="padding:10px;color:#475569;font-size:0.8rem;">${c.correo}</td>
+                    <td style="padding:10px;">
+                        <span style="font-family:monospace;font-weight:800;background:#fdf2f8;color:#be185d;padding:3px 8px;border-radius:6px;border:1px dashed #fbcfe8;font-size:0.85rem;">
+                            ${c.password}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        });
+
+        Swal.fire({
+            icon: 'success',
+            title: `¡${creados.length} Pasantes Registrados!`,
+            html: `
+                <p style="color:#64748b;font-size:0.9rem;margin-bottom:16px;">
+                    Las cuentas han sido creadas con éxito. Cada pasante deberá completar su perfil y cambiar su contraseña temporal en su primer inicio de sesión.
+                </p>
+                <div style="max-height:240px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:14px;text-align:left;">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+                        <thead style="background:#f8fafc;position:sticky;top:0;">
+                            <tr>
+                                <th style="padding:8px 10px;color:#64748b;">Nombre</th>
+                                <th style="padding:8px 10px;color:#64748b;">Cédula</th>
+                                <th style="padding:8px 10px;color:#64748b;">Correo</th>
+                                <th style="padding:8px 10px;color:#64748b;">Clave Temp.</th>
+                            </tr>
+                        </thead>
+                        <tbody>${filasHtml}</tbody>
+                    </table>
+                </div>
+                <button type="button" id="btnCopiarCredencialesBatch" class="btn-primary" style="margin:0 auto;padding:10px 18px;font-size:0.85rem;background:#059669;color:white;border-radius:8px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                    <i class="ti ti-copy"></i> Copiar Credenciales al Portapapeles
+                </button>
+            `,
+            confirmButtonText: 'Finalizar y Actualizar',
+            confirmButtonColor: '#172554',
+            allowOutsideClick: false,
+            didOpen: () => {
+                document.getElementById('btnCopiarCredencialesBatch').addEventListener('click', function() {
+                    navigator.clipboard.writeText(textoPortapapeles).then(() => {
+                        this.innerHTML = '<i class="ti ti-check"></i> ¡Copiado al portapapeles!';
+                        this.style.background = '#047857';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="ti ti-copy"></i> Copiar Credenciales al Portapapeles';
+                            this.style.background = '#059669';
+                        }, 2500);
+                    });
+                });
+            }
+        }).then(() => {
+            window.location.reload();
         });
     }
 </script>

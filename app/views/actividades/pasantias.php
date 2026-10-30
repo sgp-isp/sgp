@@ -52,7 +52,7 @@ $mesLabel = ['January'=>'Enero','February'=>'Febrero','March'=>'Marzo','April'=>
 .pc-wrap { width:100%; }
 
 /* Banner */
-.pc-banner { background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);border-radius:20px;padding:28px 36px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:relative;overflow:hidden; }
+.pc-banner { background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--gradient-mid, #1e3a8a) 50%,var(--color-accent-brand, #2563eb) 100%);border-radius:20px;padding:28px 36px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:relative;overflow:hidden; }
 .pc-back   { display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);backdrop-filter:blur(10px);color:white;padding:8px 16px;border-radius:9px;font-size:.82rem;font-weight:700;text-decoration:none;transition:all .2s; }
 .pc-back:hover { background:rgba(255,255,255,0.25);color:white; }
 .pc-nuevo-btn { display:inline-flex;align-items:center;gap:7px;background:white;color:#2563eb;border:none;padding:10px 20px;border-radius:10px;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(0,0,0,0.15); }
@@ -86,10 +86,10 @@ $mesLabel = ['January'=>'Enero','February'=>'Febrero','March'=>'Marzo','April'=>
 .pct-bar   { display:flex;align-items:center;gap:7px; }
 .pct-track { flex:1;height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden; }
 .pct-fill  { height:100%;border-radius:3px;background:linear-gradient(90deg,#2563eb,#10b981); }
-.pct-pct   { font-size:.73rem;font-weight:700;color:#64748b;min-width:30px;text-align:right; }
-.estado-act  { background:#dcfce7;color:#059669;font-size:.7rem;padding:3px 10px;border-radius:100px;font-weight:700; }
-.estado-fin  { background:#f1f5f9;color:#64748b;font-size:.7rem;padding:3px 10px;border-radius:100px;font-weight:700; }
-.estado-ret  { background:#fee2e2;color:#dc2626;font-size:.7rem;padding:3px 10px;border-radius:100px;font-weight:700; }
+.estado-act  { background:#dcfce7;color:#059669;font-size:.7rem;padding:3px 10px;border-radius:100px;font-weight:700;display:inline-flex;align-items:center;gap:4px; }
+.estado-fin  { background:#f1f5f9;color:#64748b;font-size:.7rem;padding:3px 10px;border-radius:100px;font-weight:700;display:inline-flex;align-items:center;gap:4px; }
+.estado-ret  { background:#fee2e2;color:#dc2626;font-size:.7rem;padding:3px 10px;border-radius:100px;font-weight:700;display:inline-flex;align-items:center;gap:4px; }
+.estado-egr  { background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;font-size:.73rem;padding:3px 10px;border-radius:100px;font-weight:800;display:inline-flex;align-items:center;gap:4px;box-shadow:0 1px 4px rgba(16,185,129,0.12); }
 .btn-pc { width:30px;height:30px;border-radius:8px;border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:.88rem;transition:all .2s; }
 .pc-field-msg { display:block;font-size:.72rem;margin-top:3px;min-height:14px;transition:all .2s; }
 .pc-field-msg.error   { color:#ef4444; }
@@ -114,7 +114,7 @@ $mesLabel = ['January'=>'Enero','February'=>'Febrero','March'=>'Marzo','April'=>
 .asist-tabs  { display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap; }
 .asist-tab   { padding:7px 18px;border-radius:20px;border:1.5px solid #e2e8f0;font-size:.82rem;font-weight:700;cursor:pointer;background:white;color:#64748b;transition:all .2s; }
 .asist-tab:hover  { border-color:#7c3aed;color:#7c3aed; }
-.asist-tab.active { background:linear-gradient(135deg,#172554,#2563eb);color:white;border-color:transparent; }
+.asist-tab.active { background:linear-gradient(135deg,var(--color-primary, #172554),var(--color-accent-brand, #2563eb));color:white;border-color:transparent; }
 .asist-day-table  { width:100%;border-collapse:collapse;font-size:.84rem; }
 .asist-day-table th { padding:10px 14px;text-align:center;font-size:.71rem;font-weight:800;color:#94a3b8;text-transform:uppercase;border-bottom:2px solid #f1f5f9; }
 .asist-day-table td { padding:12px 14px;text-align:center;border-bottom:1px solid #f8fafc; }
@@ -135,7 +135,7 @@ $mesLabel = ['January'=>'Enero','February'=>'Febrero','March'=>'Marzo','April'=>
 .pc-modal-overlay.active { display:flex; }
 .pc-modal-box { background:white;border-radius:22px;width:90%;max-width:640px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(15,23,42,.3);animation:pc-fadeUp .3s ease; }
 .pc-modal-sm  { max-width:440px; }
-.pm-head { background:linear-gradient(135deg,#172554,#2563eb);padding:22px 26px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0; }
+.pm-head { background:linear-gradient(135deg,var(--color-primary, #172554),var(--color-accent-brand, #2563eb));padding:22px 26px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0; }
 .pm-head h2 { font-size:1rem;font-weight:700;margin:0;color:white; }
 .pm-head p  { font-size:.78rem;margin:3px 0 0;color:rgba(255,255,255,.8); }
 .pm-body { padding:22px 26px;overflow-y:auto;flex:1; }
@@ -147,11 +147,11 @@ $mesLabel = ['January'=>'Enero','February'=>'Febrero','March'=>'Marzo','April'=>
 .f-group { margin-bottom:14px; }
 .f-row2  { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
 .f-section-lbl { font-size:.72rem;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.8px;margin:16px 0 10px;padding-bottom:5px;border-bottom:2px solid #f3e8ff; }
-.f-btn-primary { width:100%;padding:11px;border:none;border-radius:9px;cursor:pointer;background:linear-gradient(135deg,#172554,#2563eb);color:white;font-size:.88rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;font-family:inherit; }
+.f-btn-primary { width:100%;padding:11px;border:none;border-radius:9px;cursor:pointer;background:linear-gradient(135deg,var(--color-primary, #172554),var(--color-accent-brand, #2563eb));color:white;font-size:.88rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;font-family:inherit; }
 .f-btn-primary:hover { transform:translateY(-1px);box-shadow:0 6px 16px rgba(37,99,235,.3); }
 .f-btn-cancel { flex:1;padding:10px;background:#f1f5f9;color:#475569;border:2px solid #e2e8f0;border-radius:9px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit; }
 .calc-box  { background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:14px; }
-.proy-card { background:linear-gradient(135deg,#172554,#1e3a8a);border-radius:10px;padding:14px;color:white;margin-top:12px; }
+.proy-card { background:linear-gradient(135deg,var(--color-primary, #172554),var(--gradient-mid, #1e3a8a));border-radius:10px;padding:14px;color:white;margin-top:12px; }
 .proy-dato { display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.8rem; }
 .proy-dato span { color:rgba(255,255,255,.7); } .proy-dato strong { color:white; }
 .proy-highlight { background:rgba(255,255,255,.12);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:.83rem;font-weight:700;color:#7dd3fc; }
@@ -159,8 +159,139 @@ $mesLabel = ['January'=>'Enero','February'=>'Febrero','March'=>'Marzo','April'=>
 .temp-pass-box .lbl { font-size:.7rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.5px; }
 .temp-pass-box .val { font-size:1.2rem;font-weight:900;color:#065f46;letter-spacing:1px;margin-top:3px;font-family:monospace; }
 
-@media(max-width:900px){ .pc-kpi-row{grid-template-columns:1fr 1fr;} }
-@media(max-width:640px){ .pc-kpi-row{grid-template-columns:1fr;} }
+@media(max-width:900px){ .pc-kpi-row{grid-template-columns:repeat(2, 1fr); gap:14px;} }
+@media(max-width:640px){ 
+    .pc-kpi-row{grid-template-columns:repeat(2, 1fr); gap:10px;}
+    .pc-kpi { padding:14px 12px; }
+    .pc-kpi h2 { font-size:1.5rem !important; }
+    .pc-kpi div:last-child { width:36px; height:36px; font-size:1.1rem; }
+    .pc-banner { padding:20px 16px; border-radius:16px; }
+    .pc-nuevo-btn { width:100%; justify-content:center; }
+}
+
+/* ── Dark Mode Pasantías Cortas ── */
+[data-theme="dark"] .pc-banner {
+    background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%) !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+[data-theme="dark"] .pc-kpi {
+    background: #111a2e !important;
+    border-color: #1e293b !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .estado-egr {
+    background: rgba(16, 185, 129, 0.16) !important;
+    color: #34d399 !important;
+    border-color: rgba(52, 211, 153, 0.35) !important;
+}
+[data-theme="dark"] .pc-kpi p {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .pc-kpi:nth-child(1) h2 { color: #60a5fa !important; }
+[data-theme="dark"] .pc-kpi:nth-child(2) h2 { color: #34d399 !important; }
+[data-theme="dark"] .pc-kpi:nth-child(3) h2 { color: #c084fc !important; }
+[data-theme="dark"] .pc-kpi:nth-child(4) h2 { color: #fbbf24 !important; }
+
+[data-theme="dark"] .pc-kpi:nth-child(1) div:last-child {
+    background: rgba(37, 99, 235, 0.2) !important;
+    color: #60a5fa !important;
+}
+[data-theme="dark"] .pc-kpi:nth-child(2) div:last-child {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #34d399 !important;
+}
+[data-theme="dark"] .pc-kpi:nth-child(3) div:last-child {
+    background: rgba(124, 58, 237, 0.2) !important;
+    color: #c084fc !important;
+}
+[data-theme="dark"] .pc-kpi:nth-child(4) div:last-child {
+    background: rgba(217, 119, 6, 0.2) !important;
+    color: #fbbf24 !important;
+}
+
+[data-theme="dark"] .pc-timeline-card,
+[data-theme="dark"] .pc-table-card {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .pc-timeline-card span,
+[data-theme="dark"] .pc-table-card span {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .pc-timeline-card div:last-child span {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .pc-timeline-bar {
+    background: #0d1526 !important;
+}
+
+[data-theme="dark"] .epill {
+    background: #0d1526 !important;
+    border-color: #1e293b !important;
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .epill:hover {
+    border-color: #60a5fa !important;
+    color: #60a5fa !important;
+}
+[data-theme="dark"] .epill.active {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .pc-table th {
+    background: #0d1526 !important;
+    color: #94a3b8 !important;
+    border-bottom: 2px solid #1e293b !important;
+}
+[data-theme="dark"] .pc-table td {
+    background: transparent !important;
+    border-bottom: 1px solid #1e293b !important;
+    color: #cbd5e1 !important;
+}
+[data-theme="dark"] .pc-table tr:hover td {
+    background: #162238 !important;
+}
+[data-theme="dark"] .pc-table .pct-name {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .pc-table .pct-sub {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .pc-table td[style*="color:#475569"],
+[data-theme="dark"] .pc-table td div[style*="color:#475569"] {
+    color: #cbd5e1 !important;
+}
+[data-theme="dark"] .pc-table td[style*="color:#64748b"],
+[data-theme="dark"] .pc-table td div[style*="color:#94a3b8"] {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .pct-track {
+    background: #0d1526 !important;
+}
+[data-theme="dark"] .pct-pct {
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .btn-pc.btn-eye {
+    background: rgba(37, 99, 235, 0.22) !important;
+    color: #60a5fa !important;
+}
+[data-theme="dark"] .btn-pc.btn-edit {
+    background: rgba(16, 185, 129, 0.22) !important;
+    color: #34d399 !important;
+}
+[data-theme="dark"] .btn-pc.btn-asist {
+    background: rgba(124, 58, 237, 0.22) !important;
+    color: #c084fc !important;
+}
+[data-theme="dark"] .btn-pc.btn-del {
+    background: rgba(239, 68, 68, 0.22) !important;
+    color: #f87171 !important;
+}
 </style>
 
 <div class="pc-wrap">
@@ -194,22 +325,22 @@ $mesLabel = ['January'=>'Enero','February'=>'Febrero','March'=>'Marzo','April'=>
 
 <!-- KPIs -->
 <div class="pc-kpi-row">
-    <div class="pc-kpi" style="border-left:4px solid #2563eb;" onmouseover="this.style.boxShadow='0 12px 24px rgba(37,99,235,.2)'" onmouseout="this.style.boxShadow=''">
+    <div class="pc-kpi" style="border-left:4px solid #2563eb;" onmouseover="this.style.boxShadow='0 12px 20px -8px rgba(37,99,235,.5)'" onmouseout="this.style.boxShadow=''">
         <div><p style="color:#64748b;font-size:.75rem;margin:0 0 5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Activos</p>
         <h2 style="font-size:2rem;font-weight:800;color:#2563eb;margin:0;"><?= $statActivos ?></h2></div>
         <div style="background:#eff6ff;color:#2563eb;width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;"><i class="ti ti-user-check"></i></div>
     </div>
-    <div class="pc-kpi" style="border-left:4px solid #059669;" onmouseover="this.style.boxShadow='0 12px 24px rgba(5,150,105,.2)'" onmouseout="this.style.boxShadow=''">
-        <div><p style="color:#64748b;font-size:.75rem;margin:0 0 5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Finalizados</p>
+    <div class="pc-kpi" style="border-left:4px solid #059669;" onmouseover="this.style.boxShadow='0 12px 20px -8px rgba(5,150,105,.5)'" onmouseout="this.style.boxShadow=''">
+        <div><p style="color:#64748b;font-size:.75rem;margin:0 0 5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Egresados</p>
         <h2 style="font-size:2rem;font-weight:800;color:#059669;margin:0;"><?= $statFinalizados ?></h2></div>
-        <div style="background:#f0fdf4;color:#059669;width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;"><i class="ti ti-trophy"></i></div>
+        <div style="background:#f0fdf4;color:#059669;width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;"><i class="ti ti-school"></i></div>
     </div>
-    <div class="pc-kpi" style="border-left:4px solid #7c3aed;" onmouseover="this.style.boxShadow='0 12px 24px rgba(124,58,237,.2)'" onmouseout="this.style.boxShadow=''">
+    <div class="pc-kpi" style="border-left:4px solid #7c3aed;" onmouseover="this.style.boxShadow='0 12px 20px -8px rgba(124,58,237,.5)'" onmouseout="this.style.boxShadow=''">
         <div><p style="color:#64748b;font-size:.75rem;margin:0 0 5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Promedio Progreso</p>
         <h2 style="font-size:2rem;font-weight:800;color:#7c3aed;margin:0;"><?= $statPromPct ?>%</h2></div>
         <div style="background:#fdf4ff;color:#7c3aed;width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;"><i class="ti ti-trending-up"></i></div>
     </div>
-    <div class="pc-kpi" style="border-left:4px solid #d97706;" onmouseover="this.style.boxShadow='0 12px 24px rgba(217,119,6,.2)'" onmouseout="this.style.boxShadow=''">
+    <div class="pc-kpi" style="border-left:4px solid #d97706;" onmouseover="this.style.boxShadow='0 12px 20px -8px rgba(217,119,6,.5)'" onmouseout="this.style.boxShadow=''">
         <div><p style="color:#64748b;font-size:.75rem;margin:0 0 5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Total Registrados</p>
         <h2 style="font-size:2rem;font-weight:800;color:#d97706;margin:0;"><?= count($pasantesCortos) ?></h2></div>
         <div style="background:#fffbeb;color:#d97706;width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;"><i class="ti ti-users"></i></div>
@@ -257,7 +388,7 @@ $restD = max(0, $totD - $trnD);
         <div class="estado-pills">
             <button class="epill active" data-estado="Todos" onclick="filtrarEstado(this)">Todos</button>
             <button class="epill" data-estado="Activo" onclick="filtrarEstado(this)">Activos</button>
-            <button class="epill" data-estado="Finalizado" onclick="filtrarEstado(this)">Finalizados</button>
+            <button class="epill" data-estado="Finalizado" onclick="filtrarEstado(this)">Egresados</button>
             <button class="epill" data-estado="Retirado" onclick="filtrarEstado(this)">Retirados</button>
         </div>
     </div>
@@ -301,7 +432,17 @@ $restD = max(0, $totD - $trnD);
                 </div>
                 <div style="font-size:.69rem;color:#94a3b8;margin-top:2px;"><?= $hAcum ?>/<?= $hMeta ?>h</div>
             </td>
-            <td><span class="<?= $eCls ?>"><?= htmlspecialchars($ep) ?></span></td>
+            <td>
+                <?php if ($ep === 'Finalizado'): ?>
+                <span class="estado-egr"><i class="ti ti-circle-check"></i> Egresado</span>
+                <?php elseif ($ep === 'Activo'): ?>
+                <span class="estado-act"><i class="ti ti-clock"></i> Activo</span>
+                <?php elseif ($ep === 'Retirado'): ?>
+                <span class="estado-ret"><i class="ti ti-x"></i> Retirado</span>
+                <?php else: ?>
+                <span class="estado-fin"><?= htmlspecialchars($ep) ?></span>
+                <?php endif; ?>
+            </td>
             <td style="text-align:center;">
                 <div style="display:flex;gap:5px;justify-content:center;">
                     <button class="btn-pc btn-eye" title="Ver perfil" onclick="SGPModal.verUsuario(<?= $pc->id ?>)"><i class="ti ti-eye"></i></button>
@@ -336,7 +477,7 @@ $hrefsAsist = [
 ?>
 
 <!-- Banner de control de asistencias -->
-<div style="background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 50%,#a78bfa 100%);border-radius:18px;padding:24px 28px;position:relative;overflow:hidden;margin-bottom:18px;">
+<div class="module-banner" style="background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--gradient-mid, #1e3a8a) 50%,var(--color-accent-brand, #2563eb) 100%);border-radius:18px;padding:24px 28px;position:relative;overflow:hidden;margin-bottom:18px;">
     <div style="position:absolute;top:-30px;right:-30px;width:160px;height:160px;background:rgba(255,255,255,.06);border-radius:50%;"></div>
     <div style="position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
         <div style="display:flex;align-items:center;gap:14px;">
@@ -361,7 +502,7 @@ $hrefsAsist = [
             </a>
             <?php endforeach; ?>
             <button onclick="document.getElementById('pcModalManual').classList.add('open')"
-                style="background:#fff;color:#4c1d95;border:none;padding:8px 18px;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 10px rgba(0,0,0,.1);transition:all .15s;"
+                style="background:#fff;color:#1e3a8a;border:none;padding:8px 18px;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 10px rgba(0,0,0,.1);transition:all .15s;"
                 onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
                 <i class="ti ti-plus" style="font-size:1rem;"></i> Registro Manual
             </button>
@@ -978,7 +1119,7 @@ async function marcarTodosCorta(){
             <div class="f-group"><label class="f-label">Estado</label>
                 <select class="f-input" id="edit-estado">
                     <option value="Activo">Activo</option>
-                    <option value="Finalizado">Finalizado</option>
+                    <option value="Finalizado">Egresado (Finalizado)</option>
                     <option value="Retirado">Retirado</option>
                 </select>
             </div>
@@ -1052,7 +1193,11 @@ function filtrarEstado(btn) {
     btn.classList.add('active');
     const est = btn.dataset.estado;
     document.querySelectorAll('#tablaPasantes tr').forEach(tr => {
-        tr.style.display = (est === 'Todos' || tr.dataset.estado === est) ? '' : 'none';
+        const rowEst = tr.dataset.estado;
+        const matches = (est === 'Todos') 
+            || (est === 'Finalizado' && (rowEst === 'Finalizado' || rowEst === 'Egresado'))
+            || (rowEst === est);
+        tr.style.display = matches ? '' : 'none';
     });
 }
 

@@ -538,4 +538,43 @@ class PasantesController extends Controller
         header('Location: ' . URLROOT . '/pasantes');
         exit;
     }
+
+    /**
+     * POST /pasantes/desvincularDispositivo
+     * Permite a un administrador desvincular el teléfono/dispositivo de confianza de un pasante
+     */
+    public function desvincularDispositivo(): void
+    {
+        header('Content-Type: application/json');
+
+        if (!RoleMiddleware::hasAnyRole([0, 1])) {
+            echo json_encode(['success' => false, 'message' => 'No autorizado']);
+            return;
+        }
+
+        $usuarioId = (int)($_POST['usuario_id'] ?? 0);
+        if ($usuarioId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'ID de pasante inválido']);
+            return;
+        }
+
+        $this->db->query("SELECT d.nombre_dispositivo, u.cedula, dp.nombres, dp.apellidos FROM pasante_dispositivos d JOIN usuarios u ON u.id = d.usuario_id LEFT JOIN datos_personales dp ON dp.usuario_id = u.id WHERE d.usuario_id = :uid LIMIT 1");
+        $this->db->bind(':uid', $usuarioId);
+        $disp = $this->db->single();
+
+        $this->db->query("DELETE FROM pasante_dispositivos WHERE usuario_id = :uid");
+        $this->db->bind(':uid', $usuarioId);
+        $this->db->execute();
+
+        $nombre = $disp ? trim(($disp->nombres ?? '') . ' ' . ($disp->apellidos ?? '')) : "Pasante #{$usuarioId}";
+        AuditModel::log('DESVINCULAR_DISPOSITIVO_CONFIANZA', 'pasante_dispositivos', $usuarioId, [
+            'pasante'     => $nombre,
+            'dispositivo' => $disp->nombre_dispositivo ?? 'Desconocido'
+        ]);
+
+        echo json_encode([
+            'success' => true,
+            'message' => "El dispositivo de {$nombre} ha sido desvinculado con éxito. El pasante podrá vincular su nuevo teléfono en su próximo marcaje QR."
+        ]);
+    }
 }

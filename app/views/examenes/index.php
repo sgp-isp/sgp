@@ -29,7 +29,7 @@ $tasaColor       = (float)$tasaAprobacion >= 60 ? '#059669' : '#dc2626';
 
 /* ── Hero ─────────────────────────────────────────────── */
 .ex-hero{
-    background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 45%,#2563eb 100%);
+    background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%) !important;
     border-radius:20px;padding:32px 36px;margin-bottom:24px;color:#fff;
     position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(15,23,42,.35);
 }
@@ -83,13 +83,203 @@ $tasaColor       = (float)$tasaAprobacion >= 60 ? '#059669' : '#dc2626';
 .ex-kpi.c-amber  {border-top:3px solid #d97706;} .ex-kpi.c-amber::after  {background:#d97706;}
 .ex-kpi.c-purple {border-top:3px solid #7c3aed;} .ex-kpi.c-purple::after {background:#7c3aed;}
 .ex-kpi.c-rose   {border-top:3px solid #e11d48;} .ex-kpi.c-rose::after   {background:#e11d48;}
-.ex-kpi:hover.c-blue   {box-shadow:0 12px 28px rgba(37,99,235,.2);}
-.ex-kpi:hover.c-teal   {box-shadow:0 12px 28px rgba(13,148,136,.2);}
-.ex-kpi:hover.c-green  {box-shadow:0 12px 28px rgba(5,150,105,.2);}
-.ex-kpi:hover.c-red    {box-shadow:0 12px 28px rgba(220,38,38,.2);}
-.ex-kpi:hover.c-amber  {box-shadow:0 12px 28px rgba(217,119,6,.2);}
-.ex-kpi:hover.c-purple {box-shadow:0 12px 28px rgba(124,58,237,.2);}
-.ex-kpi:hover.c-rose   {box-shadow:0 12px 28px rgba(225,29,72,.2);}
+.ex-kpi:hover.c-blue   {box-shadow:0 12px 22px -6px rgba(37,99,235,.55) !important;}
+.ex-kpi:hover.c-teal   {box-shadow:0 12px 22px -6px rgba(13,148,136,.55) !important;}
+.ex-kpi:hover.c-green  {box-shadow:0 12px 22px -6px rgba(5,150,105,.55) !important;}
+.ex-kpi:hover.c-red    {box-shadow:0 12px 22px -6px rgba(220,38,38,.55) !important;}
+.ex-kpi:hover.c-amber  {box-shadow:0 12px 22px -6px rgba(217,119,6,.55) !important;}
+.ex-kpi:hover.c-purple {box-shadow:0 12px 22px -6px rgba(124,58,237,.55) !important;}
+.ex-kpi:hover.c-rose   {box-shadow:0 12px 22px -6px rgba(225,29,72,.55) !important;}
+
+/* ── Chips Bento de Distribución por Rangos ───────────────── */
+.ex-range-pills-wrap {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+}
+@media(max-width: 480px) {
+    .ex-range-pills-wrap {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+.ex-range-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 6px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+    border: 1px solid transparent;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.ex-range-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+.ex-range-pill .range-pct-tooltip {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    z-index: 20;
+}
+.ex-range-pill .range-pct-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #0f172a;
+}
+.ex-range-pill:hover .range-pct-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.ex-range-pill .range-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+}
+.ex-range-pill .range-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.ex-range-pill .range-badge {
+    font-size: 1.05rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.ex-range-pill.r-red {
+    background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
+    border-color: #fee2e2;
+    color: #991b1b;
+}
+.ex-range-pill.r-red .range-dot { background: #ef4444; }
+.ex-range-pill.r-red .range-badge { color: #dc2626; }
+.ex-range-pill.r-red:hover { border-color: #fca5a5; }
+
+.ex-range-pill.r-amber {
+    background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%);
+    border-color: #fef3c7;
+    color: #92400e;
+}
+.ex-range-pill.r-amber .range-dot { background: #f59e0b; }
+.ex-range-pill.r-amber .range-badge { color: #d97706; }
+.ex-range-pill.r-amber:hover { border-color: #fde68a; }
+
+.ex-range-pill.r-blue {
+    background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+    border-color: #dbeafe;
+    color: #1e40af;
+}
+.ex-range-pill.r-blue .range-dot { background: #3b82f6; }
+.ex-range-pill.r-blue .range-badge { color: #2563eb; }
+.ex-range-pill.r-blue:hover { border-color: #bfdbfe; }
+
+.ex-range-pill.r-green {
+    background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+    border-color: #dcfce7;
+    color: #166534;
+}
+.ex-range-pill.r-green .range-dot { background: #10b981; }
+.ex-range-pill.r-green .range-badge { color: #059669; }
+.ex-range-pill.r-green:hover { border-color: #bbf7d0; }
+
+/* Switch Segmentado Minimalista */
+.ex-switch-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    padding: 3px;
+    border-radius: 10px;
+    gap: 3px;
+    border: 1px solid #e2e8f0;
+}
+.ex-switch-btn {
+    border: none;
+    background: transparent;
+    padding: 5px 12px;
+    border-radius: 7px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+}
+.ex-switch-btn.active {
+    background: #ffffff;
+    color: #7c3aed;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.ex-switch-btn:hover:not(.active) {
+    color: #1e293b;
+    background: rgba(255,255,255,0.5);
+}
+
+.ex-inst-select-clean {
+    border: none;
+    background: transparent;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #64748b;
+    outline: none;
+    cursor: pointer;
+    padding: 2px 4px;
+}
+.ex-inst-select-clean:focus {
+    color: #7c3aed;
+}
+
+.ex-inst-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 8px 14px;
+    margin-bottom: 12px;
+    font-size: 0.77rem;
+}
+.ex-inst-badge-avg {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    font-weight: 800;
+    color: #4338ca;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
 
 /* ── Medals CSS (sin emojis) ──────────────────────────── */
 .ex-medal{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -280,10 +470,13 @@ $tasaColor       = (float)$tasaAprobacion >= 60 ? '#059669' : '#dc2626';
 
 /* ── Mobile ≤ 767px ─────────────────────────────────────────── */
 @media(max-width:767px){
-    .ex-hero{padding:20px 18px;gap:12px}
-    .ex-hero-icon{width:46px;height:46px;font-size:1.3rem;flex-shrink:0}
-    .ex-hero-title{font-size:1.3rem}
-    .ex-hero-sub{font-size:.82rem}
+    .ex-hero{padding:20px 18px;gap:16px;border-radius:18px;}
+    .ex-hero-inner{flex-direction:column;align-items:flex-start;gap:16px;}
+    .ex-hero-left{width:100%;gap:14px;}
+    .ex-hero-icon{width:48px;height:48px;font-size:1.4rem;flex-shrink:0;border-radius:14px;}
+    .ex-hero-title{font-size:1.4rem;line-height:1.25;}
+    .ex-hero-sub{font-size:.82rem;}
+    .ex-btn-new-hero{width:100%;justify-content:center;padding:12px 16px;min-height:42px;}
     .ex-kpi-row{grid-template-columns:repeat(2,1fr)}
     .ex-bento{grid-template-columns:1fr}
     .ex-grid{grid-template-columns:1fr}
@@ -424,28 +617,90 @@ $medalClasses    = ['ex-medal-1','ex-medal-2','ex-medal-3','ex-medal-n','ex-meda
         </div>
     </div>
 
-    <!-- ── Card 2: Radar pentágono por rangos ── -->
+    <!-- ── Card 2: Rendimiento Académico por Institución (Barras) ── -->
     <div class="ex-card" style="display:flex;flex-direction:column;">
-        <p class="ex-card-title"><i class="ti ti-chart-radar" style="color:#7c3aed;"></i> Distribución por Rangos</p>
-        <div style="position:relative;height:190px;width:100%;">
-            <canvas id="exRadarChart" style="display:block;"></canvas>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+            <p class="ex-card-title" style="margin:0;"><i class="ti ti-chart-bar" style="color:#7c3aed;"></i> Rendimiento Académico</p>
+            
+            <!-- Switch Segmentado Minimalista -->
+            <div class="ex-switch-pill">
+                <button type="button" class="ex-switch-btn active" id="btnSwitchGlobal" onclick="setVistaInstitucion('global')">
+                    <i class="ti ti-world"></i> Global
+                </button>
+                <?php if (count($institucionesStats ?? []) === 1): ?>
+                    <?php $unicaInst = $institucionesStats[0]; ?>
+                    <button type="button" class="ex-switch-btn" id="btnSwitchInst" onclick="setVistaInstitucion('<?= (int)$unicaInst->institucion_id ?>')">
+                        <i class="ti ti-school"></i> <?= htmlspecialchars($unicaInst->institucion_nombre) ?>
+                    </button>
+                <?php elseif (count($institucionesStats ?? []) > 1): ?>
+                    <div style="display:inline-flex;align-items:center;padding:0 6px;">
+                        <i class="ti ti-school" style="font-size:0.85rem;color:#7c3aed;margin-right:3px;"></i>
+                        <select id="selInstitucionChart" class="ex-inst-select-clean" onchange="setVistaInstitucion(this.value)">
+                            <option value="" disabled selected>Por Escuela...</option>
+                            <?php foreach ($institucionesStats ?? [] as $inst): ?>
+                                <option value="<?= (int)$inst->institucion_id ?>">
+                                    <?= htmlspecialchars($inst->institucion_nombre) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php else: ?>
+                    <button type="button" class="ex-switch-btn" disabled style="opacity:0.5;cursor:not-allowed;">
+                        <i class="ti ti-school"></i> Sin escuelas
+                    </button>
+                <?php endif; ?>
+            </div>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;justify-content:center;">
-            <span style="display:flex;align-items:center;gap:4px;font-size:.68rem;color:#64748b;font-weight:600;">
-                <span style="width:7px;height:7px;border-radius:50%;background:#ef4444;display:inline-block;"></span> 0–19% (<?= (int)($dist->r0  ?? 0) ?>)
+
+        <!-- Banner de promedio interactivo -->
+        <div id="instKpiBanner" class="ex-inst-banner">
+            <span id="instSelectedLabel" style="color:#475569;font-weight:700;display:flex;align-items:center;gap:6px;">
+                <i class="ti ti-users" style="color:#6366f1;font-size:1rem;"></i> Mostrando promedio global
             </span>
-            <span style="display:flex;align-items:center;gap:4px;font-size:.68rem;color:#64748b;font-weight:600;">
-                <span style="width:7px;height:7px;border-radius:50%;background:#f97316;display:inline-block;"></span> 20–39% (<?= (int)($dist->r20 ?? 0) ?>)
+            <span class="ex-inst-badge-avg" id="instSelectedAvg">
+                <i class="ti ti-chart-arrows-vertical" style="font-size:0.85rem;"></i> Promedio: <?= $avgScore ?>%
             </span>
-            <span style="display:flex;align-items:center;gap:4px;font-size:.68rem;color:#64748b;font-weight:600;">
-                <span style="width:7px;height:7px;border-radius:50%;background:#d97706;display:inline-block;"></span> 40–59% (<?= (int)($dist->r40 ?? 0) ?>)
-            </span>
-            <span style="display:flex;align-items:center;gap:4px;font-size:.68rem;color:#64748b;font-weight:600;">
-                <span style="width:7px;height:7px;border-radius:50%;background:#2563eb;display:inline-block;"></span> 60–79% (<?= (int)($dist->r60 ?? 0) ?>)
-            </span>
-            <span style="display:flex;align-items:center;gap:4px;font-size:.68rem;color:#64748b;font-weight:600;">
-                <span style="width:7px;height:7px;border-radius:50%;background:#059669;display:inline-block;"></span> 80–100% (<?= (int)($dist->r80 ?? 0) ?>)
-            </span>
+        </div>
+
+        <!-- Canvas Gráfico de Barras con altura óptima -->
+        <div style="position:relative;height:185px;width:100%;">
+            <canvas id="exBarChart" style="display:block;"></canvas>
+        </div>
+
+        <!-- Grid de Niveles Cualitativos -->
+        <div class="ex-range-pills-wrap">
+            <div class="ex-range-pill r-red">
+                <span class="range-pct-tooltip">Rango: 0% – 39%</span>
+                <div class="range-header">
+                    <span class="range-dot"></span>
+                    <span>Deficiente</span>
+                </div>
+                <span class="range-badge" id="badgeDeficiente"><?= (int)($dist->r0 ?? 0) + (int)($dist->r20 ?? 0) ?></span>
+            </div>
+            <div class="ex-range-pill r-amber">
+                <span class="range-pct-tooltip">Rango: 40% – 59%</span>
+                <div class="range-header">
+                    <span class="range-dot"></span>
+                    <span>Regular</span>
+                </div>
+                <span class="range-badge" id="badgeRegular"><?= (int)($dist->r40 ?? 0) ?></span>
+            </div>
+            <div class="ex-range-pill r-blue">
+                <span class="range-pct-tooltip">Rango: 60% – 79%</span>
+                <div class="range-header">
+                    <span class="range-dot"></span>
+                    <span>Bueno</span>
+                </div>
+                <span class="range-badge" id="badgeBueno"><?= (int)($dist->r60 ?? 0) ?></span>
+            </div>
+            <div class="ex-range-pill r-green">
+                <span class="range-pct-tooltip">Rango: 80% – 100%</span>
+                <div class="range-header">
+                    <span class="range-dot"></span>
+                    <span>Excelente</span>
+                </div>
+                <span class="range-badge" id="badgeExcelente"><?= (int)($dist->r80 ?? 0) ?></span>
+            </div>
         </div>
     </div>
 
@@ -818,55 +1073,151 @@ $medalClasses    = ['ex-medal-1','ex-medal-2','ex-medal-3','ex-medal-n','ex-meda
         });
     }
 
-    // Radar (pentágono): distribución por rangos de puntaje
-    var ctxR = document.getElementById('exRadarChart');
-    if (ctxR) {
-        new Chart(ctxR, {
-            type: 'radar',
+    // Barras: Distribución cualitativa por rangos y por institución
+    var instStatsData = <?= json_encode($institucionesStats ?? []) ?>;
+    var globalDistData = {
+        deficiente: (r0 + r20),
+        regular:    r40,
+        bueno:      r60,
+        excelente:  r80,
+        promedio:   <?= (float)($avgScore ?? 0) ?>
+    };
+
+    var barChartInstance = null;
+    var ctxB = document.getElementById('exBarChart');
+    if (ctxB) {
+        var canvasCtx = ctxB.getContext('2d');
+        
+        // Crear degradados verticales para cada nivel
+        var gradRed = canvasCtx.createLinearGradient(0, 0, 0, 180);
+        gradRed.addColorStop(0, 'rgba(239, 68, 68, 0.95)');
+        gradRed.addColorStop(1, 'rgba(239, 68, 68, 0.35)');
+
+        var gradAmber = canvasCtx.createLinearGradient(0, 0, 0, 180);
+        gradAmber.addColorStop(0, 'rgba(245, 158, 11, 0.95)');
+        gradAmber.addColorStop(1, 'rgba(245, 158, 11, 0.35)');
+
+        var gradBlue = canvasCtx.createLinearGradient(0, 0, 0, 180);
+        gradBlue.addColorStop(0, 'rgba(59, 130, 246, 0.95)');
+        gradBlue.addColorStop(1, 'rgba(59, 130, 246, 0.35)');
+
+        var gradGreen = canvasCtx.createLinearGradient(0, 0, 0, 180);
+        gradGreen.addColorStop(0, 'rgba(16, 185, 129, 0.95)');
+        gradGreen.addColorStop(1, 'rgba(16, 185, 129, 0.35)');
+
+        barChartInstance = new Chart(ctxB, {
+            type: 'bar',
             data: {
-                labels: ['0–19%', '20–39%', '40–59%', '60–79%', '80–100%'],
+                labels: ['Deficiente', 'Regular', 'Bueno', 'Excelente'],
                 datasets: [{
                     label: 'Pasantes',
-                    data: [r0, r20, r40, r60, r80],
-                    backgroundColor: 'rgba(124,58,237,.12)',
-                    borderColor: '#7c3aed',
-                    borderWidth: 2.5,
-                    pointBackgroundColor: ['#ef4444','#f97316','#d97706','#2563eb','#059669'],
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
-                    fill: true,
+                    data: [globalDistData.deficiente, globalDistData.regular, globalDistData.bueno, globalDistData.excelente],
+                    backgroundColor: [gradRed, gradAmber, gradBlue, gradGreen],
+                    borderColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981'],
+                    borderWidth: 1.5,
+                    borderRadius: 10,
+                    borderSkipped: false,
+                    maxBarThickness: 46
                 }]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
-                animation: { duration: 900, easing: 'easeOutQuart' },
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 600, easing: 'easeOutQuart' },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                        titleFont: { size: 12, weight: '700' },
+                        bodyFont: { size: 11, weight: '600' },
+                        padding: 10,
+                        cornerRadius: 8,
                         callbacks: {
+                            title: function(items) {
+                                var rangos = ['0–39%', '40–59%', '60–79%', '80–100%'];
+                                return items[0].label + ' (' + (rangos[items[0].dataIndex] || '') + ')';
+                            },
                             label: function(c) {
-                                return ' ' + c.parsed.r + ' pasante' + (c.parsed.r !== 1 ? 's' : '');
+                                var total = c.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                                var pct = total > 0 ? Math.round((c.parsed.y / total) * 100) : 0;
+                                return ' ' + c.parsed.y + ' pasante' + (c.parsed.y !== 1 ? 's' : '') + ' (' + pct + '%)';
                             }
                         }
                     }
                 },
                 scales: {
-                    r: {
+                    y: {
                         beginAtZero: true,
-                        ticks: { display: false, stepSize: 1 },
-                        grid: { color: 'rgba(0,0,0,.07)' },
-                        angleLines: { color: 'rgba(0,0,0,.1)' },
-                        pointLabels: {
-                            font: { size: 10, weight: '700' },
-                            color: '#64748b'
-                        }
+                        ticks: { precision: 0, font: { size: 10.5, weight: '600' }, color: '#94a3b8' },
+                        grid: { color: 'rgba(226, 232, 240, 0.6)' }
+                    },
+                    x: {
+                        ticks: { display: false },
+                        grid: { display: false }
                     }
                 }
             }
         });
     }
+
+    // Switch/filtro interactivo de institución
+    window.setVistaInstitucion = function(val) {
+        if (!barChartInstance) return;
+
+        // Actualizar estados visuales de los botones switch
+        var btnGlobal = document.getElementById('btnSwitchGlobal');
+        var btnInst   = document.getElementById('btnSwitchInst');
+        var selClean  = document.getElementById('selInstitucionChart');
+
+        if (btnGlobal) btnGlobal.classList.toggle('active', val === 'global');
+        if (btnInst)   btnInst.classList.toggle('active', val !== 'global');
+        if (val === 'global' && selClean) {
+            selClean.value = '';
+        }
+
+        var newData = [];
+        var avgLabel = '';
+        var selectedText = '';
+
+        if (val === 'global') {
+            newData = [globalDistData.deficiente, globalDistData.regular, globalDistData.bueno, globalDistData.excelente];
+            avgLabel = 'Promedio: ' + globalDistData.promedio + '%';
+            selectedText = '<i class="ti ti-users" style="color:#6366f1;font-size:1rem;"></i> Mostrando promedio global';
+        } else {
+            var found = instStatsData.find(function(it) { return it.institucion_id == val; });
+            if (found) {
+                newData = [parseInt(found.deficiente || 0), parseInt(found.regular || 0), parseInt(found.bueno || 0), parseInt(found.excelente || 0)];
+                avgLabel = 'Promedio: ' + found.promedio_pct + '%';
+                selectedText = '<i class="ti ti-school" style="color:#7c3aed;font-size:1rem;"></i> ' + found.institucion_nombre;
+            } else {
+                newData = [0, 0, 0, 0];
+                avgLabel = 'Promedio: 0%';
+                selectedText = 'Sin registros para esta institución';
+            }
+        }
+
+        // Actualizar gráfico de barras
+        barChartInstance.data.datasets[0].data = newData;
+        barChartInstance.update();
+
+        // Actualizar badges numéricos
+        var bDef = document.getElementById('badgeDeficiente');
+        var bReg = document.getElementById('badgeRegular');
+        var bBue = document.getElementById('badgeBueno');
+        var bExc = document.getElementById('badgeExcelente');
+        if (bDef) bDef.textContent = newData[0];
+        if (bReg) bReg.textContent = newData[1];
+        if (bBue) bBue.textContent = newData[2];
+        if (bExc) bExc.textContent = newData[3];
+
+        // Actualizar banner
+        var lLabel = document.getElementById('instSelectedLabel');
+        var lAvg   = document.getElementById('instSelectedAvg');
+        if (lLabel) lLabel.innerHTML = selectedText;
+        if (lAvg)   lAvg.innerHTML   = '<i class="ti ti-chart-arrows-vertical" style="font-size:0.85rem;"></i> ' + avgLabel;
+    };
+
+    window.cambiarFiltroInstitucion = window.setVistaInstitucion;
 })();
 
 // ─────────────────────────────────────────────────────────────
@@ -1139,6 +1490,42 @@ var BANCO_PREGUNTAS = [
             { texto: "Dirección lógica que identifica un dispositivo en una red", es_correcta: true },
             { texto: "Protocolo de encriptación de datos", es_correcta: false },
             { texto: "Velocidad de conexión a Internet en Mbps", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "¿Qué es una carpeta compartida en una red local (LAN)?",
+        opciones: [
+            { texto: "Un directorio local inaccesible para otros equipos", es_correcta: false },
+            { texto: "Una carpeta accesible por múltiples usuarios autorizados a través de la red", es_correcta: true },
+            { texto: "Una partición oculta del disco duro para copias de seguridad", es_correcta: false },
+            { texto: "Un archivo comprimido en formato ZIP", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "¿Cuál es la forma estándar de acceder a una carpeta compartida en Windows mediante la ruta de red (UNC)?",
+        opciones: [
+            { texto: "http://nombre-equipo/carpeta", es_correcta: false },
+            { texto: "C:\\Red\\nombre-equipo\\carpeta", es_correcta: false },
+            { texto: "\\\\nombre-equipo\\nombre-carpeta (o \\\\IP\\nombre-carpeta)", es_correcta: true },
+            { texto: "ftp://carpeta@redlocal", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "¿Cuál es la diferencia principal entre conectar una impresora por USB vs. por Red (Ethernet/Wi-Fi)?",
+        opciones: [
+            { texto: "Por USB no requiere controladores; por Red sí", es_correcta: false },
+            { texto: "Por USB solo se conecta a un equipo directo; por Red tiene su propia IP y es accesible por toda la red sin depender de una PC anfitriona", es_correcta: true },
+            { texto: "La conexión USB permite imprimir a mayor distancia que la red Ethernet", es_correcta: false },
+            { texto: "No hay ninguna diferencia en su funcionamiento", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "Para compartir en red una impresora conectada directamente por cable USB a una PC, ¿qué condición es necesaria?",
+        opciones: [
+            { texto: "La PC anfitriona debe permanecer encendida, conectada a la red y con el uso compartido de impresoras habilitado", es_correcta: true },
+            { texto: "La impresora debe desconectarse del cable USB", es_correcta: false },
+            { texto: "Todos los equipos deben usar exactamente la misma versión del sistema operativo", es_correcta: false },
+            { texto: "La PC anfitriona debe estar apagada para no generar conflicto de puertos", es_correcta: false }
         ]
     }
 ];

@@ -84,8 +84,12 @@
         loadNotifications();
         setupEventListeners();
 
-        // Recargar badge inmediatamente tras cada navegación PJAX
+        // Recargar badge inmediatamente tras cada navegación PJAX y cerrar dropdown
+        document.addEventListener('pjax:beforeSend', function () {
+            closeDropdown();
+        });
         document.addEventListener('pjax:complete', function () {
+            closeDropdown();
             loadNotifications();
         });
 
@@ -100,6 +104,11 @@
         elements.btn.addEventListener('click', function (e) {
             e.stopPropagation();
             toggleDropdown();
+
+            // Solicitar permiso para notificaciones de escritorio en este gesto de usuario si aún no está definido
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
 
             // ✨ Pausar animación de badge cuando dropdown está abierto
             if (elements.dropdown.classList.contains('show')) {
@@ -127,10 +136,17 @@
                 const id = item.dataset.id;
                 const targetUrl = link.getAttribute('href');
 
+                // Cerrar inmediatamente el dropdown para que no quede tapando el módulo
+                closeDropdown();
+
                 // Dynamic system notifications (sys_*) → navigate directly
                 if (id && id.toString().startsWith('sys_')) {
                     if (targetUrl && targetUrl !== '#') {
-                        window.location.href = targetUrl;
+                        if (window.SGPPjax && typeof window.SGPPjax.navigate === 'function') {
+                            window.SGPPjax.navigate(targetUrl, true);
+                        } else {
+                            window.location.href = targetUrl;
+                        }
                     }
                     return;
                 }
@@ -223,12 +239,27 @@
         _paintBadge(count);
 
         if (count > 0 && isNew) {
-            // Sonar solo si es una notificación nueva en un poll posterior
+            // Sonar tono campana armónica estilo eBay
             try {
-                const audio = new Audio(URLROOT + '/sounds/pop.wav');
-                audio.volume = 0.5;
+                const audio = new Audio(URLROOT + '/sounds/ebay-chime.wav');
+                audio.volume = 0.65;
                 audio.play().catch(() => {});
             } catch(e) {}
+
+            // Alerta nativa de escritorio en Windows si el permiso está concedido
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    const n = new Notification('SGP — Nueva Notificación', {
+                        body: 'Tienes ' + count + ' notificación(es) nueva(s) en el sistema.',
+                        icon: URLROOT + '/img/notif-icon.png'
+                    });
+                    n.onclick = function() {
+                        window.focus();
+                        n.close();
+                    };
+                    setTimeout(() => n.close(), 7000);
+                } catch(e) {}
+            }
         }
 
         _lastKnownCount = count;
@@ -345,6 +376,9 @@
                         if (indicator) indicator.remove();
                     }
 
+                    // Cerrar el dropdown para que no quede abierto sobre el nuevo módulo
+                    closeDropdown();
+
                     // Recargar para sincronizar con servidor
                     loadNotifications();
 
@@ -356,7 +390,7 @@
                             } else {
                                 window.location.href = targetUrl;
                             }
-                        }, 300);
+                        }, 180);
                     }
                 } else {
                     // [FIX-UX] Antes esto quedaba en silencio total (ej. token CSRF

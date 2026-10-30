@@ -105,10 +105,10 @@ class PdfGenerator
         // ── Cintillo institucional ─────────────
         $baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(__DIR__)) . '/public/img/';
         $cintilloCandidates = [
-            $baseImgDir . 'cintillo-salud.png',
+            $baseImgDir . 'cintillo.png',
             $baseImgDir . 'cintillo_isp_bolivar.jpg',
             $baseImgDir . 'cintillo_pdf.png',
-            $baseImgDir . 'cintillo.png'
+            $baseImgDir . 'cintillo-salud.png'
         ];
         foreach ($cintilloCandidates as $candidate) {
             if (file_exists($candidate)) {
@@ -203,10 +203,10 @@ class PdfGenerator
     {
         $baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(__DIR__)) . '/public/img/';
         $cintilloCandidates = [
-            $baseImgDir . 'cintillo-salud.png',
+            $baseImgDir . 'cintillo.png',
             $baseImgDir . 'cintillo_isp_bolivar.jpg',
             $baseImgDir . 'cintillo_pdf.png',
-            $baseImgDir . 'cintillo.png'
+            $baseImgDir . 'cintillo-salud.png'
         ];
         $cintillo = '';
         foreach ($cintilloCandidates as $candidate) {

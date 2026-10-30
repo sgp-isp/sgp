@@ -444,12 +444,19 @@ class UserModel
      * 
      * @return array Array de usuarios con sus datos básicos
      */
-    public function getAllUsers(): array
+    public function getAllUsers(bool $incluirEgresados = false): array
     {
+        $filtroEgresados = $incluirEgresados ? "" : "
+            AND NOT (u.rol_id = 3 AND (COALESCE(pa.estado, '') = 'Cerrado' OR COALESCE(dpa.estado_pasantia, '') = 'Finalizado' OR u.estado = 'inactivo'))
+        ";
+
         $this->db->query("
             SELECT 
                 u.id, 
                 COALESCE(CONCAT(dp.nombres, ' ', dp.apellidos), u.correo) as name,
+                dp.nombres,
+                dp.apellidos,
+                u.cedula,
                 u.correo as email, 
                 u.rol_id as role_id, 
                 r.nombre as role_name, 
@@ -457,12 +464,20 @@ class UserModel
                 u.estado,
                 d.nombre as departamento_nombre,
                 inst.nombre as institucion_nombre,
-                CASE WHEN dp.id IS NOT NULL THEN 1 ELSE 0 END as perfil_completado
+                pa.nombre as periodo_nombre,
+                pa.estado as periodo_estado,
+                dpa.estado_pasantia,
+                CASE WHEN dp.id IS NOT NULL THEN 1 ELSE 0 END as perfil_completado,
+                CASE 
+                    WHEN u.rol_id = 3 AND (COALESCE(pa.estado, '') = 'Cerrado' OR COALESCE(dpa.estado_pasantia, '') = 'Finalizado' OR u.estado = 'inactivo') THEN 1 
+                    ELSE 0 
+                END as es_egresado
             FROM usuarios u 
             JOIN roles r ON u.rol_id = r.id 
             LEFT JOIN departamentos d ON u.departamento_id = d.id
             LEFT JOIN datos_personales dp ON u.id = dp.usuario_id
             LEFT JOIN datos_pasante dpa ON u.id = dpa.usuario_id
+            LEFT JOIN periodos_academicos pa ON pa.id = dpa.periodo_id
             LEFT JOIN instituciones inst ON inst.id = COALESCE(
                 NULLIF(dpa.institucion_id, 0),
                 CASE WHEN dpa.institucion_procedencia REGEXP '^[0-9]+$'
@@ -470,6 +485,7 @@ class UserModel
                      ELSE NULL END
             )
             WHERE u.rol_id > 0
+            {$filtroEgresados}
             ORDER BY u.created_at DESC
         ");
         $results = $this->db->resultSet();
@@ -477,24 +493,83 @@ class UserModel
     }
 
     /**
+     * Obtener exclusivamente los Pasantes Egresados (cohorte o período cerrado / finalizados)
+     *
+     * @return array
+     */
+    public function getEgresadosUsers(): array
+    {
+        $this->db->query("
+            SELECT 
+                u.id, 
+                COALESCE(CONCAT(dp.nombres, ' ', dp.apellidos), u.correo) as name,
+                dp.nombres,
+                dp.apellidos,
+                u.cedula,
+                u.correo as email, 
+                u.rol_id as role_id, 
+                r.nombre as role_name, 
+                u.created_at,
+                u.estado,
+                d.nombre as departamento_nombre,
+                inst.nombre as institucion_nombre,
+                pa.id as periodo_id,
+                pa.nombre as periodo_nombre,
+                pa.estado as periodo_estado,
+                dpa.fecha_inicio_pasantia,
+                dpa.fecha_fin_estimada,
+                COALESCE(dpa.estado_pasantia, 'Finalizado') as estado_pasantia,
+                COALESCE(NULLIF(dpa.horas_meta, 0), 1440) as horas_meta,
+                COALESCE((
+                    SELECT COUNT(*) * 8
+                    FROM asistencias a
+                    WHERE a.pasante_id = u.id AND a.estado IN ('Presente', 'Justificado')
+                ), 0) as horas_acumuladas,
+                CASE WHEN dp.id IS NOT NULL THEN 1 ELSE 0 END as perfil_completado,
+                1 as es_egresado
+            FROM usuarios u 
+            JOIN roles r ON u.rol_id = r.id 
+            LEFT JOIN departamentos d ON u.departamento_id = d.id
+            LEFT JOIN datos_personales dp ON u.id = dp.usuario_id
+            LEFT JOIN datos_pasante dpa ON u.id = dpa.usuario_id
+            LEFT JOIN periodos_academicos pa ON pa.id = dpa.periodo_id
+            LEFT JOIN instituciones inst ON inst.id = COALESCE(
+                NULLIF(dpa.institucion_id, 0),
+                CASE WHEN dpa.institucion_procedencia REGEXP '^[0-9]+$'
+                     THEN CAST(dpa.institucion_procedencia AS UNSIGNED)
+                     ELSE NULL END
+            )
+            WHERE u.rol_id = 3 
+              AND (COALESCE(pa.estado, '') = 'Cerrado' OR COALESCE(dpa.estado_pasantia, '') = 'Finalizado' OR u.estado = 'inactivo')
+            ORDER BY pa.fecha_fin DESC, u.created_at DESC
+        ");
+        $results = $this->db->resultSet();
+        return array_map(fn($item) => (array) $item, $results);
+    }
+
+    /**
      * Obtener KPIs de Usuarios en una sola consulta SQL
-     * Optimizado para reemplazar los filter_array en PHP
+     * Distingue entre personal/pasantes vigentes y egresados
      */
     public function getUsersKPIs(): array
     {
         $this->db->query("
             SELECT 
-                COUNT(*) as total,
-                SUM(CASE WHEN estado = 'activo' THEN 1 ELSE 0 END) as activos,
-                SUM(CASE WHEN estado = 'inactivo' THEN 1 ELSE 0 END) as inactivos,
-                SUM(CASE WHEN rol_id = 1 THEN 1 ELSE 0 END) as admins,
-                SUM(CASE WHEN rol_id = 2 THEN 1 ELSE 0 END) as tutores,
-                SUM(CASE WHEN rol_id = 3 THEN 1 ELSE 0 END) as pasantes
-            FROM usuarios
-            WHERE rol_id > 0
+                COUNT(*) as total_general,
+                SUM(CASE WHEN u.rol_id IN (1, 2) OR (u.rol_id = 3 AND COALESCE(pa.estado, '') != 'Cerrado' AND COALESCE(dpa.estado_pasantia, '') != 'Finalizado' AND u.estado = 'activo') THEN 1 ELSE 0 END) as total,
+                SUM(CASE WHEN u.estado = 'activo' AND NOT (u.rol_id = 3 AND (COALESCE(pa.estado, '') = 'Cerrado' OR COALESCE(dpa.estado_pasantia, '') = 'Finalizado')) THEN 1 ELSE 0 END) as activos,
+                SUM(CASE WHEN u.rol_id = 3 AND (COALESCE(pa.estado, '') = 'Cerrado' OR COALESCE(dpa.estado_pasantia, '') = 'Finalizado' OR u.estado = 'inactivo') THEN 1 ELSE 0 END) as egresados,
+                SUM(CASE WHEN u.estado = 'inactivo' AND u.rol_id != 3 THEN 1 ELSE 0 END) as inactivos,
+                SUM(CASE WHEN u.rol_id = 1 THEN 1 ELSE 0 END) as admins,
+                SUM(CASE WHEN u.rol_id = 2 THEN 1 ELSE 0 END) as tutores,
+                SUM(CASE WHEN u.rol_id = 3 AND NOT (COALESCE(pa.estado, '') = 'Cerrado' OR COALESCE(dpa.estado_pasantia, '') = 'Finalizado' OR u.estado = 'inactivo') THEN 1 ELSE 0 END) as pasantes
+            FROM usuarios u
+            LEFT JOIN datos_pasante dpa ON u.id = dpa.usuario_id
+            LEFT JOIN periodos_academicos pa ON pa.id = dpa.periodo_id
+            WHERE u.rol_id > 0
         ");
         $row = $this->db->single();
-        return $row ? (array) $row : ['total' => 0, 'pasantes' => 0, 'activos' => 0, 'inactivos' => 0];
+        return $row ? (array) $row : ['total' => 0, 'activos' => 0, 'egresados' => 0, 'inactivos' => 0, 'pasantes' => 0, 'admins' => 0, 'tutores' => 0];
     }
 
     /**

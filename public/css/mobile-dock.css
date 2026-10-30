@@ -24,7 +24,7 @@
     .content-wrapper {
         margin-left: 0 !important;
         width: 100% !important;
-        padding-bottom: 90px !important;
+        padding-bottom: 110px !important;
     }
 
     /* ── Banner adaptativo (SGP Bento) — aplica a admin y pasante ── */
@@ -119,9 +119,9 @@
     transform: scale(0.88);
 }
 
-/* ── Ítem ACTIVO — pill azul navy ─────────────────────────────── */
+/* ── Ítem ACTIVO — pill color adaptable ─────────────────────────────── */
 .dock-item.active {
-    color: #1e3a8a;
+    color: var(--color-accent-brand, #1e3a8a);
 }
 
 .dock-item.active i {
@@ -129,12 +129,12 @@
     background: rgba(37, 99, 235, 0.12);
     border-radius: 12px;
     padding: 6px 12px;
-    color: #1e3a8a;
+    color: var(--color-accent-brand, #1e3a8a);
     transform: scale(1.08);
 }
 
 .dock-item.active span {
-    color: #1e3a8a;
+    color: var(--color-accent-brand, #1e3a8a);
     font-weight: 800;
 }
 
@@ -146,7 +146,7 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #059669, #10b981);
+    background: linear-gradient(135deg, var(--color-primary, #059669), var(--color-accent-brand, #10b981));
     box-shadow: 0 0 8px rgba(16, 185, 129, 0.85);
     animation: neonGlow 1.5s infinite alternate;
     transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
@@ -175,7 +175,7 @@
 .dock-fab {
     width: 52px;
     height: 52px;
-    background: linear-gradient(135deg, #172554 0%, #1e3a8a 50%, #2563eb 100%);
+    background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--color-primary, #1e3a8a) 45%, var(--color-accent-brand, #2563eb) 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -205,7 +205,7 @@
 .dock-item.dock-fab-item span {
     font-size: 0.58rem;
     font-weight: 700;
-    color: #1e3a8a;
+    color: var(--color-accent-brand, #1e3a8a);
     margin-top: -2px;
 }
 
@@ -233,7 +233,7 @@
 }
 
 .sgp-dock-sheet-overlay.active {
-    display: block;
+    display: block !important;
 }
 
 @keyframes dockOverlayIn {
@@ -256,10 +256,13 @@
     animation: sheetSlideUp 0.3s cubic-bezier(0.34, 1.2, 0.64, 1) both;
     max-height: 80vh;
     overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
 }
 
 .sgp-dock-sheet.active {
-    display: block;
+    display: block !important;
 }
 
 @keyframes sheetSlideUp {
@@ -269,17 +272,22 @@
 
 /* Handle visual */
 .dock-sheet-handle {
-    width: 40px;
-    height: 4px;
-    background: #e2e8f0;
+    width: 44px;
+    height: 5px;
+    background: #cbd5e1;
     border-radius: 99px;
     margin: 12px auto 8px;
+    touch-action: none;
+    cursor: grab;
 }
 
 /* Header del sheet */
 .dock-sheet-header {
-    padding: 16px 24px 12px;
+    padding: 12px 20px 12px 24px;
     border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .dock-sheet-header h6 {
@@ -289,6 +297,29 @@
     text-transform: uppercase;
     letter-spacing: 0.06em;
     margin: 0;
+}
+
+.dock-sheet-close-btn {
+    background: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    padding: 0;
+}
+
+.dock-sheet-close-btn:hover,
+.dock-sheet-close-btn:active {
+    background: #e2e8f0;
+    color: #1e293b;
+    transform: scale(0.95);
 }
 
 /* Items del sheet */
@@ -397,4 +428,96 @@
         from { transform: translateY(100%); opacity: 0; }
         to   { transform: translateY(0);    opacity: 1; }
     }
+}
+
+/* ================================================================
+   DARK MODE COMPATIBILITY
+   ================================================================ */
+[data-theme="dark"] .sgp-mobile-dock {
+    background: rgba(15, 23, 42, 0.92) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme="dark"] .dock-item {
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .dock-item:hover,
+[data-theme="dark"] .dock-item.active {
+    color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .dock-item.active i {
+    background: rgba(56, 189, 248, 0.15) !important;
+    color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .dock-item.active span {
+    color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .dock-item.dock-fab-item span {
+    color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .sgp-dock-sheet {
+    background: #0f172a !important;
+    border-top: 1px solid #1e293b !important;
+    color: #cbd5e1 !important;
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.7) !important;
+}
+
+[data-theme="dark"] .dock-sheet-handle {
+    background: #334155 !important;
+}
+
+[data-theme="dark"] .dock-sheet-header {
+    border-bottom: 1px solid #1e293b !important;
+}
+
+[data-theme="dark"] .dock-sheet-header h6 {
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .dock-sheet-item {
+    background-color: transparent !important;
+    border: 1px solid transparent !important;
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .dock-sheet-item:hover,
+[data-theme="dark"] .dock-sheet-item:focus {
+    background-color: #1e293b !important;
+    color: #38bdf8 !important;
+    border-color: #334155 !important;
+}
+
+[data-theme="dark"] .dock-sheet-item.active {
+    background: rgba(56, 189, 248, 0.12) !important;
+    color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .dock-sheet-icon {
+    background: #1e293b !important;
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .dock-sheet-item.active .dock-sheet-icon,
+[data-theme="dark"] .dock-sheet-item:hover .dock-sheet-icon {
+    background: rgba(56, 189, 248, 0.2) !important;
+    color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .dock-sheet-divider {
+    background: #1e293b !important;
+}
+
+[data-theme="dark"] .dock-sheet-logout {
+    color: #f87171 !important;
+}
+
+[data-theme="dark"] .dock-sheet-logout:hover {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #fca5a5 !important;
 }

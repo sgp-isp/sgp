@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: sgp-ispeb
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /
+    envVars:
+      - key: MYSQLHOST
+        sync: false
+      - key: MYSQLPORT
+        value: "4000"
+      - key: MYSQLDATABASE
+        sync: false
+      - key: MYSQLUSER
+        sync: false
+      - key: MYSQLPASSWORD
+        sync: false
+      - key: MYSQLSSL
+        value: "true"
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_PORT
+        value: "587"

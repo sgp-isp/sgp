@@ -44,6 +44,14 @@ $totalSizeFormatted = round($bytes, 2) . ' ' . $units[$pow];
         box-shadow: 0 8px 24px rgba(0,0,0,0.12);
     }
 
+    .stat-card.stat-card-blue   { border-left: 4px solid #3b82f6 !important; }
+    .stat-card.stat-card-green  { border-left: 4px solid #10b981 !important; }
+    .stat-card.stat-card-yellow { border-left: 4px solid #f59e0b !important; }
+
+    .stat-card.stat-card-blue:hover   { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(37, 99, 235, 0.5) !important; }
+    .stat-card.stat-card-green:hover  { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(16, 185, 129, 0.5) !important; }
+    .stat-card.stat-card-yellow:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(245, 158, 11, 0.5) !important; }
+
     .stat-icon {
         width: 64px;
         height: 64px;
@@ -208,108 +216,7 @@ $totalSizeFormatted = round($bytes, 2) . ' ' . $units[$pow];
         box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
     }
 
-    /* ==================== BANNER MODERNO (Estilo Usuario) ==================== */
-    .welcome-banner {
-        background: linear-gradient(135deg, #172554 0%, #1e3a8a 50%, #2563eb 100%);
-        border-radius: 20px;
-        padding: 32px 40px;
-        margin-bottom: 32px;
-        box-shadow: 0 10px 30px rgba(22, 38, 96, 0.15);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: white;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    /* Círculo decorativo */
-    .welcome-banner::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 400px;
-        height: 400px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 0;
-    }
-    
-    /* Franja decorativa lateral — oculta para diseño limpio con gradiente índigo */
-    .welcome-banner::after {
-        display: none;
-    }
-    
-    .welcome-content {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        z-index: 2;
-    }
-    
-    .welcome-icon {
-        width: 60px;
-        height: 60px;
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        animation: pulse 2s ease-in-out infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-    }
-    
-    .welcome-text h1.welcome-title {
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0 0 6px 0;
-        color: white;
-    }
-    
-    .welcome-text p.welcome-subtitle {
-        font-size: 1.05rem;
-        opacity: 0.9;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .subtitle-separator {
-        opacity: 0.5;
-        margin: 0 4px;
-    }
-    
-    .welcome-meta {
-        /* [SGP-FIX-BACKUP-BANNER-ACTIONS-OVERLAP] Es redundante con la tarjeta
-           "Respaldos Totales" de abajo. OJO: usamos visibility:hidden (no display:none)
-           a propósito — display:none lo saca del flujo flex y, como welcome-banner usa
-           justify-content:space-between, .welcome-content (el título) pasaba a ser el
-           último elemento en flujo y quedaba empujado hasta el borde derecho, tapando
-           invisible los botones y bloqueando sus clics. visibility:hidden oculta el
-           texto pero conserva su espacio reservado, sin mover nada más. */
-        visibility: hidden;
-        z-index: 2;
-    }
-    
-    .welcome-stats {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 1.1rem;
-        font-weight: 600;
-    }
-    
-    .welcome-stats i {
-        font-size: 24px;
-    }
+
     
     .btn-stitch-gold {
         background-color: #ffffff !important;
@@ -481,145 +388,345 @@ $totalSizeFormatted = round($bytes, 2) . ' ' . $units[$pow];
 </div>
 
 <div class="dashboard-container" style="width: 100%; max-width: 100%; padding: 0;">
-    <!-- BANNER MODERNO (Estilo Usuario) -->
+
+    <!-- BANNER MODERNO ESTILO SGP / ANALÍTICAS -->
     <style>
-    @media (max-width: 1300px) and (min-width: 992px) {
-        /* [SGP-FIX-BACKUP-BANNER-v3] El botón conserva su posición
-           (position:absolute; right:20px; top:50%) intacta. Solo se
-           reduce un poco su tamaño (padding/tipografía/ícono) en el
-           tramo de ancho donde chocaba con el título, manteniendo texto
-           e ícono visibles (mejor que ocultar el texto, por legibilidad
-           y accesibilidad) y una altura de toque aún cómoda (~38px). */
-        .dashboard-banner .btn-stitch-gold,
-        .dashboard-banner .btn-stitch-outline {
-            padding: 9px 16px !important;
-            font-size: 0.85rem !important;
-            gap: 6px !important;
-        }
-        .dashboard-banner .btn-stitch-gold i,
-        .dashboard-banner .btn-stitch-outline i {
-            font-size: 1rem !important;
-        }
+    .backup-banner {
+        background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%) !important;
+        border-radius: 22px !important;
+        padding: 30px 36px !important;
+        margin-bottom: 28px !important;
+        position: relative !important;
+        overflow: hidden !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 20px !important;
+        box-shadow: 0 10px 30px rgba(23, 37, 84, 0.15) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
     }
+    .backup-banner-deco-1 {
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 220px;
+        height: 220px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .backup-banner-deco-2 {
+        position: absolute;
+        bottom: -50px;
+        left: -30px;
+        width: 180px;
+        height: 180px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .backup-banner-main {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        z-index: 1;
+        min-width: 0;
+    }
+    .backup-banner-icon {
+        width: 58px;
+        height: 58px;
+        min-width: 58px;
+        background: rgba(255, 255, 255, 0.18) !important;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.28) !important;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: #ffffff !important;
+        flex-shrink: 0;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        transition: transform 0.25s ease;
+    }
+    .backup-banner-icon:hover {
+        transform: scale(1.05) rotate(4deg);
+    }
+    .backup-banner-text {
+        min-width: 0;
+    }
+    .backup-banner-title {
+        color: #ffffff !important;
+        font-size: 1.85rem;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+    }
+    .backup-banner-sub {
+        color: rgba(255, 255, 255, 0.88) !important;
+        margin: 5px 0 0;
+        font-size: 0.88rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .backup-banner-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255, 255, 255, 0.18) !important;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        border-radius: 50px;
+        padding: 2px 10px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #ffffff !important;
+    }
+    .backup-banner-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 1;
+        flex-shrink: 0;
+    }
+    .backup-banner-actions .btn-stitch-gold,
+    .backup-banner-actions .btn-stitch-outline {
+        padding: 11px 20px;
+        font-size: 0.9rem;
+        border-radius: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        text-decoration: none;
+    }
+    .backup-banner-actions .btn-stitch-gold {
+        background-color: #ffffff !important;
+        color: #172554 !important;
+        border: none;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    .backup-banner-actions .btn-stitch-gold:hover {
+        background-color: #f8fafc !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+    .backup-banner-actions .btn-stitch-outline {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.35) !important;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+    .backup-banner-actions .btn-stitch-outline:hover {
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        transform: translateY(-2px);
+    }
+
+    /* ── RESPONSIVE VISTA MÓVIL (Patrón SGP Estándar) ── */
     @media (max-width: 991px) {
-        .dashboard-banner {
+        .backup-banner {
             flex-direction: column !important;
-            align-items: flex-start !important;
-            padding: 24px 20px !important;
-            gap: 20px !important;
-            height: auto !important;
+            align-items: stretch !important;
+            padding: 22px 20px !important;
+            gap: 16px !important;
+            border-radius: 18px !important;
         }
-        .dashboard-banner .welcome-meta {
-            visibility: hidden !important;
-        }
-        /* [SGP-FEATURE-BACKUP-IMPORTAR] El contenedor de los 2 botones deja de flotar
-           (position:absolute) y pasa a ocupar todo el ancho, apilando los botones. */
-        .dashboard-banner .dashboard-banner-actions {
-            position: relative !important;
-            top: 0 !important;
-            right: 0 !important;
-            transform: none !important;
-            width: 100% !important;
-            flex-direction: column !important;
-            gap: 10px !important;
-            margin-top: 10px !important;
-        }
-        .dashboard-banner button {
-            position: relative !important;
-            top: 0 !important;
-            right: 0 !important;
-            transform: none !important;
-            width: 100% !important;
-        }
-    }
-    @media (max-width: 576px) {
-        /* [SGP-FIX-BACKUP-BANNER-MOBILE] Mejora del banner en móvil: el
-           ícono dejaba una fila propia arriba (mucho espacio vacío) y el
-           subtítulo se partía dejando el guión "-" huérfano al envolver.
-           Se pone ícono + título en una misma fila (patrón estándar de
-           tarjeta/banner) y el botón pasa a su propia línea completa. */
-        .dashboard-banner.welcome-banner-compact {
-            flex-direction: row !important;
-            flex-wrap: wrap !important;
-            align-items: center !important;
-            padding: 18px 18px !important;
-            gap: 14px !important;
-            min-height: unset !important;
-        }
-        .dashboard-banner .welcome-icon {
-            width: 44px !important;
-            height: 44px !important;
-            font-size: 20px !important;
-            border-radius: 12px !important;
-        }
-        .dashboard-banner .welcome-content {
-            flex: 1 1 auto !important;
-            min-width: 0 !important;
-        }
-        .dashboard-banner .welcome-title {
-            font-size: 1.15rem !important;
-            line-height: 1.25 !important;
-            margin-bottom: 2px !important;
-        }
-        .dashboard-banner .welcome-subtitle {
-            font-size: 0.78rem !important;
-            flex-wrap: wrap !important;
-            row-gap: 2px !important;
-        }
-        .dashboard-banner .subtitle-separator {
+        .backup-banner-deco-1,
+        .backup-banner-deco-2 {
             display: none !important;
         }
-        .dashboard-banner .dashboard-banner-actions {
-            flex: 1 1 100% !important;
+        .backup-banner-main {
+            width: 100% !important;
+            gap: 14px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        .backup-banner-icon {
+            width: 50px !important;
+            height: 50px !important;
+            min-width: 50px !important;
+            font-size: 24px !important;
+            border-radius: 14px !important;
+        }
+        .backup-banner-title {
+            font-size: 1.45rem !important;
+        }
+        .backup-banner-sub {
+            font-size: 0.82rem !important;
+        }
+        .backup-banner-actions {
+            width: 100% !important;
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+        }
+        .backup-banner-actions .btn-stitch-gold,
+        .backup-banner-actions .btn-stitch-outline {
+            flex: 1 1 140px !important;
+            justify-content: center !important;
+            padding: 11px 16px !important;
+            font-size: 0.85rem !important;
+            min-height: 42px !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .backup-banner {
+            padding: 16px 14px !important;
+            gap: 14px !important;
+            border-radius: 16px !important;
+            margin-bottom: 20px !important;
+        }
+        .backup-banner-main {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            width: 100% !important;
+        }
+        .backup-banner-icon {
+            width: 44px !important;
+            height: 44px !important;
+            min-width: 44px !important;
+            font-size: 22px !important;
+            border-radius: 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .backup-banner-title {
+            font-size: 1.15rem !important;
+            letter-spacing: -0.3px !important;
+            line-height: 1.25 !important;
+            margin: 0 !important;
+            color: #ffffff !important;
+        }
+        .backup-banner-sub {
+            font-size: 0.74rem !important;
+            gap: 6px !important;
+            margin-top: 4px !important;
+            color: rgba(255, 255, 255, 0.88) !important;
+        }
+        .backup-banner-badge {
+            font-size: 0.68rem !important;
+            padding: 1px 7px !important;
+        }
+        .backup-banner-actions {
             flex-direction: column !important;
             gap: 8px !important;
             width: 100% !important;
         }
-        .dashboard-banner button.btn-stitch-gold,
-        .dashboard-banner button.btn-stitch-outline {
+        .backup-banner-actions .btn-stitch-gold,
+        .backup-banner-actions .btn-stitch-outline {
+            width: 100% !important;
             flex: 1 1 100% !important;
-            justify-content: center !important;
-            padding: 12px 16px !important;
-            font-size: 0.9rem !important;
+            padding: 10px 14px !important;
+            font-size: 0.84rem !important;
+            min-height: 40px !important;
+        }
+        .stats-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+            margin-bottom: 20px !important;
+        }
+        .stat-card {
+            padding: 16px !important;
+            border-radius: 14px !important;
+            gap: 14px !important;
+        }
+        .stat-icon {
+            width: 48px !important;
+            height: 48px !important;
+            font-size: 22px !important;
+            border-radius: 12px !important;
+        }
+        .stat-content h3 {
+            font-size: 1.5rem !important;
         }
     }
+
+    /* ── MODO OSCURO (DATA-THEME="DARK") ── */
+    [data-theme="dark"] .backup-banner {
+        background: linear-gradient(135deg, #090d16 0%, #0f1c3f 50%, #1e3a8a 100%) !important;
+        border: 1px solid #1e293b !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+    }
+    [data-theme="dark"] .backup-banner-icon {
+        background: rgba(255, 255, 255, 0.18) !important;
+        border-color: rgba(255, 255, 255, 0.25) !important;
+        color: #ffffff !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
+    }
+    [data-theme="dark"] .backup-banner-title {
+        color: #ffffff !important;
+    }
+    [data-theme="dark"] .backup-banner-sub {
+        color: rgba(255, 255, 255, 0.85) !important;
+    }
+    [data-theme="dark"] .backup-banner-badge {
+        background: rgba(255, 255, 255, 0.18) !important;
+        border-color: rgba(255, 255, 255, 0.25) !important;
+        color: #ffffff !important;
+    }
+    [data-theme="dark"] .backup-banner-actions .btn-stitch-gold {
+        background-color: #ffffff !important;
+        color: #172554 !important;
+        border: none !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+    }
+    [data-theme="dark"] .backup-banner-actions .btn-stitch-gold:hover {
+        background-color: #f8fafc !important;
+        transform: translateY(-2px);
+    }
+    [data-theme="dark"] .backup-banner-actions .btn-stitch-outline {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(255, 255, 255, 0.35) !important;
+        color: #ffffff !important;
+    }
+    [data-theme="dark"] .backup-banner-actions .btn-stitch-outline:hover {
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        transform: translateY(-2px);
+    }
     </style>
-    <div class="welcome-banner welcome-banner-compact dashboard-banner mb-4">
-        <div class="welcome-icon">
-            <i class="ti ti-database"></i>
-        </div>
+    <div class="backup-banner dashboard-banner mb-4">
+        <div class="backup-banner-deco-1" aria-hidden="true"></div>
+        <div class="backup-banner-deco-2" aria-hidden="true"></div>
         
-        <div class="welcome-content">
-            <div class="welcome-text">
-                <h1 class="welcome-title">Respaldo de Base de Datos</h1>
-                <p class="welcome-subtitle">
+        <div class="backup-banner-main">
+            <div class="backup-banner-icon" title="Copias de Seguridad">
+                <i class="ti ti-database"></i>
+            </div>
+            <div class="backup-banner-text">
+                <h1 class="backup-banner-title">Respaldo de Base de Datos</h1>
+                <p class="backup-banner-sub">
                     <i class="ti ti-shield-check"></i>
-                    <span>Gestión de Respaldos</span>
-                    <span class="subtitle-separator">-</span>
-                    <span>Restauraciones</span>
+                    <span>Gestión de Respaldos · Restauraciones</span>
+                    <span class="backup-banner-badge">
+                        <i class="ti ti-file-database"></i>
+                        <span><?= count($backups) ?> respaldos</span>
+                    </span>
                 </p>
             </div>
         </div>
         
-        <div class="welcome-meta">
-            <div class="welcome-stats">
-                <i class="ti ti-file-database"></i>
-                <span><?= count($backups) ?></span> respaldos
-            </div>
-        </div>
-        
-        <!-- [SGP-FEATURE-BACKUP-IMPORTAR] Envolvemos ambos botones en un solo contenedor
-             que hereda EXACTAMENTE la misma position:absolute;right:20px;top:50% que ya
-             tenía el botón original, para no repetir el choque de layout que costó dos
-             iteraciones corregir antes. -->
-        <div class="dashboard-banner-actions" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 10px; z-index: 20;">
-            <button onclick="importarBackup()" class="btn btn-stitch-outline shadow-sm">
+        <div class="backup-banner-actions">
+            <button type="button" onclick="importarBackup()" class="btn btn-stitch-outline" title="Importar archivo .sql">
                 <i class="ti ti-upload"></i>
-                Importar
+                <span>Importar</span>
             </button>
-            <button onclick="createBackup()" class="btn btn-stitch-gold shadow-sm">
+            <button type="button" onclick="createBackup()" class="btn btn-stitch-gold" title="Crear nueva copia de seguridad">
                 <i class="ti ti-plus"></i>
-                Crear Nuevo Backup
+                <span>Crear Nuevo Backup</span>
             </button>
         </div>
     </div>
@@ -643,7 +750,7 @@ $totalSizeFormatted = round($bytes, 2) . ' ' . $units[$pow];
 
     <!-- Statistics Cards -->
     <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card stat-card-blue">
             <div class="stat-icon" style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);">
                 <i class="ti ti-database"></i>
             </div>
@@ -653,7 +760,7 @@ $totalSizeFormatted = round($bytes, 2) . ' ' . $units[$pow];
             </div>
         </div>
         
-        <div class="stat-card">
+        <div class="stat-card stat-card-green">
             <div class="stat-icon" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%);">
                 <i class="ti ti-clock"></i>
             </div>
@@ -663,7 +770,7 @@ $totalSizeFormatted = round($bytes, 2) . ' ' . $units[$pow];
             </div>
         </div>
         
-        <div class="stat-card">
+        <div class="stat-card stat-card-yellow">
             <div class="stat-icon" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);">
                 <i class="ti ti-file-database"></i>
             </div>

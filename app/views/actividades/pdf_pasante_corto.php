@@ -53,8 +53,9 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #1e293
 <!-- Encabezado -->
 <div style="text-align:center;margin-bottom:16px;">
     <div style="font-size:14px;font-weight:bold;color:#172554;">RESUMEN DE PASANTÍA CORTA</div>
-    <div style="font-size:18px;font-weight:bold;color:#0f172a;margin:4px 0;"><?= $nombre ?></div>
-    <div style="font-size:10px;color:#7c3aed;font-weight:bold;">PASANTE CORTO</div>
+    <div style="font-size:10px;color:<?= ($pasante->estado_pasantia ?? '') === 'Finalizado' ? '#059669' : '#7c3aed' ?>;font-weight:bold;">
+        PASANTE CORTO<?= ($pasante->estado_pasantia ?? '') === 'Finalizado' ? ' · EGRESADO' : '' ?>
+    </div>
 </div>
 
 <!-- Datos del pasante -->

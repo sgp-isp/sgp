@@ -16,7 +16,7 @@ class RoleMiddleware
         0 => '/superadmin', // SuperAdministrador
         1 => '/admin',      // Administrador
         2 => '/tutor',      // Tutor
-        3 => '/pasante'     // Pasante
+        3 => '/pasante/dashboard' // Pasante
     ];
     
     /**

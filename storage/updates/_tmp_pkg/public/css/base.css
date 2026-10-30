@@ -1,0 +1,253 @@
+/**
+ * ============================================
+ * BASE CSS - Reset y Estilos Fundamentales
+ * ============================================
+ * 
+ * Estilos base del sistema: reset, tipografía, elementos HTML.
+ */
+
+/* ==================== RESET ==================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* ==================== HTML & BODY ==================== */
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--text-body);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ==================== TIPOGRAFÍA ==================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--text-dark);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.75rem;
+}
+
+h4 {
+    font-size: 1.5rem;
+}
+
+h5 {
+    font-size: 1.25rem;
+}
+
+h6 {
+    font-size: 1rem;
+}
+
+p {
+    margin-bottom: 1rem;
+}
+
+/* ==================== ENLACES ==================== */
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast) ease;
+}
+
+a:hover {
+    color: #1e3a8a;
+    text-decoration: none;
+}
+
+a:focus {
+    outline: 2px solid var(--color-info);
+    outline-offset: 2px;
+}
+
+/* ==================== LISTAS ==================== */
+
+ul,
+ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* ==================== IMÁGENES ==================== */
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ==================== BOTONES ==================== */
+
+button {
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+button:focus {
+    outline: 2px solid var(--color-info);
+    outline-offset: 2px;
+}
+
+/* ==================== INPUTS ==================== */
+
+input,
+textarea,
+select {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: 2px solid var(--color-info);
+    outline-offset: 0;
+}
+
+/* ==================== SCROLLBAR ==================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ==================== SELECCIÓN DE TEXTO ==================== */
+
+::selection {
+    background: rgba(22, 38, 96, 0.2);
+    color: var(--text-dark);
+}
+
+::-moz-selection {
+    background: rgba(22, 38, 96, 0.2);
+    color: var(--text-dark);
+}
+
+/* ==================== UTILIDADES GLOBALES ==================== */
+
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+.text-primary {
+    color: var(--color-primary);
+}
+
+.text-success {
+    color: var(--color-success);
+}
+
+.text-error {
+    color: var(--color-error);
+}
+
+.text-warning {
+    color: var(--color-warning);
+}
+
+.text-info {
+    color: var(--color-info);
+}
+
+.d-none {
+    display: none !important;
+}
+
+.d-block {
+    display: block !important;
+}
+
+.d-flex {
+    display: flex !important;
+}
+
+.d-inline {
+    display: inline !important;
+}
+
+.d-inline-block {
+    display: inline-block !important;
+}
+
+.position-relative {
+    position: relative;
+}
+
+.position-absolute {
+    position: absolute;
+}
+
+.position-fixed {
+    position: fixed;
+}
+
+.position-sticky {
+    position: sticky;
+}

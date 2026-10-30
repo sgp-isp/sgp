@@ -21,11 +21,12 @@
                     <i class="ti ti-arrow-left"></i> Volver
                 </a>
                 <?php
-                $rol_id = Session::get('role_id') ?? 0;
+                $rol_id = (int)(Session::get('role_id') ?? 0);
                 $dashboardUrl = URLROOT . '/dashboard';
-                if ($rol_id == 1) $dashboardUrl = URLROOT . '/admin';
-                if ($rol_id == 2) $dashboardUrl = URLROOT . '/tutor';
-                if ($rol_id == 3) $dashboardUrl = URLROOT . '/pasante';
+                if ($rol_id === 0) $dashboardUrl = URLROOT . '/superadmin';
+                elseif ($rol_id === 1) $dashboardUrl = URLROOT . '/admin';
+                elseif ($rol_id === 2) $dashboardUrl = URLROOT . '/tutor';
+                elseif ($rol_id === 3) $dashboardUrl = URLROOT . '/pasante/dashboard';
                 ?>
                 <a href="<?= $dashboardUrl ?>" class="btn btn-primary">
                     <i class="ti ti-home"></i> Ir al Dashboard

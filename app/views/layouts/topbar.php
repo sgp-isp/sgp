@@ -11,8 +11,16 @@
             <span></span>
         </button>
         
+        <?php
+        $_rolIdLogo = (int)(Session::get('role_id') ?? 99);
+        $_logoHomeUrl = URLROOT . '/dashboard';
+        if ($_rolIdLogo === 0) $_logoHomeUrl = URLROOT . '/superadmin';
+        elseif ($_rolIdLogo === 1) $_logoHomeUrl = URLROOT . '/admin';
+        elseif ($_rolIdLogo === 2) $_logoHomeUrl = URLROOT . '/tutor';
+        elseif ($_rolIdLogo === 3) $_logoHomeUrl = URLROOT . '/pasante/dashboard';
+        ?>
         <!-- Logo SGP (Imagen) -->
-        <a href="<?= URLROOT ?>/dashboard" class="brand-link" style="padding: 0; margin-left: 8px;">
+        <a href="<?= $_logoHomeUrl ?>" class="brand-link" style="padding: 0; margin-left: 8px;" title="Ir al Inicio">
             <img src="<?= URLROOT ?>/img/logo.png" alt="SGP Logo" 
                  class="brand-image" 
                  style="opacity: .8; max-height: 35px; width: auto; margin: 0;">
@@ -212,6 +220,11 @@ function confirmLogout() {
         reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
+            try {
+                localStorage.setItem('sgp_theme', 'light');
+                document.documentElement.setAttribute('data-theme', 'light');
+                document.documentElement.classList.remove('dark');
+            } catch(e) {}
             window.location.href = '<?= URLROOT ?>/auth/logout';
         }
     });

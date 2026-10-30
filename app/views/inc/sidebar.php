@@ -49,13 +49,15 @@ if ($rol_id == 3) $dashboardUrl = URLROOT . '/pasante/dashboard';
  * @param string $url URL a verificar
  * @return string Clase CSS 'active' si coincide, '' si no
  */
-function isActive($url, $exact = false) {
-    $current = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    if ($exact) {
-        $target = parse_url(URLROOT . $url, PHP_URL_PATH);
-        return rtrim($current, '/') === rtrim($target, '/') ? 'active' : '';
+if (!function_exists('isActive')) {
+    function isActive($url, $exact = false) {
+        $current = strtolower(rtrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/'));
+        if ($exact) {
+            $target = strtolower(rtrim(parse_url(URLROOT . $url, PHP_URL_PATH) ?? '', '/'));
+            return $current === $target ? 'active' : '';
+        }
+        return strpos(strtolower($_SERVER['REQUEST_URI']), strtolower($url)) !== false ? 'active' : '';
     }
-    return strpos($_SERVER['REQUEST_URI'], $url) !== false ? 'active' : '';
 }
 ?>
 
@@ -80,6 +82,30 @@ function isActive($url, $exact = false) {
                    data-tooltip="Gestión de Permisos">
                     <i class="ti ti-shield-lock"></i>
                     <span class="menu-text">Permisos</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= URLROOT ?>/seguridad"
+                   class="nav-link <?= isActive('/seguridad') ?>"
+                   data-tooltip="Centro de Seguridad">
+                    <i class="ti ti-shield-check"></i>
+                    <span class="menu-text">Seguridad</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= URLROOT ?>/actualizaciones"
+                   class="nav-link <?= isActive('/actualizaciones') ?>"
+                   data-tooltip="Actualizaciones del Sistema">
+                    <i class="ti ti-refresh-dot"></i>
+                    <span class="menu-text">Actualizaciones</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= URLROOT ?>/superadmin/plantillas"
+                   class="nav-link <?= isActive('/superadmin/plantillas') ?>"
+                   data-tooltip="Diseñador de Plantillas PDF">
+                    <i class="ti ti-file-pencil"></i>
+                    <span class="menu-text">Plantillas PDF</span>
                 </a>
             </li>
             <?php endif; ?>
@@ -166,12 +192,13 @@ function isActive($url, $exact = false) {
                 </a>
             </li>
             <?php endif; ?>
+
             <?php if (RoleMiddleware::hasPermission('ver_bitacora')): ?>
             <li>
                 <a href="<?= URLROOT ?>/bitacora"
                    class="nav-link <?= isActive('/bitacora') ?>"
                    data-tooltip="Bitácora">
-                    <i class="ti ti-file-analytics"></i>
+                    <i class="ti ti-clipboard-list"></i>
                     <span class="menu-text">Bitácora</span>
                 </a>
             </li>
@@ -183,6 +210,14 @@ function isActive($url, $exact = false) {
                    data-tooltip="Configuración">
                     <i class="ti ti-settings"></i>
                     <span class="menu-text">Configuración</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= URLROOT ?>/notificaciones/correos"
+                   class="nav-link <?= isActive('/notificaciones/correos') ?>"
+                   data-tooltip="Alertas por Correo">
+                    <i class="ti ti-mail-cog"></i>
+                    <span class="menu-text">Alertas Correo</span>
                 </a>
             </li>
             <?php endif; ?>
@@ -385,6 +420,14 @@ function isActive($url, $exact = false) {
                     <span class="menu-text">Mi Constancia</span>
                 </a>
             </li>
+            <li>
+                <a href="<?= URLROOT ?>/pasante/configuracion"
+                   class="nav-link <?= isActive('/pasante/configuracion') ?>"
+                   data-tooltip="Configuración">
+                    <i class="ti ti-settings"></i>
+                    <span class="menu-text">Configuración</span>
+                </a>
+            </li>
             <li style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.08);">
                 <a href="<?= URLROOT ?>/ayuda"
                    class="nav-link <?= isActive('/ayuda') ?>"
@@ -418,6 +461,9 @@ function isActive($url, $exact = false) {
     <div class="dock-sheet-handle" aria-hidden="true"></div>
     <div class="dock-sheet-header">
         <h6>Más secciones</h6>
+        <button type="button" class="dock-sheet-close-btn" aria-label="Cerrar menú" onclick="window.closeSgpDockSheet ? window.closeSgpDockSheet() : null">
+            <i class="ti ti-x"></i>
+        </button>
     </div>
     <nav class="dock-sheet-nav" aria-label="Navegación adicional">
 
@@ -477,6 +523,14 @@ function isActive($url, $exact = false) {
         <a href="<?= URLROOT ?>/superadmin/permisos" class="dock-sheet-item" data-href="/superadmin/permisos">
             <span class="dock-sheet-icon"><i class="ti ti-shield-cog"></i></span>
             <span class="dock-sheet-label">Permisos</span>
+        </a>
+        <a href="<?= URLROOT ?>/seguridad" class="dock-sheet-item" data-href="/seguridad">
+            <span class="dock-sheet-icon"><i class="ti ti-shield-check"></i></span>
+            <span class="dock-sheet-label">Seguridad</span>
+        </a>
+        <a href="<?= URLROOT ?>/actualizaciones" class="dock-sheet-item" data-href="/actualizaciones">
+            <span class="dock-sheet-icon"><i class="ti ti-refresh-dot"></i></span>
+            <span class="dock-sheet-label">Actualizaciones</span>
         </a>
         <?php endif; ?>
 
@@ -556,6 +610,10 @@ function isActive($url, $exact = false) {
         <a href="<?= URLROOT ?>/pasante/constancia" class="dock-sheet-item" data-href="/pasante/constancia">
             <span class="dock-sheet-icon"><i class="ti ti-file-certificate"></i></span>
             <span class="dock-sheet-label">Mi Constancia</span>
+        </a>
+        <a href="<?= URLROOT ?>/pasante/configuracion" class="dock-sheet-item" data-href="/pasante/configuracion">
+            <span class="dock-sheet-icon"><i class="ti ti-settings"></i></span>
+            <span class="dock-sheet-label">Configuración</span>
         </a>
         <a href="<?= URLROOT ?>/perfil/ver" class="dock-sheet-item" data-href="/perfil">
             <span class="dock-sheet-icon"><i class="ti ti-user-circle"></i></span>
@@ -670,13 +728,13 @@ function isActive($url, $exact = false) {
 
     <?php if ($role !== 'Pasante'): ?>
     <!-- Botón "Más" para Admin y Tutor -->
-    <button id="dockMoreBtn" class="dock-item dock-more-btn" aria-label="Más opciones" aria-expanded="false" aria-controls="sgpDockSheet">
+    <button type="button" id="dockMoreBtn" class="dock-item dock-more-btn" aria-label="Más opciones" aria-expanded="false" aria-controls="sgpDockSheet" onclick="window.toggleSgpDockSheet ? window.toggleSgpDockSheet() : null">
         <i class="ti ti-dots-circle-horizontal"></i>
         <span>Más</span>
     </button>
     <?php else: ?>
     <!-- Botón "Más" para Pasante -->
-    <button id="dockMoreBtn" class="dock-item dock-more-btn" aria-label="Más opciones" aria-expanded="false" aria-controls="sgpDockSheet">
+    <button type="button" id="dockMoreBtn" class="dock-item dock-more-btn" aria-label="Más opciones" aria-expanded="false" aria-controls="sgpDockSheet" onclick="window.toggleSgpDockSheet ? window.toggleSgpDockSheet() : null">
         <i class="ti ti-dots-circle-horizontal"></i>
         <span>Más</span>
     </button>

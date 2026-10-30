@@ -19,7 +19,7 @@
         </div>
 
         <div class="modal-body-scroll">
-            <form id="formAsignacion" onsubmit="submitAsignacion(event)">
+            <form id="formAsignacion" novalidate onsubmit="submitAsignacion(event)">
                 <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
                 <input type="hidden" id="modalPasanteId" name="pasante_id">
 
@@ -94,15 +94,8 @@
                     <select name="periodo_id" id="selectPeriodo" required class="input-modern">
                         <option value="">Selecciona un periodo...</option>
                         <?php foreach ($periodos as $per):
-                            // Contar días L-V reales del período (sin consultar feriados — aproximación para UI)
-                            $pLv = 0;
-                            if (!empty($per->fecha_inicio) && !empty($per->fecha_fin)) {
-                                $pCur = new DateTime($per->fecha_inicio);
-                                $pCur->modify('+1 day'); // fecha_inicio es día 0; contar desde día siguiente
-                                $pEnd = new DateTime($per->fecha_fin);
-                                while ($pCur <= $pEnd) { if ((int)$pCur->format('N') < 6) $pLv++; $pCur->modify('+1 day'); }
-                            }
-                            $pHorasMeta = max(160, $pLv * 8);
+                            // Horas meta estándar institucional (Regular: 1440h / Corto: 480h)
+                            $pHorasMeta = ($per->tipo === 'Corto') ? 480 : 1440;
                         ?>
                         <option value="<?= (int)$per->id ?>"
                             <?= $per->estado === 'Activo' ? 'selected' : '' ?>
@@ -114,6 +107,20 @@
                         </option>
                         <?php endforeach; ?>
                     </select>
+                    <?php if (empty($periodos)): ?>
+                    <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 10px; padding: 12px 14px; margin-top: 10px;">
+                        <p style="margin: 0; color: #92400e; font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i class="ti ti-alert-triangle" style="font-size: 1.1rem; color: #d97706;"></i>
+                            No hay períodos académicos activos o planificados disponibles.
+                        </p>
+                        <p style="margin: 4px 0 0; color: #b45309; font-size: 0.78rem;">
+                            No es posible asignar un pasante sin vincularlo a un período regular o corto activo.
+                        </p>
+                        <a href="<?= URLROOT ?>/periodos" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 0.78rem; font-weight: 700; color: #2563eb; text-decoration: underline;">
+                            <i class="ti ti-calendar-plus"></i> Ir a Períodos Académicos <i class="ti ti-external-link"></i>
+                        </a>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- ===== CALCULADORA INTELIGENTE (Fusión Smart) ===== -->
@@ -208,6 +215,11 @@
                         <i class="ti ti-check"></i> Confirmar Asignación
                     </button>
                 </div>
+                <div id="btnContenedorDescartarModal" style="text-align: center; margin-top: 14px; border-top: 1px dashed #e2e8f0; padding-top: 10px;">
+                    <button type="button" onclick="descartarDesdeModalAsignacion()" style="background: none; border: none; color: #ef4444; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; transition: background 0.15s;" onmouseover="this.style.background='#fef2f2';" onmouseout="this.style.background='none';">
+                        <i class="ti ti-user-x"></i> Descartar solicitud de este pasante (No institucional)
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -300,8 +312,47 @@
 </div>
 
 <script>
+// ── Total de períodos activos/planificados disponibles ──────
+window.SGP_TOTAL_PERIODOS_DISPONIBLES = <?= count($periodos ?? []) ?>;
+
 // ── Modal ──────────────────────────────────────────────────
 window.abrirModalAsignacion = function() {
+    if (window.SGP_TOTAL_PERIODOS_DISPONIBLES === 0) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                iconColor: '#f59e0b',
+                title: 'Sin Período Académico Disponible',
+                html: `
+                    <div style="text-align: left; padding: 4px 6px;">
+                        <p style="color: #64748b; font-size: 0.92rem; margin: 0 0 12px; line-height: 1.5;">
+                            No es posible crear una asignación en este momento porque <strong>todos los períodos académicos están cerrados</strong> o no existe ningún período en el sistema.
+                        </p>
+                        <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 12px 16px; color: #92400e; font-size: 0.84rem; display: flex; gap: 10px; align-items: flex-start;">
+                            <i class="ti ti-info-circle" style="font-size: 1.2rem; color: #d97706; flex-shrink: 0; margin-top: 2px;"></i>
+                            <div>
+                                Para asignar departamento, tutor y registrar asistencias, primero debes <strong>activar o crear un período</strong> en el módulo de Períodos Académicos.
+                            </div>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="ti ti-calendar-plus"></i> Ir a Períodos Académicos',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '<?= URLROOT ?>/periodos';
+                }
+            });
+        } else {
+            alert('No hay períodos académicos activos o planificados disponibles. Por favor, crea o activa un período primero.');
+        }
+        return;
+    }
+
     document.getElementById('formAsignacion').reset();
     document.getElementById('modalPasanteId').value = '';
     document.getElementById('modalTitulo').textContent = 'Nueva Asignación';
@@ -316,8 +367,13 @@ window.abrirModalAsignacion = function() {
     const listaSug = document.getElementById('listaSugerenciasAjax');
     if (listaSug) listaSug.style.display = 'none';
 
-    document.getElementById('modalAsignacion').classList.add('active');
+    const modalEl = document.getElementById('modalAsignacion');
+    if (modalEl && modalEl.parentElement !== document.body) {
+        document.body.appendChild(modalEl);
+    }
+    if (modalEl) modalEl.classList.add('active');
     document.body.style.overflow = 'hidden';
+    if (window.initBuscadorPasante) window.initBuscadorPasante();
 
     // Reinicializar plugins primero (antes de sobreescribir valores)
     if (window.SGPChoices) {
@@ -349,7 +405,24 @@ window.abrirModalAsignacion = function() {
     }
 
     // Disparar cálculo final
-    recalcular();
+    recalcularConFeriados();
+}
+
+// ── Función auxiliar para normalizar fechas a YYYY-MM-DD ──────────────────
+function _normalizarFecha(val) {
+    if (!val) return '';
+    val = String(val).trim();
+    if (val.includes('/')) {
+        const parts = val.split('/');
+        if (parts.length === 3) {
+            if (parts[2].length === 4) {
+                return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            } else if (parts[0].length === 4) {
+                return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+            }
+        }
+    }
+    return val.substring(0, 10);
 }
 
 // ── Auto-calcular horas_meta y fecha_inicio al cambiar período ────────
@@ -362,6 +435,9 @@ document.getElementById('selectPeriodo').addEventListener('change', function() {
         const horasMeta = parseInt(opt.getAttribute('data-horas-meta')) || 1440;
         document.getElementById('inp-horas').value = horasMeta;
         document.getElementById('inputFechaInicio').value = fInicio.substring(0, 10);
+        if (document.getElementById('inputFechaInicio')._flatpickr) {
+            document.getElementById('inputFechaInicio')._flatpickr.setDate(fInicio.substring(0, 10), true);
+        }
     }
     // Ocultar badge al cambiar período (la fecha vuelve a ser la del período)
     const badge = document.getElementById('badgeFechaCustom');
@@ -380,12 +456,15 @@ window.resetHoras = function() {
             const horasMeta = parseInt(opt.getAttribute('data-horas-meta')) || 1440;
             document.getElementById('inp-horas').value = horasMeta;
             document.getElementById('inputFechaInicio').value = fI.substring(0, 10);
-            recalcular();
+            if (document.getElementById('inputFechaInicio')._flatpickr) {
+                document.getElementById('inputFechaInicio')._flatpickr.setDate(fI.substring(0, 10), true);
+            }
+            recalcularConFeriados();
             return;
         }
     }
     document.getElementById('inp-horas').value = 1440;
-    recalcular();
+    recalcularConFeriados();
 }
 
 window.recalcular = function() {
@@ -399,21 +478,46 @@ window.recalcular = function() {
         return;
     }
 
+    const selPer = document.getElementById('selectPeriodo');
+    const optPer = selPer ? selPer.options[selPer.selectedIndex] : null;
+    if (optPer && optPer.value) {
+        const pInicio = _normalizarFecha(optPer.getAttribute('data-inicio'));
+        const pFin    = _normalizarFecha(optPer.getAttribute('data-fin'));
+        const fInicio = _normalizarFecha(startInput.value);
+        if (pInicio && pFin && fInicio === pInicio) {
+            if (endInput) endInput.value = pFin;
+            const fmt = { day:'2-digit', month:'long', year:'numeric' };
+            const startDate = new Date(pInicio + 'T12:00:00');
+            const endDate   = new Date(pFin + 'T12:00:00');
+            const horas = parseInt(horasInput.value) || 1440;
+            const diasMeta = Math.ceil(horas / 8);
+            if (document.getElementById('p-horas')) document.getElementById('p-horas').textContent  = horas.toLocaleString() + ' horas';
+            if (document.getElementById('p-dias')) document.getElementById('p-dias').textContent   = diasMeta.toLocaleString() + ' días hábiles';
+            if (document.getElementById('p-inicio')) document.getElementById('p-inicio').textContent = startDate.toLocaleDateString('es-VE', fmt);
+            if (document.getElementById('p-fin')) document.getElementById('p-fin').textContent    = endDate.toLocaleDateString('es-VE', fmt);
+            if (card) card.classList.add('visible');
+            syncObservacionesAuto();
+            return;
+        }
+    }
+
     const jornadaH = 8; // Fijo a 8h por instrucción
     const horas = parseInt(horasInput.value);
     const diasMeta = Math.ceil(horas / jornadaH);
     
-    let startDate = new Date(startInput.value + 'T12:00:00'); // Usar mediodía para evitar problemas de zona horaria
+    const fInicioNorm = _normalizarFecha(startInput.value);
+    let startDate = new Date(fInicioNorm + 'T12:00:00'); // Usar mediodía para evitar problemas de zona horaria
     let businessDaysCount = 0;
     let currentDate = new Date(startDate);
 
-    // Motor Matemático Histórico: Bucle para saltar Sábados y Domingos
+    // Motor Matemático: Bucle para saltar Sábados y Domingos (sin postergar por feriados)
     while (businessDaysCount < diasMeta) {
-        currentDate.setDate(currentDate.getDate() + 1);
         let dayOfWeek = currentDate.getDay(); // 0 es Domingo, 6 es Sábado
         if (dayOfWeek !== 0 && dayOfWeek !== 6) {
             businessDaysCount++;
+            if (businessDaysCount >= diasMeta) break;
         }
+        currentDate.setDate(currentDate.getDate() + 1);
     }
     
     const formattedDate = currentDate.toISOString().split('T')[0];
@@ -464,12 +568,12 @@ var _periodoFechaInicio = null; // fecha_inicio del período seleccionado
 
 function _getPeriodoFechaInicio() {
     const opt = document.getElementById('selectPeriodo')?.options[document.getElementById('selectPeriodo').selectedIndex];
-    return opt?.getAttribute('data-inicio')?.substring(0, 10) || null;
+    return _normalizarFecha(opt?.getAttribute('data-inicio')) || null;
 }
 
 function _actualizarBadgeFechaCustom() {
     const badge  = document.getElementById('badgeFechaCustom');
-    const actual = document.getElementById('inputFechaInicio')?.value;
+    const actual = _normalizarFecha(document.getElementById('inputFechaInicio')?.value);
     const base   = _getPeriodoFechaInicio();
     if (!badge) return;
     const esCustom = base && actual && actual !== base;
@@ -479,18 +583,46 @@ function _actualizarBadgeFechaCustom() {
 window.resetFechaAlPeriodo = function() {
     const base = _getPeriodoFechaInicio();
     if (!base) return;
-    document.getElementById('inputFechaInicio').value = base;
+    const inp = document.getElementById('inputFechaInicio');
+    if (inp) {
+        inp.value = base;
+        if (inp._flatpickr) {
+            inp._flatpickr.setDate(base, true);
+        }
+    }
     _actualizarBadgeFechaCustom();
     recalcularConFeriados();
 };
 
-// Recalcular usando el endpoint del servidor (incluye feriados reales)
+// Recalcular usando el endpoint del servidor (o la fecha fin oficial si coincide con el período)
 window.recalcularConFeriados = async function() {
-    const inicio = document.getElementById('inputFechaInicio')?.value;
-    const horas  = parseInt(document.getElementById('inp-horas')?.value) || 1440;
+    const rawInicio = document.getElementById('inputFechaInicio')?.value;
+    const inicio    = _normalizarFecha(rawInicio);
+    const horas     = parseInt(document.getElementById('inp-horas')?.value) || 1440;
     if (!inicio) return;
 
     _actualizarBadgeFechaCustom();
+
+    const selPer = document.getElementById('selectPeriodo');
+    const optPer = selPer ? selPer.options[selPer.selectedIndex] : null;
+    if (optPer && optPer.value) {
+        const pInicio = _normalizarFecha(optPer.getAttribute('data-inicio'));
+        const pFin    = _normalizarFecha(optPer.getAttribute('data-fin'));
+        if (pInicio && pFin && inicio === pInicio) {
+            document.getElementById('inputFechaFin').value = pFin;
+            const fmt = { day:'2-digit', month:'long', year:'numeric' };
+            const startDate = new Date(pInicio + 'T12:00:00');
+            const endDate   = new Date(pFin + 'T12:00:00');
+            const diasMeta  = Math.ceil(horas / 8);
+            if (document.getElementById('p-horas')) document.getElementById('p-horas').textContent  = horas.toLocaleString() + ' horas';
+            if (document.getElementById('p-dias')) document.getElementById('p-dias').textContent   = diasMeta.toLocaleString() + ' días hábiles';
+            if (document.getElementById('p-inicio')) document.getElementById('p-inicio').textContent = startDate.toLocaleDateString('es-VE', fmt);
+            if (document.getElementById('p-fin')) document.getElementById('p-fin').textContent    = endDate.toLocaleDateString('es-VE', fmt);
+            document.getElementById('proy-card')?.classList.add('visible');
+            syncObservacionesAuto();
+            return;
+        }
+    }
 
     try {
         const r = await fetch(`<?= URLROOT ?>/periodos/calcularFechaFin?inicio=${inicio}&horas=${horas}`);
@@ -540,6 +672,112 @@ window.cerrarModal = function() {
     document.body.style.overflow = '';
 }
 
+window.descartarDesdeModalAsignacion = function() {
+    const pasanteId = document.getElementById('modalPasanteId').value;
+    const nombre = document.getElementById('bentoNombre').innerText;
+    const cedula = document.getElementById('bentoCedula').innerText;
+    if (!pasanteId) return;
+    cerrarModal();
+    if (typeof window.confirmarDescartarPasante === 'function') {
+        window.confirmarDescartarPasante({
+            getAttribute: function(attr) {
+                if (attr === 'data-id') return pasanteId;
+                if (attr === 'data-nombre') return nombre;
+                if (attr === 'data-cedula') return cedula;
+                return '';
+            }
+        });
+    }
+};
+
+window.abrirAsignacionSegura = function(btn) {
+    const id = btn.getAttribute('data-id');
+    const nombre = btn.getAttribute('data-nombre');
+    const cedula = btn.getAttribute('data-cedula');
+    const institucion = btn.getAttribute('data-institucion');
+    window.editarAsignacion(id, nombre, cedula, institucion);
+};
+
+window.confirmarDescartarPasante = function(btn) {
+    const id = btn.getAttribute('data-id');
+    const nombre = btn.getAttribute('data-nombre');
+    const cedula = btn.getAttribute('data-cedula');
+
+    Swal.fire({
+        title: '¿Descartar este registro?',
+        html: `
+            <div style="text-align: left; font-size: 0.9rem; color: #334155;">
+                <p style="margin-bottom: 8px;">Estás a punto de descartar la solicitud de pre-registro de:</p>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 14px;">
+                    <div style="font-weight: 800; color: #1e293b; font-size: 1rem;">${nombre}</div>
+                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">C.I: ${cedula}</div>
+                </div>
+                <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 0.85rem; color: #1e293b;">
+                    ¿Qué acción deseas tomar?
+                </label>
+                <div style="margin-bottom: 12px; font-size: 0.85rem;">
+                    <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+                        <input type="radio" name="swal_descarte_accion" value="bloquear" checked id="radioBloquear" style="margin-top: 3px;">
+                        <span><strong>Rechazar y Bloquear</strong> (Recomendado: No podrá iniciar sesión ni registrarse con esta cédula)</span>
+                    </label>
+                    <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+                        <input type="radio" name="swal_descarte_accion" value="eliminar" id="radioEliminar" style="margin-top: 3px;">
+                        <span><strong>Eliminar Permanentemente</strong> (Purga definitiva de la BD si era un registro spam o prueba)</span>
+                    </label>
+                </div>
+                <div id="motivoBox" style="margin-top: 10px;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 4px; font-size: 0.82rem; color: #475569;">
+                        Motivo del descarte:
+                    </label>
+                    <input type="text" id="swal_descarte_motivo" class="swal2-input" style="width: 100%; margin: 0; font-size: 0.85rem; box-sizing: border-box;" value="No figura en el listado oficial de pasantes de la institución">
+                </div>
+            </div>
+        `,
+        icon: 'warning',
+        iconColor: '#ef4444',
+        showCancelButton: true,
+        confirmButtonText: '<i class="ti ti-check"></i> Proceder con el descarte',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+            const accion = document.querySelector('input[name="swal_descarte_accion"]:checked')?.value || 'bloquear';
+            const motivo = document.getElementById('swal_descarte_motivo')?.value || '';
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || (typeof _ADMIN_CSRF !== 'undefined' ? _ADMIN_CSRF : '');
+            const formData = new FormData();
+            formData.append('pasante_id', id);
+            formData.append('accion', accion);
+            formData.append('motivo', motivo);
+            formData.append('csrf_token', csrfToken);
+
+            return fetch(URLROOT + '/asignaciones/descartar', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: formData
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success) throw new Error(res.message || 'Error al descartar registro');
+                return res;
+            })
+            .catch(err => Swal.showValidationMessage(err.message));
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then(result => {
+        if (result.isConfirmed && result.value?.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Registro Descartado',
+                text: result.value.message,
+                confirmButtonColor: '#2563eb'
+            }).then(() => location.reload());
+        }
+    });
+};
+
 // Cerrar al hacer clic fuera
 document.getElementById('modalAsignacion').addEventListener('click', function(e) {
     if (e.target === this) cerrarModal();
@@ -558,6 +796,30 @@ window.submitAsignacion = async function(e) {
     if (!fd.get('pasante_id')) {
         if (typeof Swal !== 'undefined') {
             Swal.fire({ icon: 'warning', title: 'Pasante Requerido', text: 'Por favor, busca y selecciona un pasante.', confirmButtonColor: '#162660' });
+        }
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ti ti-check"></i> Confirmar Asignación';
+        return;
+    }
+    if (!fd.get('tutor_id')) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'warning', title: 'Tutor Requerido', text: 'Por favor, selecciona un tutor o administrador asignado.', confirmButtonColor: '#162660' });
+        }
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ti ti-check"></i> Confirmar Asignación';
+        return;
+    }
+    if (!fd.get('departamento_id')) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'warning', title: 'Departamento Requerido', text: 'Por favor, selecciona un departamento de asignación.', confirmButtonColor: '#162660' });
+        }
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ti ti-check"></i> Confirmar Asignación';
+        return;
+    }
+    if (!fd.get('periodo_id')) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'warning', title: 'Período Requerido', text: 'Por favor, selecciona un período académico.', confirmButtonColor: '#162660' });
         }
         btn.disabled = false;
         btn.innerHTML = '<i class="ti ti-check"></i> Confirmar Asignación';
@@ -632,73 +894,92 @@ window.finalizarAsignacion = function(pasanteId, nombre) {
 }
 
 // ── Buscador AJAX & Bento Box Logic ────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
+window.buscarPasantesLista = function(query) {
+    const listaSug = document.getElementById('listaSugerenciasAjax');
+    if (!listaSug) return;
+
+    const formData = new FormData();
+    formData.append('query', query || '');
+    const _esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    
+    listaSug.innerHTML = '<div style="padding:14px; text-align:center; color:#64748b; font-size:0.85rem;"><i class="ti ti-loader" style="font-size:1.1rem; margin-right:6px;"></i> Cargando pasantes disponibles...</div>';
+    listaSug.style.display = 'block';
+
+    fetch('<?= URLROOT ?>/asignaciones/buscarPasanteAjax', { method: 'POST', body: formData })
+    .then(r => r.json())
+    .then(data => {
+        listaSug.innerHTML = '';
+        if (data && data.length > 0) {
+            data.forEach(p => {
+                const div = document.createElement('div');
+                div.style.padding = '12px 16px';
+                div.style.cursor = 'pointer';
+                div.style.borderBottom = '1px solid #f1f5f9';
+                div.style.display = 'flex';
+                div.style.alignItems = 'center';
+                div.style.gap = '12px';
+                div.addEventListener('mouseover', () => div.style.background = '#f8fafc');
+                div.addEventListener('mouseout', () => div.style.background = 'white');
+
+                const inis = (_esc(p.nombres.charAt(0)) + _esc(p.apellidos.charAt(0))).toUpperCase();
+                div.innerHTML = `
+                    <div style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, #162660, #2563eb); display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:800; color:white; flex-shrink:0;">${inis}</div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.9rem; font-weight:800; color:#1e293b;">${_esc(p.nombres)} ${_esc(p.apellidos)}</div>
+                        <div style="font-size:0.75rem; font-weight:600; color:#64748b;">C.I: ${_esc(p.cedula)} · <span style="color:#2563eb;">${_esc(p.institucion_procedencia)}</span></div>
+                    </div>
+                    <div style="font-size:0.72rem; font-weight:700; color:#059669; background:#ecfdf5; padding:4px 8px; border-radius:6px; flex-shrink:0;">Sin Asignar</div>
+                `;
+
+                div.onclick = () => window.seleccionarPasante(p);
+                listaSug.appendChild(div);
+            });
+        } else {
+            listaSug.innerHTML = '<div style="padding:16px; text-align:center; color:#94a3b8; font-size:0.85rem; font-weight:600;"><i class="ti ti-user-x" style="font-size:1.4rem; display:block; margin-bottom:4px;"></i>No se encontraron pasantes pendientes por asignar</div>';
+        }
+        listaSug.style.display = 'block';
+    })
+    .catch(() => {
+        listaSug.innerHTML = '<div style="padding:16px; text-align:center; color:#ef4444; font-size:0.85rem; font-weight:600;">Error al buscar pasantes</div>';
+        listaSug.style.display = 'block';
+    });
+};
+
+window.initBuscadorPasante = function() {
     const inputBuscar = document.getElementById('inputBuscarPasanteAJAX');
     const listaSug = document.getElementById('listaSugerenciasAjax');
-    const inputOculto = document.getElementById('modalPasanteId');
-    const bentoBox = document.getElementById('bentoPasanteSeleccionado');
+    if (!inputBuscar || inputBuscar.dataset.bound === 'true') return;
+    inputBuscar.dataset.bound = 'true';
+
+    let timeoutId;
+    inputBuscar.addEventListener('input', function() {
+        clearTimeout(timeoutId);
+        const query = this.value.trim();
+        timeoutId = setTimeout(() => {
+            window.buscarPasantesLista(query);
+        }, 150);
+    });
+
+    // Al hacer clic o focus en el buscador, listar los pasantes disponibles inmediatamente
+    inputBuscar.addEventListener('focus', function() {
+        window.buscarPasantesLista(this.value.trim());
+    });
+    inputBuscar.addEventListener('click', function() {
+        window.buscarPasantesLista(this.value.trim());
+    });
     
-    if (inputBuscar) {
-        let timeoutId;
-        inputBuscar.addEventListener('input', function() {
-            clearTimeout(timeoutId);
-            const query = this.value.trim();
-            if (query.length < 2) {
-                listaSug.style.display = 'none';
-                return;
-            }
-            
-            timeoutId = setTimeout(() => {
-                const formData = new FormData();
-                formData.append('query', query);
-                const _esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-                fetch('<?= URLROOT ?>/asignaciones/buscarPasanteAjax', { method: 'POST', body: formData })
-                .then(r => r.json())
-                .then(data => {
-                    listaSug.innerHTML = '';
-                    if (data.length > 0) {
-                        data.forEach(p => {
-                            const div = document.createElement('div');
-                            div.style.padding = '12px 16px';
-                            div.style.cursor = 'pointer';
-                            div.style.borderBottom = '1px solid #f1f5f9';
-                            div.style.display = 'flex';
-                            div.style.alignItems = 'center';
-                            div.style.gap = '12px';
-                            div.addEventListener('mouseover', () => div.style.background = '#f8fafc');
-                            div.addEventListener('mouseout', () => div.style.background = 'white');
+    document.addEventListener('click', (e) => {
+        if (inputBuscar && listaSug && !inputBuscar.contains(e.target) && !listaSug.contains(e.target)) {
+            listaSug.style.display = 'none';
+        }
+    });
+};
 
-                            const inis = (_esc(p.nombres.charAt(0)) + _esc(p.apellidos.charAt(0))).toUpperCase();
-                            div.innerHTML = `
-                                <div style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, #162660, #2563eb); display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:800; color:white;">${inis}</div>
-                                <div>
-                                    <div style="font-size:0.9rem; font-weight:800; color:#1e293b;">${_esc(p.nombres)} ${_esc(p.apellidos)}</div>
-                                    <div style="font-size:0.75rem; font-weight:600; color:#64748b;">C.I: ${_esc(p.cedula)}</div>
-                                </div>
-                            `;
-
-                            div.onclick = () => seleccionarPasante(p);
-                            listaSug.appendChild(div);
-                        });
-                    } else {
-                        listaSug.innerHTML = '<div style="padding:16px; text-align:center; color:#94a3b8; font-size:0.85rem; font-weight:600;">No se encontraron resultados pendientes</div>';
-                    }
-                    listaSug.style.display = 'block';
-                })
-                .catch(() => {
-                    listaSug.innerHTML = '<div style="padding:16px; text-align:center; color:#ef4444; font-size:0.85rem; font-weight:600;">Error al buscar pasantes</div>';
-                    listaSug.style.display = 'block';
-                });
-            }, 300);
-        });
-        
-        document.addEventListener('click', (e) => {
-            if (!inputBuscar.contains(e.target) && !listaSug.contains(e.target)) {
-                listaSug.style.display = 'none';
-            }
-        });
-    }
-});
+// Inicializar de inmediato y en carga
+window.initBuscadorPasante();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.initBuscadorPasante);
+}
 
 window.seleccionarPasante = function(p) {
     document.getElementById('contenedorBuscadorPasante').style.display = 'none';

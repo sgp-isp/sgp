@@ -32,7 +32,7 @@ $esc = fn($s) => htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 
 /* ── Banner ── */
 .punt-banner {
-    background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);
+    background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--gradient-mid, #1e3a8a) 50%,var(--color-accent-brand, #2563eb) 100%);
     border-radius:20px; padding:22px 32px; margin-bottom:24px;
     display:flex; align-items:center; justify-content:space-between;
     gap:16px; position:relative; overflow:hidden; flex-wrap:wrap;
@@ -105,7 +105,7 @@ $esc = fn($s) => htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 .punt-pager-num { font-size:0.78rem; font-weight:700; color:#334155; padding:0 8px; }
 
 /* ── Scroll top ── */
-#puntScrollTop { position:fixed; bottom:24px; right:24px; z-index:9999; width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#172554,#2563eb); color:#fff; border:none; cursor:pointer; box-shadow:0 4px 16px rgba(37,99,235,.4); opacity:0; transform:translateY(10px); transition:all .3s; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+#puntScrollTop { position:fixed; bottom:24px; right:24px; z-index:9999; width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--color-primary, #172554),var(--color-accent-brand, #2563eb)); color:#fff; border:none; cursor:pointer; box-shadow:0 4px 16px rgba(37,99,235,.4); opacity:0; transform:translateY(10px); transition:all .3s; display:flex; align-items:center; justify-content:center; font-size:1rem; }
 #puntScrollTop.visible { opacity:1; transform:none; }
 
 /* ── Empty state ── */

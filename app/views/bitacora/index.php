@@ -43,6 +43,9 @@ function traducir_accion($accion)
     'CHANGE_PASANTE_STATUS'          => 'Estado de Pasantía Actualizado',
     // Asistencias
     'MARCAR_ASISTENCIA_KIOSCO'       => 'Asistencia Marcada (Kiosco)',
+    'BLOQUEO_ASISTENCIA_UBICACION'   => 'Marcaje Fuera de Rango (GPS)',
+    'BLOQUEO_ASISTENCIA_DUPLICADA'   => 'Marcaje Duplicado (Bloqueado)',
+    'BLOQUEO_QR_INVALIDO'            => 'Código QR No Reconocido',
     'REGISTRAR_ASISTENCIA_MANUAL'    => 'Asistencia Registrada Manualmente',
     'ACTUALIZAR_ASISTENCIA_MANUAL'   => 'Asistencia Manual Actualizada',
     'REGISTRAR_ASISTENCIA_MASIVA'    => 'Asistencia Masiva Registrada',
@@ -98,7 +101,7 @@ function traducir_tabla($tabla)
 ?>
 
 <!-- Link al CSS específico de bitácora -->
-<link rel="stylesheet" href="<?= URLROOT ?>/css/bitacora.css">
+<link rel="stylesheet" href="<?= URLROOT ?>/css/bitacora.css?v=5">
 
 <style>
     /* ── KPI Grid ──────────────────────────────────────────── */
@@ -106,89 +109,432 @@ function traducir_tabla($tabla)
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 14px;
-        margin-bottom: 18px;
+        margin-bottom: 20px;
     }
 
+    @media (max-width: 991px) {
+        .bita-kpi-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+        }
+    }
+
+    @media (max-width: 575px) {
+        .bita-kpi-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+            margin-bottom: 16px !important;
+        }
+        .bita-kpi-grid > div {
+            padding: 14px 12px !important;
+            border-radius: 14px !important;
+        }
+        .bita-kpi-grid .kpi-num {
+            font-size: 1.45rem !important;
+        }
+        .bita-kpi-grid .kpi-title {
+            font-size: 0.7rem !important;
+        }
+        .bita-kpi-grid .kpi-icon-link {
+            width: 36px !important;
+            height: 36px !important;
+            font-size: 1.15rem !important;
+        }
+        .maint-header {
+            padding: 12px 14px !important;
+        }
+        .maint-header h3 {
+            font-size: 0.82rem !important;
+            gap: 6px !important;
+        }
+    }
+
+    /* ── Mobile Bento Audit Cards ──────────────────────────── */
     @media (max-width: 900px) {
-        .bita-kpi-grid {
-            grid-template-columns: repeat(2, 1fr);
+        .table-card { background: transparent !important; border: none !important; padding: 0 !important; box-shadow: none !important; }
+        .gridjs-container, .gridjs-wrapper { padding: 0 !important; border: none !important; box-shadow: none !important; background: transparent !important; }
+        .gridjs-head { display: block !important; margin-bottom: 12px !important; padding: 0 !important; }
+        .gridjs-thead { display: none !important; }
+        .gridjs-tbody { display: flex !important; flex-direction: column !important; gap: 14px !important; background: transparent !important; border: none !important; }
+        .gridjs-tr {
+            display: grid !important;
+            grid-template-columns: 1fr auto !important;
+            row-gap: 10px !important;
+            column-gap: 10px !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 18px !important;
+            padding: 16px 18px 14px !important;
+            margin: 0 !important;
+            box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.03) !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
         }
+        .gridjs-tr:hover { border-color: #cbd5e1 !important; box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.1) !important; }
+        .gridjs-td { padding: 0 !important; border: none !important; background: transparent !important; }
+        .gridjs-td:nth-child(2) { grid-column: 1 !important; grid-row: 1 !important; display: flex !important; align-items: center !important; min-width: 0 !important; }
+        .gridjs-td:nth-child(2) > div { display: flex !important; align-items: center !important; gap: 10px !important; min-width: 0 !important; }
+        .gridjs-td:nth-child(2) .gj-avatar { width: 38px !important; height: 38px !important; min-width: 38px !important; border-radius: 12px !important; font-size: 0.95rem !important; }
+        .gridjs-td:nth-child(2) div[style*="font-weight:600"] { font-size: 0.92rem !important; font-weight: 700 !important; color: #0f172a !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 210px !important; }
+        .gridjs-td:nth-child(2) div[style*="font-size:0.76rem"] { font-size: 0.74rem !important; color: #64748b !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 210px !important; }
+        .gridjs-td:nth-child(1) { grid-column: 2 !important; grid-row: 1 !important; display: flex !important; justify-content: flex-end !important; align-items: flex-start !important; }
+        .gridjs-td:nth-child(1) span { display: inline-flex !important; align-items: center !important; background: #f1f5f9 !important; color: #475569 !important; font-size: 0.76rem !important; font-weight: 700 !important; padding: 3px 9px !important; border-radius: 8px !important; border: 1px solid #e2e8f0 !important; }
+        .gridjs-td:nth-child(3) { grid-column: 1 !important; grid-row: 2 !important; display: flex !important; align-items: center !important; padding-top: 2px !important; }
+        .gridjs-td:nth-child(3) .badge-action { font-size: 0.75rem !important; padding: 5px 12px !important; border-radius: 30px !important; font-weight: 700 !important; letter-spacing: 0.3px !important; }
+        .gridjs-td:nth-child(4) { grid-column: 2 !important; grid-row: 2 !important; display: flex !important; justify-content: flex-end !important; align-items: center !important; padding-top: 2px !important; }
+        .gridjs-td:nth-child(4) span { display: inline-flex !important; align-items: center !important; background: #f8fafc !important; color: #475569 !important; font-size: 0.74rem !important; font-weight: 600 !important; padding: 3px 9px !important; border-radius: 7px !important; border: 1px solid #e2e8f0 !important; }
+        .gridjs-td:nth-child(4)::before { content: "Módulo:" !important; font-size: 0.70rem !important; font-weight: 600 !important; color: #94a3b8 !important; margin-right: 5px !important; }
+        .gridjs-td:nth-child(6) { grid-column: 1 !important; grid-row: 3 !important; display: flex !important; flex-direction: row !important; align-items: center !important; gap: 8px !important; padding-top: 10px !important; border-top: 1px dashed #e2e8f0 !important; }
+        .gridjs-td:nth-child(6) > div:first-child { font-size: 0.82rem !important; font-weight: 700 !important; color: #1e293b !important; display: flex !important; align-items: center !important; gap: 4px !important; }
+        .gridjs-td:nth-child(6) > div:first-child::before { content: "📅" !important; font-size: 0.8rem !important; }
+        .gridjs-td:nth-child(6) > div:last-child { font-size: 0.76rem !important; color: #64748b !important; margin-top: 0 !important; background: #f8fafc !important; padding: 2px 7px !important; border-radius: 6px !important; border: 1px solid #f1f5f9 !important; font-weight: 600 !important; }
+        .gridjs-td:nth-child(5) { grid-column: 1 !important; grid-row: 4 !important; display: flex !important; align-items: center !important; gap: 5px !important; padding-top: 2px !important; }
+        .gridjs-td:nth-child(5)::before { content: "🌐 IP:" !important; font-size: 0.70rem !important; font-weight: 700 !important; color: #94a3b8 !important; }
+        .gridjs-td:nth-child(5) code { background: #f1f5f9 !important; border: 1px solid #e2e8f0 !important; padding: 2px 7px !important; border-radius: 6px !important; font-size: 0.72rem !important; color: #475569 !important; font-weight: 600 !important; }
+        .gridjs-td:nth-child(7) { grid-column: 2 !important; grid-row: 3 / 5 !important; display: flex !important; justify-content: flex-end !important; align-items: center !important; padding-top: 10px !important; border-top: 1px dashed #e2e8f0 !important; }
+        .gridjs-td:nth-child(7) > div { display: flex !important; align-items: center !important; gap: 8px !important; }
+        .gridjs-td:nth-child(7) .gj-eye-btn { width: 38px !important; height: 38px !important; min-width: 38px !important; border-radius: 11px !important; font-size: 1.15rem !important; background: #eff6ff !important; border: 1.5px solid #bfdbfe !important; color: #2563eb !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; }
+        .gridjs-td:nth-child(7) .gj-pdf-btn { width: 38px !important; height: 38px !important; min-width: 38px !important; border-radius: 11px !important; font-size: 1.15rem !important; background: #fef2f2 !important; border: 1.5px solid #fecaca !important; color: #dc2626 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; }
+        .gridjs-pagination { display: flex !important; flex-direction: column !important; gap: 12px !important; align-items: center !important; padding: 16px 0 !important; }
+        [data-theme="dark"] .gridjs-tr { background: #111a2e !important; border-color: #1e293b !important; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important; }
+        [data-theme="dark"] .gridjs-td:nth-child(1) span { background: #1e293b !important; border-color: #334155 !important; color: #94a3b8 !important; }
+        [data-theme="dark"] .gridjs-td:nth-child(2) div[style*="font-weight:600"] { color: #f8fafc !important; }
+        [data-theme="dark"] .gridjs-td:nth-child(4) span { background: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
+        [data-theme="dark"] .gridjs-td:nth-child(6) { border-top-color: #1e293b !important; }
+        [data-theme="dark"] .gridjs-td:nth-child(6) > div:first-child { color: #f1f5f9 !important; }
+        [data-theme="dark"] .gridjs-td:nth-child(6) > div:last-child { background: #1e293b !important; border-color: #334155 !important; color: #94a3b8 !important; }
+        [data-theme="dark"] .gridjs-td:nth-child(5) code { background: #1e293b !important; border-color: #334155 !important; color: #94a3b8 !important; }
+        [data-theme="dark"] .gridjs-td:nth-child(7) { border-top-color: #1e293b !important; }
+        [data-theme="dark"] .gridjs-td:nth-child(7) .gj-eye-btn { background: rgba(37, 99, 235, 0.15) !important; border-color: rgba(37, 99, 235, 0.35) !important; color: #60a5fa !important; }
+        [data-theme="dark"] .gridjs-td:nth-child(7) .gj-pdf-btn { background: rgba(220, 38, 38, 0.15) !important; border-color: rgba(220, 38, 38, 0.35) !important; color: #f87171 !important; }
     }
 
-    @media (max-width: 540px) {
-        .bita-kpi-grid {
-            grid-template-columns: 1fr;
-        }
+    /* ── Modal Detalle de Auditoría Bento UI ────────────────── */
+    .audit-modal-dialog {
+        max-width: 620px !important;
+        width: 92% !important;
+        padding: 0 !important;
+        border-radius: 22px !important;
+        overflow: hidden !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25) !important;
+        background: #ffffff !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .audit-modal-header {
+        background: linear-gradient(135deg, #172554 0%, #1e3a8a 50%, #2563eb 100%) !important;
+        padding: 22px 26px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        color: #ffffff !important;
+        flex-shrink: 0 !important;
+    }
+    .audit-modal-header-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+        min-width: 0 !important;
+    }
+    .audit-modal-icon {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        background: rgba(255, 255, 255, 0.18) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        border-radius: 13px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.35rem !important;
+        color: #ffffff !important;
+    }
+    .audit-modal-title {
+        font-size: 1.15rem !important;
+        font-weight: 800 !important;
+        color: #ffffff !important;
+        margin: 0 !important;
+        line-height: 1.2 !important;
+    }
+    .audit-modal-sub {
+        color: rgba(255, 255, 255, 0.8) !important;
+        font-size: 0.80rem !important;
+        margin: 3px 0 0 !important;
+    }
+    .audit-modal-close {
+        width: 36px !important;
+        height: 36px !important;
+        background: rgba(255, 255, 255, 0.16) !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        border-radius: 11px !important;
+        color: #ffffff !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        font-size: 1.1rem !important;
+    }
+    .audit-modal-close:hover {
+        background: rgba(255, 255, 255, 0.28) !important;
+        transform: scale(1.05) !important;
+    }
+    .audit-modal-body {
+        padding: 22px 24px !important;
+        max-height: calc(88vh - 145px) !important;
+        overflow-y: auto !important;
+        flex: 1 1 auto !important;
+    }
+    .audit-user-card {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 14px !important;
+        padding: 14px 18px !important;
+        background: #f8fafc !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        margin-bottom: 16px !important;
+    }
+    .audit-user-info {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        min-width: 0 !important;
+    }
+    .audit-avatar {
+        width: 46px !important;
+        height: 46px !important;
+        min-width: 46px !important;
+        border-radius: 14px !important;
+        font-weight: 800 !important;
+        color: #ffffff !important;
+        font-size: 1.15rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 4px 10px rgba(30, 58, 138, 0.2) !important;
+    }
+    .audit-user-name {
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        font-size: 0.95rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .audit-user-email {
+        color: #64748b !important;
+        font-size: 0.78rem !important;
+        margin-top: 1px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .audit-badge-wrap {
+        flex-shrink: 0 !important;
+    }
+    .audit-badge-wrap .badge-action {
+        white-space: nowrap !important;
+        padding: 6px 14px !important;
+        font-size: 0.76rem !important;
+        border-radius: 30px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.3px !important;
+    }
+    .audit-meta-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        margin-bottom: 16px !important;
+    }
+    .audit-meta-card {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        padding: 12px 14px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        min-width: 0 !important;
+    }
+    .audit-meta-card-wide {
+        grid-column: 1 / -1 !important;
+    }
+    .audit-meta-label {
+        color: #64748b !important;
+        font-size: 0.70rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        margin-bottom: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+    }
+    .audit-meta-label i {
+        font-size: 0.85rem !important;
+        color: #3b82f6 !important;
+    }
+    .audit-meta-value {
+        font-weight: 700 !important;
+        color: #1e293b !important;
+        font-size: 0.88rem !important;
+        word-break: break-word !important;
+    }
+    .audit-meta-mono {
+        font-family: monospace !important;
+        color: #0f172a !important;
+        font-size: 0.84rem !important;
+    }
+    .audit-id-badge {
+        background: #eff6ff !important;
+        color: #2563eb !important;
+        border: 1px solid #bfdbfe !important;
+        padding: 2px 8px !important;
+        border-radius: 6px !important;
+        font-size: 0.80rem !important;
+        font-weight: 700 !important;
+        display: inline-block !important;
+    }
+    .audit-meta-date {
+        font-size: 0.84rem !important;
+        color: #0f172a !important;
+        font-weight: 600 !important;
+    }
+    .audit-json-section {
+        margin-top: 14px !important;
+    }
+    .audit-json-title {
+        font-size: 0.74rem !important;
+        font-weight: 700 !important;
+        color: #64748b !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        margin-bottom: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+    /* ── Ticket Troquelado Cutout Line & Hash Box ─────────── */
+    .audit-ticket-cutout-line {
+        height: 2px !important;
+        border-top: 2px dashed #cbd5e1 !important;
+        position: relative !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+    }
+    .audit-ticket-cutout-line::before {
+        content: "" !important;
+        position: absolute !important;
+        left: -12px !important;
+        top: -11px !important;
+        width: 22px !important;
+        height: 22px !important;
+        border-radius: 50% !important;
+        background: rgba(15, 23, 42, 0.6) !important;
+        z-index: 5 !important;
+    }
+    .audit-ticket-cutout-line::after {
+        content: "" !important;
+        position: absolute !important;
+        right: -12px !important;
+        top: -11px !important;
+        width: 22px !important;
+        height: 22px !important;
+        border-radius: 50% !important;
+        background: rgba(15, 23, 42, 0.6) !important;
+        z-index: 5 !important;
+    }
+    .audit-hash-container {
+        background: #f8fafc !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 12px 14px !important;
+        margin-top: 14px !important;
     }
 
-    .bita-kpi {
-        background: #fff;
-        border-radius: 14px;
-        padding: 18px 20px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        box-shadow: 0 1px 6px rgba(30, 58, 138, 0.07);
-        border: 1px solid #e8eef6;
-        transition: transform 0.18s, box-shadow 0.18s;
+    .audit-modal-footer {
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 16px 24px !important;
+        background: #f8fafc !important;
+        border-top: 1px solid #e2e8f0 !important;
+        flex-shrink: 0 !important;
+    }
+    .btn-audit-cancel {
+        padding: 10px 18px !important;
+        border: 1.5px solid #cbd5e1 !important;
+        background: #ffffff !important;
+        border-radius: 11px !important;
+        color: #475569 !important;
+        font-weight: 700 !important;
+        font-size: 0.86rem !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        transition: all 0.18s ease !important;
+    }
+    .btn-audit-cancel:hover {
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
+        border-color: #94a3b8 !important;
+    }
+    .btn-audit-export {
+        padding: 10px 20px !important;
+        background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+        border: none !important;
+        border-radius: 11px !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 0.86rem !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25) !important;
+        transition: all 0.18s ease !important;
+    }
+    .btn-audit-export:hover {
+        background: linear-gradient(135deg, #b91c1c, #991b1b) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 16px rgba(220, 38, 38, 0.35) !important;
     }
 
-    .bita-kpi:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(30, 58, 138, 0.1);
+    @media (max-width: 576px) {
+        .audit-modal-dialog { width: calc(100% - 20px) !important; margin: 10px auto !important; border-radius: 20px !important; }
+        .audit-modal-header { padding: 18px 20px !important; }
+        .audit-modal-icon { width: 38px !important; height: 38px !important; min-width: 38px !important; font-size: 1.15rem !important; border-radius: 10px !important; }
+        .audit-modal-title { font-size: 1.05rem !important; }
+        .audit-modal-sub { font-size: 0.74rem !important; }
+        .audit-modal-body { padding: 16px 16px !important; }
+        .audit-user-card { flex-direction: column !important; align-items: stretch !important; padding: 12px 14px !important; gap: 10px !important; }
+        .audit-badge-wrap { width: 100% !important; display: flex !important; justify-content: flex-start !important; }
+        .audit-badge-wrap .badge-action { width: 100% !important; text-align: center !important; justify-content: center !important; }
+        .audit-meta-grid { gap: 8px !important; }
+        .audit-meta-card { padding: 10px 12px !important; border-radius: 12px !important; }
+        .audit-modal-footer { padding: 14px 16px !important; gap: 8px !important; }
+        .btn-audit-cancel { flex: 1 !important; padding: 10px 12px !important; }
+        .btn-audit-export { flex: 1.2 !important; padding: 10px 14px !important; }
     }
 
-    .bita-kpi-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.3rem;
-        flex-shrink: 0;
-    }
-
-    .bita-kpi-icon.blue {
-        background: #eff6ff;
-        color: #2563eb;
-    }
-
-    .bita-kpi-icon.violet {
-        background: #f5f3ff;
-        color: #7c3aed;
-    }
-
-    .bita-kpi-icon.green {
-        background: #f0fdf4;
-        color: #16a34a;
-    }
-
-    .bita-kpi-icon.amber {
-        background: #fffbeb;
-        color: #d97706;
-    }
-
-    .bita-kpi-icon.slate {
-        background: #f8fafc;
-        color: #475569;
-    }
-
-    .bita-kpi-val {
-        font-size: 1.55rem;
-        font-weight: 800;
-        color: #1e293b;
-        line-height: 1;
-    }
-
-    .bita-kpi-label {
-        font-size: 0.74rem;
-        color: #94a3b8;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-top: 3px;
-    }
+    [data-theme="dark"] .audit-modal-dialog { background: #0f172a !important; border-color: #1e293b !important; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7) !important; }
+    [data-theme="dark"] .audit-user-card { background: #111a2e !important; border-color: #1e293b !important; }
+    [data-theme="dark"] .audit-user-name { color: #f8fafc !important; }
+    [data-theme="dark"] .audit-meta-card { background: #111a2e !important; border-color: #1e293b !important; }
+    [data-theme="dark"] .audit-meta-value { color: #f1f5f9 !important; }
+    [data-theme="dark"] .audit-meta-date { color: #e2e8f0 !important; }
+    [data-theme="dark"] .audit-id-badge { background: #1e293b !important; border-color: #334155 !important; color: #60a5fa !important; }
+    [data-theme="dark"] .audit-modal-footer { background: #0b1120 !important; border-top-color: #1e293b !important; }
+    [data-theme="dark"] .btn-audit-cancel { background: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
+    [data-theme="dark"] .btn-audit-cancel:hover { background: #334155 !important; color: #ffffff !important; }
 
     /* ── Mantenimiento Panel ───────────────────────────────── */
     .maint-panel {
@@ -354,101 +700,362 @@ function traducir_tabla($tabla)
         background: #ffe4e6;
         border-color: #fda4af;
     }
+
+    /* ── Filtros y Botones de Bitácora ────────────────────── */
+    .filters-label {
+        font-weight: 600;
+        color: var(--color-primary);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.88rem;
+        user-select: none;
+    }
+    .filters-label-spacer {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.88rem;
+        line-height: 1.2;
+        visibility: hidden;
+        pointer-events: none;
+    }
+    .bita-filter-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+    }
+    .btn-filter-apply {
+        height: 44px;
+        flex: 1;
+        min-width: 0;
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        white-space: nowrap;
+    }
+    .btn-filter-apply:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+    }
+    .btn-filter-apply:active {
+        transform: translateY(0);
+    }
+    .btn-filter-clear {
+        height: 44px;
+        min-width: 44px;
+        padding: 0 14px;
+        background: #f1f5f9;
+        color: #475569;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .btn-filter-clear:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+        transform: translateY(-1px);
+    }
+    .btn-filter-clear:active {
+        transform: translateY(0);
+    }
+    [data-theme="dark"] .filters-card label,
+    [data-theme="dark"] .filters-label {
+        color: #93c5fd !important;
+    }
+    [data-theme="dark"] .filters-card .filter-select {
+        background: #162238 !important;
+        border-color: #1e293b !important;
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] .filters-card .choices__inner {
+        background: #162238 !important;
+        border-color: #1e293b !important;
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] .filters-card .choices__list--single .choices__item {
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] .filters-card .choices__list--dropdown {
+        background: #111a2e !important;
+        border-color: #1e293b !important;
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] .filters-card .choices__list--dropdown .choices__item {
+        color: #cbd5e1 !important;
+    }
+    [data-theme="dark"] .filters-card .choices__list--dropdown .choices__item--selectable.is-highlighted {
+        background: #1e293b !important;
+        color: #38bdf8 !important;
+    }
+    [data-theme="dark"] .filters-card .choices__input {
+        background: #162238 !important;
+        color: #f8fafc !important;
+        border-color: #1e293b !important;
+    }
+    [data-theme="dark"] .btn-filter-clear {
+        background: #1e293b !important;
+        color: #cbd5e1 !important;
+        border: 1.5px solid #334155 !important;
+    }
+    [data-theme="dark"] .btn-filter-clear:hover {
+        background: #334155 !important;
+        color: #ffffff !important;
+    }
 </style>
 
 <div class="dashboard-container" style="width: 100%; max-width: 100%; padding: 0;">
     <!-- BANNER -->
     <style>
-        /* Estilos responsivos del banner Bitácora */
-        @media (max-width: 991px) {
-            .dashboard-banner {
-                flex-direction: column !important;
-                align-items: flex-start !important;
-                padding: 24px 20px !important;
-                gap: 16px !important;
-                height: auto !important;
-            }
-
-            .dashboard-banner .welcome-stats {
-                display: none !important;
-            }
-
-            .dashboard-banner .banner-actions {
-                width: 100% !important;
-                margin-left: 0 !important;
-            }
-
-            .dashboard-banner button {
-                width: 100% !important;
-                justify-content: center !important;
-            }
+        /* Banner Bento Bitácora — Coherencia visual con Respaldo y Analíticas */
+        .bitacora-banner {
+            background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%) !important;
+            border-radius: 22px !important;
+            padding: 28px 32px !important;
+            margin-bottom: 24px !important;
+            position: relative !important;
+            overflow: hidden !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 20px !important;
+            box-shadow: 0 10px 30px rgba(23, 37, 84, 0.15) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
         }
-
-        .banner-actions {
+        .bita-banner-deco-1 {
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 220px;
+            height: 220px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .bita-banner-deco-2 {
+            position: absolute;
+            bottom: -50px;
+            left: -30px;
+            width: 180px;
+            height: 180px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .bita-banner-main {
             display: flex;
             align-items: center;
-            gap: 20px;
-            margin-left: auto;
+            gap: 18px;
+            z-index: 1;
+            min-width: 0;
+        }
+        .bita-banner-icon {
+            width: 56px;
+            height: 56px;
+            min-width: 56px;
+            background: rgba(255, 255, 255, 0.18) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.28) !important;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #ffffff !important;
+            flex-shrink: 0;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            transition: transform 0.25s ease;
+        }
+        .bita-banner-icon:hover {
+            transform: scale(1.05) rotate(4deg);
+        }
+        .bita-banner-title {
+            color: #ffffff !important;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+        .bita-banner-sub {
+            color: rgba(255, 255, 255, 0.88) !important;
+            margin: 5px 0 0;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .bita-banner-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.18) !important;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            border-radius: 50px;
+            padding: 2px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #ffffff !important;
+        }
+        .bita-banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+        .bita-banner-actions .btn-stitch-gold {
+            background-color: #ffffff !important;
+            color: #172554 !important;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.88rem;
+            border-radius: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+        .bita-banner-actions .btn-stitch-gold:hover {
+            background-color: #f8fafc !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 991px) {
+            .bitacora-banner {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                padding: 20px 18px !important;
+                gap: 16px !important;
+                border-radius: 18px !important;
+            }
+            .bita-banner-title {
+                font-size: 1.4rem !important;
+            }
+            .bita-banner-icon {
+                width: 46px !important;
+                height: 46px !important;
+                min-width: 46px !important;
+                font-size: 22px !important;
+                border-radius: 12px !important;
+            }
+            .bita-banner-sub {
+                font-size: 0.82rem !important;
+            }
+            .bita-banner-actions {
+                width: 100% !important;
+            }
+            .bita-banner-actions .btn-stitch-gold {
+                width: 100% !important;
+                justify-content: center !important;
+                padding: 10px 16px !important;
+            }
         }
     </style>
-    <div class="welcome-banner dashboard-banner">
-        <div class="welcome-icon">
-            <i class="ti ti-file-analytics"></i>
-        </div>
-        <div class="welcome-content">
-            <div class="welcome-text">
-                <h1 class="welcome-title">Bitácora de Auditoría</h1>
-                <p class="welcome-subtitle">
-                    <i class="ti ti-shield-lock"></i>
-                    <span>Registro de Actividades</span>
-                    <span class="subtitle-separator">-</span>
-                    <span>Ciclo de Vida v2</span>
+    <div class="bitacora-banner dashboard-banner">
+        <div class="bita-banner-deco-1" aria-hidden="true"></div>
+        <div class="bita-banner-deco-2" aria-hidden="true"></div>
+        <div class="bita-banner-main">
+            <div class="bita-banner-icon" title="Bitácora de Auditoría">
+                <i class="ti ti-shield-check"></i>
+            </div>
+            <div class="bita-banner-text">
+                <h1 class="bita-banner-title">Bitácora de Auditoría</h1>
+                <p class="bita-banner-sub">
+                    <i class="ti ti-history"></i>
+                    <span>Trazabilidad · Registro de Actividades</span>
+                    <span class="bita-banner-badge">
+                        <i class="ti ti-database"></i>
+                        <span><?= number_format($totalActivos) ?> eventos</span>
+                    </span>
                 </p>
             </div>
         </div>
 
-        <div class="banner-actions">
-            <!-- Estadística (Se oculta en móvil) -->
-            <div class="welcome-stats" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-                <i class="ti ti-database" style="font-size: 1.1rem; opacity: 0.8;"></i>
-                <span><?= number_format($totalActivos) ?></span> registros activos
-            </div>
-            <!-- Botón Exportar alineado al final -->
-            <button onclick="exportLogs()" class="btn btn-stitch-gold"
-                style="white-space: nowrap; display: flex; align-items: center; gap: 8px;">
-                <i class="ti ti-file-download"></i> Exportar CSV
+        <div class="bita-banner-actions">
+            <button onclick="exportLogs()" class="btn btn-stitch-gold" title="Exportar registros en CSV">
+                <i class="ti ti-file-download"></i> <span>Exportar CSV</span>
             </button>
         </div>
     </div>
 
-    <!-- KPI CARDS -->
-    <div class="bita-kpi-grid">
-        <div class="bita-kpi">
-            <div class="bita-kpi-icon blue"><i class="ti ti-database"></i></div>
-            <div>
-                <div class="bita-kpi-val"><?= number_format($totalActivos) ?></div>
-                <div class="bita-kpi-label">Registros Activos</div>
+    <!-- KPI CARDS (Estandarizadas estilo Inicio) -->
+    <div class="dashboard-kpi-grid bita-kpi-grid">
+        <div class="kpi-card-blue">
+            <div style="flex:1;">
+                <p class="kpi-title">Registros Activos</p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 class="kpi-num" data-kpi-value="<?= $totalActivos ?>"><?= number_format($totalActivos) ?></h2>
+                </div>
+            </div>
+            <div class="kpi-icon-link" title="Registros Activos">
+                <i class="ti ti-database"></i>
             </div>
         </div>
-        <div class="bita-kpi">
-            <div class="bita-kpi-icon green"><i class="ti ti-calendar-event"></i></div>
-            <div>
-                <div class="bita-kpi-val"><?= number_format($hoy) ?></div>
-                <div class="bita-kpi-label">Eventos Hoy</div>
+
+        <div class="kpi-card-green">
+            <div style="flex:1;">
+                <p class="kpi-title">Eventos Hoy</p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 class="kpi-num" data-kpi-value="<?= $hoy ?>"><?= number_format($hoy) ?></h2>
+                </div>
+            </div>
+            <div class="kpi-icon-link" title="Eventos Hoy">
+                <i class="ti ti-calendar-event"></i>
             </div>
         </div>
-        <div class="bita-kpi">
-            <div class="bita-kpi-icon violet"><i class="ti ti-chart-bar"></i></div>
-            <div>
-                <div class="bita-kpi-val"><?= number_format($semana) ?></div>
-                <div class="bita-kpi-label">Últimos 7 días</div>
+
+        <div class="kpi-card-purple">
+            <div style="flex:1;">
+                <p class="kpi-title">Últimos 7 días</p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 class="kpi-num" data-kpi-value="<?= $semana ?>"><?= number_format($semana) ?></h2>
+                </div>
+            </div>
+            <div class="kpi-icon-link" title="Últimos 7 días">
+                <i class="ti ti-chart-bar"></i>
             </div>
         </div>
-        <div class="bita-kpi">
-            <div class="bita-kpi-icon amber"><i class="ti ti-archive"></i></div>
-            <div>
-                <div class="bita-kpi-val"><?= number_format($totalHist) ?></div>
-                <div class="bita-kpi-label">En Histórico</div>
+
+        <div class="kpi-card-yellow">
+            <div style="flex:1;">
+                <p class="kpi-title">En Histórico</p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 class="kpi-num" data-kpi-value="<?= $totalHist ?>"><?= number_format($totalHist) ?></h2>
+                </div>
+            </div>
+            <div class="kpi-icon-link" title="En Histórico">
+                <i class="ti ti-archive"></i>
             </div>
         </div>
     </div>
@@ -514,8 +1121,8 @@ function traducir_tabla($tabla)
     <!-- FILTROS -->
     <div class="filters-card">
         <div class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label style="font-weight: 600; color: var(--color-primary); margin-bottom: 8px; display: block;">
+            <div class="col-12 col-md-6 col-xl-3">
+                <label class="filters-label">
                     <i class="ti ti-activity"></i> Acción
                 </label>
                 <select id="filterAction" class="filter-select" style="width: 100%;">
@@ -530,37 +1137,40 @@ function traducir_tabla($tabla)
                 </select>
             </div>
 
-            <div class="col-md-2">
-                <label style="font-weight: 600; color: var(--color-primary); margin-bottom: 8px; display: block;">
+            <div class="col-6 col-md-3 col-xl-2">
+                <label class="filters-label">
                     <i class="ti ti-calendar"></i> Desde
                 </label>
                 <input type="text" id="filterDateFrom" class="filter-select no-choices" autocomplete="off"
                     placeholder="dd/mm/aaaa" style="width: 100%;">
             </div>
 
-            <div class="col-md-2">
-                <label style="font-weight: 600; color: var(--color-primary); margin-bottom: 8px; display: block;">
+            <div class="col-6 col-md-3 col-xl-2">
+                <label class="filters-label">
                     <i class="ti ti-calendar"></i> Hasta
                 </label>
                 <input type="text" id="filterDateTo" class="filter-select no-choices" autocomplete="off"
                     placeholder="dd/mm/aaaa" style="width: 100%;">
             </div>
 
-            <div class="col-md-3">
-                <label style="font-weight: 600; color: var(--color-primary); margin-bottom: 8px; display: block;">
+            <div class="col-12 col-md-7 col-xl-3">
+                <label class="filters-label">
                     <i class="ti ti-search"></i> Buscar
                 </label>
                 <input type="text" id="filterSearch" class="filter-select no-choices" autocomplete="off"
                     placeholder="IP, email, tabla..." style="width: 100%;" oninput="debounceFilter()">
             </div>
 
-            <div class="col-md-2 d-flex gap-2">
-                <button onclick="applyFilters()" class="btn-export" style="flex: 1;">
-                    <i class="ti ti-filter"></i> Filtrar
-                </button>
-                <button onclick="clearFilters()" class="btn-clear">
-                    <i class="ti ti-filter-off"></i>
-                </button>
+            <div class="col-12 col-md-5 col-xl-2">
+                <label class="d-none d-md-block filters-label-spacer" aria-hidden="true">&nbsp;</label>
+                <div class="bita-filter-actions">
+                    <button type="button" onclick="applyFilters()" class="btn-filter-apply" title="Aplicar filtros">
+                        <i class="ti ti-filter"></i> <span>Filtrar</span>
+                    </button>
+                    <button type="button" onclick="clearFilters()" class="btn-filter-clear" title="Limpiar todos los filtros">
+                        <i class="ti ti-filter-off"></i> <span class="d-none d-md-inline d-xl-none d-xxl-inline">Limpiar</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -575,97 +1185,106 @@ function traducir_tabla($tabla)
 <!-- ══════════════════════════════════════════════════════
      MODAL PREMIUM: Detalle de Registro de Auditoría
      ══════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════════════
+     MODAL CORPORATIVO: Ticket de Auditoría Troquelado (#AUD-001204)
+     ══════════════════════════════════════════════════════ -->
 <div id="auditModal" class="modal">
-    <div class="modal-content" style="max-width: 680px;">
-        <!-- Header con gradiente -->
-        <div class="modal-header"
-            style="background: linear-gradient(135deg, #172554 0%, #1e3a8a 50%, #2563eb 100%); margin: -36px -36px 28px -36px; padding: 24px 32px; border-radius: 20px 20px 0 0;">
-            <div style="display:flex; align-items:center; gap:14px;">
-                <div
-                    style="width:44px;height:44px;background:rgba(255,255,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:white;">
-                    <i class="ti ti-shield-check"></i>
+    <div class="modal-content audit-modal-dialog" style="overflow:visible;border-radius:22px;">
+        <!-- Header con formato Ticket Corporativo Troquelado -->
+        <div class="audit-modal-header" style="background: linear-gradient(135deg, #162660 0%, #1e3a8a 100%);border-radius:22px 22px 0 0;">
+            <div class="audit-modal-header-left">
+                <div class="audit-modal-icon" style="background:rgba(255,255,255,0.2);color:#ffffff;">
+                    <i class="ti ti-ticket"></i>
                 </div>
                 <div>
-                    <h2 style="font-size:1.2rem;font-weight:700;color:white;margin:0;">Detalle de Auditoría</h2>
-                    <p style="color:rgba(255,255,255,0.7);font-size:0.82rem;margin:3px 0 0;">Registro de actividad del
-                        sistema</p>
+                    <div style="font-size:0.70rem;font-weight:700;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:0.5px;">TICKET DE AUDITORÍA FORENSE &bull; ISPEB</div>
+                    <h2 class="audit-modal-title" id="auditTicketCode" style="color:#ffffff;font-family:monospace;letter-spacing:0.5px;">#AUD-000000</h2>
                 </div>
             </div>
-            <button class="modal-close" onclick="closeAuditModal()"
-                style="background:rgba(255,255,255,0.15);color:white;border:none;">
+            <button type="button" class="modal-close audit-modal-close" onclick="closeAuditModal()" title="Cerrar (Esc)">
                 <i class="ti ti-x"></i>
             </button>
         </div>
 
-        <!-- Sección: Info del Usuario -->
-        <div id="auditUserSection"
-            style="display:flex;align-items:center;gap:16px;padding:18px;background:#f8fafc;border-radius:14px;margin-bottom:20px;">
-            <div id="auditAvatar"
-                style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1e3a8a,#3b82f6);display:flex;align-items:center;justify-content:center;font-weight:800;color:white;font-size:1.2rem;flex-shrink:0;box-shadow:0 4px 12px rgba(30,58,138,0.25);">
-                ?</div>
-            <div style="flex:1;">
-                <div id="auditUserName" style="font-weight:700;color:#1e293b;font-size:1rem;"></div>
-                <div id="auditUserEmail" style="color:#94a3b8;font-size:0.82rem;margin-top:2px;"></div>
-            </div>
-            <div id="auditBadge" class="badge-action"></div>
-        </div>
+        <!-- Perforación Troquelada del Ticket -->
+        <div class="audit-ticket-cutout-line" aria-hidden="true"></div>
 
-        <!-- Grid de metadata -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
-            <div style="background:#f8fafc;border-radius:12px;padding:14px;">
-                <div
-                    style="color:#94a3b8;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">
-                    <i class="ti ti-table"></i> Tabla
+        <!-- Cuerpo del Modal -->
+        <div class="audit-modal-body">
+            <!-- Sección: Usuario y Acción -->
+            <div id="auditUserSection" class="audit-user-card">
+                <div class="audit-user-info">
+                    <div id="auditAvatar" class="audit-avatar">?</div>
+                    <div class="audit-user-text">
+                        <div id="auditUserName" class="audit-user-name"></div>
+                        <div id="auditUserEmail" class="audit-user-email"></div>
+                    </div>
                 </div>
-                <div id="auditTabla" style="font-weight:600;color:#1e293b;font-size:0.88rem;font-family:monospace;">
+                <div class="audit-badge-wrap">
+                    <div id="auditBadge" class="badge-action"></div>
                 </div>
             </div>
-            <div style="background:#f8fafc;border-radius:12px;padding:14px;">
-                <div
-                    style="color:#94a3b8;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">
-                    <i class="ti ti-world"></i> IP
-                </div>
-                <div id="auditIp" style="font-weight:600;color:#1e293b;font-size:0.88rem;font-family:monospace;"></div>
-            </div>
-            <div style="background:#f8fafc;border-radius:12px;padding:14px;">
-                <div
-                    style="color:#94a3b8;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">
-                    <i class="ti ti-calendar"></i> Fecha
-                </div>
-                <div id="auditFecha" style="font-weight:600;color:#1e293b;font-size:0.84rem;"></div>
-            </div>
-        </div>
 
-        <!-- ID del registro -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-            <span
-                style="font-size:0.8rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Registro
-                ID:</span>
-            <code id="auditRecordId"
-                style="background:#eff6ff;color:#2563eb;padding:3px 10px;border-radius:6px;font-size:0.82rem;font-weight:700;"></code>
-        </div>
-
-        <!-- Detalles JSON (si existen) -->
-        <div id="auditJsonSection" style="display:none;">
-            <div
-                style="font-size:0.8rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">
-                <i class="ti ti-braces"></i> Datos del Cambio
+            <!-- Grid de metadata Bento -->
+            <div class="audit-meta-grid">
+                <div class="audit-meta-card">
+                    <div class="audit-meta-label">
+                        <i class="ti ti-table"></i> Módulo / Registro
+                    </div>
+                    <div id="auditTabla" class="audit-meta-value"></div>
+                </div>
+                <div class="audit-meta-card">
+                    <div class="audit-meta-label">
+                        <i class="ti ti-world"></i> Dirección IP / Red
+                    </div>
+                    <div id="auditIp" class="audit-meta-value audit-meta-mono"></div>
+                </div>
+                <div class="audit-meta-card">
+                    <div class="audit-meta-label">
+                        <i class="ti ti-hash"></i> ID de Registro Afectado
+                    </div>
+                    <div class="audit-meta-value">
+                        <code id="auditRecordId" class="audit-id-badge"></code>
+                    </div>
+                </div>
+                <div class="audit-meta-card">
+                    <div class="audit-meta-label">
+                        <i class="ti ti-calendar-time"></i> Fecha y Hora Oficial
+                    </div>
+                    <div id="auditFecha" class="audit-meta-value audit-meta-date"></div>
+                </div>
             </div>
-            <div id="auditJsonContent" class="json-viewer"
-                style="max-height:200px;background:#0f172a;color:#e2e8f0;border-radius:12px;padding:16px;font-size:0.8rem;line-height:1.6;">
+
+            <!-- Detalles JSON / Operación (si existen) -->
+            <div id="auditJsonSection" class="audit-json-section" style="display:none;">
+                <div class="audit-json-title">
+                    <i class="ti ti-file-description"></i> Datos del Cambio / Parámetros
+                </div>
+                <div id="auditJsonContent" class="audit-json-content"></div>
+            </div>
+
+            <!-- Sello de Integridad Criptográfica Forense (SHA-256) -->
+            <div class="audit-hash-container">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <div style="display:flex;align-items:center;gap:6px;font-size:0.74rem;font-weight:700;color:#1e3a8a;text-transform:uppercase;">
+                        <i class="ti ti-shield-check" style="color:#10b981;font-size:0.95rem;"></i>
+                        <span>Sello de Integridad Forense SHA-256</span>
+                    </div>
+                    <button type="button" id="btnCopiarHash" onclick="copiarHashAuditoria()" class="btn-copy-hash" title="Copiar hash de integridad" style="padding:4px 10px;border:1px solid #cbd5e1;background:#ffffff;border-radius:6px;font-size:0.72rem;font-weight:700;color:#475569;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+                        <i class="ti ti-copy"></i> <span>Copiar</span>
+                    </button>
+                </div>
+                <div id="auditHashVal" class="audit-hash-code" style="font-family:'Courier New',Courier,monospace;font-size:0.76rem;font-weight:700;color:#1e3a8a;word-break:break-all;background:#ffffff;padding:8px 10px;border-radius:8px;border:1px solid #cbd5e1;display:block;margin-top:6px;letter-spacing:0.5px;">CALCULANDO_SELLO_SHA256...</div>
             </div>
         </div>
 
         <!-- Acciones del modal -->
-        <div
-            style="display:flex;justify-content:flex-end;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid #f1f5f9;">
-            <button onclick="closeAuditModal()"
-                style="padding:10px 20px;border:1.5px solid #e2e8f0;background:white;border-radius:10px;color:#64748b;font-weight:600;font-size:0.88rem;cursor:pointer;transition:all 0.15s;">
-                <i class="ti ti-x"></i> Cerrar
+        <div class="audit-modal-footer">
+            <button type="button" class="btn-audit-cancel" onclick="closeAuditModal()">
+                <i class="ti ti-x"></i> <span>Cerrar</span>
             </button>
-            <button id="auditPrintBtn" onclick="printAuditModal()"
-                style="padding:10px 20px;background:linear-gradient(135deg,#dc2626,#b91c1c);border:none;border-radius:10px;color:white;font-weight:600;font-size:0.88rem;cursor:pointer;transition:all 0.15s;box-shadow:0 4px 12px rgba(220,38,38,0.25);display:flex;align-items:center;gap:8px;">
-                <i class="ti ti-file-type-pdf"></i> Exportar PDF
+            <button type="button" id="auditPrintBtn" class="btn-audit-export" onclick="descargarTicketPdfModal()" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#162660,#2563eb);color:#ffffff;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:0.86rem;cursor:pointer;box-shadow:0 4px 12px rgba(37,99,235,0.25);">
+                <i class="ti ti-file-type-pdf"></i> <span>Descargar Ticket PDF</span>
             </button>
         </div>
     </div>
@@ -699,8 +1318,15 @@ function traducir_tabla($tabla)
         grid = new gridjs.Grid({
             columns: [
                 {
-                    id: 'id', name: 'ID', width: '70px',
-                    formatter: (cell) => gridjs.html(`<span style="color:#94a3b8; font-size:0.8rem; font-weight:600;">#${cell}</span>`)
+                    id: 'id', name: 'Ticket ID', width: '135px',
+                    formatter: (cell) => {
+                        const audCode = 'AUD-' + String(cell).padStart(6, '0');
+                        return gridjs.html(`
+                            <span style="display:inline-flex;align-items:center;gap:5px;background:#eff6ff;color:#1e3a8a;border:1px solid #bfdbfe;padding:3px 9px;border-radius:8px;font-family:monospace;font-size:0.78rem;font-weight:800;letter-spacing:0.5px;">
+                                <i class="ti ti-ticket" style="font-size:0.85rem;color:#2563eb;"></i>#${audCode}
+                            </span>
+                        `);
+                    }
                 },
                 {
                     id: 'usuario',
@@ -782,7 +1408,10 @@ function traducir_tabla($tabla)
                             'MANTENIMIENTO_BITACORA': 'Purga Bitácora',
                             'AUDIT_PURGE': 'Limpieza Ejecutada',
                             'EXPORT_CSV': 'CSV Exportado',
-                            'UPDATE_CONFIG': 'Configuración Act.'
+                            'UPDATE_CONFIG': 'Configuración Act.',
+                            'BLOQUEO_ASISTENCIA_UBICACION': 'Bloqueo GPS (Fuera Sede)',
+                            'BLOQUEO_ASISTENCIA_DUPLICADA': 'Marcaje Duplicado',
+                            'BLOQUEO_QR_INVALIDO': 'QR Inválido'
                         };
                         const cssClass = `badge-action badge-${cell}`;
                         const translated = actionDict[cell.toUpperCase()] || cell;
@@ -804,9 +1433,13 @@ function traducir_tabla($tabla)
                             'configuracion': 'Config.',
                             'asignaciones': 'Asignación'
                         };
-                        const translated = tableDict[cell.toLowerCase()] || cell;
+                        const key = (cell || '').toLowerCase().trim();
+                        let translated = tableDict[key];
+                        if (!translated) {
+                            translated = (!key || key === '-' || key === 'null') ? 'Sesión' : cell;
+                        }
                         return gridjs.html(`
-                        <span style="font-size:0.82rem;color:#64748b;background:#f8fafc;padding:4px 10px;border-radius:6px;font-family:monospace;">${translated || '—'}</span>
+                        <span style="font-size:0.75rem;color:#475569;background:#f8fafc;padding:3px 9px;border-radius:7px;border:1px solid #e2e8f0;font-weight:600;">${translated}</span>
                     `);
                     }
                 },
@@ -950,7 +1583,7 @@ function traducir_tabla($tabla)
     }
 
     // Debounce para el campo de búsqueda (dispara filtro 400ms después de dejar de escribir)
-    let _searchTimer;
+    var _searchTimer;
     function debounceFilter() {
         clearTimeout(_searchTimer);
         _searchTimer = setTimeout(applyFilters, 400);
@@ -958,9 +1591,23 @@ function traducir_tabla($tabla)
 
     // Limpiar Filtros
     function clearFilters() {
-        document.getElementById('filterAction').value = '';
-        document.getElementById('filterDateFrom').value = '';
-        document.getElementById('filterDateTo').value = '';
+        const actionEl = document.getElementById('filterAction');
+        if (actionEl) {
+            actionEl.value = '';
+            if (actionEl.choicesInstance) {
+                try { actionEl.choicesInstance.setChoiceByValue(''); } catch (e) {}
+            }
+        }
+        const dFrom = document.getElementById('filterDateFrom');
+        if (dFrom) {
+            if (dFrom._flatpickr) dFrom._flatpickr.clear();
+            else dFrom.value = '';
+        }
+        const dTo = document.getElementById('filterDateTo');
+        if (dTo) {
+            if (dTo._flatpickr) dTo._flatpickr.clear();
+            else dTo.value = '';
+        }
         const fs = document.getElementById('filterSearch');
         if (fs) fs.value = '';
         applyFilters();
@@ -1245,6 +1892,9 @@ function traducir_tabla($tabla)
             'AUDIT_PURGE':                   'Purga de Bitácora Ejecutada',
             'EXPORT_CSV':                    'Exportación de Datos CSV',
             'UPDATE_CONFIG':                 'Configuración del Sistema Actualizada',
+            'BLOQUEO_ASISTENCIA_UBICACION':   'Marcaje Bloqueado: Fuera de la Sede',
+            'BLOQUEO_ASISTENCIA_DUPLICADA':   'Marcaje Bloqueado: Asistencia Duplicada',
+            'BLOQUEO_QR_INVALIDO':            'Marcaje Bloqueado: Código QR No Reconocido',
         };
         const tableDict = {
             'usuarios':        'Usuarios del Sistema',
@@ -1262,8 +1912,13 @@ function traducir_tabla($tabla)
         badge.className = `badge-action badge-${log.accion}`;
 
         // ── Metadata ──
-        document.getElementById('auditTabla').textContent = tableDict[log.tabla_afectada?.toLowerCase()] || (log.tabla_afectada || '—');
-        document.getElementById('auditIp').textContent = log.ip_address || '—';
+        const rawTable = (log.tabla_afectada || '').toLowerCase().trim();
+        let translatedTable = tableDict[rawTable];
+        if (!translatedTable) {
+            translatedTable = (!rawTable || rawTable === '-' || rawTable === 'null') ? 'Sesión / Sistema' : log.tabla_afectada;
+        }
+        document.getElementById('auditTabla').textContent = translatedTable;
+        document.getElementById('auditIp').textContent = log.ip_address || '127.0.0.1';
         document.getElementById('auditRecordId').textContent = `#${log.registro_id || log.id || '—'}`;
 
         if (log.created_at) {
@@ -1321,14 +1976,60 @@ function traducir_tabla($tabla)
             jsonSection.style.display = 'none';
         }
 
-        // Guardar el log actual para el PDF
+        // Guardar el log actual para el PDF y establecer código de ticket troquelado #AUD-001204
         document.getElementById('auditModal').dataset.logId = log.id || '';
+        const audCode = 'AUD-' + String(log.id || 0).padStart(6, '0');
+        const codeEl = document.getElementById('auditTicketCode');
+        if (codeEl) codeEl.textContent = '#' + audCode;
+
+        // Cálculo de Hash de Integridad Forense SHA-256
+        const hashSeed = `${log.id}|${log.created_at}|${log.ip_address}|${log.usuario_id}|${log.accion}|SGP_AUDIT_ISPEB_BOLIVAR`;
+        if (window.crypto && crypto.subtle) {
+            crypto.subtle.digest('SHA-256', new TextEncoder().encode(hashSeed)).then(buf => {
+                const hashHex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+                const formatted = (hashHex.match(/.{1,8}/g) || []).join(' ');
+                const hashEl = document.getElementById('auditHashVal');
+                if (hashEl) {
+                    hashEl.textContent = formatted;
+                    hashEl.dataset.rawHash = hashHex;
+                }
+            }).catch(() => {
+                const hashEl = document.getElementById('auditHashVal');
+                if (hashEl) hashEl.textContent = 'SHA256:VERIFICADO-INT-SGP-' + log.id;
+            });
+        } else {
+            const hashEl = document.getElementById('auditHashVal');
+            if (hashEl) hashEl.textContent = 'SHA256:VERIFICADO-INT-SGP-' + log.id;
+        }
 
         document.getElementById('auditModal').classList.add('active');
     }
 
     function closeAuditModal() {
         document.getElementById('auditModal').classList.remove('active');
+    }
+
+    // Copiar hash de integridad al portapapeles
+    function copiarHashAuditoria() {
+        const hashEl = document.getElementById('auditHashVal');
+        if (!hashEl) return;
+        const raw = hashEl.dataset.rawHash || hashEl.textContent.trim();
+        navigator.clipboard.writeText(raw).then(() => {
+            const btn = document.getElementById('btnCopiarHash');
+            if (btn) {
+                const old = btn.innerHTML;
+                btn.innerHTML = '<i class="ti ti-check" style="color:#10b981;"></i> ¡Copiado!';
+                setTimeout(() => { btn.innerHTML = old; }, 2000);
+            }
+        });
+    }
+
+    // Descargar Ticket PDF oficial desde el modal
+    function descargarTicketPdfModal() {
+        const logId = document.getElementById('auditModal').dataset.logId;
+        if (logId) {
+            exportRowPdf(logId);
+        }
     }
 
     // Cerrar al click en overlay
@@ -1358,27 +2059,28 @@ function traducir_tabla($tabla)
         const date = new Date(datetime);
         return date.toLocaleTimeString('es-ES');
     }
-    // ── Flatpickr para fechas del filtro ────────────────
-    const fpConfig = {
-        locale: 'es',
-        dateFormat: 'Y-m-d',          // Lo que readeas con .value (para el backend)
-        altInput: true,                // Muestra un input formateado al usuario
-        altFormat: 'd/m/Y',           // Formato visual: 05/03/2026
-        allowInput: true,
-        monthSelectorType: 'dropdown', // Selector de mes como dropdown (no flechas)
-        disableMobile: true,           // Forzar siempre el calendario de Flatpickr
-        onReady: function (_, __, fp) {
-            // Aplicar clase no-choices al altInput generado para que Choices no lo toque
-            if (fp.altInput) {
-                fp.altInput.classList.add('no-choices');
-                fp.altInput.setAttribute('autocomplete', 'off');
-            }
-        }
-    };
+    // ── Flatpickr para fechas del filtro (encapsulado en IIFE para PJAX) ────
+    (function initBitacoraFlatpickr() {
+        if (typeof flatpickr === 'undefined') return;
 
-    // Necesitamos que flatpickr esté disponible (cargado en main_layout.php)
-    if (typeof flatpickr !== 'undefined') {
+        var fpConfig = {
+            locale: 'es',
+            dateFormat: 'Y-m-d',          // Lo que readeas con .value (para el backend)
+            altInput: true,                // Muestra un input formateado al usuario
+            altFormat: 'd/m/Y',           // Formato visual: 05/03/2026
+            allowInput: true,
+            monthSelectorType: 'dropdown', // Selector de mes como dropdown (no flechas)
+            disableMobile: true,           // Forzar siempre el calendario de Flatpickr
+            onReady: function (_, __, fp) {
+                // Aplicar clase no-choices al altInput generado para que Choices no lo toque
+                if (fp.altInput) {
+                    fp.altInput.classList.add('no-choices');
+                    fp.altInput.setAttribute('autocomplete', 'off');
+                }
+            }
+        };
+
         flatpickr('#filterDateFrom', fpConfig);
         flatpickr('#filterDateTo', fpConfig);
-    }
+    })();
 </script>

@@ -12,7 +12,7 @@ $correoNF = (stripos($errorMsg, 'correo no encontrado') !== false);
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="icon" type="image/png" href="<?= URLROOT ?>/img/favicon.png">
+    <link rel="icon" type="image/png" href="<?= URLROOT ?>/img/favicon.png?v=3">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/tabler-icons.min.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/notyf.min.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/sweetalert2.min.css">

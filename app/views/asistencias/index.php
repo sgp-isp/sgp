@@ -55,31 +55,168 @@ table.dataTable tbody tr:hover {
     transition: background-color 0.2s ease;
 }
 
-/* ── Responsividad Banner Asistencias ── */
+/* ── Responsividad Banner y Grids Asistencias (Patrón Usuarios/Pasantes) ── */
 .asist-banner-actions { display: flex; gap: 12px; align-items: center; z-index: 1; }
-@media (max-width: 768px) {
+@media (max-width: 991px) {
     .module-banner {
-        flex-wrap: wrap !important;
-        padding: 20px 18px !important;
-        gap: 16px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 24px 20px !important;
+        gap: 20px !important;
     }
     .module-banner > div:first-of-type { width: 100%; }
     .asist-banner-actions {
-        width: 100%; flex-wrap: wrap; gap: 8px;
+        width: 100%; flex-wrap: wrap; gap: 10px;
     }
     .asist-banner-actions button {
         flex: 1; min-width: 140px; justify-content: center;
     }
-    /* Stack de dos columnas diarias */
+    /* Stack de dos columnas diarias en pantalla dividida */
     .asist-diaria-grid {
         grid-template-columns: 1fr !important;
     }
-    /* KPIs 2x2 en tablet */
-    .asist-kpi-grid-4 { grid-template-columns: repeat(2,1fr) !important; }
+}
+
+/* ── KPI GRID TIPO EXÁMENES RÁPIDOS ── */
+.asist-kpi-grid-4 { 
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important; 
+    gap: 16px !important;
+    margin-bottom: 24px !important;
+}
+@media (max-width: 1100px) {
+    .asist-kpi-grid-4 { 
+        grid-template-columns: repeat(2, 1fr) !important; 
+        gap: 14px !important;
+    }
 }
 @media (max-width: 480px) {
-    .asist-kpi-grid-4 { grid-template-columns: 1fr !important; }
-    .module-banner h1 { font-size: 1.3rem !important; }
+    .asist-kpi-grid-4 { 
+        grid-template-columns: repeat(2, 1fr) !important; 
+        gap: 10px !important;
+    }
+    .module-banner h1 { font-size: 1.4rem !important; }
+    .asist-banner-actions button { width: 100%; }
+}
+
+.asist-kpi-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, .07);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
+    cursor: default;
+}
+.asist-kpi-card:hover { transform: translateY(-4px); }
+.asist-kpi-card::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    opacity: .07;
+    pointer-events: none;
+}
+.asist-kpi-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.asist-kpi-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; }
+.asist-kpi-val { font-size: 2.5rem; font-weight: 900; line-height: 1; margin-top: 2px; }
+.asist-kpi-sub { font-size: .74rem; color: #94a3b8; font-weight: 500; }
+.asist-kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+
+.asist-kpi-card.c-blue   { border-top: 3px solid #2563eb; } .asist-kpi-card.c-blue::after   { background: #2563eb; }
+.asist-kpi-card.c-green  { border-top: 3px solid #059669; } .asist-kpi-card.c-green::after  { background: #059669; }
+.asist-kpi-card.c-amber  { border-top: 3px solid #d97706; } .asist-kpi-card.c-amber::after  { background: #d97706; }
+.asist-kpi-card.c-red    { border-top: 3px solid #dc2626; } .asist-kpi-card.c-red::after    { background: #dc2626; }
+.asist-kpi-card.c-slate  { border-top: 3px solid #64748b; } .asist-kpi-card.c-slate::after  { background: #64748b; }
+
+.asist-kpi-card:hover.c-blue   { box-shadow: 0 12px 22px -6px rgba(37, 99, 235, .55) !important; }
+.asist-kpi-card:hover.c-green  { box-shadow: 0 12px 22px -6px rgba(5, 150, 105, .55) !important; }
+.asist-kpi-card:hover.c-amber  { box-shadow: 0 12px 22px -6px rgba(217, 119, 6, .55) !important; }
+.asist-kpi-card:hover.c-red    { box-shadow: 0 12px 22px -6px rgba(220, 38, 38, .55) !important; }
+.asist-kpi-card:hover.c-slate  { box-shadow: 0 12px 22px -6px rgba(100, 116, 139, .55) !important; }
+
+/* Responsive móvil */
+@media (max-width: 768px) {
+    .asist-kpi-card { padding: 16px 14px !important; border-radius: 16px !important; }
+    .asist-kpi-val  { font-size: 1.8rem !important; }
+    .asist-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
+}
+@media (max-width: 480px) {
+    .asist-kpi-card { padding: 14px 12px !important; }
+    .asist-kpi-val  { font-size: 1.6rem !important; }
+    .asist-kpi-label { font-size: 0.68rem !important; }
+    .asist-kpi-sub  { font-size: 0.68rem !important; }
+}
+
+/* Adaptación móvil: Tabla Sin Marcar Hoy */
+@media (max-width: 576px) {
+    .asist-card-sinmarcar .asist-sinmarcar-header {
+        padding: 14px 16px !important;
+    }
+    .asist-card-sinmarcar .asist-sinmarcar-header button {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    .asist-card-sinmarcar .btn-reg-manual {
+        padding: 6px 10px !important;
+        font-size: 0.76rem !important;
+        white-space: nowrap !important;
+    }
+    .asist-card-sinmarcar table {
+        min-width: 390px !important;
+    }
+}
+
+/* Modo oscuro */
+[data-theme="dark"] .asist-kpi-card {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .asist-kpi-card.c-blue   { border-top: 3px solid #3b82f6 !important; }
+[data-theme="dark"] .asist-kpi-card.c-green  { border-top: 3px solid #10b981 !important; }
+[data-theme="dark"] .asist-kpi-card.c-amber  { border-top: 3px solid #f59e0b !important; }
+[data-theme="dark"] .asist-kpi-card.c-red    { border-top: 3px solid #ef4444 !important; }
+[data-theme="dark"] .asist-kpi-card.c-slate  { border-top: 3px solid #94a3b8 !important; }
+
+[data-theme="dark"] .asist-kpi-card:hover.c-blue   { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(59, 130, 246, 0.5) !important; border-top-color: #60a5fa !important; }
+[data-theme="dark"] .asist-kpi-card:hover.c-green  { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(16, 185, 129, 0.5) !important; border-top-color: #34d399 !important; }
+[data-theme="dark"] .asist-kpi-card:hover.c-amber  { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(245, 158, 11, 0.5) !important; border-top-color: #fbbf24 !important; }
+[data-theme="dark"] .asist-kpi-card:hover.c-red    { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(239, 68, 68, 0.5) !important; border-top-color: #f87171 !important; }
+[data-theme="dark"] .asist-kpi-card:hover.c-slate  { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(148, 163, 184, 0.5) !important; border-top-color: #cbd5e1 !important; }
+
+[data-theme="dark"] .asist-kpi-val { color: #f8fafc !important; }
+[data-theme="dark"] .asist-kpi-label,
+[data-theme="dark"] .asist-kpi-sub { color: #94a3b8 !important; }
+
+/* ── Semanal: Adaptación ergonómica en pantalla dividida y móvil ── */
+@media (max-width: 991px) {
+    .sw-toolbar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+    .sw-toolbar-left, .sw-toolbar-right {
+        width: 100% !important;
+        justify-content: flex-start !important;
+    }
+    .sw-search {
+        flex: 1 1 200px !important;
+    }
+    .sw-search input {
+        width: 100% !important;
+        min-width: 160px !important;
+    }
+    .sw-nav-pill, .sw-fp-wrap {
+        flex-wrap: wrap !important;
+    }
 }
 </style>
 
@@ -125,7 +262,7 @@ table.dataTable tbody tr:hover {
                         $style = "background: rgba(255,255,255,0.10); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 50px; padding: 6px 16px; color: white; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s;";
                     }
                 ?>
-                <a href="<?= URLROOT ?>/asistencias?vista=<?= $f['key'] ?>" style="<?= $style ?>" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='<?= $isActive ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.10)' ?>'">
+                <a href="<?= URLROOT ?>/asistencias?vista=<?= $f['key'] ?>" class="asist-vista-chip pjax-link <?= $isActive ? 'active-chip' : '' ?>" style="<?= $style ?>" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='<?= $isActive ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.10)' ?>'">
                     <?= $f['label'] ?>
                 </a>
                 <?php endforeach; ?>
@@ -145,117 +282,117 @@ table.dataTable tbody tr:hover {
 
     <!-- ===== TARJETAS ESTADÍSTICAS (PREMIUM) ===== -->
     <?php if ($vistaActual === 'anual'): ?>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:20px;margin-bottom:32px;">
+        <div class="asist-kpi-grid-4">
             <!-- Histórico Total (Azul) -->
-            <div class="stat-card" style="background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.04);border-left:4px solid #3b82f6; transition: all 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.04)'">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="asist-kpi-card c-blue">
+                <div class="asist-kpi-top">
                     <div>
-                        <h2 style="font-size:2.2rem;font-weight:800;color:#3b82f6;margin:0;"><?= $historicoAnual ?></h2>
-                        <p style="color:#64748b;font-size:0.85rem;margin:4px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Pasantes Históricos</p>
-                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">registrados en este período</p>
+                        <div class="asist-kpi-label">Pasantes Históricos</div>
+                        <div class="asist-kpi-val" style="color:#2563eb;"><?= $historicoAnual ?></div>
+                        <div class="asist-kpi-sub">registrados en este período</div>
                     </div>
-                    <div style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
-                        <i class="ti ti-users" style="font-size:24px;color:#3b82f6;"></i>
+                    <div class="asist-kpi-icon" style="background:#eff6ff;">
+                        <i class="ti ti-users" style="color:#2563eb;"></i>
                     </div>
                 </div>
             </div>
             <!-- Finalizados (Verde) -->
-            <div class="stat-card" style="background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.04);border-left:4px solid #10b981; transition: all 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.04)'">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="asist-kpi-card c-green">
+                <div class="asist-kpi-top">
                     <div>
-                        <h2 style="font-size:2.2rem;font-weight:800;color:#10b981;margin:0;"><?= $finalizadosAnual ?></h2>
-                        <p style="color:#64748b;font-size:0.85rem;margin:4px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Finalizados</p>
-                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">culminaron carga horaria</p>
+                        <div class="asist-kpi-label">Finalizados</div>
+                        <div class="asist-kpi-val" style="color:#059669;"><?= $finalizadosAnual ?></div>
+                        <div class="asist-kpi-sub">culminaron carga horaria</div>
                     </div>
-                    <div style="background:linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
-                        <i class="ti ti-certificate" style="font-size:24px;color:#10b981;"></i>
+                    <div class="asist-kpi-icon" style="background:#ecfdf5;">
+                        <i class="ti ti-certificate" style="color:#059669;"></i>
                     </div>
                 </div>
             </div>
             <!-- En Curso (Ámbar) -->
-            <div class="stat-card" style="background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.04);border-left:4px solid #f59e0b; transition: all 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.04)'">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="asist-kpi-card c-amber">
+                <div class="asist-kpi-top">
                     <div>
-                        <h2 style="font-size:2.2rem;font-weight:800;color:#f59e0b;margin:0;"><?= $enCursoAnual ?></h2>
-                        <p style="color:#64748b;font-size:0.85rem;margin:4px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">En Curso</p>
-                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">acumulando horas</p>
+                        <div class="asist-kpi-label">En Curso</div>
+                        <div class="asist-kpi-val" style="color:#d97706;"><?= $enCursoAnual ?></div>
+                        <div class="asist-kpi-sub">acumulando horas</div>
                     </div>
-                    <div style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
-                        <i class="ti ti-progress-check" style="font-size:24px;color:#f59e0b;"></i>
+                    <div class="asist-kpi-icon" style="background:#fffbeb;">
+                        <i class="ti ti-progress-check" style="color:#d97706;"></i>
                     </div>
                 </div>
             </div>
             <!-- Retirados / Otros (Gris) -->
-            <div class="stat-card opacity-75" style="background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.04);border-left:4px solid #64748b; transition: all 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.04)'">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="asist-kpi-card c-slate">
+                <div class="asist-kpi-top">
                     <div>
-                        <h2 style="font-size:2.2rem;font-weight:800;color:#64748b;margin:0;"><?= $retiradosAnual ?></h2>
-                        <p style="color:#64748b;font-size:0.85rem;margin:4px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Retirados / Inactivos</p>
-                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">sin completar</p>
+                        <div class="asist-kpi-label">Retirados / Inactivos</div>
+                        <div class="asist-kpi-val" style="color:#64748b;"><?= $retiradosAnual ?></div>
+                        <div class="asist-kpi-sub">sin completar</div>
                     </div>
-                    <div style="background:linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
-                        <i class="ti ti-user-off" style="font-size:24px;color:#64748b;"></i>
+                    <div class="asist-kpi-icon" style="background:#f8fafc;">
+                        <i class="ti ti-user-off" style="color:#64748b;"></i>
                     </div>
                 </div>
             </div>
         </div>
     <?php else: ?>
-        <div class="asist-kpi-grid-4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:28px;">
+        <div class="asist-kpi-grid-4">
 
             <!-- Total Activos -->
-            <div class="stat-card" style="background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.04);border-left:4px solid #3b82f6; transition: all 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.04)'">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="asist-kpi-card c-blue">
+                <div class="asist-kpi-top">
                     <div>
-                        <h2 style="font-size:2.2rem;font-weight:800;color:#3b82f6;margin:0;" id="stat-total" data-kpi-value="<?= $totalActivos ?>">0</h2>
-                        <p style="color:#64748b;font-size:0.85rem;margin:4px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Activos</p>
-                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">pasantes asignados</p>
+                        <div class="asist-kpi-label">Activos</div>
+                        <div class="asist-kpi-val" style="color:#2563eb;" id="stat-total" data-kpi-value="<?= $totalActivos ?>">0</div>
+                        <div class="asist-kpi-sub">pasantes asignados</div>
                     </div>
-                    <div style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
-                        <i class="ti ti-users" style="font-size:24px;color:#3b82f6;"></i>
+                    <div class="asist-kpi-icon" style="background:#eff6ff;">
+                        <i class="ti ti-users" style="color:#2563eb;"></i>
                     </div>
                 </div>
             </div>
 
             <!-- Presentes -->
-            <div class="stat-card" style="background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.04);border-left:4px solid #10b981; transition: all 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.04)'">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="asist-kpi-card c-green">
+                <div class="asist-kpi-top">
                     <div>
-                        <h2 style="font-size:2.2rem;font-weight:800;color:#10b981;margin:0;" id="stat-presentes" data-kpi-value="<?= $presentes ?>">0</h2>
-                        <p style="color:#64748b;font-size:0.85rem;margin:4px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Presentes</p>
-                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">
-                            <span style="color:#10b981;font-weight:600;"><i class="ti ti-arrow-up-right"></i> <?= $totalActivos > 0 ? round($presentes / $totalActivos * 100) : 0 ?>%</span> asistencia
-                        </p>
+                        <div class="asist-kpi-label">Presentes</div>
+                        <div class="asist-kpi-val" style="color:#059669;" id="stat-presentes" data-kpi-value="<?= $presentes ?>">0</div>
+                        <div class="asist-kpi-sub">
+                            <span style="color:#059669;font-weight:600;"><i class="ti ti-arrow-up-right"></i> <?= $totalActivos > 0 ? round($presentes / $totalActivos * 100) : 0 ?>%</span> asistencia
+                        </div>
                     </div>
-                    <div style="background:linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
-                        <i class="ti ti-user-check" style="font-size:24px;color:#10b981;"></i>
+                    <div class="asist-kpi-icon" style="background:#ecfdf5;">
+                        <i class="ti ti-user-check" style="color:#059669;"></i>
                     </div>
                 </div>
             </div>
 
             <!-- Justificados -->
-            <div class="stat-card" style="background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.04);border-left:4px solid #f59e0b; transition: all 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.04)'">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="asist-kpi-card c-amber">
+                <div class="asist-kpi-top">
                     <div>
-                        <h2 style="font-size:2.2rem;font-weight:800;color:#f59e0b;margin:0;" id="stat-justificados" data-kpi-value="<?= $justificados ?>">0</h2>
-                        <p style="color:#64748b;font-size:0.85rem;margin:4px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Justificados</p>
-                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">con permiso / récipe</p>
+                        <div class="asist-kpi-label">Justificados</div>
+                        <div class="asist-kpi-val" style="color:#d97706;" id="stat-justificados" data-kpi-value="<?= $justificados ?>">0</div>
+                        <div class="asist-kpi-sub">con permiso / récipe</div>
                     </div>
-                    <div style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
-                        <i class="ti ti-clock-pause" style="font-size:24px;color:#f59e0b;"></i>
+                    <div class="asist-kpi-icon" style="background:#fffbeb;">
+                        <i class="ti ti-clock-pause" style="color:#d97706;"></i>
                     </div>
                 </div>
             </div>
 
             <!-- Sin Marcar / Ausentes -->
-            <div class="stat-card" style="background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.04);border-left:4px solid #ef4444; transition: all 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.04)'">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="asist-kpi-card c-red">
+                <div class="asist-kpi-top">
                     <div>
-                        <h2 style="font-size:2.2rem;font-weight:800;color:#ef4444;margin:0;" id="stat-ausentes" data-kpi-value="<?= $ausentes ?>">0</h2>
-                        <p style="color:#64748b;font-size:0.85rem;margin:4px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Sin Marcar</p>
-                        <p style="color:#94a3b8;font-size:0.75rem;margin:4px 0 0;">sin justificación</p>
+                        <div class="asist-kpi-label">Sin Marcar</div>
+                        <div class="asist-kpi-val" style="color:#dc2626;" id="stat-ausentes" data-kpi-value="<?= $ausentes ?>">0</div>
+                        <div class="asist-kpi-sub">sin justificación</div>
                     </div>
-                    <div style="background:linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
-                        <i class="ti ti-user-x" style="font-size:24px;color:#ef4444;"></i>
+                    <div class="asist-kpi-icon" style="background:#fee2e2;">
+                        <i class="ti ti-user-x" style="color:#dc2626;"></i>
                     </div>
                 </div>
             </div>
@@ -265,13 +402,13 @@ table.dataTable tbody tr:hover {
 
     <!-- ===== BANNER RECESO PERÍODO (VISTAS OPERACIONALES) ===== -->
     <?php if ($vistaActual !== 'anual' && !$hayPeriodoActivo): ?>
-    <div style="background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 22px 28px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 4px 15px -3px rgba(37,99,235,0.06);">
+    <div class="asist-banner-receso" style="background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 22px 28px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 4px 15px -3px rgba(37,99,235,0.06);">
         <div style="display: flex; align-items: center; gap: 16px;">
             <div style="width: 48px; height: 48px; border-radius: 12px; background: #dbeafe; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-size: 1.5rem; flex-shrink: 0;">
                 <i class="ti ti-calendar-off"></i>
             </div>
             <div>
-                <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #1e3a8a;">Período Académico en Receso o Cerrado</h4>
+                <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #1e293b;">Período Académico en Receso o Cerrado</h4>
                 <p style="margin: 4px 0 0; font-size: 0.85rem; color: #475569; line-height: 1.4;">
                     Actualmente no hay un período académico activo con pasantes en curso. Puedes consultar el historial completo de cohortes anteriores en la vista Total.
                 </p>
@@ -281,7 +418,7 @@ table.dataTable tbody tr:hover {
             <a href="<?= URLROOT ?>/asistencias?vista=anual" style="background: #1d4ed8; color: white; padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(29,78,216,0.25);">
                 <i class="ti ti-history"></i> Ver Histórico Total
             </a>
-            <a href="<?= URLROOT ?>/periodos" style="background: white; color: #1e293b; border: 1px solid #cbd5e1; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            <a href="<?= URLROOT ?>/periodos" class="asist-btn-receso-periodos" style="background: white; color: #1e293b; border: 1px solid #cbd5e1; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                 <i class="ti ti-calendar-plus"></i> Gestionar Períodos
             </a>
         </div>
@@ -295,7 +432,7 @@ table.dataTable tbody tr:hover {
             <div class="asist-diaria-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
 
         <!-- Marcaron Hoy -->
-        <div style="background: white; border-radius: 18px; box-shadow: 0 10px 25px -5px rgba(15,23,42,0.05); overflow: hidden; margin-bottom: 24px; border: 1px solid #e2e8f0; border-top: 4px solid #10b981; transition: all 0.3s ease;">
+        <div class="asist-card-diaria asist-card-marcaron" style="background: white; border-radius: 18px; box-shadow: 0 10px 25px -5px rgba(15,23,42,0.05); overflow: hidden; margin-bottom: 24px; border: 1px solid #e2e8f0; border-top: 4px solid #10b981; transition: all 0.3s ease;">
             <div style="padding: 20px 24px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <h3 style="font-size:1rem;font-weight:800;color:#1e293b;margin:0; display:flex; align-items:center; letter-spacing: 0.3px;">
                     <i class="ti ti-check" style="color: #10b981; margin-right: 8px; font-size: 1.3rem;"></i> Marcaron Hoy
@@ -313,15 +450,20 @@ table.dataTable tbody tr:hover {
                 </p>
             </div>
             <?php else: ?>
-            <div style="overflow-x:auto;max-height:380px;overflow-y:auto; scrollbar-width: thin;">
-                <table style="width: 100%; border-collapse: collapse;">
+            <div style="overflow-x:hidden;max-height:380px;overflow-y:auto; scrollbar-width: thin;">
+                <table style="width: 100%; table-layout: fixed; border-collapse: collapse;">
+                    <colgroup>
+                        <col style="width: 42%;">
+                        <col style="width: 24%;">
+                        <col style="width: 20%;">
+                        <col style="width: 14%;">
+                    </colgroup>
                     <thead style="position:sticky;top:0;z-index:10;">
                         <tr>
-                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 14px 24px; text-align: left; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Pasante</th>
-                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 14px 24px; text-align: left; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Hora</th>
-                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 14px 24px; text-align: left; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Método</th>
-                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 14px 24px; text-align: left; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Estado</th>
-                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 14px 24px; text-align: center; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Acción</th>
+                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 12px 14px; text-align: left; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Pasante</th>
+                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 12px 14px; text-align: left; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Registro</th>
+                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 12px 14px; text-align: left; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Estado</th>
+                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 12px 14px; text-align: center; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -331,54 +473,58 @@ table.dataTable tbody tr:hover {
                         $iniciales = strtoupper(substr($r->nombres ?? '?', 0, 1) . substr($r->apellidos ?? '', 0, 1));
                     ?>
                     <tr style="transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-                        <td style="padding: 16px 24px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.9rem; vertical-align: middle;">
-                            <div style="display:flex;align-items:center;gap:12px;">
-                                <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#162660,#2563eb);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:0.8rem;flex-shrink:0; box-shadow: 0 2px 4px rgba(37,99,235,0.2);">
-                                    <?= htmlspecialchars($iniciales) ?>
-                                </div>
-                                <div>
-                                    <div style="font-weight:700;color:#1e293b;font-size:0.88rem;"><?= htmlspecialchars($nombre) ?></div>
-                                    <div style="color:#64748b;font-size:0.75rem; font-weight: 500;"><?= htmlspecialchars($r->cedula ?? '—') ?></div>
+                        <td style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.88rem; vertical-align: middle;">
+                            <div class="dt-name-cell">
+                                <div class="dt-avatar av-emerald"><?= htmlspecialchars($iniciales) ?></div>
+                                <div style="min-width:0;overflow:hidden;flex:1;">
+                                    <div class="dt-cell-primary text-truncate" title="<?= htmlspecialchars($nombre) ?>"><?= htmlspecialchars($nombre) ?></div>
+                                    <div class="dt-cell-sub">
+                                        <span class="dt-cedula-badge"><i class="ti ti-id"></i> <?= htmlspecialchars($r->cedula ?? '—') ?></span>
+                                    </div>
                                 </div>
                             </div>
                         </td>
-                        <td style="padding: 16px 24px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.9rem; vertical-align: middle; font-weight:700;">
-                            <i class="ti ti-clock" style="color: #94a3b8; margin-right: 4px;"></i> <?= ($r->hora_registro && $r->hora_registro !== '00:00:00') ? date('h:i A', strtotime($r->hora_registro)) : '—' ?>
-                        </td>
-                        <td style="padding: 16px 24px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.9rem; vertical-align: middle;">
+                        <td style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.84rem; vertical-align: middle;">
+                            <div style="font-weight:700;color:#1e293b;display:flex;align-items:center;gap:4px;">
+                                <i class="ti ti-clock" style="color: #64748b; font-size: 0.9rem;"></i> <?= ($r->hora_registro && $r->hora_registro !== '00:00:00') ? date('h:i A', strtotime($r->hora_registro)) : '—' ?>
+                            </div>
                             <?php if ($r->metodo): ?>
-                            <span style="background:#f1f5f9;color:#475569;padding:4px 10px;border-radius:6px;font-size:0.75rem;font-weight:700; border: 1px solid #e2e8f0; display: inline-flex; align-items: center; gap: 4px;">
-                                <i class="ti ti-device-desktop"></i> <?= htmlspecialchars($r->metodo) ?>
-                            </span>
-                            <?php else: ?>—<?php endif; ?>
+                            <div style="margin-top:2px;">
+                                <span style="background:#f1f5f9;color:#475569;padding:2px 6px;border-radius:5px;font-size:0.7rem;font-weight:700; border: 1px solid #e2e8f0; display: inline-flex; align-items: center; gap: 3px;">
+                                    <i class="ti ti-device-desktop" style="font-size:0.7rem;"></i> <?= htmlspecialchars($r->metodo) ?>
+                                </span>
+                            </div>
+                            <?php endif; ?>
                         </td>
-                        <td style="padding: 16px 24px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.9rem; vertical-align: middle;">
-                            <div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                                <span style="background:<?= $cfg['bg'] ?>;color:<?= $cfg['color'] ?>;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:800;display:inline-flex;align-items:center;gap:4px;">
-                                    <i class="ti <?= $cfg['icon'] ?>"></i> <?= htmlspecialchars($r->estado) ?>
+                        <td style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.85rem; vertical-align: middle;">
+                            <div style="display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;">
+                                <span style="background:<?= $cfg['bg'] ?>;color:<?= $cfg['color'] ?>;padding:3px 8px;border-radius:20px;font-size:0.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;">
+                                    <i class="ti <?= $cfg['icon'] ?>" style="font-size:0.75rem;"></i> <?= htmlspecialchars($r->estado) ?>
                                 </span>
                                 <?php if ($r->estado === 'Presente' && (int)($r->es_retardo ?? 0) === 1): ?>
-                                <span style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;padding:3px 8px;border-radius:20px;font-size:0.7rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;">
-                                    <i class="ti ti-clock-exclamation"></i> Retardo
+                                <span style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;padding:2px 6px;border-radius:20px;font-size:0.68rem;font-weight:800;display:inline-flex;align-items:center;gap:2px;">
+                                    <i class="ti ti-clock-exclamation" style="font-size:0.7rem;"></i> Retardo
                                 </span>
                                 <?php endif; ?>
                             </div>
                         </td>
-                        <td style="padding: 16px 24px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.9rem; vertical-align: middle; text-align:center;">
-                            <button onclick="verDetalle(<?= (int)$r->id ?>,<?= htmlspecialchars(json_encode([
-                                'nombre'     => $nombre,
-                                'cedula'     => $r->cedula ?? '—',
-                                'depto'      => $r->departamento_nombre ?? '—',
-                                'hora'       => $r->hora_registro ? date('h:i A', strtotime($r->hora_registro)) : '—',
-                                'metodo'     => $r->metodo ?? '—',
-                                'estado'     => $r->estado,
-                                'motivo'     => $r->motivo_justificacion ?? '',
-                                'pasante_id' => (int)($r->pasante_id ?? 0)
-                            ]), ENT_QUOTES) ?>)"
-                                style="background: #f8fafc; color: #3b82f6; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#bfdbfe';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#e2e8f0';"
-                                title="Ver detalle">
-                                <i class="ti ti-eye"></i> Ver
-                            </button>
+                        <td style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.85rem; vertical-align: middle; text-align:center;">
+                            <div class="sgp-action-capsule">
+                                <button type="button" onclick="verDetalle(<?= (int)$r->id ?>,<?= htmlspecialchars(json_encode([
+                                    'nombre'     => $nombre,
+                                    'cedula'     => $r->cedula ?? '—',
+                                    'depto'      => $r->departamento_nombre ?? '—',
+                                    'hora'       => $r->hora_registro ? date('h:i A', strtotime($r->hora_registro)) : '—',
+                                    'metodo'     => $r->metodo ?? '—',
+                                    'estado'     => $r->estado,
+                                    'motivo'     => $r->motivo_justificacion ?? '',
+                                    'pasante_id' => (int)($r->pasante_id ?? 0)
+                                ]), ENT_QUOTES) ?>)"
+                                    class="sgp-act-btn act-blue"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver detalle del registro">
+                                    <i class="ti ti-eye"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -389,8 +535,8 @@ table.dataTable tbody tr:hover {
         </div>
 
         <!-- Sin Marcar Hoy -->
-        <div style="background: white; border-radius: 18px; box-shadow: 0 10px 25px -5px rgba(15,23,42,0.05); overflow: hidden; margin-bottom: 24px; border: 1px solid #e2e8f0; border-top: 4px solid #ef4444; transition: all 0.3s ease;">
-            <div style="padding: 20px 24px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div class="asist-card-diaria asist-card-sinmarcar" style="background: white; border-radius: 18px; box-shadow: 0 10px 25px -5px rgba(15,23,42,0.05); overflow: hidden; margin-bottom: 24px; border: 1px solid #e2e8f0; border-top: 4px solid #ef4444; transition: all 0.3s ease;">
+            <div class="asist-sinmarcar-header" style="padding: 20px 24px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <h3 style="font-size:1rem;font-weight:800;color:#1e293b;margin:0; display:flex; align-items:center; letter-spacing: 0.3px;">
                         <i class="ti ti-alert-circle" style="color: #ef4444; margin-right: 8px; font-size: 1.3rem;"></i> Sin Marcar Hoy
@@ -440,13 +586,18 @@ table.dataTable tbody tr:hover {
                 </div>
                 <?php endif; ?>
             <?php else: ?>
-            <div style="overflow-x:auto;max-height:380px;overflow-y:auto; scrollbar-width: thin;">
-                <table style="width: 100%; border-collapse: collapse;">
+            <div class="asist-sinmarcar-table-wrapper" style="overflow-x:auto; -webkit-overflow-scrolling: touch; max-height:380px; overflow-y:auto; scrollbar-width: thin;">
+                <table style="width: 100%; min-width: 410px; border-collapse: collapse;">
+                    <colgroup>
+                        <col style="width: 44%; min-width: 150px;">
+                        <col style="width: 30%; min-width: 120px;">
+                        <col style="width: 26%; min-width: 110px;">
+                    </colgroup>
                     <thead style="position:sticky;top:0;z-index:10;">
                         <tr>
-                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 14px 24px; text-align: left; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Pasante</th>
-                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 14px 24px; text-align: left; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Departamento</th>
-                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 14px 24px; text-align: center; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Acción</th>
+                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 12px 14px; text-align: left; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Pasante</th>
+                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 12px 14px; text-align: left; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Departamento</th>
+                            <th style="text-transform: uppercase; font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 12px 14px; text-align: center; background: #f8fafc; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px;">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -455,31 +606,33 @@ table.dataTable tbody tr:hover {
                         $iniciales = strtoupper(substr($p->nombres ?? '?', 0, 1) . substr($p->apellidos ?? '', 0, 1));
                     ?>
                     <tr style="transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-                        <td style="padding: 16px 24px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.9rem; vertical-align: middle;">
-                            <div style="display:flex;align-items:center;gap:12px;">
-                                <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#ef4444,#b91c1c);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:0.8rem;flex-shrink:0; box-shadow: 0 2px 4px rgba(239,68,68,0.2);">
-                                    <?= htmlspecialchars($iniciales) ?>
-                                </div>
-                                <div>
-                                    <div style="font-weight:700;color:#1e293b;font-size:0.88rem;"><?= htmlspecialchars($nombre) ?></div>
-                                    <div style="color:#64748b;font-size:0.75rem; font-weight: 500;"><?= htmlspecialchars($p->cedula ?? '—') ?></div>
+                        <td style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.88rem; vertical-align: middle;">
+                            <div class="dt-name-cell">
+                                <div class="dt-avatar" style="background: linear-gradient(135deg,#dc2626,#ef4444);"><?= htmlspecialchars($iniciales) ?></div>
+                                <div style="min-width:0;overflow:hidden;flex:1;">
+                                    <div class="dt-cell-primary text-truncate" title="<?= htmlspecialchars($nombre) ?>"><?= htmlspecialchars($nombre) ?></div>
+                                    <div class="dt-cell-sub">
+                                        <span class="dt-cedula-badge"><i class="ti ti-id"></i> <?= htmlspecialchars($p->cedula ?? '—') ?></span>
+                                    </div>
                                 </div>
                             </div>
                         </td>
-                        <td style="padding: 16px 24px; border-bottom: 1px solid #f1f5f9; color: #475569; font-size: 0.85rem; vertical-align: middle; font-weight: 600;">
-                            <i class="ti ti-building-community" style="color: #94a3b8; margin-right: 4px;"></i> <?= htmlspecialchars($p->departamento_nombre ?? 'Sin asignar') ?>
+                        <td style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: #475569; font-size: 0.84rem; vertical-align: middle; font-weight: 600;">
+                            <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= htmlspecialchars($p->departamento_nombre ?? 'Sin asignar') ?>">
+                                <i class="ti ti-building-community" style="color: #94a3b8; margin-right: 4px;"></i> <?= htmlspecialchars($p->departamento_nombre ?? 'Sin asignar') ?>
+                            </div>
                         </td>
-                        <td style="padding: 16px 24px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.9rem; vertical-align: middle; text-align:center;">
+                        <td style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.85rem; vertical-align: middle; text-align:center; white-space: nowrap;">
                         <?php if ($esHabilHoy): ?>
-                            <button onclick="abrirModalManual(<?= (int)$p->id ?>, '<?= addslashes($nombre) ?>')"
-                                style="background: #f8fafc; color: #3b82f6; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#bfdbfe';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#e2e8f0';"
-                                title="Registrar manualmente">
+                            <button type="button" class="btn-reg-manual" onclick="abrirModalManual(<?= (int)$p->id ?>, '<?= addslashes($nombre) ?>')"
+                                style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;" onmouseover="this.style.background='#dbeafe';" onmouseout="this.style.background='#eff6ff';"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar asistencia manual">
                                 <i class="ti ti-plus"></i> Registrar
                             </button>
                         <?php else: ?>
-                            <button disabled title="<?= htmlspecialchars($motivoNoHabilHoy) ?>"
-                                style="background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;padding:6px 14px;border-radius:8px;font-weight:700;font-size:0.8rem;cursor:not-allowed;display:inline-flex;align-items:center;gap:4px;">
-                                <i class="ti ti-ban"></i> No disponible
+                            <button type="button" disabled title="<?= htmlspecialchars($motivoNoHabilHoy) ?>"
+                                style="background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;padding:6px 10px;border-radius:8px;font-weight:700;font-size:0.78rem;cursor:not-allowed;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap;">
+                                <i class="ti ti-ban"></i> Feriado
                             </button>
                         <?php endif; ?>
                         </td>
@@ -2127,8 +2280,8 @@ function menFiltrarLista(listId, dep) {
 }
 
 /* ── Filtros para Tarjetas (Retardos y Top) ── */
-let currentTopPage = 0;
-const PAGE_SIZE = 5;
+var currentTopPage = 0;
+var PAGE_SIZE = 5;
 
 window.menFiltrarRetardos = function(btn) {
     document.querySelectorAll('#menRetardoPills .men-filter-pill').forEach(p => p.classList.remove('active'));
@@ -3027,14 +3180,117 @@ window.menMarcarMasivoConConfirmacion = async function(estado) {
             }
             ?>
             <div class="muro-premium">
+                <style>
+                    .asist-total-toolbar {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-end;
+                        margin-bottom: 28px;
+                        flex-wrap: wrap;
+                        gap: 20px;
+                    }
+                    .asist-total-left {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
+                        flex: 1 1 auto;
+                    }
+                    .asist-total-nav-row {
+                        display: flex;
+                        gap: 12px;
+                        align-items: center;
+                        flex-wrap: wrap;
+                    }
+                    .asist-total-actions-row {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        flex-wrap: wrap;
+                    }
+                    @media (max-width: 1100px) {
+                        .asist-total-toolbar {
+                            flex-direction: column;
+                            align-items: stretch;
+                        }
+                        .asist-total-actions-row {
+                            width: 100%;
+                            justify-content: flex-start;
+                        }
+                        .asist-total-search-box {
+                            flex: 1 1 260px;
+                        }
+                    }
+                    @media (max-width: 640px) {
+                        .asist-total-nav-row {
+                            flex-direction: column;
+                            align-items: stretch;
+                            gap: 10px;
+                        }
+                        .asist-total-nav-row .sw-nav-pill {
+                            width: 100%;
+                            justify-content: space-between;
+                        }
+                        #muroChipRow {
+                            width: 100%;
+                            display: flex !important;
+                            justify-content: space-between;
+                        }
+                        #muroChipRow button {
+                            flex: 1;
+                            justify-content: center;
+                            padding: 6px 6px !important;
+                            font-size: 0.72rem !important;
+                        }
+                        .asist-total-actions-row {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 10px;
+                            width: 100%;
+                        }
+                        .asist-total-search-box {
+                            grid-column: 1 / -1;
+                            width: 100% !important;
+                        }
+                        .asist-total-actions-row .btn-p-soft {
+                            width: 100%;
+                            justify-content: center;
+                        }
+                    }
+                    [data-theme="dark"] #muroChipRow {
+                        background: #0d1526 !important;
+                        border-color: #2a3b5c !important;
+                    }
+                    [data-theme="dark"] #muroChipRow button:not([style*="linear-gradient"]) {
+                        color: #94a3b8 !important;
+                    }
+                    [data-theme="dark"] .sw-nav-pill {
+                        background: #111a2e !important;
+                        border-color: #2a3b5c !important;
+                    }
+                    [data-theme="dark"] .sw-nav-label {
+                        color: #f8fafc !important;
+                    }
+                    [data-theme="dark"] .sw-nav-btn {
+                        color: #94a3b8 !important;
+                    }
+                    [data-theme="dark"] .sw-nav-btn:hover {
+                        background: #1e293b !important;
+                        color: #f8fafc !important;
+                    }
+                    [data-theme="dark"] #buscadorTablaTotal {
+                        background: #111a2e !important;
+                        color: #f8fafc !important;
+                        border-color: #2a3b5c !important;
+                    }
+                </style>
                 <!-- Header / Navigation -->
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; flex-wrap: wrap; gap: 20px;">
-                    <div>
-                        <h3 style="margin: 0 0 12px 0; color: var(--p-ink); font-weight: 800; font-size: 1.4rem; display: flex; align-items: center; gap: 10px;">
+                <div class="asist-total-toolbar">
+                    <div class="asist-total-left">
+                        <h3 style="margin: 0; color: var(--p-ink); font-weight: 800; font-size: 1.4rem; display: flex; align-items: center; gap: 10px;">
                             <i class="ti ti-chart-dots" style="color: var(--p-blue); font-size: 1.6rem;"></i> 
                             Histórico Total <span style="color: var(--p-ink-4); font-weight: 300;">/</span> <?= htmlspecialchars($tituloVista) ?>
                         </h3>
-                        <div style="display: flex; gap: 12px; align-items: center;">
+                        <div class="asist-total-nav-row">
                             <!-- Navegador de Período -->
                             <div class="sw-nav-pill">
                                 <?= $btnAnt ?>
@@ -3068,18 +3324,29 @@ window.menMarcarMasivoConConfirmacion = async function(estado) {
                                            background:transparent;color:#475569;">
                                     <i class="ti ti-certificate" style="font-size:.85rem;"></i> Finalizados (<?= $finalizadosAnual ?>)
                                 </button>
+                                <a href="<?= URLROOT ?>/users/egresados"
+                                    style="display:inline-flex;align-items:center;gap:5px;padding:5px 14px;
+                                           border-radius:24px;border:none;cursor:pointer;font-size:.78rem;
+                                           font-weight:700;font-family:inherit;text-decoration:none;transition:all .2s;
+                                           background:transparent;color:#475569;"
+                                    title="Ver archivo de pasantes egresados con cohorte cerrada">
+                                    <i class="ti ti-school" style="font-size:.85rem;color:#2563eb;"></i> Egresados <?= isset($totalEgresados) && $totalEgresados > 0 ? '('.$totalEgresados.')' : '' ?>
+                                </a>
                             </div>
                         </div>
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <button class="btn btn-p-soft btn-soft-pdf" onclick="openPreview('<?= URLROOT ?>/reportes/pdfNomina?download=0')" style="height: 42px; padding: 0 20px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
+                    <div class="asist-total-actions-row">
+                        <a href="<?= URLROOT ?>/users/egresados" class="btn btn-p-soft" style="height: 42px; padding: 0 18px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; background: #eff6ff; color: #1d4ed8; border: 1.5px solid #bfdbfe; font-weight: 700; transition: all .2s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'" title="Consultar archivo de pasantes egresados">
+                            <i class="ti ti-school" style="font-size: 1.1rem; color: #2563eb;"></i> Egresados <?= isset($totalEgresados) && $totalEgresados > 0 ? '('.$totalEgresados.')' : '' ?>
+                        </a>
+                        <button class="btn btn-p-soft btn-soft-pdf" onclick="openPreview('<?= URLROOT ?>/reportes/pdfNomina?download=0')" style="height: 42px; padding: 0 18px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px;">
                             <i class="ti ti-file-type-pdf" style="font-size: 1.1rem;"></i> PDF Global
                         </button>
-                        <button class="btn btn-p-soft btn-soft-excel" onclick="window.location.href='<?= URLROOT ?>/reportes/excelAnual'" style="height: 42px; padding: 0 20px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
+                        <button class="btn btn-p-soft btn-soft-excel" onclick="window.location.href='<?= URLROOT ?>/reportes/excelAnual'" style="height: 42px; padding: 0 18px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px;">
                             <i class="ti ti-file-type-xls" style="font-size: 1.1rem;"></i> Excel Anual
                         </button>
-                        <div style="position: relative; width: 300px;">
+                        <div class="asist-total-search-box" style="position: relative; width: 280px;">
                             <i class="ti ti-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--p-blue); font-size: 1.2rem; z-index: 2;"></i>
                             <input type="text" id="buscadorTablaTotal" oninput="searchMuro()" placeholder="Buscar por nombre o CI..." 
                                    style="width: 100%; height: 42px; padding: 0 16px 0 48px; border: 1.5px solid var(--p-border); border-radius: 50px; background: white; color: var(--p-ink); font-weight: 600; font-size: 0.88rem; outline: none; transition: all 0.2s; box-shadow: var(--p-shadow);"
@@ -5417,8 +5684,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* ── Tooltip personalizado ────────────────────────────────────── */
-    const _hmTip = document.getElementById('hm-tooltip');
+    /* ── Tooltip personalizado (var para compatibilidad PJAX) ──── */
+    var _hmTip = document.getElementById('hm-tooltip');
     function _hmShowTip(e, html) {
         _hmTip.innerHTML = html;
         _hmTip.classList.add('visible');

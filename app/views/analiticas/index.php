@@ -175,11 +175,16 @@ $metricas  = [
 .trend-down { background: #fee2e2; color: #dc2626; }
 .trend-neu  { background: #f1f5f9; color: #64748b; }
 
-/* Accent lines */
+/* Accent lines & Chromatic hover glow */
 .accent-green  { border-left: 4px solid #22c55e; }
-.accent-blue   { border-left: 4px solid #162660; }
+.accent-blue   { border-left: 4px solid #2563eb; }
 .accent-amber  { border-left: 4px solid #f59e0b; }
 .accent-indigo { border-left: 4px solid #6366f1; }
+
+.bento-card.accent-green:hover  { box-shadow: 0 12px 20px -8px rgba(34, 197, 94, 0.5) !important; }
+.bento-card.accent-blue:hover   { box-shadow: 0 12px 20px -8px rgba(37, 99, 235, 0.5) !important; }
+.bento-card.accent-indigo:hover { box-shadow: 0 12px 20px -8px rgba(99, 102, 241, 0.5) !important; }
+.bento-card.accent-amber:hover  { box-shadow: 0 12px 20px -8px rgba(245, 158, 11, 0.5) !important; }
 
 /* ── CARD HEADER ──────────────────────────────────── */
 .bento-card-header {
@@ -318,8 +323,93 @@ $metricas  = [
 @media (max-width: 1400px) {
     .b-span-3 { grid-column: span 6; }
 }
-@media (max-width: 900px) {
-    .b-span-3, .b-span-4, .b-span-5, .b-span-7, .b-span-8 { grid-column: span 12; }
+@media (max-width: 991px) {
+    .b-span-4, .b-span-5, .b-span-7, .b-span-8 { grid-column: span 12; }
+}
+
+/* ── KPI GRID TIPO EXÁMENES RÁPIDOS ───────────────── */
+.an-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.an-kpi-card {
+    background: white;
+    border-radius: 18px;
+    padding: 20px 22px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
+    cursor: default;
+}
+.an-kpi-card:hover { transform: translateY(-4px); }
+.an-kpi-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.an-kpi-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+.an-kpi-val { font-size: 2.2rem; font-weight: 800; line-height: 1; margin-top: 2px; }
+.an-kpi-trend { font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; padding: 2px 8px; width: fit-content; margin-top: 2px; }
+.an-kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+
+.an-kpi-card::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    opacity: .07;
+    pointer-events: none;
+}
+
+.an-kpi-card.accent-green  { border-top: 3px solid #16a34a; } .an-kpi-card.accent-green::after  { background: #16a34a; }
+.an-kpi-card.accent-blue   { border-top: 3px solid #2563eb; } .an-kpi-card.accent-blue::after   { background: #2563eb; }
+.an-kpi-card.accent-indigo { border-top: 3px solid #6366f1; } .an-kpi-card.accent-indigo::after { background: #6366f1; }
+.an-kpi-card.accent-amber  { border-top: 3px solid #f59e0b; } .an-kpi-card.accent-amber::after  { background: #f59e0b; }
+
+.an-kpi-card.accent-green:hover  { box-shadow: 0 12px 22px -6px rgba(22, 163, 74, 0.55) !important; }
+.an-kpi-card.accent-blue:hover   { box-shadow: 0 12px 22px -6px rgba(37, 99, 235, 0.55) !important; }
+.an-kpi-card.accent-indigo:hover { box-shadow: 0 12px 22px -6px rgba(99, 102, 241, 0.55) !important; }
+.an-kpi-card.accent-amber:hover  { box-shadow: 0 12px 22px -6px rgba(245, 158, 11, 0.55) !important; }
+
+/* Modo oscuro */
+[data-theme="dark"] .an-kpi-card {
+    background-color: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .an-kpi-card.accent-green  { border-top: 3px solid #10b981 !important; }
+[data-theme="dark"] .an-kpi-card.accent-blue   { border-top: 3px solid #3b82f6 !important; }
+[data-theme="dark"] .an-kpi-card.accent-indigo { border-top: 3px solid #818cf8 !important; }
+[data-theme="dark"] .an-kpi-card.accent-amber  { border-top: 3px solid #f59e0b !important; }
+
+[data-theme="dark"] .an-kpi-card:hover.accent-green  { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(16, 185, 129, 0.5) !important; border-top-color: #34d399 !important; }
+[data-theme="dark"] .an-kpi-card:hover.accent-blue   { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(59, 130, 246, 0.5) !important; border-top-color: #60a5fa !important; }
+[data-theme="dark"] .an-kpi-card:hover.accent-indigo { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(99, 102, 241, 0.5) !important; border-top-color: #a5b4fc !important; }
+[data-theme="dark"] .an-kpi-card:hover.accent-amber  { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(245, 158, 11, 0.5) !important; border-top-color: #fbbf24 !important; }
+
+[data-theme="dark"] .an-kpi-val { color: #f8fafc !important; }
+[data-theme="dark"] .an-kpi-label { color: #94a3b8 !important; }
+
+@media (max-width: 1100px) {
+    .an-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 767px) {
+    .an-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; margin-bottom: 20px !important; }
+    .an-kpi-card { padding: 16px 14px !important; border-radius: 16px !important; }
+    .an-kpi-val { font-size: 1.8rem !important; }
+    .an-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
+}
+@media (max-width: 480px) {
+    .an-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+    .an-kpi-card { padding: 14px 12px !important; }
+    .an-kpi-val { font-size: 1.6rem !important; }
+    .an-kpi-label { font-size: 0.68rem !important; }
+    .an-kpi-trend { font-size: 0.65rem !important; }
 }
 </style>
 
@@ -331,8 +421,9 @@ $metricas  = [
         .dashboard-banner {
             flex-direction: column !important;
             align-items: flex-start !important;
-            padding: 24px 20px !important;
-            gap: 20px !important;
+            padding: 20px 18px !important;
+            gap: 16px !important;
+            border-radius: 18px !important;
         }
         .dashboard-banner > div:first-child, .dashboard-banner > div:nth-child(2) {
             display: none !important;
@@ -342,19 +433,37 @@ $metricas  = [
             text-align: left !important;
         }
     }
+    @media (max-width: 480px) {
+        .dashboard-banner {
+            padding: 18px 16px !important;
+            border-radius: 18px !important;
+            margin-bottom: 20px !important;
+            gap: 14px !important;
+        }
+        .dashboard-banner h1 {
+            font-size: 1.4rem !important;
+        }
+        .dashboard-banner p {
+            font-size: 0.82rem !important;
+        }
+    [data-theme="dark"] .dashboard-banner {
+        background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%) !important;
+        border: 1px solid #1e293b !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+    }
     </style>
-    <div class="dashboard-banner" style="background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);border-radius:24px;padding:40px;margin-bottom:32px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;box-shadow: 0 10px 30px rgba(23,37,84,0.15);">
-        <div style="position:absolute;top:-40px;right:-40px;width:220px;height:220px;background:rgba(255,255,255,0.05);border-radius:50%;"></div>
-        <div style="position:absolute;bottom:-50px;left:-30px;width:180px;height:180px;background:rgba(255,255,255,0.04);border-radius:50%;"></div>
-        <div style="display:flex;align-items:center;gap:16px;z-index:1;">
-            <div style="background:rgba(255,255,255,0.15);border-radius:16px;padding:14px;">
-                <i class="ti ti-chart-dots-3" style="font-size:34px;color:white;"></i>
+    <div class="dashboard-banner" style="background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--gradient-mid, #1e3a8a) 50%,var(--color-accent-brand, #2563eb) 100%);border-radius:20px;padding:32px 36px;margin-bottom:28px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;box-shadow: 0 8px 32px rgba(15,23,42,0.35);">
+        <div style="position:absolute;top:-40px;right:-40px;width:220px;height:220px;background:radial-gradient(circle,rgba(255,255,255,.12) 0%,rgba(255,255,255,0) 70%);border-radius:50%;pointer-events:none;"></div>
+        <div style="position:absolute;bottom:-50px;left:-30px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,255,255,.07) 0%,rgba(255,255,255,0) 70%);border-radius:50%;pointer-events:none;"></div>
+        <div style="display:flex;align-items:center;gap:18px;z-index:1;">
+            <div style="background:rgba(255,255,255,0.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.25);border-radius:16px;width:58px;height:58px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="ti ti-chart-dots-3" style="font-size:32px;color:white;"></i>
             </div>
             <div>
-                <h1 style="color:white;font-size:1.9rem;font-weight:800;margin:0;letter-spacing:-0.5px;">
+                <h1 style="color:white;font-size:1.85rem;font-weight:800;margin:0 0 4px;letter-spacing:-0.5px;">
                     <?= htmlspecialchars($title ?? 'Analíticas') ?>
                 </h1>
-                <p style="color:rgba(255,255,255,0.7);margin:4px 0 0;font-size:0.9rem;">
+                <p style="color:rgba(255,255,255,0.82);margin:0;font-size:0.9rem;">
                     <i class="ti ti-clock"></i> <?= date('d M Y, H:i') ?> · Datos en tiempo real
                     <?php if (!($isAdmin ?? true)): ?>
                     · <i class="ti ti-filter"></i> Vista de tutor
@@ -363,16 +472,16 @@ $metricas  = [
             </div>
         </div>
         <div style="z-index:1;text-align:right;">
-            <div style="background:rgba(255,255,255,0.12);border-radius:12px;padding:10px 18px;color:rgba(255,255,255,0.9);font-size:0.82rem;font-weight:600;">
+            <div style="background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.25);border-radius:12px;padding:10px 18px;color:rgba(255,255,255,0.95);font-size:0.84rem;font-weight:600;">
                 <i class="ti ti-database"></i> <?= number_format($kpiHoras ?? 0) ?> horas<br>
-                <span style="opacity:0.7;"><?= ($isAdmin ?? true) ? 'acumuladas en el sistema' : 'de tus pasantes' ?></span>
+                <span style="opacity:0.75;font-size:0.76rem;"><?= ($isAdmin ?? true) ? 'acumuladas en el sistema' : 'de tus pasantes' ?></span>
             </div>
         </div>
     </div>
 
     <!-- ===== BANNER RECESO PERÍODO ===== -->
     <?php if (empty($hayPeriodoActivo)): ?>
-    <div style="background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 20px 26px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+    <div class="asist-banner-receso" style="background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 20px 26px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
         <div style="display: flex; align-items: center; gap: 14px;">
             <div style="width: 44px; height: 44px; border-radius: 12px; background: #dbeafe; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-size: 1.4rem; flex-shrink: 0;">
                 <i class="ti ti-calendar-off"></i>
@@ -388,7 +497,7 @@ $metricas  = [
             <a href="<?= URLROOT ?>/periodos" style="background: #1d4ed8; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                 <i class="ti ti-calendar-plus"></i> Gestionar Períodos
             </a>
-            <a href="<?= URLROOT ?>/asistencias?vista=anual" style="background: white; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            <a href="<?= URLROOT ?>/asistencias?vista=anual" class="asist-btn-receso-periodos" style="background: white; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                 <i class="ti ti-history"></i> Histórico de Asistencias
             </a>
         </div>
@@ -396,48 +505,64 @@ $metricas  = [
     <?php endif; ?>
 
     <!-- ===== KPIs ROW ===== -->
-    <div class="bento-grid">
+    <div class="an-kpi-grid">
 
         <!-- KPI: Tasa de Asistencia -->
-        <div class="bento-card b-span-3 accent-green">
-            <div class="kpi-bento-icon" style="background:#dcfce7;color:#16a34a;">
-                <i class="ti ti-trending-up"></i>
+        <div class="an-kpi-card accent-green">
+            <div class="an-kpi-top">
+                <div>
+                    <div class="an-kpi-label">Tasa de Asistencia</div>
+                    <div class="an-kpi-val kpi-bento-value" style="color:#16a34a;" data-kpi-value="<?= $kpiTasa ?? 0 ?>">0<span style="font-size:1.1rem;">%</span></div>
+                    <span class="an-kpi-trend <?= ($kpiTasa??0) >= 80 ? 'trend-up' : (($kpiTasa??0) >= 60 ? 'trend-neu' : 'trend-down') ?>">
+                        <i class="ti ti-<?= ($kpiTasa??0) >= 80 ? 'arrow-up' : 'minus' ?>"></i> Últimos 30 días
+                    </span>
+                </div>
+                <div class="an-kpi-icon" style="background:#dcfce7;color:#16a34a;">
+                    <i class="ti ti-trending-up"></i>
+                </div>
             </div>
-            <div class="kpi-bento-value" style="color:#16a34a;" data-kpi-value="<?= $kpiTasa ?? 0 ?>">0<span style="font-size:1.1rem;">%</span></div>
-            <div class="kpi-bento-label">Tasa de Asistencia</div>
-            <span class="kpi-bento-trend <?= ($kpiTasa??0) >= 80 ? 'trend-up' : (($kpiTasa??0) >= 60 ? 'trend-neu' : 'trend-down') ?>">
-                <i class="ti ti-<?= ($kpiTasa??0) >= 80 ? 'arrow-up' : 'minus' ?>"></i> Últimos 30 días
-            </span>
         </div>
 
         <!-- KPI: Pasantes Activos -->
-        <div class="bento-card b-span-3 accent-blue">
-            <div class="kpi-bento-icon" style="background:#dbeafe;color:#162660;">
-                <i class="ti ti-users"></i>
+        <div class="an-kpi-card accent-blue">
+            <div class="an-kpi-top">
+                <div>
+                    <div class="an-kpi-label">Pasantes Activos</div>
+                    <div class="an-kpi-val kpi-bento-value" style="color:#2563eb;" data-kpi-value="<?= $kpiActivos ?? 0 ?>">0</div>
+                    <span class="an-kpi-trend trend-neu"><i class="ti ti-activity"></i> En curso</span>
+                </div>
+                <div class="an-kpi-icon" style="background:#dbeafe;color:#2563eb;">
+                    <i class="ti ti-users"></i>
+                </div>
             </div>
-            <div class="kpi-bento-value" style="color:#162660;" data-kpi-value="<?= $kpiActivos ?? 0 ?>">0</div>
-            <div class="kpi-bento-label">Pasantes Activos</div>
-            <span class="kpi-bento-trend trend-neu"><i class="ti ti-activity"></i> En curso</span>
         </div>
 
         <!-- KPI: Horas Acumuladas -->
-        <div class="bento-card b-span-3 accent-indigo">
-            <div class="kpi-bento-icon" style="background:#e0e7ff;color:#6366f1;">
-                <i class="ti ti-clock-hour-4"></i>
+        <div class="an-kpi-card accent-indigo">
+            <div class="an-kpi-top">
+                <div>
+                    <div class="an-kpi-label">Horas Acumuladas</div>
+                    <div class="an-kpi-val kpi-bento-value" style="color:#6366f1;" data-kpi-value="<?= $kpiHoras ?? 0 ?>">0</div>
+                    <span class="an-kpi-trend trend-up"><i class="ti ti-bolt"></i> Total real</span>
+                </div>
+                <div class="an-kpi-icon" style="background:#e0e7ff;color:#6366f1;">
+                    <i class="ti ti-clock-hour-4"></i>
+                </div>
             </div>
-            <div class="kpi-bento-value" style="color:#6366f1;" data-kpi-value="<?= $kpiHoras ?? 0 ?>">0</div>
-            <div class="kpi-bento-label">Horas Acumuladas</div>
-            <span class="kpi-bento-trend trend-up"><i class="ti ti-bolt"></i> Total real</span>
         </div>
 
         <!-- KPI: Progreso Promedio -->
-        <div class="bento-card b-span-3 accent-amber">
-            <div class="kpi-bento-icon" style="background:#fef3c7;color:#f59e0b;">
-                <i class="ti ti-chart-pie"></i>
+        <div class="an-kpi-card accent-amber">
+            <div class="an-kpi-top">
+                <div>
+                    <div class="an-kpi-label">Progreso Promedio</div>
+                    <div class="an-kpi-val kpi-bento-value" style="color:#f59e0b;" data-kpi-value="<?= $kpiProgreso ?? 0 ?>">0<span style="font-size:1.1rem;">%</span></div>
+                    <span class="an-kpi-trend trend-neu"><i class="ti ti-target"></i> Sobre meta</span>
+                </div>
+                <div class="an-kpi-icon" style="background:#fef3c7;color:#f59e0b;">
+                    <i class="ti ti-chart-pie"></i>
+                </div>
             </div>
-            <div class="kpi-bento-value" style="color:#f59e0b;" data-kpi-value="<?= $kpiProgreso ?? 0 ?>">0<span style="font-size:1.1rem;">%</span></div>
-            <div class="kpi-bento-label">Progreso Promedio</div>
-            <span class="kpi-bento-trend trend-neu"><i class="ti ti-target"></i> Sobre meta</span>
         </div>
 
     </div><!-- /KPIs -->
@@ -605,7 +730,7 @@ $metricas  = [
                     $tasaBg     = ($tasa !== null) ? (($tasa >= 80) ? '#dcfce7' : (($tasa >= 60) ? '#fef3c7' : '#fee2e2')) : '#f1f5f9';
                     $tasaClr    = ($tasa !== null) ? (($tasa >= 80) ? '#16a34a' : (($tasa >= 60) ? '#d97706' : '#dc2626')) : '#94a3b8';
                 ?>
-                <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8fafc;border-radius:12px;border:1px solid #f1f5f9;">
+                <div class="analitica-inst-card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8fafc;border-radius:12px;border:1px solid #f1f5f9;">
                     <div style="width:36px;height:36px;border-radius:10px;background:<?= $isSinEsp ? '#f1f5f9' : '#fef3c7' ?>;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                         <i class="ti ti-<?= $isSinEsp ? 'question-mark' : 'building-bank' ?>" style="font-size:1.1rem;color:<?= $isSinEsp ? '#94a3b8' : '#f59e0b' ?>;"></i>
                     </div>

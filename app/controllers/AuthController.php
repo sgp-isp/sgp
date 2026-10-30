@@ -198,6 +198,14 @@ class AuthController extends Controller
                 $db->bind(':email', $email);
                 $db->execute();
                 $bloqueado = true;
+
+                // 🚨 Alerta por correo a administradores
+                try {
+                    require_once APPROOT . '/lib/MailService.php';
+                    MailService::notifyFailedAttempt($email, $email, 'Bloqueo preventivo tras 5 intentos fallidos de contraseña', $ip, 'Portal Web / Login');
+                } catch (\Throwable $me) {
+                    error_log('[SGP-AUTH] Error notificando bloqueo a admin: ' . $me->getMessage());
+                }
             }
 
             if ($isAjax) {
@@ -246,6 +254,8 @@ class AuthController extends Controller
                     if ($dpRow && $dpRow->estado_pasantia === 'Finalizado') {
                         $errorMsg = 'Tu período de pasantía ha finalizado y tu acceso fue cerrado automáticamente. '
                                   . 'Si tienes alguna consulta, comunícate con el administrador.';
+                    } elseif ($dpRow && $dpRow->estado_pasantia === 'Retirado') {
+                        $errorMsg = 'Tu solicitud de registro ha sido rechazada por la administración del ISPEB debido a que no figuras en el listado oficial de pasantes de la institución. Si consideras que se trata de un error, comunícate con la División de Soporte Técnico.';
                     }
                 } catch (\Throwable $e) { /* no interrumpir el flujo */ }
             }
@@ -259,6 +269,46 @@ class AuthController extends Controller
             Session::setFlash('login_error', $errorMsg);
             $this->view('auth/login', [], false);
             return;
+        }
+
+        // 3.1 Verificar estado de pasantía para pasantes (rol_id = 3) aunque la cuenta no esté inactiva
+        if ((int)($user['role_id'] ?? $user['rol_id'] ?? 99) === 3) {
+            try {
+                $db->query("
+                    SELECT estado_pasantia FROM datos_pasante
+                    WHERE usuario_id = :uid
+                    ORDER BY FIELD(estado_pasantia, 'Activo', 'Pendiente', 'Sin Asignar', 'Finalizado', 'Retirado') ASC, id DESC
+                    LIMIT 1
+                ");
+                $db->bind(':uid', $user['id']);
+                $dpRow = $db->single();
+
+                if ($dpRow && in_array($dpRow->estado_pasantia, ['Finalizado', 'Retirado'])) {
+                    // Sincronizar automáticamente usuarios.estado a 'inactivo' si aún no lo estaba
+                    try {
+                        $db->query("UPDATE usuarios SET estado = 'inactivo' WHERE id = :uid");
+                        $db->bind(':uid', $user['id']);
+                        $db->execute();
+                    } catch (\Throwable $te) {}
+
+                    if ($dpRow->estado_pasantia === 'Finalizado') {
+                        $errorMsg = 'Tu período de pasantía ha finalizado y tu acceso fue cerrado automáticamente. '
+                                  . 'Si tienes alguna consulta, comunícate con el administrador.';
+                    } else {
+                        $errorMsg = 'Tu solicitud de registro ha sido rechazada o tu condición es Retirado por la administración del ISPEB. Si consideras que se trata de un error, comunícate con la División de Soporte Técnico.';
+                    }
+
+                    if ($isAjax) {
+                        header('Content-Type: application/json');
+                        echo json_encode(['success' => false, 'message' => $errorMsg]);
+                        exit;
+                    }
+
+                    Session::setFlash('login_error', $errorMsg);
+                    $this->view('auth/login', [], false);
+                    return;
+                }
+            } catch (\Throwable $e) { /* continuar si no hay datos */ }
         }
 
         // ✨ LOGIN EXITOSO: Reset contador de intentos
@@ -298,6 +348,23 @@ class AuthController extends Controller
 
         // Registrar login en bitácora
         AuditModel::log('LOGIN');
+
+        // ── Despachar alerta de seguridad por correo si la regla SEGURIDAD_LOGIN está activa ──
+        try {
+            require_once APPROOT . '/lib/MailService.php';
+            $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'Navegador Web';
+            $devName = 'Navegador Web';
+            if (stripos($ua, 'Chrome') !== false && stripos($ua, 'Edg') === false) $devName = 'Google Chrome';
+            elseif (stripos($ua, 'Edg') !== false) $devName = 'Microsoft Edge';
+            elseif (stripos($ua, 'Firefox') !== false) $devName = 'Mozilla Firefox';
+            elseif (stripos($ua, 'Safari') !== false && stripos($ua, 'Chrome') === false) $devName = 'Apple Safari';
+            if (stripos($ua, 'Mobile') !== false || stripos($ua, 'Android') !== false || stripos($ua, 'iPhone') !== false) {
+                $devName .= ' (Dispositivo Móvil)';
+            }
+            MailService::notifySecurityLogin((int)$user['id'], 'Credenciales (Contraseña)', $devName, $ip);
+        } catch (\Throwable $me) {
+            error_log('[SGP-AUTH] Error notificando login por correo: ' . $me->getMessage());
+        }
 
         // ── Notificación automática si hoy es feriado (solo roles 0, 1, 2) ──
         try {
@@ -415,12 +482,17 @@ class AuthController extends Controller
             ];
         }
 
+        // Cargar instituciones educativas de origen activas
+        $db = Database::getInstance();
+        $db->query("SELECT id, nombre, tipo FROM instituciones WHERE categoria = 'origen' AND activo = 1 ORDER BY nombre ASC");
+        $instituciones = $db->resultSet();
+
         // ============================================
         // GET REQUEST: Mostrar formulario
         // ============================================
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Content-Type: text/html; charset=UTF-8');
-            $this->view('auth/register', ['questions' => $preguntas], false);
+            $this->view('auth/register', ['questions' => $preguntas, 'instituciones' => $instituciones], false);
             return;
         }
         
@@ -432,21 +504,26 @@ class AuthController extends Controller
         $fullName = Validator::post('name');
         $cedula = Validator::post('cedula');
         $email = Validator::email('email');
+        $institucionId = (int)Validator::post('institucion_id');
         $password = Validator::post('password');
         $roleId = 3; // Pasante por defecto
 
         // [FIX-V-1][FIX-V-7] Validación de formato server-side — antes solo
         // existía en JS (el cliente se puede saltar con una petición directa).
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->view('auth/register', ['questions' => $preguntas, 'error' => 'Formato de correo inválido.'], false);
+            $this->view('auth/register', ['questions' => $preguntas, 'instituciones' => $instituciones, 'error' => 'Formato de correo inválido.'], false);
             return;
         }
         if (!preg_match('/^[0-9]{7,8}$/', $cedula)) {
-            $this->view('auth/register', ['questions' => $preguntas, 'error' => 'La cédula debe tener entre 7 y 8 dígitos numéricos.'], false);
+            $this->view('auth/register', ['questions' => $preguntas, 'instituciones' => $instituciones, 'error' => 'La cédula debe tener entre 7 y 8 dígitos numéricos.'], false);
+            return;
+        }
+        if ($institucionId <= 0) {
+            $this->view('auth/register', ['questions' => $preguntas, 'instituciones' => $instituciones, 'error' => 'Debes seleccionar tu institución de procedencia.'], false);
             return;
         }
         if (strlen($password) < 8) {
-            $this->view('auth/register', ['questions' => $preguntas, 'error' => 'La contraseña debe tener al menos 8 caracteres.'], false);
+            $this->view('auth/register', ['questions' => $preguntas, 'instituciones' => $instituciones, 'error' => 'La contraseña debe tener al menos 8 caracteres.'], false);
             return;
         }
 
@@ -557,9 +634,54 @@ class AuthController extends Controller
             }
 
             // ============================================
+            // REGISTRAR DATOS DE PASANTE (INSTITUCIÓN)
+            // ============================================
+            $instNombre = 'Institución';
+            foreach ($instituciones as $inst) {
+                if ((int)$inst->id === $institucionId) {
+                    $instNombre = $inst->nombre;
+                    break;
+                }
+            }
+
+            $db->query("
+                INSERT INTO datos_pasante 
+                    (usuario_id, institucion_id, institucion_procedencia, estado_pasantia, tipo_pasantia, horas_meta, horas_acumuladas, created_at, updated_at)
+                VALUES 
+                    (:uid, :inst_id, :inst_nom, 'Sin Asignar', 'Regular', 1440, 0, NOW(), NOW())
+            ");
+            $db->bind(':uid', (int)$newUser['id']);
+            $db->bind(':inst_id', $institucionId);
+            $db->bind(':inst_nom', $instNombre);
+            $db->execute();
+
+            // ============================================
             // CONFIRMAR TRANSACCIÓN (TODO EXITOSO)
             // ============================================
             $userModel->commit();
+
+            // 🔔 Despachar notificación in-app (campana) a todos los Administradores
+            try {
+                require_once APPROOT . '/models/NotificationModel.php';
+                $notifModel = new NotificationModel($db);
+                $notifModel->notifyAdmins(
+                    'usuario_creado',
+                    '👤 Nuevo Pasante Registrado: ' . $fullName,
+                    "El pasante {$fullName} (C.I. {$cedula}) de la institución {$instNombre} se ha registrado en el sistema y se encuentra en estado Sin Asignar.",
+                    URLROOT . '/asignaciones',
+                    (int)$newUser['id']
+                );
+            } catch (\Throwable $ne) {
+                error_log('[SGP-AUTH] Error enviando notif in-app de nuevo pasante: ' . $ne->getMessage());
+            }
+
+            // 📧 Despachar correo a los Administradores y correo de bienvenida al Pasante
+            try {
+                require_once APPROOT . '/lib/MailService.php';
+                MailService::notifyNewPasanteRegistration((int)$newUser['id'], $fullName, $cedula, $instNombre, $email);
+            } catch (\Throwable $me) {
+                error_log('[SGP-AUTH] Error despachando correos de nuevo pasante: ' . $me->getMessage());
+            }
             
             // PATRÓN PRG (Post-Redirect-Get): Redirigir al login
             // Esto evita el error ERR_CACHE_MISS al dar "Atrás" en el navegador
@@ -578,6 +700,7 @@ class AuthController extends Controller
             $mensajesValidacion = [
                 'El correo ya existe',
                 'La cédula ya está registrada',
+                'Debes seleccionar tu institución de procedencia.',
                 'Debes seleccionar 3 preguntas diferentes',
                 'Las respuestas de seguridad deben ser diferentes',
                 'Las respuestas deben tener al menos 3 caracteres',
@@ -588,6 +711,7 @@ class AuthController extends Controller
 
             $this->view('auth/register', [
                 'questions' => $preguntas,
+                'instituciones' => $instituciones,
                 'error' => $errorMsg
             ], false);
         }
@@ -1232,7 +1356,7 @@ class AuthController extends Controller
             0 => '/superadmin', // SuperAdministrador
             1 => '/admin',      // Administrador
             2 => '/tutor',      // Tutor
-            3 => '/pasante'     // Pasante
+            3 => '/pasante/dashboard' // Pasante
         ];
         $this->redirect($routes[$roleId] ?? '/auth/login');
     }

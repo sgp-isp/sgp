@@ -452,4 +452,101 @@
             if (tipo === 'buscar') this._onSelect = null;
         }
     };
+
+    // ══════════════════════════════════════════════════════════════
+    // SGP Universal Modal Teleporter & Shield (MutationObserver)
+    // ══════════════════════════════════════════════════════════════
+    function teletransportarModalesInmediatos() {
+        const modalSelectors = [
+            '.modal',
+            '.modal-overlay',
+            '.sgp-modal-overlay',
+            '.hc-overlay',
+            '.asig-modal-overlay',
+            '#modalCalcHoras',
+            '#modalAsignacion',
+            '#modalDetalleAsignacion',
+            '#modalSoporteGlobal',
+            '#modalResponderTicket',
+            '#auditModal'
+        ];
+
+        modalSelectors.forEach(selector => {
+            try {
+                document.querySelectorAll(selector).forEach(modalEl => {
+                    if (modalEl && modalEl.parentElement && modalEl.parentElement !== document.body) {
+                        if (!modalEl.classList.contains('modal-dialog') && 
+                            !modalEl.classList.contains('modal-content') && 
+                            !modalEl.classList.contains('hc-box') && 
+                            !modalEl.classList.contains('sgp-modal')) {
+                            document.body.appendChild(modalEl);
+                        }
+                    }
+                });
+            } catch (err) {}
+        });
+    }
+
+    // 1. Ejecución inmediata y en eventos de navegación
+    teletransportarModalesInmediatos();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', teletransportarModalesInmediatos);
+    }
+    document.addEventListener('pjax:complete', teletransportarModalesInmediatos);
+
+    // 2. Intercepción universal de clics (fallback rápido)
+    document.addEventListener('click', function () {
+        setTimeout(teletransportarModalesInmediatos, 10);
+    }, true);
+
+    // 3. MutationObserver proactivo: detecta inserción o activación de cualquier modal
+    try {
+        const observer = new MutationObserver(function (mutations) {
+            for (let i = 0; i < mutations.length; i++) {
+                const mut = mutations[i];
+                if (mut.type === 'childList') {
+                    for (let j = 0; j < mut.addedNodes.length; j++) {
+                        const node = mut.addedNodes[j];
+                        if (node.nodeType === 1) {
+                            if (node.matches && (
+                                node.matches('.modal, .modal-overlay, .sgp-modal-overlay, .hc-overlay, .asig-modal-overlay, #modalCalcHoras, #modalAsignacion')
+                            )) {
+                                if (node.parentElement !== document.body) {
+                                    document.body.appendChild(node);
+                                }
+                            } else if (node.querySelectorAll) {
+                                const subModals = node.querySelectorAll('.modal, .modal-overlay, .sgp-modal-overlay, .hc-overlay, .asig-modal-overlay, #modalCalcHoras, #modalAsignacion');
+                                subModals.forEach(sm => {
+                                    if (sm.parentElement !== document.body) {
+                                        document.body.appendChild(sm);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                } else if (mut.type === 'attributes') {
+                    const target = mut.target;
+                    if (target && target.parentElement && target.parentElement !== document.body) {
+                        if (target.matches && target.matches('.modal, .modal-overlay, .sgp-modal-overlay, .hc-overlay, .asig-modal-overlay, #modalCalcHoras, #modalAsignacion')) {
+                            const isVisible = target.classList.contains('active') || 
+                                              target.classList.contains('show') || 
+                                              (target.style && (target.style.display === 'flex' || target.style.display === 'block'));
+                            if (isVisible) {
+                                document.body.appendChild(target);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class', 'style']
+        });
+    } catch (e) {
+        console.warn('[SGP-MODAL] MutationObserver no soportado o restringido:', e);
+    }
 })();

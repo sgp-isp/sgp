@@ -59,7 +59,7 @@
 .form-input:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 4px rgba(79,70,229,.1); background:white; }
 .btn-submit {
     width:100%; padding:14px;
-    background:linear-gradient(135deg,#172554 0%,#2563eb 100%);
+    background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--color-accent-brand, #2563eb) 100%);
     color:white; border:none; border-radius:12px; font-size:1rem;
     font-weight:700; cursor:pointer; display:flex; align-items:center;
     justify-content:center; gap:10px; transition:all .2s;
@@ -67,37 +67,49 @@
 }
 .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(79,70,229,.45); }
 
-/* ── KPI CARDS — Vertical (idéntico a configuracion) ────────── */
+/* ── KPI CARDS — Tipo Exámenes Rápidos ────────────────────── */
 .per-kpi-grid {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 22px;
-    margin-bottom: 22px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
 }
 .per-kpi-card {
-    grid-column: span 3;
     background: white;
-    border-radius: 20px;
-    padding: 24px;
+    border-radius: 18px;
+    padding: 20px 22px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    gap: 8px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.07);
     border: 1px solid rgba(0,0,0,0.05);
     min-width: 0;
     transition: transform .25s ease, box-shadow .25s ease;
     cursor: default;
+    position: relative;
+    overflow: hidden;
 }
-.per-kpi-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 28px rgba(0,0,0,0.07);
+.per-kpi-card:hover { transform: translateY(-4px); }
+.per-kpi-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.per-kpi-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+.per-kpi-value { font-size: 2.2rem; font-weight: 800; line-height: 1; margin-top: 2px; }
+.per-kpi-sub { font-size: 0.74rem; color: #94a3b8; font-weight: 500; }
+.per-kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+
+.per-kpi-card.per-kpi-purple { border-top: 3px solid #7c3aed; }
+.per-kpi-card.per-kpi-green  { border-top: 3px solid #059669; }
+.per-kpi-card.per-kpi-slate  { border-top: 3px solid #64748b; }
+.per-kpi-card.per-kpi-blue   { border-top: 3px solid #2563eb; }
+
+.per-kpi-card.per-kpi-purple:hover { box-shadow: 0 12px 22px -6px rgba(124, 58, 237, 0.55) !important; }
+.per-kpi-card.per-kpi-green:hover  { box-shadow: 0 12px 22px -6px rgba(5, 150, 105, 0.55) !important; }
+.per-kpi-card.per-kpi-slate:hover  { box-shadow: 0 12px 22px -6px rgba(100, 116, 139, 0.45) !important; }
+.per-kpi-card.per-kpi-blue:hover   { box-shadow: 0 12px 22px -6px rgba(37, 99, 235, 0.55) !important; }
+
+[data-theme="dark"] .per-kpi-card {
+    background-color: #111a2e !important;
+    border: 1px solid #1e293b !important;
 }
-.per-kpi-icon {
-    width: 46px; height: 46px; border-radius: 13px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem; margin-bottom: 14px;
-}
-.per-kpi-value { font-size: 2rem; font-weight: 800; line-height: 1; margin-bottom: 5px; }
-.per-kpi-label { font-size: 0.8rem; color: #64748b; font-weight: 500; }
 
 /* ── Period cards (Bento Premium) ──────────────────────────── */
 .periodos-grid {
@@ -158,7 +170,7 @@
 .card-footer-c { padding: 16px 24px; border-top: 1px solid #f1f5f9; background: #fafafa; display: flex; flex-wrap: wrap; gap: 10px; }
 .btn-ver-full {
     flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
-    background: linear-gradient(135deg,#172554 0%,#2563eb 100%);
+    background: linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--color-accent-brand, #2563eb) 100%);
     color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 600; font-size: .9rem; text-decoration: none;
     transition: transform .2s, box-shadow .2s;
 }
@@ -172,25 +184,59 @@
 
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 1200px) {
-    .per-kpi-card  { grid-column: span 6; }
     .periodos-grid { grid-template-columns: repeat(2,1fr); }
 }
-@media (max-width: 768px) {
-    .per-kpi-card  { grid-column: span 12; }
+@media (max-width: 991px) {
     .periodos-grid { grid-template-columns: 1fr !important; }
-    /* Banner de Períodos en móvil */
+    .module-banner.periodos-banner {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 20px 18px !important;
+        gap: 16px !important;
+        border-radius: 18px !important;
+    }
+    .module-banner.periodos-banner > div:first-child,
+    .module-banner.periodos-banner > div:nth-child(2) {
+        display: none !important;
+    }
     .per-banner-actions {
         width: 100% !important;
-        flex-wrap: wrap !important;
+        flex-direction: column !important;
         gap: 8px !important;
     }
     .per-banner-actions button {
-        flex: 1;
-        min-width: 140px;
-        justify-content: center;
-        padding: 10px 14px !important;
-        font-size: .85rem !important;
+        width: 100% !important;
+        justify-content: center !important;
+        min-height: 42px !important;
     }
+    .per-kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        margin-bottom: 20px !important;
+    }
+    .per-kpi-card {
+        padding: 16px 14px !important;
+        border-radius: 16px !important;
+    }
+    .per-kpi-value { font-size: 1.8rem !important; }
+    .per-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
+}
+@media (max-width: 480px) {
+    .per-kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    .per-kpi-card {
+        padding: 14px 12px !important;
+    }
+    .per-kpi-value { font-size: 1.6rem !important; }
+    .per-kpi-label { font-size: 0.68rem !important; }
+    .module-banner.periodos-banner h1 { font-size: 1.4rem !important; }
+}
+[data-theme="dark"] .module-banner.periodos-banner {
+    background: linear-gradient(135deg, #090d16 0%, #0f1c3f 50%, #1e3a8a 100%) !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
 }
 </style>
 
@@ -200,7 +246,7 @@
     <!-- ══════════════════════════════════════════════════════
          BANNER PREMIUM
          ══════════════════════════════════════════════════════ -->
-    <div style="background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);border-radius:20px;padding:32px 40px;margin-bottom:28px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;box-shadow:0 10px 25px rgba(30,58,138,.2);flex-wrap:wrap;gap:20px;">
+    <div class="module-banner periodos-banner" style="background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--gradient-mid, #1e3a8a) 50%,var(--color-accent-brand, #2563eb) 100%);border-radius:20px;padding:32px 40px;margin-bottom:28px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;box-shadow:0 10px 25px rgba(30,58,138,.2);flex-wrap:wrap;gap:20px;">
         <div style="position:absolute;top:-30px;right:-30px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,255,255,.1) 0%,rgba(255,255,255,0) 70%);border-radius:50%;pointer-events:none;"></div>
         <div style="position:absolute;bottom:-40px;left:120px;width:160px;height:160px;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,rgba(255,255,255,0) 70%);border-radius:50%;pointer-events:none;"></div>
         <div style="display:flex;align-items:center;gap:20px;z-index:1;">
@@ -233,23 +279,28 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════════
-         KPI CARDS — vertical (estilo configuracion)
+         KPI CARDS — Tipo Exámenes Rápidos
          ══════════════════════════════════════════════════════ -->
     <div class="per-kpi-grid">
         <?php
         $kpis = [
-            ['label' => 'Total Períodos', 'val' => $totalPeriodos,    'color' => '#7c3aed', 'icon' => 'ti-calendar-stats', 'bg' => '#f5f3ff'],
-            ['label' => 'Activos',        'val' => $totalActivos,     'color' => '#059669', 'icon' => 'ti-player-play',    'bg' => '#f0fdf4'],
-            ['label' => 'Cerrados',       'val' => $totalCerrados,    'color' => '#64748b', 'icon' => 'ti-lock',           'bg' => '#f8fafc'],
-            ['label' => 'Total Pasantes', 'val' => $totalPasantesSum, 'color' => '#2563eb', 'icon' => 'ti-users',          'bg' => '#eff6ff'],
+            ['label' => 'Total Períodos', 'val' => $totalPeriodos,    'sub' => $totalPeriodos === 1 ? '1 cohorte registrada' : "$totalPeriodos cohortes registradas", 'color' => '#7c3aed', 'icon' => 'ti-calendar-stats', 'bg' => '#f5f3ff', 'type' => 'purple'],
+            ['label' => 'Activos',        'val' => $totalActivos,     'sub' => $totalActivos === 1 ? '1 cohorte en curso' : "$totalActivos cohortes en curso",       'color' => '#059669', 'icon' => 'ti-player-play',    'bg' => '#f0fdf4', 'type' => 'green'],
+            ['label' => 'Cerrados',       'val' => $totalCerrados,    'sub' => $totalCerrados === 1 ? '1 finalizada' : "$totalCerrados finalizadas",                 'color' => '#64748b', 'icon' => 'ti-lock',           'bg' => '#f8fafc', 'type' => 'slate'],
+            ['label' => 'Total Pasantes', 'val' => $totalPasantesSum, 'sub' => $totalPasantesSum === 1 ? '1 asignado' : "$totalPasantesSum asignados",             'color' => '#2563eb', 'icon' => 'ti-users',          'bg' => '#eff6ff', 'type' => 'blue'],
         ];
         foreach ($kpis as $k): ?>
-        <div class="per-kpi-card" style="border-left:4px solid <?= $k['color'] ?>;">
-            <div class="per-kpi-icon" style="background:<?= $k['bg'] ?>;color:<?= $k['color'] ?>;">
-                <i class="ti <?= $k['icon'] ?>"></i>
+        <div class="per-kpi-card per-kpi-<?= $k['type'] ?>">
+            <div class="per-kpi-top">
+                <div>
+                    <div class="per-kpi-label"><?= $k['label'] ?></div>
+                    <div class="per-kpi-value" style="color:<?= $k['color'] ?>;"><?= $k['val'] ?></div>
+                    <div class="per-kpi-sub"><?= $k['sub'] ?></div>
+                </div>
+                <div class="per-kpi-icon" style="background:<?= $k['bg'] ?>;color:<?= $k['color'] ?>;">
+                    <i class="ti <?= $k['icon'] ?>"></i>
+                </div>
             </div>
-            <div class="per-kpi-value" style="color:<?= $k['color'] ?>;"><?= $k['val'] ?></div>
-            <div class="per-kpi-label"><?= $k['label'] ?></div>
         </div>
         <?php endforeach; ?>
     </div>
@@ -603,7 +654,7 @@ function abrirModalCrear()  { document.getElementById('modalCrearPeriodo').class
 function cerrarModalCrear() { document.getElementById('modalCrearPeriodo').classList.remove('active'); document.getElementById('formCrearPeriodo').reset(); }
 
 // Guarda las fechas originales para detectar cambios
-let _editFechaIniOrig = '', _editFechaFinOrig = '', _editPeriodoId = 0;
+var _editFechaIniOrig = '', _editFechaFinOrig = '', _editPeriodoId = 0;
 
 function abrirModalEditar(data) {
     _editPeriodoId    = data.id;
@@ -737,6 +788,7 @@ function calcularFechaFin() {
     const meses = (tipoActual === 'Corto') ? 3 : 9;
     let d = new Date(val + 'T12:00:00');
     d.setMonth(d.getMonth() + meses);
+    d.setDate(d.getDate() - 1); // Ciclo exacto: ej. 01/10 a 30/06 (9 meses)
     const y  = d.getFullYear();
     const m  = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
@@ -844,7 +896,7 @@ function cerrarModalConsulta() {
     document.getElementById('modalConsultaRapida').classList.remove('active');
 }
 
-let timeoutBuscador = null;
+var timeoutBuscador = null;
 document.getElementById('inputBuscarHist').addEventListener('input', function() {
     clearTimeout(timeoutBuscador);
     const q = this.value.trim();

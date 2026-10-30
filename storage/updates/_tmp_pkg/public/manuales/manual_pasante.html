@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual de Usuario — Pasante | ISP Bolívar</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+@page {
+    size: A4 portrait;
+    margin: 1.8cm 2.2cm 2.8cm 2.2cm;
+}
+@page cover-page { margin: 0; }
+
+body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    color: #1e293b;
+    line-height: 1.68;
+    background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PORTADA
+═══════════════════════════════════════════════════════ */
+.cover {
+    page: cover-page;
+    width: 210mm;
+    height: 297mm;
+    break-after: page;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+}
+
+.cover-deco-top {
+    position: absolute; top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    background: rgba(255,255,255,.06); border-radius: 50%;
+}
+.cover-deco-bot {
+    position: absolute; bottom: -100px; left: -60px;
+    width: 380px; height: 380px;
+    background: rgba(255,255,255,.04); border-radius: 50%;
+}
+
+.cover-logos-strip {
+    padding: 0.9cm 2.5cm;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.cover-logo-badge {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.18);
+    height: 56px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.cover-logo-badge img {
+    display: block;
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.cover-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 0 2.5cm;
+    z-index: 1;
+}
+
+.cover-tag {
+    display: inline-block;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.3);
+    color: rgba(255,255,255,.9);
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+}
+
+.cover-title {
+    color: white;
+    font-size: 36pt;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 10px;
+    letter-spacing: -1px;
+}
+
+.cover-subtitle {
+    color: rgba(255,255,255,.78);
+    font-size: 14pt;
+    font-weight: 500;
+    margin-bottom: 32px;
+    line-height: 1.4;
+}
+
+.cover-divider {
+    width: 60px; height: 4px;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa);
+    border-radius: 2px;
+    margin-bottom: 28px;
+}
+
+.cover-meta {
+    display: flex;
+    gap: 24px;
+}
+.cover-meta-item {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    padding: 8px 18px;
+    border-radius: 10px;
+    color: rgba(255,255,255,.9);
+    font-size: 8.5pt;
+    font-weight: 600;
+}
+.cover-meta-label {
+    font-size: 7pt;
+    color: rgba(255,255,255,.55);
+    display: block;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.cover-footer {
+    padding: 1.5cm 2.5cm;
+    border-top: 1px solid rgba(255,255,255,.15);
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.cover-footer-left {
+    color: rgba(255,255,255,.5);
+    font-size: 8pt;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CONTROL DE DOCUMENTO
+═══════════════════════════════════════════════════════ */
+.ctrl-page {
+    break-after: page;
+    padding: 0.4cm 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TABLA DE CONTENIDO
+═══════════════════════════════════════════════════════ */
+.toc-page { break-after: page; }
+
+.toc-title {
+    font-size: 18pt;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 6px;
+}
+.toc-line {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 5px;
+    font-size: 9.5pt;
+}
+.toc-num {
+    min-width: 26px;
+    color: #2563eb;
+    font-weight: 700;
+    font-size: 9pt;
+}
+.toc-text { color: #1e293b; font-weight: 600; }
+.toc-dots {
+    flex: 1;
+    border-bottom: 1px dotted #cbd5e1;
+    margin: 0 6px;
+    margin-bottom: 3px;
+}
+.toc-pg { color: #64748b; font-size: 8.5pt; font-weight: 700; min-width: 20px; text-align: right; }
+.toc-section {
+    margin-top: 18px;
+    margin-bottom: 8px;
+    font-size: 8pt;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 4px;
+}
+.toc-sub {
+    padding-left: 26px;
+    font-weight: 500;
+    color: #475569;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CAPÍTULOS
+═══════════════════════════════════════════════════════ */
+.chapter {
+    break-before: page;
+}
+
+.ch-header {
+    border-bottom: 3px solid #2563eb;
+    padding-bottom: 12px;
+    margin-bottom: 24px;
+}
+.ch-num {
+    display: block;
+    color: #2563eb;
+    font-size: 8.5pt;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.ch-title {
+    color: #0f172a;
+    font-size: 17pt;
+    font-weight: 800;
+    line-height: 1.2;
+}
+.ch-sub {
+    color: #64748b;
+    font-size: 8.5pt;
+    margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TIPOGRAFÍA DE CONTENIDO
+═══════════════════════════════════════════════════════ */
+.doc-p {
+    color: #334155;
+    font-size: 10pt;
+    line-height: 1.75;
+    margin-bottom: 12px;
+    orphans: 3;
+    widows: 3;
+}
+
+.sec-title {
+    font-size: 12pt;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 22px 0 8px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    break-after: avoid;
+    page-break-after: avoid;
+}
+.sec-title .sec-n {
+    color: #2563eb;
+    font-size: 11pt;
+}
+
+.sec-sub {
+    font-size: 10.5pt;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 14px 0 6px;
+    break-after: avoid;
+    page-break-after: avoid;
+}
+
+/* Pasos numerados */
+.steps { counter-reset: step; display: flex; flex-direction: column; gap: 8px; margin: 10px 0 16px; }
+.step { display: flex; gap: 12px; align-items: flex-start; }
+.step::before {
+    counter-increment: step; content: counter(step);
+    min-width: 22px; height: 22px;
+    background: #2563eb; color: white;
+    border-radius: 50%; font-size: 8pt; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px; flex-shrink: 0;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.step p { color: #475569; font-size: 9.5pt; line-height: 1.6; orphans: 3; widows: 3; }
+.step strong { color: #1e293b; }
+
+/* Lista estándar */
+.doc-ul { padding-left: 18px; margin: 8px 0 14px; }
+.doc-ul li { color: #475569; font-size: 9.5pt; line-height: 1.65; margin-bottom: 4px; orphans: 3; widows: 3; }
+.doc-ul li strong { color: #1e293b; }
+
+/* Tablas */
+.doc-table {
+    width: 100%; border-collapse: collapse;
+    margin: 12px 0 18px; font-size: 9pt;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.doc-table thead tr {
+    background: #172554; color: white;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.doc-table th { padding: 8px 12px; text-align: left; font-weight: 700; font-size: 8.5pt; }
+.doc-table td { padding: 7px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+.doc-table tbody tr:nth-child(even) td { background: #f8fafc; }
+.doc-table tbody tr:hover td { background: #eff6ff; }
+
+/* Cajas de notas */
+.note-box {
+    display: flex; gap: 12px; padding: 12px 16px;
+    border-radius: 10px; margin: 12px 0 16px; font-size: 9pt;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.note-box.info { background: #eff6ff; border-left: 4px solid #2563eb; }
+.note-box.warn { background: #fffbeb; border-left: 4px solid #f59e0b; }
+.note-box.danger { background: #fef2f2; border-left: 4px solid #dc2626; }
+.note-box.success { background: #f0fdf4; border-left: 4px solid #16a34a; }
+.note-icon { font-size: 14pt; flex-shrink: 0; margin-top: 2px; }
+.note-box p { color: #334155; line-height: 1.6; }
+.note-box strong { color: #1e293b; }
+
+/* Badge de rol */
+.badge {
+    display: inline-block; padding: 2px 9px; border-radius: 20px;
+    font-size: 7.5pt; font-weight: 700; letter-spacing: .5px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.badge-admin { background: #dbeafe; color: #1e40af; }
+.badge-tutor { background: #dcfce7; color: #15803d; }
+.badge-pasante { background: #f3e8ff; color: #7c3aed; }
+
+/* Inline code */
+.kbd {
+    background: #f1f5f9; border: 1px solid #cbd5e1;
+    padding: 1px 6px; border-radius: 4px;
+    font-family: 'Courier New', monospace; font-size: 8.5pt; color: #0f172a;
+}
+
+/* Separador */
+.sep { height: 1px; background: #e2e8f0; margin: 20px 0; }
+
+/* Figura */
+.fig-label {
+    font-size: 8pt; color: #64748b; font-style: italic;
+    text-align: center; margin-top: 4px; margin-bottom: 14px;
+    break-before: avoid;
+    page-break-before: avoid;
+}
+
+/* Glosario */
+.glos-entry { margin-bottom: 12px; break-inside: avoid; page-break-inside: avoid; }
+.glos-term { font-weight: 800; color: #1e293b; font-size: 10pt; }
+.glos-def { color: #475569; font-size: 9.5pt; padding-left: 14px; margin-top: 2px; }
+
+/* URL/correo */
+.doc-link { color: #2563eb; text-decoration: none; font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════════
+   PLACEHOLDER DE CAPTURA DE PANTALLA
+═══════════════════════════════════════════════════════ */
+.ss-box {
+    border: 2px dashed #93c5fd;
+    border-radius: 10px;
+    background: #f0f9ff;
+    padding: 18px 20px;
+    margin: 14px 0 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+.ss-box-icon {
+    font-size: 22pt;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.ss-box-label {
+    font-size: 7.5pt;
+    font-weight: 800;
+    color: #1d4ed8;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    display: block;
+    margin-bottom: 4px;
+}
+.ss-box-desc {
+    font-size: 9pt;
+    color: #475569;
+    line-height: 1.55;
+}
+.ss-box-hint {
+    font-size: 8pt;
+    color: #64748b;
+    font-style: italic;
+    margin-top: 4px;
+    display: block;
+}
+.ss-img-wrap {
+    margin: 14px 0 4px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    overflow: hidden;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+.ss-img-wrap img.ss-img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    max-height: 6cm;
+    height: auto;
+    margin: 0 auto;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.10);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ENCABEZADO DE PÁGINA (en contenido)
+═══════════════════════════════════════════════════════ */
+@page {
+    @top-right {
+        content: "ISP Bolívar — Manual de Usuario";
+        font-size: 7.5pt;
+        color: #94a3b8;
+        font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    @bottom-center {
+        content: "Página " counter(page);
+        font-size: 7.5pt;
+        color: #94a3b8;
+        font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    @bottom-left {
+        content: "Copyleft 2026 Instituto de Salud Pública del Estado Bolívar";
+        font-size: 7pt;
+        color: #cbd5e1;
+        font-family: 'Segoe UI', Arial, sans-serif;
+    }
+}
+@page cover-page {
+    @top-right { content: none; }
+    @bottom-center { content: none; }
+    @bottom-left { content: none; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   PANTALLA — Previsualización antes de imprimir
+═══════════════════════════════════════════════════════ */
+@media screen {
+    body {
+        background: #e2e8f0;
+        padding: 20px;
+    }
+    .cover { border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.35); height: 297mm; max-width: 210mm; margin: 0 auto 30px; }
+    .ctrl-page, .toc-page, .chapter {
+        background: white; max-width: 210mm; margin: 0 auto 24px;
+        padding: 2cm 2.5cm; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,.1);
+    }
+    .print-btn {
+        position: fixed; bottom: 28px; right: 28px;
+        background: #dc2626; color: white;
+        border: none; padding: 12px 22px; border-radius: 12px;
+        font-size: 13px; font-weight: 700; cursor: pointer;
+        box-shadow: 0 6px 20px rgba(220,38,38,.4);
+        display: flex; align-items: center; gap: 8px;
+        z-index: 9999; transition: all .2s;
+        font-family: inherit;
+    }
+    .print-btn:hover { background: #b91c1c; transform: translateY(-2px); }
+}
+@media print {
+    .print-btn { display: none !important; }
+    .cover { border-radius: 0; }
+    .ss-img-wrap img.ss-img {
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════
+     BOTÓN FLOTANTE (solo pantalla)
+════════════════════════════════════════════════════ -->
+<button class="print-btn" onclick="window.print()">
+    ⬇ Guardar como PDF
+</button>
+
+<!-- ════════════════════════════════════════════════════
+     1. PORTADA
+════════════════════════════════════════════════════ -->
+<div class="cover">
+    <div class="cover-deco-top"></div>
+    <div class="cover-deco-bot"></div>
+
+    <div class="cover-logos-strip">
+        <div class="cover-logo-badge"><img src="img/logo.png" alt="SGP — Sistema de Gestión de Pasantías"></div>
+        <div class="cover-logo-badge"><img src="img/cintillo-salud.png" alt="Instituto de Salud Pública del Estado Bolívar"></div>
+        <div class="cover-logo-badge"><img src="img/gobe.png" alt="Gobernación de Bolívar"></div>
+    </div>
+
+    <div class="cover-main">
+        <span class="cover-tag">Manual del Pasante</span>
+        <h1 class="cover-title">Manual de<br>Usuario</h1>
+        <p class="cover-subtitle">Registro y Control de Asistencias de Pasantes<br>Guía para el rol: Pasante — ISP Bolívar</p>
+        <div class="cover-divider"></div>
+        <div class="cover-meta">
+            <div class="cover-meta-item">
+                <span class="cover-meta-label">Versión</span>
+                2.1
+            </div>
+            <div class="cover-meta-item">
+                <span class="cover-meta-label">Fecha</span>
+                11/06/2026
+            </div>
+            <div class="cover-meta-item">
+                <span class="cover-meta-label">Rol</span>
+                Pasante
+            </div>
+        </div>
+    </div>
+
+    <div class="cover-footer">
+        <div class="cover-footer-left">Instituto de Salud Pública del Estado Bolívar &nbsp;·&nbsp; 2026</div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     2. CONTROL DEL DOCUMENTO
+════════════════════════════════════════════════════ -->
+<div class="ctrl-page">
+    <div class="sec-title" style="margin-top:0;border-color:#2563eb;">Control del Documento</div>
+
+    <table class="doc-table">
+        <thead>
+            <tr><th>Campo</th><th>Valor</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Título</strong></td><td>Manual de Usuario — Aplicación Web para el Registro y Control de Asistencias de Pasantes (SGP)</td></tr>
+            <tr><td><strong>Versión</strong></td><td>1.0</td></tr>
+            <tr><td><strong>Fecha de emisión</strong></td><td>11/06/2026</td></tr>
+            <tr><td><strong>Rol del manual</strong></td><td><span class="badge badge-pasante">Pasante</span></td></tr>
+            <tr><td><strong>Elaborado por</strong></td><td>Luis Gabriel Yanez Prieto</td></tr>
+            <tr><td><strong>Plataforma</strong></td><td>Aplicación Web (PHP/MVC) — Alojada en servidor XAMPP</td></tr>
+        </tbody>
+    </table>
+
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     3. TABLA DE CONTENIDO
+════════════════════════════════════════════════════ -->
+<div class="toc-page">
+    <p class="toc-title">Tabla de Contenido</p>
+    <div class="toc-section">Sección Preliminar</div>
+
+    <div class="toc-line"><span class="toc-num">—</span><span class="toc-text">Control del Documento</span><span class="toc-dots"></span><span class="toc-pg">2</span></div>
+    <div class="toc-line"><span class="toc-num">—</span><span class="toc-text">Tabla de Contenido</span><span class="toc-dots"></span><span class="toc-pg">3</span></div>
+
+    <div class="toc-section">Capítulos</div>
+    <div class="toc-line"><span class="toc-num">1.</span><span class="toc-text">Introducción</span><span class="toc-dots"></span><span class="toc-pg">5</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">1.1</span><span class="toc-text">Propósito y alcance</span><span class="toc-dots"></span><span class="toc-pg">5</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">1.2</span><span class="toc-text">Audiencia objetivo</span><span class="toc-dots"></span><span class="toc-pg">5</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">1.3</span><span class="toc-text">Convenciones de la documentación</span><span class="toc-dots"></span><span class="toc-pg">5</span></div>
+
+    <div class="toc-line"><span class="toc-num">2.</span><span class="toc-text">Requisitos del Sistema</span><span class="toc-dots"></span><span class="toc-pg">7</span></div>
+
+    <div class="toc-line"><span class="toc-num">3.</span><span class="toc-text">Acceso al Sistema</span><span class="toc-dots"></span><span class="toc-pg">8</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">3.1</span><span class="toc-text">Inicio de sesión</span><span class="toc-dots"></span><span class="toc-pg">8</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">3.2</span><span class="toc-text">Cierre de sesión</span><span class="toc-dots"></span><span class="toc-pg">8</span></div>
+
+    <div class="toc-line"><span class="toc-num">4.</span><span class="toc-text">Interfaz General</span><span class="toc-dots"></span><span class="toc-pg">10</span></div>
+
+    <div class="toc-line"><span class="toc-num">5.</span><span class="toc-text">Panel Principal (Dashboard)</span><span class="toc-dots"></span><span class="toc-pg">12</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">5.1</span><span class="toc-text">Dashboard del Pasante</span><span class="toc-dots"></span><span class="toc-pg">12</span></div>
+
+    <div class="toc-line"><span class="toc-num">6.</span><span class="toc-text">Módulo: Asistencias</span><span class="toc-dots"></span><span class="toc-pg">13</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">6.1</span><span class="toc-text">Vista mensual — Almanaque del pasante</span><span class="toc-dots"></span><span class="toc-pg">13</span></div>
+
+    <div class="toc-line"><span class="toc-num">7.</span><span class="toc-text">Kiosco de Asistencias</span><span class="toc-dots"></span><span class="toc-pg">14</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">7.1</span><span class="toc-text">Configuración del Kiosco</span><span class="toc-dots"></span><span class="toc-pg">14</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">7.2</span><span class="toc-text">Registrar asistencia — Proceso del pasante</span><span class="toc-dots"></span><span class="toc-pg">14</span></div>
+
+    <div class="toc-line"><span class="toc-num">8.</span><span class="toc-text">Perfil de Usuario</span><span class="toc-dots"></span><span class="toc-pg">16</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">8.1</span><span class="toc-text">Actualizar datos personales</span><span class="toc-dots"></span><span class="toc-pg">16</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">8.2</span><span class="toc-text">Cambiar contraseña</span><span class="toc-dots"></span><span class="toc-pg">16</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">8.3</span><span class="toc-text">Constancia de culminación</span><span class="toc-dots"></span><span class="toc-pg">16</span></div>
+
+    <div class="toc-line"><span class="toc-num">9.</span><span class="toc-text">Mis Actividades (Bitácora)</span><span class="toc-dots"></span><span class="toc-pg">18</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">9.1</span><span class="toc-text">Registrar una actividad</span><span class="toc-dots"></span><span class="toc-pg">18</span></div>
+
+    <div class="toc-line"><span class="toc-num">10.</span><span class="toc-text">Mis Analíticas</span><span class="toc-dots"></span><span class="toc-pg">19</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">10.1</span><span class="toc-text">Indicadores de tu progreso</span><span class="toc-dots"></span><span class="toc-pg">19</span></div>
+
+    <div class="toc-line"><span class="toc-num">11.</span><span class="toc-text">Mis Evaluaciones</span><span class="toc-dots"></span><span class="toc-pg">20</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">11.1</span><span class="toc-text">Consultar tus evaluaciones</span><span class="toc-dots"></span><span class="toc-pg">20</span></div>
+
+    <div class="toc-line"><span class="toc-num">12.</span><span class="toc-text">Solución de Problemas Frecuentes</span><span class="toc-dots"></span><span class="toc-pg">21</span></div>
+
+    <div class="toc-line"><span class="toc-num">13.</span><span class="toc-text">Módulo de Exámenes Rápidos</span><span class="toc-dots"></span><span class="toc-pg">22</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">13.1</span><span class="toc-text">Ciclo de vida del examen</span><span class="toc-dots"></span><span class="toc-pg">22</span></div>
+    <div class="toc-line toc-sub"><span class="toc-num">13.2</span><span class="toc-text">Vista del pasante — Tomar examen</span><span class="toc-dots"></span><span class="toc-pg">22</span></div>
+
+    <div class="toc-section">Anexos</div>
+    <div class="toc-line"><span class="toc-num">A.</span><span class="toc-text">Glosario de Términos</span><span class="toc-dots"></span><span class="toc-pg">24</span></div>
+    <div class="toc-line"><span class="toc-num">B.</span><span class="toc-text">Referencias y Normativa</span><span class="toc-dots"></span><span class="toc-pg">26</span></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 1 — INTRODUCCIÓN
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 1</div>
+            <div class="ch-title">Introducción</div>
+            <div class="ch-sub">Descripción del sistema, alcance y audiencia</div>
+        </div>
+    </div>
+
+    <p class="doc-p">El <strong>Sistema de Gestión de Pasantías (SGP)</strong> es una aplicación web institucional desarrollada para el Instituto de Salud Pública del Estado Bolívar. Su propósito central es digitalizar y centralizar la administración de las pasantías y el servicio comunitario, garantizando trazabilidad, eficiencia operativa y cumplimiento de los estándares académicos.</p>
+
+    <div class="sec-title"><span class="sec-n">1.1</span> Propósito y Alcance</div>
+    <p class="doc-p">El SGP integra en una sola plataforma los procesos de: registro y control de pasantes, seguimiento de asistencias diarias, gestión de actividades académicas, administración de períodos académicos, generación de reportes certificados y control de acceso por roles.</p>
+    <p class="doc-p">El sistema abarca todo el ciclo de vida de la pasantía: desde la inscripción del pasante hasta la emisión de la constancia de culminación, pasando por el registro diario de asistencias, la evaluación y las actividades complementarias.</p>
+
+    <div class="sec-title"><span class="sec-n">1.2</span> Audiencia Objetivo</div>
+    <p class="doc-p">Este manual está dirigido a los perfiles de usuario que opera el sistema. Esta versión del documento corresponde al rol <strong>Pasante</strong> y describe únicamente las funciones disponibles para dicho rol:</p>
+    <table class="doc-table">
+        <thead><tr><th>Rol</th><th>Descripción</th><th>Módulos principales</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><span class="badge badge-admin">Administrador</span></td>
+                <td>Coordinador de Pasantías o personal de TI. Acceso total al sistema.</td>
+                <td>Todos los módulos</td>
+            </tr>
+            <tr>
+                <td><span class="badge badge-tutor">Tutor</span></td>
+                <td>Docente o profesional asignado al seguimiento del pasante.</td>
+                <td>Asistencias, Actividades, Evaluaciones, Reportes</td>
+            </tr>
+            <tr>
+                <td><span class="badge badge-pasante">Pasante</span></td>
+                <td>Estudiante realizando su pasantía o servicio comunitario.</td>
+                <td>Dashboard, Asistencias, Bitácora, Perfil, Constancia</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="sec-title"><span class="sec-n">1.3</span> Convenciones de la Documentación</div>
+    <table class="doc-table">
+        <thead><tr><th>Convención</th><th>Significado</th></tr></thead>
+        <tbody>
+            <tr><td><span class="badge badge-admin">Administrador</span></td><td>Funcionalidad disponible solo para el rol Administrador</td></tr>
+            <tr><td><span class="badge badge-tutor">Tutor</span></td><td>Funcionalidad disponible para Tutor y/o Administrador</td></tr>
+            <tr><td><span class="badge badge-pasante">Pasante</span></td><td>Funcionalidad disponible para el pasante</td></tr>
+            <tr><td><span class="kbd">Botón</span></td><td>Elemento interactivo en la interfaz (botón, tecla, campo)</td></tr>
+        </tbody>
+    </table>
+    <div class="note-box warn">
+        <span class="note-icon">⚠️</span>
+        <p>Las imágenes de interfaz mostradas en este manual son de referencia. La apariencia exacta puede variar según el período activo, los datos registrados y el rol del usuario.</p>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 2 — REQUISITOS DEL SISTEMA
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 2</div>
+            <div class="ch-title">Requisitos del Sistema</div>
+            <div class="ch-sub">Condiciones mínimas y recomendadas para operar el SGP</div>
+        </div>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">2.1</span> Navegadores Compatibles</div>
+    <table class="doc-table">
+        <thead><tr><th>Navegador</th><th>Versión mínima</th><th>Versión recomendada</th><th>Estado</th></tr></thead>
+        <tbody>
+            <tr><td>Google Chrome</td><td>90</td><td>120+</td><td>✅ Totalmente compatible</td></tr>
+            <tr><td>Microsoft Edge</td><td>90</td><td>120+</td><td>✅ Totalmente compatible</td></tr>
+            <tr><td>Mozilla Firefox</td><td>88</td><td>115+</td><td>✅ Totalmente compatible</td></tr>
+            <tr><td>Safari</td><td>14</td><td>16+</td><td>⚠️ Compatible (sin garantía en PDF)</td></tr>
+            <tr><td>Internet Explorer</td><td>—</td><td>—</td><td>❌ No soportado</td></tr>
+        </tbody>
+    </table>
+
+    <div class="sec-title"><span class="sec-n">2.2</span> Configuración de Pantalla y Red</div>
+    <ul class="doc-ul">
+        <li><strong>Resolución mínima:</strong> 1024 × 768 píxeles</li>
+        <li><strong>Resolución recomendada:</strong> 1280 × 800 o superior</li>
+        <li><strong>JavaScript:</strong> Habilitado (obligatorio — el sistema depende de JavaScript)</li>
+        <li><strong>Cookies:</strong> Habilitadas (para gestión de sesión)</li>
+        <li><strong>Conexión:</strong> Red local institucional o Internet de banda ancha (mín. 5 Mbps)</li>
+        <li><strong>PDF:</strong> Para imprimir reportes se requiere visor de PDF o impresora configurada</li>
+    </ul>
+
+    <div class="note-box info">
+        <span class="note-icon">ℹ️</span>
+        <p>El <strong>Kiosco de Asistencias</strong> debe operar en un equipo dedicado con Google Chrome en modo pantalla completa (<span class="kbd">F11</span>), conectado a la red local de la institución.</p>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 3 — ACCESO AL SISTEMA
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 3</div>
+            <div class="ch-title">Acceso al Sistema</div>
+            <div class="ch-sub">Inicio de sesión, recuperación de contraseña y cierre de sesión</div>
+        </div>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">3.1</span> Inicio de Sesión</div>
+    <p class="doc-p">El SGP utiliza autenticación mediante <strong>Correo Electrónico</strong> y <strong>Contraseña</strong>. Las credenciales son asignadas por el Administrador del sistema.</p>
+
+    <div class="ss-img-wrap">
+        <img class="ss-img" src="img/login.png" alt="Pantalla de inicio de sesión del SGP" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+    </div>
+    <div class="ss-box" style="display:none">
+        <span class="ss-box-icon">📷</span>
+        <div>
+            <span class="ss-box-label">[ Captura de pantalla requerida ]</span>
+            <span class="ss-box-desc">Vista completa de la pantalla de inicio de sesión — formulario con campos de correo, contraseña, CAPTCHA y botón "Ingresar". Incluir también el botón verde de Kiosco en la esquina superior derecha.</span>
+            <span class="ss-box-hint">Resolución recomendada: 1280×800 px · Formato: PNG</span>
+        </div>
+    </div>
+
+    <div class="steps">
+        <div class="step"><p>Abrir el navegador e ingresar la <strong>URL del sistema</strong> proporcionada por el Departamento de TI.</p></div>
+        <div class="step"><p>En el campo <strong>Cédula de Identidad</strong>, ingresar el número de cédula sin puntos ni espacios.</p></div>
+        <div class="step"><p>En el campo <strong>Contraseña</strong>, ingresar la contraseña asignada (distingue mayúsculas/minúsculas).</p></div>
+        <div class="step"><p>Hacer clic en el botón <span class="kbd">Iniciar Sesión</span>. El sistema validará las credenciales y redirigirá al Dashboard del rol correspondiente.</p></div>
+    </div>
+    <div class="note-box danger">
+        <span class="note-icon">🔒</span>
+        <p><strong>Seguridad:</strong> Después de 5 intentos fallidos de inicio de sesión, la cuenta puede quedar bloqueada temporalmente. Si olvida su contraseña, contacte al Administrador del sistema para que la restablezca.</p>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">3.2</span> Cierre de Sesión</div>
+    <p class="doc-p">Para cerrar la sesión correctamente:</p>
+    <div class="steps">
+        <div class="step"><p>Localizar el <strong>menú de usuario</strong> en la esquina superior derecha de la barra de navegación (muestra el nombre del usuario y un avatar).</p></div>
+        <div class="step"><p>Hacer clic sobre el avatar o nombre de usuario para desplegar el menú desplegable.</p></div>
+        <div class="step"><p>Seleccionar la opción <span class="kbd">Cerrar Sesión</span>. El sistema finalizará la sesión y redirigirá a la página de inicio de sesión.</p></div>
+    </div>
+    <div class="note-box warn">
+        <span class="note-icon">⚠️</span>
+        <p>No cierre el navegador directamente sin cerrar sesión, especialmente en equipos compartidos. Esto puede dejar la sesión activa y comprometer la seguridad de la cuenta.</p>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 4 — INTERFAZ GENERAL
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 4</div>
+            <div class="ch-title">Interfaz General</div>
+            <div class="ch-sub">Descripción de los elementos comunes de la interfaz de usuario</div>
+        </div>
+    </div>
+
+    <p class="doc-p">La interfaz del SGP adopta un diseño <strong>Bento Box</strong> moderno, con componentes organizados en tarjetas bien delimitadas. La disposición es consistente en todas las vistas del sistema.</p>
+
+    <div class="ss-img-wrap">
+        <img class="ss-img" src="img/interfaz-pasante.png" alt="Interfaz general del sistema — menú del rol Pasante" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+    </div>
+    <div class="ss-box" style="display:none">
+        <span class="ss-box-icon">📷</span>
+        <div>
+            <span class="ss-box-label">[ Captura de pantalla requerida ]</span>
+            <span class="ss-box-desc">Vista general de la interfaz del sistema con el panel lateral abierto, la barra superior y una sección de contenido visible, mostrando el menú correspondiente al rol Pasante.</span>
+            <span class="ss-box-hint">Resolución recomendada: 1440×900 px · Formato: PNG</span>
+        </div>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">4.1</span> Panel Lateral (Sidebar)</div>
+    <p class="doc-p">El panel lateral izquierdo contiene el menú de navegación principal. Sus elementos varían según el rol del usuario autenticado:</p>
+    <table class="doc-table">
+        <thead><tr><th>Ícono / Sección</th><th>Descripción</th><th>Roles</th></tr></thead>
+        <tbody>
+            <tr><td>Dashboard</td><td>Panel principal con métricas y resúmenes</td><td>Todos</td></tr>
+            <tr><td>Pasantes</td><td>Gestión completa del catálogo de pasantes</td><td><span class="badge badge-admin">Admin</span></td></tr>
+            <tr><td>Asistencias</td><td>Registro y consulta de asistencias</td><td>Todos</td></tr>
+            <tr><td>Actividades</td><td>Actividades de servicio comunitario y pasantías</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-tutor">Tutor</span></td></tr>
+            <tr><td>Períodos</td><td>Administración de períodos académicos</td><td><span class="badge badge-admin">Admin</span></td></tr>
+            <tr><td>Usuarios</td><td>Creación y gestión de cuentas de usuario</td><td><span class="badge badge-admin">Admin</span></td></tr>
+            <tr><td>Reportes</td><td>Generación de documentos PDF y Excel</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-tutor">Tutor</span></td></tr>
+            <tr><td>Bitácora</td><td>Registro de actividades del pasante</td><td><span class="badge badge-pasante">Pasante</span></td></tr>
+            <tr><td>Ayuda</td><td>Manual de usuario interactivo</td><td>Todos</td></tr>
+        </tbody>
+    </table>
+
+    <div class="sec-title" style="break-before: page; page-break-before: always;"><span class="sec-n">4.2</span> Barra Superior (Topbar)</div>
+    <p class="doc-p">La barra superior contiene:</p>
+    <ul class="doc-ul">
+        <li><strong>Selector de Período Académico:</strong> Desplegable para cambiar el contexto entre períodos activos. Afecta todos los datos mostrados en el sistema.</li>
+        <li><strong>Campana de Notificaciones:</strong> Muestra alertas y avisos del sistema en tiempo real.</li>
+        <li><strong>Menú de Usuario:</strong> Acceso al perfil, configuración y cierre de sesión.</li>
+    </ul>
+
+    <div class="sec-title"><span class="sec-n">4.3</span> Navegación en Dispositivos Móviles</div>
+    <p class="doc-p">En pantallas menores a 768px, el panel lateral se convierte en un <strong>dock inferior</strong> estilo móvil con íconos de acceso rápido. Las secciones adicionales se agrupan bajo el botón <span class="kbd">⋯ Más</span>.</p>
+
+    <div class="sec-title"><span class="sec-n">4.4</span> Cambio de Período Activo</div>
+    <div class="steps">
+        <div class="step"><p>Localizar el selector de período en la barra superior, identificado como <span class="kbd">Período Activo</span>.</p></div>
+        <div class="step"><p>Hacer clic para desplegar la lista de períodos disponibles.</p></div>
+        <div class="step"><p>Seleccionar el período deseado. Todos los módulos del sistema actualizarán sus datos automáticamente.</p></div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 5 — DASHBOARD
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 5</div>
+            <div class="ch-title">Panel Principal — Dashboard</div>
+            <div class="ch-sub">Visión general de tu progreso como pasante</div>
+        </div>
+    </div>
+
+    <p class="doc-p">El Dashboard es la primera pantalla visible al ingresar al sistema. Muestra un resumen ejecutivo del estado del período académico actual, adaptado al rol del usuario.</p>
+
+    <div class="ss-img-wrap">
+        <img class="ss-img" src="img/dashboard-pasante.png" alt="Dashboard del Pasante con barra de progreso de horas" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+    </div>
+    <div class="ss-box" style="display:none">
+        <span class="ss-box-icon">📷</span>
+        <div>
+            <span class="ss-box-label">[ Captura de pantalla requerida ]</span>
+            <span class="ss-box-desc">Dashboard del Pasante mostrando la barra de progreso de horas y el estado de la pasantía.</span>
+            <span class="ss-box-hint">Resolución recomendada: 1440×900 px · Formato: PNG</span>
+        </div>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">5.1</span> Dashboard del Pasante</div>
+    <p class="doc-p">El pasante visualiza su progreso personal:</p>
+    <ul class="doc-ul">
+        <li><strong>Barra de progreso de horas:</strong> Porcentaje de horas acumuladas vs. horas meta</li>
+        <li><strong>Estado actual de la pasantía:</strong> Activo / Pendiente / Finalizado</li>
+        <li><strong>Asistencias del mes:</strong> Resumen rápido del mes en curso</li>
+        <li><strong>Próximas actividades:</strong> Actividades programadas a las que está inscrito</li>
+    </ul>
+
+    <div class="note-box success">
+        <span class="note-icon">✅</span>
+        <p>El indicador de <strong>Constancia de Culminación</strong> se activa automáticamente en tu Dashboard cuando el período está <em>Cerrado</em> y tus horas se han completado al 100%.</p>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 6 — ASISTENCIAS
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 6</div>
+            <div class="ch-title">Módulo de Asistencias</div>
+            <div class="ch-sub">Consulta del calendario diario de asistencia personal</div>
+        </div>
+    </div>
+
+    <p class="doc-p">El módulo de asistencias es el núcleo operativo del SGP. Registra tu presencia diaria en la pasantía y calcula tus horas acumuladas hacia la meta del período.</p>
+
+    <div class="ss-img-wrap">
+        <img class="ss-img" src="img/asistencias-almanaque-pasante.png" alt="Almanaque mensual de asistencia del pasante" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+    </div>
+    <div class="ss-box" style="display:none">
+        <span class="ss-box-icon">📷</span>
+        <div>
+            <span class="ss-box-label">[ Captura de pantalla requerida ]</span>
+            <span class="ss-box-desc">Almanaque mensual de asistencia del pasante con celdas de colores (verde/rojo/azul/amarillo) que indican el estado de cada día.</span>
+            <span class="ss-box-hint">Resolución recomendada: 1440×900 px · Formato: PNG</span>
+        </div>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">6.1</span> Vista Mensual — Almanaque del Pasante</div>
+    <p class="doc-p">La vista mensual muestra un almanaque calendario con el registro de asistencia de cada día hábil. Los estados posibles son:</p>
+    <table class="doc-table">
+        <thead><tr><th>Estado</th><th>Significado</th><th>Horas contadas</th></tr></thead>
+        <tbody>
+            <tr><td>✅ <strong>Presente</strong></td><td>Asistencia completa al día</td><td>8 horas</td></tr>
+            <tr><td>🟡 <strong>Tarde</strong></td><td>Llegó tarde pero cumplió la jornada</td><td>8 horas (sin penalización)</td></tr>
+            <tr><td>❌ <strong>Ausente</strong></td><td>No asistió sin justificación</td><td>0 horas</td></tr>
+            <tr><td>📋 <strong>Justificado</strong></td><td>Ausencia por causa debidamente documentada</td><td>0 horas</td></tr>
+        </tbody>
+    </table>
+    <div class="note-box info">
+        <span class="note-icon">ℹ️</span>
+        <p>El sistema contabiliza <strong>siempre 8 horas por día de asistencia</strong>, independientemente de la hora de llegada. Los retardos no penalizan las horas acumuladas.</p>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 7 — KIOSCO
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 7</div>
+            <div class="ch-title">Kiosco de Asistencias</div>
+            <div class="ch-sub">Terminal de registro autónomo mediante PIN personal</div>
+        </div>
+    </div>
+
+    <p class="doc-p">El Kiosco de Asistencias es una pantalla de uso exclusivo en el área de entrada de la institución. Permite a los pasantes registrar su asistencia de forma autónoma ingresando su PIN de 4 dígitos, sin necesidad de credenciales de acceso al sistema completo.</p>
+
+    <div class="ss-img-wrap">
+        <img class="ss-img" src="img/kiosco-pin.png" alt="Pantalla principal del Kiosco con teclado PIN" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+    </div>
+    <div class="ss-box" style="display:none">
+        <span class="ss-box-icon">📷</span>
+        <div>
+            <span class="ss-box-label">[ Captura de pantalla requerida ]</span>
+            <span class="ss-box-desc">Pantalla principal del Kiosco mostrando el teclado numérico PIN y el reloj institucional.</span>
+            <span class="ss-box-hint">Fotografía del dispositivo físico instalado + captura de pantalla · Formato: PNG/JPG</span>
+        </div>
+    </div>
+
+    <div class="ss-img-wrap">
+        <img class="ss-img" src="img/kiosco-confirmacion.png" alt="Pantalla de confirmación del Kiosco" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+    </div>
+    <div class="ss-box" style="display:none">
+        <span class="ss-box-icon">📷</span>
+        <div>
+            <span class="ss-box-label">[ Captura de pantalla requerida ]</span>
+            <span class="ss-box-desc">Pantalla de confirmación exitosa tras registrar asistencia con el nombre del pasante y la hora.</span>
+            <span class="ss-box-hint">Fotografía del dispositivo físico instalado + captura de pantalla · Formato: PNG/JPG</span>
+        </div>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">7.1</span> Configuración del Kiosco</div>
+    <ul class="doc-ul">
+        <li>Instalar un equipo dedicado (PC o tablet) en el área de entrada</li>
+        <li>Abrir Google Chrome y navegar a la URL del Kiosco: <span class="kbd">/kiosco</span></li>
+        <li>Activar el modo pantalla completa con <span class="kbd">F11</span></li>
+        <li>Configurar el inicio de sesión automático de Windows para que el equipo arranque directo al navegador</li>
+    </ul>
+
+    <div class="sec-title" style="break-before: page; page-break-before: always;"><span class="sec-n">7.2</span> Registrar Asistencia — Proceso del Pasante</div>
+    <div class="steps">
+        <div class="step"><p>El pasante se acerca al Kiosco al llegar a la institución.</p></div>
+        <div class="step"><p>Ingresa su <strong>PIN de 4 dígitos</strong> usando el teclado numérico en pantalla.</p></div>
+        <div class="step"><p>El sistema valida el PIN y registra la asistencia con la hora exacta.</p></div>
+        <div class="step"><p>Se muestra una confirmación en pantalla con el nombre del pasante y el estado registrado (Presente o Tarde según la hora).</p></div>
+    </div>
+    <div class="note-box info">
+        <span class="note-icon">ℹ️</span>
+        <p>El Kiosco registra automáticamente el estado <strong>Tarde</strong> si el pasante ingresa después de la hora de entrada establecida para el período. El Administrador puede ajustar el umbral de hora de entrada desde la configuración del período académico.</p>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 8 — PERFIL
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 8</div>
+            <div class="ch-title">Perfil de Usuario</div>
+            <div class="ch-sub">Datos personales, contraseña, foto y constancia de culminación</div>
+        </div>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">8.1</span> Actualizar Datos Personales</div>
+    <div class="steps">
+        <div class="step"><p>Hacer clic en el <strong>avatar o nombre de usuario</strong> en la barra superior.</p></div>
+        <div class="step"><p>Seleccionar <strong>Mi Perfil</strong>.</p></div>
+        <div class="step"><p>Editar los campos disponibles: nombre, apellidos, teléfono, institución de procedencia.</p></div>
+        <div class="step"><p>Hacer clic en <span class="kbd">Guardar Cambios</span>.</p></div>
+    </div>
+
+    <div class="ss-img-wrap">
+        <img class="ss-img" src="img/perfil-pasante.png" alt="Pantalla Mi Perfil — edición de datos personales" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+    </div>
+    <div class="ss-box" style="display:none">
+        <span class="ss-box-icon">📷</span>
+        <div>
+            <span class="ss-box-label">[ Captura de pantalla requerida ]</span>
+            <span class="ss-box-desc">Vista de la sección Mi Perfil con el modal "Editar Mi Perfil" abierto, mostrando los campos editables y el botón Guardar Cambios resaltado.</span>
+            <span class="ss-box-hint">Resolución recomendada: 1280×800 px · Formato: PNG</span>
+        </div>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">8.2</span> Cambiar Contraseña</div>
+    <p class="doc-p">Desde el perfil, la sección <strong>Seguridad</strong> permite cambiar la contraseña actual. Se requiere ingresar la contraseña actual como verificación de identidad, seguida de la nueva contraseña (mínimo 8 caracteres).</p>
+
+    <div class="sec-title"><span class="sec-n">8.3</span> Constancia de Culminación</div>
+    <p class="doc-p">El botón <span class="kbd">Descargar Constancia</span> se habilita automáticamente en tu perfil cuando se cumplen <strong>ambas condiciones</strong>:</p>
+    <ul class="doc-ul">
+        <li>El período académico del pasante tiene estado <strong>Cerrado</strong></li>
+        <li>El pasante ha completado el <strong>100%</strong> de sus horas meta</li>
+    </ul>
+    <p class="doc-p">Si alguna condición no se cumple, el botón no aparecerá. Consulta con el Administrador para verificar el estado del período y las horas registradas.</p>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 9 — BITÁCORA
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 9</div>
+            <div class="ch-title">Mis Actividades (Bitácora)</div>
+            <div class="ch-sub">Registro diario de actividades y aprendizajes durante la pasantía</div>
+        </div>
+    </div>
+
+    <p class="doc-p">"Mis Actividades" es tu bitácora personal: un espacio para registrar el resumen de lo que realizas cada día durante la pasantía — actividades, aprendizajes, observaciones y reflexiones. Funciona como un diario de campo digital.</p>
+
+    <div class="ss-img-wrap">
+        <img class="ss-img" src="img/pasante-mis-actividades.png" alt="Mis Actividades — historial de actividades y botón Nueva Actividad" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+    </div>
+    <div class="ss-box" style="display:none">
+        <span class="ss-box-icon">📷</span>
+        <div>
+            <span class="ss-box-label">[ Captura de pantalla requerida ]</span>
+            <span class="ss-box-desc">Pantalla "Mis Actividades" con las tarjetas Total, Este Mes y Meses Activos, el historial de actividades y el botón "+ Nueva Actividad" señalizado.</span>
+            <span class="ss-box-hint">Resolución recomendada: 1280×800 px · Formato: PNG</span>
+        </div>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">9.1</span> Registrar una Actividad</div>
+    <div class="steps">
+        <div class="step"><p>Navegar a <strong>Mis Actividades</strong> en el menú lateral.</p></div>
+        <div class="step"><p>Hacer clic en <span class="kbd">+ Nueva Actividad</span>.</p></div>
+        <div class="step"><p>Ingresar el <strong>título</strong> y la <strong>descripción</strong> de lo realizado durante la jornada.</p></div>
+        <div class="step"><p>Hacer clic en <span class="kbd">Guardar</span>.</p></div>
+    </div>
+
+    <p class="doc-p">Las actividades registradas son visibles por el tutor asignado y el administrador, quienes pueden usarlas como insumo para la evaluación de desempeño y, de ser necesario, dejar una corrección u observación sobre la entrada.</p>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 10 — MIS ANALÍTICAS
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 10</div>
+            <div class="ch-title">Mis Analíticas</div>
+            <div class="ch-sub">Vista personal de tu progreso e indicadores de la pasantía</div>
+        </div>
+    </div>
+
+    <p class="doc-p">Accesible desde <span class="kbd">Mis Analíticas</span> en el menú lateral (<span class="kbd">/pasante/analiticas</span>), esta sección ofrece una vista personal y simplificada de tu propio progreso durante la pasantía.</p>
+
+    <div class="ss-img-wrap">
+        <img class="ss-img" src="img/analiticas-mis-analiticas-pasante.png" alt="Mis Analíticas — KPIs y progreso de horas del pasante" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+    </div>
+    <div class="ss-box" style="display:none">
+        <span class="ss-box-icon">📷</span>
+        <div>
+            <span class="ss-box-label">[ Captura de pantalla requerida ]</span>
+            <span class="ss-box-desc">Vista "Mis Analíticas" mostrando las 4 tarjetas KPI (Días Presentes, Ausencias, Justificados, % Asistencia) y la barra de "Progreso de Horas".</span>
+            <span class="ss-box-hint">Resolución recomendada: 1280×800 px · Formato: PNG</span>
+        </div>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">10.1</span> Indicadores de tu Progreso</div>
+    <ul class="doc-ul">
+        <li><strong>Encabezado destacado</strong> — porcentaje de asistencia global de tu pasantía.</li>
+        <li><strong>4 tarjetas KPI</strong> — Días Presentes, Ausencias, Justificados y % de Asistencia.</li>
+        <li><strong>Barra de "Progreso de Horas"</strong> — horas acumuladas frente a la meta total de horas de tu pasantía.</li>
+        <li><strong>Gráfica de dona "Distribución"</strong> — proporción de días presentes vs. ausentes sobre el total de días registrados.</li>
+        <li><strong>Gráfica de barras "Asistencia por Mes"</strong> — presentes, justificados y ausentes de los últimos 6 meses.</li>
+        <li><strong>Gráfica de "Tendencia"</strong> — porcentaje de asistencia mensual comparado contra la meta institucional del 85%.</li>
+    </ul>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 11 — MIS EVALUACIONES
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 11</div>
+            <div class="ch-title">Mis Evaluaciones</div>
+            <div class="ch-sub">Consulta de tus calificaciones de desempeño registradas por el Tutor</div>
+        </div>
+    </div>
+
+    <p class="doc-p">Accesible desde <span class="kbd">Mis Evaluaciones</span> en el menú lateral (<span class="kbd">/pasante/misEvaluaciones</span>), esta sección te permite consultar las evaluaciones de desempeño que tu Tutor o el Administrador han registrado sobre tu pasantía. Es una vista de <strong>solo lectura</strong>: el pasante no puede crear ni modificar evaluaciones.</p>
+
+    <div class="ss-img-wrap">
+        <img class="ss-img" src="img/pasante-mis-evaluaciones.png" alt="Mis Evaluaciones — historial de evaluaciones del pasante" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+    </div>
+    <div class="ss-box" style="display:none">
+        <span class="ss-box-icon">📷</span>
+        <div>
+            <span class="ss-box-label">[ Captura de pantalla requerida ]</span>
+            <span class="ss-box-desc">Pantalla "Mis Evaluaciones" mostrando las tarjetas KPI (Evaluaciones, Promedio, Mejor Nota, Última), el gauge "Índice de Desempeño" y el historial de evaluaciones señalizado.</span>
+            <span class="ss-box-hint">Resolución recomendada: 1280×800 px · Formato: PNG</span>
+        </div>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">11.1</span> Consultar tus Evaluaciones</div>
+    <ul class="doc-ul">
+        <li><strong>Tarjetas KPI</strong> — Evaluaciones registradas, Promedio global, Mejor Nota y la calificación de la Última evaluación.</li>
+        <li><strong>Gauge "Índice de Desempeño"</strong> — tu promedio global sobre 5 puntos, con la escala Excelente / Bueno / Regular / Deficiente.</li>
+        <li><strong>Historial</strong> — listado de todas tus evaluaciones, cada una con su período académico, calificación, fecha, nombre del evaluador y observaciones registradas.</li>
+    </ul>
+
+    <div class="note-box info">
+        <span class="note-icon">ℹ️</span>
+        <p>Solo puede existir <strong>una evaluación por período</strong>. Si aún no tienes evaluaciones registradas, esta pantalla mostrará el mensaje "Sin evaluaciones por ahora".</p>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 12 — SOLUCIÓN DE PROBLEMAS
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 12</div>
+            <div class="ch-title">Solución de Problemas Frecuentes</div>
+            <div class="ch-sub">Guía de diagnóstico y resolución de incidencias comunes</div>
+        </div>
+    </div>
+
+    <table class="doc-table">
+        <thead><tr><th>Problema</th><th>Causa probable</th><th>Solución</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>No puedo iniciar sesión</td>
+                <td>Contraseña incorrecta o cuenta desactivada</td>
+                <td>Verificar que la cédula y contraseña son correctas. Contactar al Administrador para reactivar la cuenta si está desactivada.</td>
+            </tr>
+            <tr>
+                <td>No aparece el botón de Constancia de Culminación</td>
+                <td>El período aún está Activo o las horas no están al 100%</td>
+                <td>Solicitar al Administrador verificar el estado del período y el total de horas registradas.</td>
+            </tr>
+            <tr>
+                <td>El estado "Activo" no se puede asignar al pasante</td>
+                <td>Falta departamento o fecha de inicio en el perfil del pasante</td>
+                <td>El Administrador debe completar la asignación de departamento y fecha de inicio desde el módulo de Pasantes.</td>
+            </tr>
+            <tr>
+                <td>El Kiosco no registra la asistencia</td>
+                <td>PIN incorrecto, pasante desactivado o sin período activo</td>
+                <td>Verificar que el pasante tenga estado "Activo" y que su PIN esté vigente. Resetear el PIN desde el panel de administración.</td>
+            </tr>
+            <tr>
+                <td>El PDF no se genera o muestra error</td>
+                <td>El navegador bloqueó la ventana emergente o hay error de servidor</td>
+                <td>Permitir ventanas emergentes (pop-ups) para el dominio del sistema en la configuración del navegador.</td>
+            </tr>
+            <tr>
+                <td>No veo datos en el Dashboard</td>
+                <td>No hay un período activo seleccionado</td>
+                <td>Usar el selector de período en la barra superior para elegir el período correspondiente.</td>
+            </tr>
+            <tr>
+                <td>La exportación Excel descarga un archivo vacío</td>
+                <td>No hay pasantes registrados en el período o filtro aplicado sin resultados</td>
+                <td>Verificar que el período tiene pasantes activos y remover cualquier filtro de búsqueda.</td>
+            </tr>
+            <tr>
+                <td>El sistema muestra "Error 403 — Acceso denegado"</td>
+                <td>El usuario intenta acceder a una sección fuera de su rol</td>
+                <td>Verificar el rol del usuario. Si el acceso es legítimo, contactar al Administrador para ajustar los permisos.</td>
+            </tr>
+            <tr>
+                <td>Las notificaciones de escritorio no aparecen</td>
+                <td>Permiso del navegador bloqueado o notificaciones de Windows desactivadas</td>
+                <td>Verificar el permiso en el ícono del candado de la barra de URL → Notificaciones → Permitir. También revisar Configuración de Windows → Sistema → Notificaciones y comprobar que Chrome/Edge están habilitados.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="note-box info">
+        <span class="note-icon">📞</span>
+        <p>Si el problema persiste después de aplicar las soluciones indicadas, contactar al <strong>Departamento de Soporte Técnico</strong> del instituto, describiendo el error exacto, la acción que lo generó y el rol del usuario afectado.</p>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CAP. 13 — EXÁMENES
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Capítulo 13</div>
+            <div class="ch-title">Módulo de Exámenes Rápidos</div>
+            <div class="ch-sub">Responder exámenes asignados y consultar resultados</div>
+        </div>
+    </div>
+
+    <p class="doc-p">El módulo de Exámenes permite a tu tutor o al administrador crear evaluaciones rápidas tipo quiz con corrección automática. Tú respondes desde tu propio panel y el resultado está disponible de inmediato.</p>
+
+    <div class="ss-img-wrap">
+        <img class="ss-img" src="img/examenes-pasante.png" alt="Examen disponible y resultado en el panel del Pasante" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+    </div>
+    <div class="ss-box" style="display:none">
+        <span class="ss-box-icon">📷</span>
+        <div>
+            <span class="ss-box-label">[ Captura de pantalla requerida ]</span>
+            <span class="ss-box-desc">Vista del examen disponible en el panel del pasante (preguntas y opciones de respuesta) y la pantalla de resultado inmediato tras enviar el examen.</span>
+            <span class="ss-box-hint">Resolución recomendada: 1440×900 px · Formato: PNG</span>
+        </div>
+    </div>
+
+    <div class="sec-title"><span class="sec-n">13.1</span> Ciclo de vida del examen</div>
+    <table class="doc-table">
+        <thead><tr><th>Estado</th><th>Descripción</th><th>Pasante puede responder</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Borrador</strong></td><td>En preparación, no visible para pasantes</td><td>No</td></tr>
+            <tr><td><strong>Publicado</strong></td><td>Activo — los pasantes pueden acceder y responder</td><td>Sí</td></tr>
+            <tr><td><strong>Cerrado</strong></td><td>Sin más respuestas — solo consulta de resultados</td><td>Solo ver resultado</td></tr>
+        </tbody>
+    </table>
+
+    <div class="sec-title"><span class="sec-n">13.2</span> Vista del Pasante — Tomar Examen</div>
+    <div class="steps">
+        <div class="step"><p>En tu panel, navegar a <strong>Mis Exámenes</strong>.</p></div>
+        <div class="step"><p>Hacer clic en el examen <span class="badge" style="background:#dcfce7;color:#15803d;-webkit-print-color-adjust:exact;">Publicado</span> disponible.</p></div>
+        <div class="step"><p>Responder cada pregunta seleccionando la opción correcta.</p></div>
+        <div class="step"><p>Hacer clic en <span class="kbd">Enviar Examen</span>. El resultado aparece inmediatamente.</p></div>
+    </div>
+    <div class="note-box info">
+        <span class="note-icon">ℹ️</span>
+        <p>Apruebas con el 60% o más del puntaje máximo. Puedes tener múltiples intentos si el Administrador no cierra el examen.</p>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     ANEXO A — GLOSARIO
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Anexo A</div>
+            <div class="ch-title">Glosario de Términos</div>
+            <div class="ch-sub">Definiciones de los términos técnicos y académicos del sistema</div>
+        </div>
+    </div>
+
+    <div class="glos-entry">
+        <div class="glos-term">Asistencia</div>
+        <div class="glos-def">Registro diario de la presencia de un pasante en su lugar de pasantía. Cada asistencia válida contabiliza 8 horas hacia las horas meta.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Bitácora</div>
+        <div class="glos-def">Diario de campo digital donde el pasante registra sus actividades, aprendizajes y observaciones durante el proceso de pasantía.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Constancia de Culminación</div>
+        <div class="glos-def">Documento oficial emitido por el sistema que certifica que el pasante ha completado satisfactoriamente las horas requeridas en el período académico.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Departamento Asignado</div>
+        <div class="glos-def">Unidad organizativa o área funcional de la institución donde el pasante desarrolla sus actividades de pasantía bajo la supervisión de un tutor.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Horas Meta</div>
+        <div class="glos-def">Total de horas de pasantía que el pasante debe completar para aprobar el período. Varía según el tipo de período (Regular: generalmente 280–320 horas; Intensivo: 120–180 horas).</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Ficha Personal</div>
+        <div class="glos-def">Reporte PDF que muestra el historial completo de asistencias de un pasante, organizado por semanas y meses, con resumen de horas acumuladas y porcentaje de avance.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Kiosco de Asistencias</div>
+        <div class="glos-def">Módulo web de acceso público (sin autenticación completa) que permite a los pasantes registrar su asistencia ingresando su PIN de 4 dígitos en una pantalla táctil o PC dedicada.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Nómina Global</div>
+        <div class="glos-def">Reporte consolidado en PDF o Excel que lista todos los pasantes activos del período con su resumen de horas, estado y datos de asignación.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Pasante</div>
+        <div class="glos-def">Estudiante universitario o de educación técnica que realiza sus prácticas profesionales o servicio comunitario bajo la tutela de la institución.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Período Académico</div>
+        <div class="glos-def">Ciclo temporal que enmarca un conjunto de pasantías. Puede ser Regular (año escolar completo) o Intensivo (período vacacional). Todos los datos del sistema están contextualizados por período.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">PIN de Asistencia</div>
+        <div class="glos-def">Código numérico personal de 4 dígitos asignado a cada pasante, utilizado exclusivamente para el registro de asistencia en el Kiosco. Se almacena cifrado en la base de datos.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Retardo / Tarde</div>
+        <div class="glos-def">Estado de asistencia que indica que el pasante llegó fuera del horario establecido. En el SGP, un retardo no penaliza las horas acumuladas: se contabilizan las 8 horas completas del día.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Rol</div>
+        <div class="glos-def">Perfil de acceso asignado a cada cuenta de usuario que determina los módulos visibles y las acciones permitidas. Los roles del sistema son: Administrador, Tutor y Pasante.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Semana Relativa</div>
+        <div class="glos-def">Numeración de semanas calculada a partir de la fecha de inicio del período académico, no del año calendario. La semana 1 es la primera semana completa desde el inicio del período.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Servicio Comunitario</div>
+        <div class="glos-def">Actividad de responsabilidad social realizada por los pasantes en beneficio de instituciones o comunidades externas, como parte de los requisitos académicos del programa.</div>
+    </div>
+    <div class="glos-entry">
+        <div class="glos-term">Tutor</div>
+        <div class="glos-def">Docente o profesional de la institución encargado del seguimiento y evaluación del desempeño del pasante durante su proceso. Tiene acceso a los módulos de asistencia, evaluación y reportes de sus pasantes asignados.</div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     ANEXO B — REFERENCIAS
+════════════════════════════════════════════════════ -->
+<div class="chapter">
+    <div class="ch-header">
+        <div>
+            <div class="ch-num">Anexo B</div>
+            <div class="ch-title">Referencias y Normativa</div>
+            <div class="ch-sub">Marco legal, técnico y académico del sistema</div>
+        </div>
+    </div>
+
+    <div class="sec-title" style="margin-top:0;">Marco Legal y Académico</div>
+    <ul class="doc-ul">
+        <li><strong>Reglamento de Pasantías y Servicio Comunitario</strong> — Instituto de Salud Pública del Estado Bolívar. Coordinación Académica, vigente.</li>
+        <li><strong>Ley Orgánica de Educación (LOE)</strong> — República Bolivariana de Venezuela. Gaceta Oficial Extraordinaria N.° 5.929, agosto 2009.</li>
+        <li><strong>Ley del Servicio Comunitario del Estudiante de Educación Superior</strong> — G.O. N.° 38.272, septiembre 2005.</li>
+        <li><strong>Reglamento sobre Pasantías Estudiantiles</strong> — CNU / OPSU, Venezuela.</li>
+    </ul>
+
+    <div class="sec-title">Referencias Técnicas</div>
+    <ul class="doc-ul">
+        <li><strong>PHP 8.x — Manual oficial:</strong> <a class="doc-link" href="https://www.php.net/manual/es/">https://www.php.net/manual/es/</a></li>
+        <li><strong>MySQL 8.0 Reference Manual:</strong> <a class="doc-link" href="https://dev.mysql.com/doc/">https://dev.mysql.com/doc/</a></li>
+        <li><strong>SweetAlert2 — Documentación:</strong> <a class="doc-link" href="https://sweetalert2.github.io/">https://sweetalert2.github.io/</a></li>
+        <li><strong>Tabler Icons:</strong> <a class="doc-link" href="https://tabler-icons.io/">https://tabler-icons.io/</a></li>
+        <li><strong>OWASP Top 10 — Seguridad en aplicaciones web:</strong> <a class="doc-link" href="https://owasp.org/www-project-top-ten/">https://owasp.org/</a></li>
+    </ul>
+
+    <div class="sec-title">Estándares de Documentación</div>
+    <ul class="doc-ul">
+        <li><strong>IEEE Std 1063-2001</strong> — Standard for Software User Documentation.</li>
+        <li><strong>ISO/IEC 26514:2008</strong> — Systems and software engineering — Requirements for designers and developers of user documentation.</li>
+    </ul>
+
+    <div class="sep"></div>
+
+    <div style="text-align:center; padding:24px 0; color:#64748b;">
+        <p style="font-size:10pt; font-weight:700; color:#1e293b; margin-bottom:6px;">Registro y Control de Asistencias de Pasantes</p>
+        <p style="font-size:9pt;">Instituto de Salud Pública del Estado Bolívar</p>
+    </div>
+</div>
+<script>
+(function(){
+  function wrap(els, cls){
+    var w = document.createElement('div');
+    w.style.breakInside = 'avoid';
+    w.className = cls || 'keep-together';
+    els[0].parentNode.insertBefore(w, els[0]);
+    els.forEach(function(e){ w.appendChild(e); });
+  }
+  document.querySelectorAll('.ss-img-wrap').forEach(function(img){
+    if(img.closest('.keep-together')) return;
+    var prev = img.previousElementSibling;
+    if(!prev) return;
+    if(prev.classList.contains('keep-together')) return;
+    var next = img.nextElementSibling;
+    var els = [prev, img];
+    if(next && next.classList.contains('ss-box')) els.push(next);
+    wrap(els);
+  });
+  document.querySelectorAll('.sec-title').forEach(function(title){
+    if(title.closest('.keep-together')) return;
+    var next = title.nextElementSibling;
+    if(!next) return;
+    wrap([title, next], 'keep-together sec-group');
+  });
+  document.querySelectorAll('.doc-table').forEach(function(tbl){
+    if(tbl.closest('.keep-together')) return;
+    var prev = tbl.previousElementSibling;
+    if(!prev) return;
+    if(tbl.offsetHeight > 600) return;
+    wrap([prev, tbl]);
+  });
+  document.querySelectorAll('.chapter').forEach(function(ch){
+    var last = ch.lastElementChild;
+    if(!last || !last.classList.contains('note-box')) return;
+    var notes = [];
+    var el = last;
+    while(el && el.classList.contains('note-box')){
+      notes.unshift(el);
+      el = el.previousElementSibling;
+    }
+    if(!el) return;
+    var totalH = notes.reduce(function(h,n){ return h + n.offsetHeight; }, 0);
+    if(totalH > 300) return;
+    if(el.classList.contains('keep-together')){
+      notes.forEach(function(n){ el.appendChild(n); });
+    } else {
+      var group = [el].concat(notes);
+      var groupH = group.reduce(function(h,e){ return h + e.offsetHeight; }, 0);
+      if(groupH <= 600) wrap(group);
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -369,6 +369,76 @@ class NotificationModel
     }
 
     /**
+     * Enviar notificación a todos los administradores activos (rol 0 y 1).
+     */
+    public function notifyAdmins(string $tipo, string $titulo, string $mensaje, string $url = '#', ?int $referencia_id = null): int
+    {
+        try {
+            $this->db->query("SELECT id FROM usuarios WHERE rol_id IN (0, 1) AND estado = 'activo'");
+            $admins = $this->db->resultSet() ?: [];
+            $enviadas = 0;
+            foreach ($admins as $admin) {
+                if ($this->createWithRef((int)$admin->id, $tipo, $titulo, $mensaje, $url, $referencia_id)) {
+                    $enviadas++;
+                }
+            }
+            return $enviadas;
+        } catch (\Throwable $e) {
+            error_log('[NotificationModel::notifyAdmins] Error: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Verifica si existen pasantes en estado 'Sin Asignar' y emite una alerta a los administradores
+     * si no se ha notificado hoy para evitar spam.
+     */
+    public function verificarYNotificarPasantesSinAsignar(): int
+    {
+        try {
+            // Contar pasantes sin asignar
+            $this->db->query("
+                SELECT COUNT(*) AS total
+                FROM usuarios u
+                JOIN datos_pasante dpa ON dpa.usuario_id = u.id
+                WHERE u.rol_id = 3 
+                  AND u.estado = 'activo'
+                  AND COALESCE(dpa.tipo_pasantia, 'Regular') = 'Regular'
+                  AND (dpa.estado_pasantia = 'Sin Asignar' OR dpa.estado_pasantia IS NULL OR dpa.departamento_asignado_id IS NULL)
+            ");
+            $totalSinAsignar = (int)($this->db->single()->total ?? 0);
+
+            if ($totalSinAsignar <= 0) {
+                return 0;
+            }
+
+            // Obtener administradores
+            $this->db->query("SELECT id FROM usuarios WHERE rol_id IN (0, 1) AND estado = 'activo'");
+            $admins = $this->db->resultSet() ?: [];
+            $enviadas = 0;
+
+            foreach ($admins as $admin) {
+                $adminId = (int)$admin->id;
+                // Verificar si ya se alertó hoy a este admin
+                if (!$this->existeHoy($adminId, 'pasantes_sin_asignar')) {
+                    $titulo = "⚠️ {$totalSinAsignar} Pasante(s) Sin Asignar";
+                    $mensaje = "Hay {$totalSinAsignar} pasante(s) registrado(s) en espera de asignación de departamento o tutor institucional. Pulsa aquí para gestionarlos.";
+                    $url = defined('URLROOT') ? (URLROOT . '/asignaciones') : '/asignaciones';
+                    
+                    if ($this->createWithRef($adminId, 'pasantes_sin_asignar', $titulo, $mensaje, $url)) {
+                        $enviadas++;
+                    }
+                }
+            }
+
+            return $enviadas;
+        } catch (\Throwable $e) {
+            error_log('[NotificationModel::verificarYNotificarPasantesSinAsignar] ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
      * Obtener listado de usuarios con estado de notificaciones para gestión granular.
      */
     public function getUsersList(): array

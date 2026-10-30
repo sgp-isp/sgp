@@ -4,8 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light only">
+    <script>
+        try {
+            localStorage.setItem('sgp_theme', 'light');
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.classList.remove('dark');
+        } catch(e) {}
+    </script>
     <title>SGP - Iniciar Sesión</title>
-    <link rel="icon" type="image/png" href="<?= URLROOT ?>/img/favicon.png">
+    <meta name="description" content="Sistema de Gestión de Pasantías (SGP) - Instituto de Salud Pública del Estado Bolívar (ISPEB). Control de asistencia, evaluaciones y gestión académica institucional.">
+    <meta property="og:title" content="SGP — Sistema de Gestión de Pasantías ISPEB">
+    <meta property="og:description" content="Portal oficial de control de asistencia, pasantías y evaluaciones del Instituto de Salud Pública del Estado Bolívar.">
+    <meta property="og:type" content="website">
+    
+    <!-- Schema.org JSON-LD Datos Estructurados -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "GovernmentOrganization",
+      "name": "Instituto de Salud Pública del Estado Bolívar",
+      "alternateName": "ISPEB",
+      "url": "<?= URLROOT ?>",
+      "logo": "<?= URLROOT ?>/img/logo.png",
+      "description": "Sistema de Gestión de Pasantías y Asistencias Institucionales"
+    }
+    </script>
+
+    <!-- PWA & Mobile Web App Meta Tags -->
+    <link rel="manifest" href="<?= URLROOT ?>/manifest.json?v=2">
+    <meta name="theme-color" content="#162660">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SGP ISPEB">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?= URLROOT ?>/img/apple-touch-icon.png?v=2">
+    <link rel="icon" type="image/png" sizes="192x192" href="<?= URLROOT ?>/img/pwa-icon-192.png?v=2">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= URLROOT ?>/img/favicon-32.png?v=<?= @filemtime(APPROOT . '/../public/img/favicon-32.png') ?: 3 ?>">
+    <link rel="icon" type="image/png" href="<?= URLROOT ?>/img/favicon.png?v=<?= @filemtime(APPROOT . '/../public/img/favicon.png') ?: 3 ?>">
     
     <!-- CSS Assets -->
     <link rel="stylesheet" href="<?= URLROOT ?>/css/tabler-icons.min.css">
@@ -14,8 +49,19 @@
     <link rel="stylesheet" href="<?= URLROOT ?>/css/swal-bento-navy.css?v=<?= filemtime(APPROOT.'/../public/css/swal-bento-navy.css') ?>">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/notifications.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/style.css?v=<?= filemtime(APPROOT.'/../public/css/style.css') ?>">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/captcha.css">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/captcha.css?v=<?= filemtime(APPROOT.'/../public/css/captcha.css') ?>">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/bento-otp.css?v=<?= @filemtime(APPROOT.'/../public/css/bento-otp.css') ?: time() ?>">
     
+    <!-- ============================================ -->
+    <!-- FORZAR ESCALA 100% NATIVA EN LOGIN -->
+    <!-- ============================================ -->
+    <style>
+        html, body.auth-wrapper {
+            zoom: 1 !important;
+            -webkit-text-size-adjust: 100%;
+        }
+    </style>
+
     <!-- ============================================ -->
     <!-- DEFINIR URLROOT PARA JAVASCRIPT -->
     <!-- ============================================ -->
@@ -24,11 +70,12 @@
          * Definir constante URLROOT para uso en JavaScript
          * Necesario para notifications.js y otros scripts del sistema
          */
-        const URLROOT = <?php echo json_encode(URLROOT, JSON_UNESCAPED_SLASHES) ?>; // [FIX-C3]
+        window.URLROOT = <?php echo json_encode(URLROOT, JSON_UNESCAPED_SLASHES) ?>;
+        const URLROOT = window.URLROOT;
     </script>
 </head>
 <body class="auth-wrapper">
-    <!-- ===== BOTÓN KIOSCO - TOP RIGHT (solo si está activo) ===== -->
+    <!-- ===== ACCIONES RÁPIDAS: KIOSCO & QR (solo si está activo) ===== -->
     <?php
     $kioscoHabilitado = 1;
     try {
@@ -37,49 +84,81 @@
         $cfgRow = $dbCfg->single();
         if ($cfgRow) $kioscoHabilitado = (int)$cfgRow->valor;
     } catch (Exception $e) { /* asumir activo si no existe tabla */ }
+    $urlTokenParam = !empty($_GET['token']) ? '?token=' . urlencode(trim($_GET['token'])) : '';
     ?>
     <?php if ($kioscoHabilitado): ?>
-    <a href="<?= URLROOT ?>/kiosco" class="kiosco-pill" target="_blank" rel="noopener noreferrer">
-        <i class="ti ti-clock-check"></i>
-        <span class="kiosco-text">
-            <span>Marcar Asistencia</span>
-            <span class="kiosco-label-sub">Acceso al Kiosco Público</span>
-        </span>
-    </a>
+    <div class="kiosco-floating-actions">
+        <a href="<?= URLROOT ?>/kiosco<?= $urlTokenParam ?>" class="kiosco-pill" target="_self" title="Acceso al Kiosco de Asistencia">
+            <i class="ti ti-clock-check"></i>
+            <span class="kiosco-text">
+                <span>Marcar Asistencia</span>
+                <span class="kiosco-label-sub">Acceso al Kiosco Público</span>
+            </span>
+        </a>
+        <a href="<?= URLROOT ?>/configuracion/cartelQr" target="_blank" class="btn-qr-login-pill" title="Abrir Cartel Oficial QR para escanear e imprimir">
+            <i class="ti ti-qrcode"></i>
+            <span>Cartel QR</span>
+        </a>
+    </div>
     <?php endif; ?>
 
     <style>
-    .kiosco-pill {
+    .kiosco-floating-actions {
         position: fixed;
         top: 380px;
-        right: 50px;
-        z-index: 10000;
+        right: 40px;
+        z-index: 9000;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+    }
+    .kiosco-pill {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 14px 28px;
-        background: linear-gradient(135deg, #2ecc71 0%, #219150 100%);
+        padding: 13px 24px;
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
         color: white !important;
         text-decoration: none;
-        border-radius: 50px;
+        border-radius: 12px; /* Rectángulo con esquinas redondeadas */
         font-weight: 700;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
         letter-spacing: 0.3px;
     }
     .kiosco-pill i { font-size: 1.4rem; }
     .kiosco-pill:hover {
-        transform: translateY(-4px) scale(1.02);
+        transform: translateY(-3px) scale(1.02);
         box-shadow: 0 12px 25px rgba(46, 204, 113, 0.6);
         color: white !important;
         text-decoration: none;
     }
-    /* [SGP-FIX-KIOSCO-OVERLAP] Mismo breakpoint que style.css (.kiosco-pill mobile) */
-    @media (max-width: 1100px) {
-        .kiosco-pill .kiosco-label-sub {
-            display: block;
-        }
+    .btn-qr-login-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px; /* Altura y presencia un poco mayor */
+        background: rgba(255, 255, 255, 0.95);
+        color: #1e293b;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px; /* Rectángulo con bordes redondeados */
+        font-weight: 700;
+        font-size: 0.90rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        backdrop-filter: blur(8px);
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    .btn-qr-login-pill i { font-size: 1.25rem; color: #27ae60; }
+    .btn-qr-login-pill:hover {
+        background: #ffffff;
+        border-color: #27ae60;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(46, 204, 113, 0.25);
+        color: #0f172a;
     }
     .kiosco-label-sub {
         display: none;
@@ -88,16 +167,85 @@
         opacity: 0.85;
         margin-top: 1px;
     }
-    /* Wrapper para texto multi-línea en móvil */
     .kiosco-text { display: flex; flex-direction: column; }
+
+    @media (max-width: 1100px) {
+        .kiosco-pill .kiosco-label-sub { display: block; }
+    }
+    @media (max-width: 768px) {
+        .kiosco-floating-actions {
+            position: relative !important;
+            top: auto !important;
+            right: auto !important;
+            z-index: 100 !important;
+            margin: 10px auto 14px !important;
+            width: fit-content;
+            max-width: 94%;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .kiosco-pill {
+            padding: 10px 18px;
+            font-size: 0.92rem;
+            box-shadow: 0 4px 14px rgba(46, 204, 113, 0.35);
+            border-radius: 10px !important;
+        }
+        .kiosco-pill i { font-size: 1.25rem; }
+        .btn-qr-login-pill {
+            padding: 10px 16px;
+            font-size: 0.88rem;
+            border-radius: 10px !important;
+        }
+        .btn-qr-login-pill i { font-size: 1.2rem; }
+    }
+
+    .btn-biometria-mobile {
+        width: 100%;
+        padding: 12px 18px;
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 12px;
+        color: #0f172a;
+        font-weight: 700;
+        font-size: 0.92rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .btn-biometria-mobile:hover {
+        background: #f0fdf4;
+        border-color: #16a34a;
+        color: #15803d;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(22, 163, 74, 0.16);
+    }
+    .btn-biometria-mobile i {
+        font-size: 1.4rem;
+        color: #16a34a;
+        transition: transform 0.2s ease;
+    }
+    .btn-biometria-mobile:hover i {
+        transform: scale(1.1);
+    }
     </style>
     <script>
-    (function positionKioscoPill() {
+    (function positionKioscoActions() {
         function update() {
-            var pill = document.querySelector('.kiosco-pill');
+            var actions = document.querySelector('.kiosco-floating-actions');
+            if (!actions) return;
+            if (window.innerWidth <= 768) {
+                actions.style.top = '';
+                return;
+            }
             var cintillo = document.querySelector('.cintillo-container');
-            if (!pill || !cintillo) return;
-            pill.style.top = (cintillo.offsetHeight + 80) + 'px';
+            if (!cintillo) return;
+            actions.style.top = (cintillo.offsetHeight + 80) + 'px';
         }
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', update);
@@ -105,7 +253,6 @@
             update();
         }
         window.addEventListener('resize', update);
-        // Reposicionar tras carga de imágenes del cintillo (pueden cambiar la altura)
         document.querySelectorAll('.cintillo-container img').forEach(function(img) {
             if (!img.complete) img.addEventListener('load', update);
         });
@@ -197,23 +344,42 @@
                 <i class="ti ti-arrow-right" style="font-size: 20px;"></i>
             </button>
 
-            <!-- Enlace de Recuperación (debajo del botón) -->
-            <div style="text-align: center; margin-bottom: 8px;">
-                <a href="<?= URLROOT ?>/auth/recovery" class="auth-link" style="font-size: 0.85rem;">
-                    ¿Olvidaste tu contraseña?
+            <!-- Acceso Rápido Seguro (Huella Dactilar / Patrón) — Activo solo en Dispositivos Vinculados -->
+            <div id="biometria-login-container" style="display: none; margin-bottom: 12px; text-align: center;">
+                <div style="display: flex; align-items: center; margin: 10px 0 12px 0;">
+                    <div style="flex: 1; height: 1px; background: rgba(0,0,0,0.08);"></div>
+                    <span style="padding: 0 10px; font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">O ingresa con tu dispositivo</span>
+                    <div style="flex: 1; height: 1px; background: rgba(0,0,0,0.08);"></div>
+                </div>
+                <button type="button" id="btnBiometriaLogin" class="btn-biometria-mobile" style="display: none;">
+                    <i class="ti ti-fingerprint"></i>
+                    <span>Ingresar con Huella Dactilar</span>
+                </button>
+                <div id="linkLoginPatronAlt" style="display: none; margin-top: 9px;"></div>
+            </div>
+
+            <!-- Enlaces de Acción Rápida: ¿Olvidaste tu contraseña? y Regístrate aquí (Chips interactivos con micro-animaciones) -->
+            <div class="auth-actions-group">
+                <a href="<?= URLROOT ?>/auth/recovery" class="auth-action-chip chip-recovery" title="Recuperar acceso si olvidaste tu clave">
+                    <i class="ti ti-key"></i>
+                    <span>¿Olvidaste tu contraseña?</span>
+                </a>
+                <a href="<?= URLROOT ?>/auth/register" class="auth-action-chip chip-register" title="Crear una cuenta nueva">
+                    <i class="ti ti-user-plus"></i>
+                    <span>Regístrate aquí</span>
                 </a>
             </div>
         </form>
-
-        <div class="auth-footer">
-            ¿No tienes cuenta? <a href="<?= URLROOT ?>/auth/register" class="auth-link">Regístrate aquí</a>
-        </div>
     </div>
 
     <!-- Loading Spinner: Usamos loading en el botón (setLoading) -->
 
     <?php include_once APPROOT . '/views/layouts/footer.php'; ?>
     <script src="<?= URLROOT ?>/js/validation.js"></script>
+    <script src="<?= URLROOT ?>/js/sgp-biometria.js?v=<?= @filemtime(APPROOT . '/../public/js/sgp-biometria.js') ?: time() ?>"></script>
+    <script src="<?= URLROOT ?>/js/sgp-pattern-lock.js?v=<?= @filemtime(APPROOT . '/../public/js/sgp-pattern-lock.js') ?: time() ?>"></script>
+    <script src="<?= URLROOT ?>/js/bento-otp.js?v=<?= @filemtime(APPROOT . '/../public/js/bento-otp.js') ?: time() ?>"></script>
+    <script src="<?= URLROOT ?>/js/sgp-dispositivos.js?v=<?= @filemtime(APPROOT . '/../public/js/sgp-dispositivos.js') ?: time() ?>"></script>
     
     <script>
         // ============================================
@@ -280,10 +446,33 @@
             this.classList.remove('invalid');
         });
 
-        // Validación en tiempo real de email
+        // Validación en login de email (limpia, sin texto verde que choque con la contraseña)
         const emailInput = document.getElementById('email');
         emailInput.addEventListener('blur', function() {
-            validateEmailWithFeedback(this);
+            const val = this.value.trim();
+            const feedbackEl = this.parentElement.querySelector('.email-feedback');
+            if (!val) {
+                this.classList.remove('valid', 'invalid');
+                if (feedbackEl) feedbackEl.innerHTML = '';
+                return;
+            }
+            if (typeof isValidEmail === 'function' && isValidEmail(val)) {
+                this.classList.remove('invalid');
+                this.classList.add('valid');
+                if (feedbackEl) feedbackEl.innerHTML = '';
+            } else {
+                this.classList.remove('valid');
+                this.classList.add('invalid');
+                if (feedbackEl) {
+                    feedbackEl.innerHTML = '<i class="ti ti-alert-circle"></i> Formato de correo inválido';
+                    feedbackEl.style.color = '#ef4444';
+                }
+            }
+        });
+        emailInput.addEventListener('input', function() {
+            const feedbackEl = this.parentElement.querySelector('.email-feedback');
+            if (feedbackEl) feedbackEl.innerHTML = '';
+            this.classList.remove('invalid');
         });
         
         // Validación de contraseña (solo visual)
@@ -348,14 +537,29 @@
                 // loader.style.display = 'none';
                 
                 if (data.success) {
-                    // ✨ Toast de bienvenida personalizado
+                    // ✨ Alerta centrada Premium de bienvenida única con tiempo adecuado (2s)
                     const userName = data.user_name || 'Usuario';
                     const firstName = userName.split(' ')[0];
-                    NotificationService.success(`¡Bienvenido, ${firstName}! Redirigiendo...`);
                     
-                    setTimeout(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: `¡Bienvenido, ${firstName}!`,
+                        text: 'Iniciando sesión...',
+                        timer: 2000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            const popup = Swal.getPopup();
+                            if (popup) {
+                                popup.style.borderRadius = '20px';
+                                popup.style.padding = '28px 24px';
+                                popup.style.boxShadow = '0 25px 60px rgba(0,0,0,0.2)';
+                            }
+                        }
+                    }).then(() => {
                         window.location.href = data.redirect;
-                    }, 1000);
+                    });
                 } else {
                     // [FIX-UX] Error de captcha -> inline junto al campo. Cualquier
                     // otro error bloqueante (credenciales, cuenta bloqueada/inactiva,
@@ -366,14 +570,25 @@
                     hideAuthErrors();
                     if (data.field === 'captcha') {
                         const captchaFeedback = document.getElementById('captchaFeedback');
-                        captchaFeedback.textContent = data.message;
-                        captchaFeedback.classList.add('visible');
-                        document.getElementById('captcha').classList.add('invalid');
+                        if (captchaFeedback) {
+                            captchaFeedback.textContent = data.message;
+                            captchaFeedback.classList.add('visible');
+                        }
+                        const captchaInput = document.getElementById('captcha');
+                        if (captchaInput) {
+                            captchaInput.classList.add('invalid');
+                            captchaInput.focus();
+                            captchaInput.select();
+                        }
+                        NotificationService.warning(data.message || 'Código de seguridad (CAPTCHA) incorrecto.');
                     } else {
                         const banner = document.getElementById('authErrorBanner');
-                        document.getElementById('authErrorBannerText').innerHTML = data.message;
-                        banner.classList.add('visible');
-                        banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        if (banner) {
+                            document.getElementById('authErrorBannerText').innerHTML = data.message;
+                            banner.classList.add('visible');
+                            banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                        NotificationService.error(data.message || 'Credenciales inválidas. Por favor verifica tus datos.');
                     }
 
                     // AUTO-REFRESH CAPTCHA on error (con shake)
@@ -384,8 +599,16 @@
             })
             .catch(error => {
                 if (loader) loader.style.display = 'none';
-                console.error('Error:', error);
-                NotificationService.error('Ocurrió un error inesperado');
+                console.error('[SGP-LOGIN] Error:', error);
+                
+                const banner = document.getElementById('authErrorBanner');
+                const netMsg = 'No se pudo establecer conexión con el servidor. Por favor verifica tu red e inténtalo de nuevo.';
+                if (banner) {
+                    document.getElementById('authErrorBannerText').innerHTML = '<strong>Error de comunicación:</strong> ' + netMsg;
+                    banner.classList.add('visible');
+                    banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+                NotificationService.error(netMsg);
                 
                 // AUTO-REFRESH CAPTCHA on error (con shake)
                 refreshCaptcha(true);
@@ -430,10 +653,9 @@
         // ALERTA: INACTIVIDAD (Con recarga para Captcha)
         // ============================================
         <?php
-        // Detectar inactividad por flash (Ruta A: logout JS) O por URL param
-        // (Ruta B: checkInactivity server-side, Ruta C: PJAX 401 handler)
-        $mostrarInactividad = Session::hasFlash('inactividad')
-            || (($_GET['razon'] ?? '') === 'inactividad');
+        // Detectar inactividad por flash consumiéndolo (evita bucles en recarga) O por URL param ?razon=inactividad
+        $flashInactividad   = Session::getFlash('inactividad');
+        $mostrarInactividad = ($flashInactividad !== null) || (($_GET['razon'] ?? '') === 'inactividad');
         ?>
         <?php if ($mostrarInactividad): ?>
             Swal.fire({
@@ -470,10 +692,18 @@
                     }
                 }
             }).then(() => {
-                // Limpiar el param ?razon=inactividad de la URL antes de recargar
-                const cleanUrl = window.location.pathname;
-                window.history.replaceState({}, document.title, cleanUrl);
-                window.location.reload();
+                // Limpiar el parámetro ?razon=inactividad de la URL sin recargar la página
+                if (window.history.replaceState) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('razon');
+                    const cleanPath = url.pathname + (url.search ? url.search : '');
+                    window.history.replaceState({}, document.title, cleanPath);
+                }
+                // Enfocar el campo de correo directamente para iniciar sesión
+                const emailInput = document.getElementById('email') || document.querySelector('input[type="email"]');
+                if (emailInput) {
+                    emailInput.focus();
+                }
             });
         <?php endif; ?>
 
@@ -501,6 +731,29 @@
             });
             // Limpiar la URL
             window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // ============================================
+        // PWA: REGISTRO DE SERVICE WORKER
+        // ============================================
+        if ('serviceWorker' in navigator) {
+            var isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+            var isSelfSignedLocalHttps = location.protocol === 'https:' && isLocalhost;
+            if (isSelfSignedLocalHttps) {
+                navigator.serviceWorker.getRegistrations().then(function(regs) {
+                    regs.forEach(function(r) { r.unregister(); });
+                }).catch(function(){});
+            } else {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('<?= URLROOT ?>/sw.js?v=<?= @filemtime(APPROOT . '/../public/sw.js') ?: time() ?>')
+                        .then(function(reg) {
+                            if (reg) reg.update();
+                        })
+                        .catch(function(err) {
+                            console.warn('[SGP-PWA] Error al registrar Service Worker:', err);
+                        });
+                });
+            }
         }
     </script>
     

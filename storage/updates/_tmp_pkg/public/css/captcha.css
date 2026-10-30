@@ -1,0 +1,173 @@
+/* ====================================================
+   CAPTCHA COMPONENT - ULTRA COMPACT HORIZONTAL DESIGN
+   ==================================================== */
+
+/* Contenedor general para separar del input de contraseña */
+.captcha-wrapper {
+    margin-top: 8px;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+/* --- FILA SUPERIOR: Imagen + Botón (HORIZONTAL) --- */
+.captcha-row,
+.captcha-container {
+    display: flex;
+    gap: 10px;
+    /* Espacio entre imagen y botón */
+    margin-bottom: 8px;
+    height: 50px;
+    /* Altura fija para coherencia visual - IGUAL que inputs */
+}
+
+/* Estilo de la imagen del Captcha */
+.captcha-display {
+    flex-grow: 1;
+    /* Ocupa todo el ancho posible */
+    background-color: #f0f0f0;
+    /* Color de fondo por si la imagen tarda en cargar */
+    border-radius: 12px;
+    /* BORDES REDONDEADOS coherentes con inputs */
+    overflow: hidden;
+    border: 2px solid #E2E8F0;
+    /* Mismo borde que los inputs */
+    transition: border-color 0.3s ease;
+}
+
+.captcha-display:hover {
+    border-color: var(--color-primary);
+}
+
+.captcha-display img,
+.captcha-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Asegura que la imagen cubra el área sin estirarse */
+    display: block;
+    border-radius: 10px;
+}
+
+/* Estilo del botón de recarga */
+.btn-refresh,
+.captcha-refresh-btn {
+    width: 50px;
+    /* Ancho igual a la altura para hacerlo cuadrado */
+    height: 100%;
+    /* Misma altura que la imagen (50px) */
+    min-width: 50px;
+    background-color: var(--color-primary, #162660);
+    /* Azul institucional */
+    border: none;
+    border-radius: 12px;
+    /* BORDES REDONDEADOS coherentes */
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.btn-refresh:hover,
+.captcha-refresh-btn:hover {
+    background-color: #0f1d4a;
+    /* Un tono un poco más oscuro al pasar el mouse */
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(22, 38, 96, 0.3);
+}
+
+.btn-refresh:active,
+.captcha-refresh-btn:active {
+    transform: scale(0.95);
+    /* Efecto de click */
+}
+
+.btn-refresh svg,
+.captcha-refresh-btn i {
+    font-size: 20px;
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+/* Animación de rotación del icono */
+.captcha-refresh-btn i.rotating {
+    transform: rotate(360deg);
+}
+
+/* --- FILA INFERIOR: Input del CAPTCHA --- */
+/* Coherente con el estilo de inputs actual (Correo y Contraseña) */
+.input-group-captcha {
+    position: relative;
+    width: 100%;
+}
+
+.input-group-captcha input,
+.captcha-wrapper input[type="text"] {
+    width: 100%;
+    height: 50px;
+    /* MISMA ALTURA que los otros inputs */
+    padding: 0 20px;
+    border: 2px solid #E2E8F0;
+    /* Mismo borde que los otros inputs */
+    border-radius: 12px;
+    /* Coherencia con los bordes redondeados */
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--color-primary);
+    outline: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    box-sizing: border-box;
+    background: var(--color-card, #FFFFFF);
+}
+
+.input-group-captcha input:focus,
+.captcha-wrapper input[type="text"]:focus {
+    border-color: var(--color-primary);
+    /* Color de enfoque */
+    box-shadow: 0 0 0 4px rgba(22, 38, 96, 0.1);
+}
+
+.input-group-captcha input::placeholder {
+    color: transparent;
+    /* Para floating label */
+}
+
+/* Label del input (compatible con floating labels) */
+.input-label,
+.captcha-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    margin-bottom: 8px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* Responsive - Mantener compacto en móviles */
+@media (max-width: 480px) {
+
+    .captcha-row,
+    .captcha-container {
+        height: 45px;
+        /* Ligeramente más pequeño en móvil */
+        gap: 8px;
+    }
+
+    .btn-refresh,
+    .captcha-refresh-btn {
+        width: 45px;
+        min-width: 45px;
+    }
+
+    .btn-refresh svg,
+    .captcha-refresh-btn i {
+        font-size: 18px;
+    }
+
+    .input-group-captcha input,
+    .captcha-wrapper input[type="text"] {
+        height: 45px;
+    }
+}

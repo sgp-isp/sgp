@@ -596,11 +596,32 @@ $periodos           = $data['periodos']           ?? [];
                                 </div>
                             </div>
                             <?php if ($isSinAsignar): 
-                                $instMsg = htmlspecialchars($alerta->institucion_procedencia ?? 'No registrada');
+                                $instMsg = $alerta->institucion_procedencia ?: 'No registrada';
                             ?>
-                            <button onclick="editarAsignacion(<?= (int)$alerta->usuario_id ?>, '<?= addslashes($title) ?>', '<?= addslashes($alerta->cedula) ?>', '<?= addslashes($instMsg) ?>')" style="background: #fff; color: <?= $iconColor ?>; border: 1px solid <?= $iconColor ?>; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onmouseover="this.style.background='<?= $iconColor ?>'; this.style.color='#fff';" onmouseout="this.style.background='#fff'; this.style.color='<?= $iconColor ?>';">
-                                <i class="ti ti-check"></i> Asignar
-                            </button>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <button type="button" 
+                                    data-id="<?= (int)$alerta->usuario_id ?>"
+                                    data-nombre="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>"
+                                    data-cedula="<?= htmlspecialchars($alerta->cedula ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    data-institucion="<?= htmlspecialchars($instMsg, ENT_QUOTES, 'UTF-8') ?>"
+                                    onclick="abrirAsignacionSegura(this)" 
+                                    style="background: #fff; color: <?= $iconColor ?>; border: 1px solid <?= $iconColor ?>; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" 
+                                    onmouseover="this.style.background='<?= $iconColor ?>'; this.style.color='#fff';" 
+                                    onmouseout="this.style.background='#fff'; this.style.color='<?= $iconColor ?>';">
+                                    <i class="ti ti-check"></i> Asignar
+                                </button>
+                                <button type="button" 
+                                    data-id="<?= (int)$alerta->usuario_id ?>"
+                                    data-nombre="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>"
+                                    data-cedula="<?= htmlspecialchars($alerta->cedula ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    onclick="confirmarDescartarPasante(this)" 
+                                    title="Descartar solicitud / Registro no institucional"
+                                    style="background: #fff; color: #ef4444; border: 1px solid #fca5a5; padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(239,68,68,0.05);" 
+                                    onmouseover="this.style.background='#ef4444'; this.style.color='#fff'; this.style.borderColor='#ef4444';" 
+                                    onmouseout="this.style.background='#fff'; this.style.color='#ef4444'; this.style.borderColor='#fca5a5';">
+                                    <i class="ti ti-trash"></i> Descartar
+                                </button>
+                            </div>
                             <?php else: ?>
                             <a href="<?= $btnLink ?>" title="Resolver" style="background: #fff; color: <?= $iconColor ?>; border: 1px solid #E2E8F0; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-decoration: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.background='<?= $iconColor ?>'; this.style.color='#fff';" onmouseout="this.style.background='#fff'; this.style.color='<?= $iconColor ?>';">
                                 <i class="ti ti-arrow-right"></i>
@@ -1101,6 +1122,96 @@ async function cerrarPeriodoDesdeDashboard(periodoId, periodoNombre, activosPend
                        <strong style="color:#7c3aed;">${result.value.pasantes_finalizados} pasante(s)</strong> finalizados y notificados.</p>`,
                 confirmButtonColor: '#2563eb',
                 confirmButtonText: 'Entendido'
+            }).then(() => location.reload());
+        }
+    });
+}
+
+function abrirAsignacionSegura(btn) {
+    const id = btn.getAttribute('data-id');
+    const nombre = btn.getAttribute('data-nombre');
+    const cedula = btn.getAttribute('data-cedula');
+    const institucion = btn.getAttribute('data-institucion');
+    if (typeof window.editarAsignacion === 'function') {
+        window.editarAsignacion(id, nombre, cedula, institucion);
+    }
+}
+
+function confirmarDescartarPasante(btn) {
+    const id = btn.getAttribute('data-id');
+    const nombre = btn.getAttribute('data-nombre');
+    const cedula = btn.getAttribute('data-cedula');
+
+    Swal.fire({
+        title: '¿Descartar este registro?',
+        html: `
+            <div style="text-align: left; font-size: 0.9rem; color: #334155;">
+                <p style="margin-bottom: 8px;">Estás a punto de descartar la solicitud de pre-registro de:</p>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 14px;">
+                    <div style="font-weight: 800; color: #1e293b; font-size: 1rem;">${nombre}</div>
+                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">C.I: ${cedula}</div>
+                </div>
+                <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 0.85rem; color: #1e293b;">
+                    ¿Qué acción deseas tomar?
+                </label>
+                <div style="margin-bottom: 12px; font-size: 0.85rem;">
+                    <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+                        <input type="radio" name="swal_descarte_accion" value="bloquear" checked id="radioBloquear" style="margin-top: 3px;">
+                        <span><strong>Rechazar y Bloquear</strong> (Recomendado: No podrá iniciar sesión ni registrarse con esta cédula)</span>
+                    </label>
+                    <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+                        <input type="radio" name="swal_descarte_accion" value="eliminar" id="radioEliminar" style="margin-top: 3px;">
+                        <span><strong>Eliminar Permanentemente</strong> (Purga definitiva de la BD si era un registro spam o prueba)</span>
+                    </label>
+                </div>
+                <div id="motivoBox" style="margin-top: 10px;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 4px; font-size: 0.82rem; color: #475569;">
+                        Motivo del descarte:
+                    </label>
+                    <input type="text" id="swal_descarte_motivo" class="swal2-input" style="width: 100%; margin: 0; font-size: 0.85rem; box-sizing: border-box;" value="No figura en el listado oficial de pasantes de la institución">
+                </div>
+            </div>
+        `,
+        icon: 'warning',
+        iconColor: '#ef4444',
+        showCancelButton: true,
+        confirmButtonText: '<i class="ti ti-check"></i> Proceder con el descarte',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+            const accion = document.querySelector('input[name="swal_descarte_accion"]:checked')?.value || 'bloquear';
+            const motivo = document.getElementById('swal_descarte_motivo')?.value || '';
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || (typeof _ADMIN_CSRF !== 'undefined' ? _ADMIN_CSRF : '');
+            const formData = new FormData();
+            formData.append('pasante_id', id);
+            formData.append('accion', accion);
+            formData.append('motivo', motivo);
+            formData.append('csrf_token', csrfToken);
+
+            return fetch(URLROOT + '/asignaciones/descartar', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: formData
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success) throw new Error(res.message || 'Error al descartar registro');
+                return res;
+            })
+            .catch(err => Swal.showValidationMessage(err.message));
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then(result => {
+        if (result.isConfirmed && result.value?.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Registro Descartado',
+                text: result.value.message,
+                confirmButtonColor: '#2563eb'
             }).then(() => location.reload());
         }
     });

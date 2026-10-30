@@ -40,7 +40,38 @@ $dTasa      = array_map(fn($r) => (int)$r->total > 0
 
 .an-kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
 @media(max-width:900px){ .an-kpi-grid{grid-template-columns:repeat(2,1fr);} }
-@media(max-width:560px){ .an-kpi-grid{grid-template-columns:1fr 1fr;} }
+@media(max-width:560px){ .an-kpi-grid{grid-template-columns:1fr 1fr; gap:10px;} }
+
+@media(max-width:768px){
+    .an-hero {
+        padding: 20px 18px;
+        border-radius: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .an-hero > div:last-child {
+        margin-left: 0 !important;
+        text-align: left !important;
+        width: 100%;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        border-top: 1px solid rgba(255,255,255,0.15);
+        padding-top: 10px;
+        margin-top: 2px;
+    }
+    .an-card {
+        padding: 18px 16px;
+        border-radius: 16px;
+    }
+}
+@media(max-width:480px){
+    .an-kpi { padding: 14px 12px; border-radius: 14px; }
+    .an-kpi-num { font-size: 1.8rem; }
+    .an-kpi-lbl { font-size: 0.65rem; }
+    .an-kpi-ico { width: 34px; height: 34px; font-size: 1rem; }
+}
 
 .an-kpi {
     background:#fff; border-radius:18px; padding:20px;
@@ -80,6 +111,50 @@ $dTasa      = array_map(fn($r) => (int)$r->total > 0
 .an-mes-bars { flex:1; display:flex; flex-direction:column; gap:3px; }
 .an-mes-minibar { height:6px; border-radius:999px; transition:width .6s ease; }
 .an-mes-count { font-size:.72rem; color:#94a3b8; width:20px; text-align:right; flex-shrink:0; }
+
+/* ─── DARK MODE SUPPORT (MIS ANALÍTICAS) ─────────────── */
+[data-theme="dark"] .an-hero {
+    background: linear-gradient(135deg, #090d16 0%, #1e1b4b 50%, #4338ca 100%) !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+[data-theme="dark"] .an-kpi {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+[data-theme="dark"] .an-kpi-lbl {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .an-kpi-ico {
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+[data-theme="dark"] .an-card {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+[data-theme="dark"] .an-card-ttl {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .an-card-ttl i {
+    color: #818cf8 !important;
+}
+[data-theme="dark"] .an-bar {
+    background: #1e293b !important;
+}
+[data-theme="dark"] .an-ring-txt div:first-child {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .an-ring-txt div:last-child {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .an-mes-lbl {
+    color: #cbd5e1 !important;
+}
+[data-theme="dark"] .an-mes-count {
+    color: #94a3b8 !important;
+}
 </style>
 
 <div class="an-wrap">
@@ -276,8 +351,13 @@ $dTasa      = array_map(fn($r) => (int)$r->total > 0
 </div><!-- /an-wrap -->
 
 <?php if (!empty($porMes)): ?>
+<script src="<?= URLROOT ?>/js/chart.min.js"></script>
 <script>
 (function(){
+    if (typeof Chart === 'undefined') {
+        console.warn('Chart.js no está cargado');
+        return;
+    }
     const ctx = document.getElementById('chartMes');
     if (!ctx) return;
     new Chart(ctx, {
@@ -303,6 +383,7 @@ $dTasa      = array_map(fn($r) => (int)$r->total > 0
 
 // ── Tendencia ──
 (function(){
+    if (typeof Chart === 'undefined') return;
     const ctx2 = document.getElementById('chartTendencia');
     if (!ctx2) return;
     const gradFill = ctx2.getContext('2d').createLinearGradient(0, 0, 0, 220);

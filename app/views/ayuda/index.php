@@ -20,24 +20,379 @@ $manualArchivo = $manualesPorRol[$rolId] ?? 'manual_pasante.html';
 /* ══ Manual SGP — Diseño SPA ═══════════════════════════════════ */
 .man-wrap { width:100%; padding:20px 24px; }
 
-/* Banner */
+/* Banner Principal — Estilo Bento Moderno */
 .man-banner {
-    background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);
-    border-radius:22px; padding:28px 36px; margin-bottom:22px;
-    display:flex; align-items:center; justify-content:space-between; gap:16px;
-    position:relative; overflow:hidden; box-shadow:0 12px 32px rgba(30,58,138,.2);
+    background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%);
+    border-radius: 20px;
+    padding: 32px 36px;
+    margin-bottom: 24px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
-.man-banner::before { content:''; position:absolute; top:-60px; right:-60px; width:280px; height:280px; background:rgba(255,255,255,.05); border-radius:50%; }
+
+/* Efectos visuales de fondo (Ambient Glow suave) */
+.man-banner::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.man-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -80px;
+    left: 28%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* Bloque Principal */
+.man-banner-main {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+}
+
+/* Caja de Ícono Frosted Glass */
+.man-banner-icon-box {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.9rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+}
+.man-banner-icon-box:hover {
+    transform: scale(1.05) rotate(4deg);
+}
+
+/* Textos y Jerarquía Visual */
+.man-banner-text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Badge contextual superior */
+.man-banner-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 6px;
+}
+.man-banner-badge i {
+    font-size: 0.85rem;
+    color: #93c5fd;
+}
+.man-banner-badge-sep {
+    opacity: 0.5;
+    font-size: 0.65rem;
+}
+
+/* Título */
+.man-banner-title {
+    color: #ffffff;
+    font-size: 1.85rem;
+    font-weight: 800;
+    margin: 0 0 5px;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+/* Subtítulo */
+.man-banner-sub {
+    color: rgba(255, 255, 255, 0.82);
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    line-height: 1.4;
+}
+.man-banner-sub i {
+    color: #60a5fa;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* Acciones / Botones */
+.man-banner-actions {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.man-btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    color: #ffffff;
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-decoration: none;
+    font-family: inherit;
+}
+.man-btn-action:hover {
+    transform: translateY(-2px);
+}
+.man-btn-action:active {
+    transform: translateY(0);
+}
+
 .man-btn-pdf {
-    display:inline-flex; align-items:center; gap:8px;
-    background:#dc2626; border:none; color:white;
-    padding:10px 20px; border-radius:12px; font-size:.88rem; font-weight:700;
-    cursor:pointer; transition:all .2s; white-space:nowrap; z-index:1;
-    box-shadow:0 4px 14px rgba(220,38,38,.4);
+    background: #ffffff;
+    color: var(--color-primary, #1e3a8a);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    font-weight: 800;
 }
-.man-btn-pdf:hover { background:#b91c1c; transform:translateY(-2px); box-shadow:0 6px 20px rgba(220,38,38,.5); }
-.man-btn-manual { background:#2563eb; box-shadow:0 4px 14px rgba(37,99,235,.4); }
-.man-btn-manual:hover { background:#1d4ed8; box-shadow:0 6px 20px rgba(37,99,235,.5); }
+.man-btn-pdf:hover {
+    background: #f8fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    color: var(--color-primary, #1e3a8a);
+}
+.man-btn-pdf i {
+    font-size: 1.15rem;
+    color: #dc2626;
+    transition: transform 0.2s ease;
+}
+.man-btn-pdf:hover i {
+    transform: scale(1.15);
+}
+
+.man-btn-manual {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #ffffff;
+}
+.man-btn-manual:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.38);
+    color: #ffffff;
+}
+.man-btn-manual i {
+    font-size: 1.15rem;
+}
+
+/* ── RESPONSIVE VISTA MÓVIL ────────────────────────────────── */
+@media (max-width: 860px) {
+    .man-wrap {
+        padding: 16px 18px;
+    }
+    .man-banner {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 22px 20px;
+        gap: 16px;
+    }
+    .man-banner-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+    .man-banner-actions .man-btn-action {
+        flex: 1;
+    }
+}
+
+@media (max-width: 576px) {
+    .man-wrap {
+        padding: 12px 14px;
+    }
+    .man-banner {
+        padding: 18px 16px;
+        border-radius: 18px;
+        margin-bottom: 16px;
+        gap: 14px;
+    }
+    .man-banner-main {
+        gap: 12px;
+    }
+    .man-banner-icon-box {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 13px;
+        font-size: 22px;
+    }
+    .man-banner-title {
+        font-size: 1.35rem;
+        line-height: 1.25;
+    }
+    .man-banner-sub {
+        font-size: 0.8rem;
+        margin-top: 4px;
+    }
+    .man-banner-actions {
+        gap: 8px;
+    }
+    .man-btn-action {
+        padding: 9px 14px;
+        font-size: 0.82rem;
+        min-height: 40px;
+    }
+    .man-search {
+        margin-bottom: 15px;
+    }
+}
+
+/* Optimización para pantallas ultra estrechas (320px - 380px) */
+@media (max-width: 380px) {
+    .man-wrap {
+        padding: 10px 10px;
+    }
+    .man-banner {
+        padding: 14px 12px;
+        border-radius: 16px;
+        gap: 12px;
+    }
+    .man-banner-main {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .man-banner-icon-box {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        font-size: 20px;
+        border-radius: 11px;
+    }
+    .man-banner-badge {
+        font-size: 0.65rem;
+        padding: 2px 8px;
+        margin-bottom: 4px;
+    }
+    .man-banner-title {
+        font-size: 1.22rem;
+        letter-spacing: -0.2px;
+    }
+    .man-banner-sub {
+        font-size: 0.75rem;
+        line-height: 1.35;
+    }
+    .man-banner-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 7px;
+    }
+    .man-banner-actions .man-btn-action {
+        width: 100%;
+    }
+}
+
+/* ── MODO OSCURO (DATA-THEME="DARK") ────────────────────────── */
+[data-theme="dark"] .man-banner {
+    background: linear-gradient(135deg, #090d16 0%, #0f1c3f 50%, #1e3a8a 100%) !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+[data-theme="dark"] .man-banner-icon-box {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+}
+[data-theme="dark"] .man-banner-badge {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+[data-theme="dark"] .man-banner-badge i {
+    color: #93c5fd !important;
+}
+[data-theme="dark"] .man-banner-title {
+    color: #ffffff !important;
+}
+[data-theme="dark"] .man-banner-sub {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+[data-theme="dark"] .man-banner-sub i {
+    color: #60a5fa !important;
+}
+[data-theme="dark"] .man-btn-pdf {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .man-btn-pdf:hover {
+    background: rgba(255, 255, 255, 0.26) !important;
+    border-color: rgba(255, 255, 255, 0.45) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+}
+[data-theme="dark"] .man-btn-manual {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    color: #ffffff !important;
+}
+[data-theme="dark"] .man-btn-manual:hover {
+    background: rgba(255, 255, 255, 0.22) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    color: #ffffff !important;
+}
 
 /* Modal "Manuales" (SuperAdmin) */
 .man-modal-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
@@ -152,24 +507,36 @@ $manualArchivo = $manualesPorRol[$rolId] ?? 'manual_pasante.html';
 <div class="man-wrap">
 
 <!-- BANNER -->
-<div class="man-banner">
-    <div style="display:flex;align-items:center;gap:18px;z-index:1;">
-        <div style="background:rgba(255,255,255,.15);border-radius:16px;padding:14px;backdrop-filter:blur(4px);">
-            <i class="ti ti-lifebuoy" style="font-size:32px;color:white;"></i>
+<div class="module-banner man-banner">
+    <div class="man-banner-main">
+        <div class="man-banner-icon-box" title="SGP — Manual y Guías">
+            <i class="ti ti-lifebuoy"></i>
         </div>
-        <div>
-            <h1 style="color:white;font-size:1.7rem;font-weight:800;margin:0;line-height:1.2;">Manual de Usuario</h1>
-            <p style="color:rgba(255,255,255,.75);margin:5px 0 0;font-size:.88rem;">Registro y Control de Asistencias de Pasantes — ISP Bolívar</p>
+        <div class="man-banner-text">
+            <div class="man-banner-badge">
+                <i class="ti ti-bookmarks"></i>
+                <span>Documentación Oficial</span>
+                <span class="man-banner-badge-sep">•</span>
+                <span>SGP v2.0</span>
+            </div>
+            <h1 class="man-banner-title">Manual de Usuario</h1>
+            <p class="man-banner-sub">
+                <i class="ti ti-shield-check"></i>
+                <span>Registro y Control de Asistencias — ISP Bolívar</span>
+            </p>
         </div>
     </div>
-    <div style="z-index:1;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+
+    <div class="man-banner-actions">
         <?php if ($rolId == 0): ?>
-        <button class="man-btn-pdf man-btn-manual" onclick="abrirModalManuales()">
-            <i class="ti ti-files" style="font-size:1.1rem;"></i> Manuales
+        <button type="button" class="man-btn-action man-btn-manual" onclick="abrirModalManuales()" title="Ver todos los manuales del sistema">
+            <i class="ti ti-files"></i>
+            <span>Manuales</span>
         </button>
         <?php endif; ?>
-        <button class="man-btn-pdf" onclick="window.open('<?= URLROOT ?>/manuales/<?= $manualArchivo ?>','_blank')">
-            <i class="ti ti-file-type-pdf" style="font-size:1.1rem;"></i> Descargar PDF
+        <button type="button" class="man-btn-action man-btn-pdf" onclick="window.open('<?= URLROOT ?>/manuales/<?= $manualArchivo ?>','_blank')" title="Descargar manual en PDF">
+            <i class="ti ti-file-type-pdf"></i>
+            <span>Descargar PDF</span>
         </button>
     </div>
 </div>
@@ -228,6 +595,10 @@ $manualArchivo = $manualesPorRol[$rolId] ?? 'manual_pasante.html';
     <a class="toc-link" data-sec="sec-pasante-actividades" onclick="mostrarSeccion('sec-pasante-actividades')"><i class="ti ti-activity"></i> Mis Actividades</a>
     <a class="toc-link" data-sec="sec-pasante-const" onclick="mostrarSeccion('sec-pasante-const')"><i class="ti ti-file-certificate"></i> Mi Constancia</a>
     <?php endif; ?>
+    <div class="toc-sep"></div>
+    <a class="toc-link" data-sec="sec-pwa" onclick="mostrarSeccion('sec-pwa')"><i class="ti ti-device-mobile-down"></i> App Móvil (PWA)</a>
+    <a class="toc-link" data-sec="sec-biometria" onclick="mostrarSeccion('sec-biometria')"><i class="ti ti-scan"></i> Reconocimiento Facial y QR</a>
+    <a class="toc-link" data-sec="sec-novedades" onclick="mostrarSeccion('sec-novedades')"><i class="ti ti-sparkles"></i> Novedades y SGP-PJAX</a>
     <div class="toc-sep"></div>
     <a class="toc-link" data-sec="sec-tooltips" onclick="mostrarSeccion('sec-tooltips')"><i class="ti ti-help-circle"></i> Íconos de Ayuda</a>
     <a class="toc-link" data-sec="sec-accesos" onclick="mostrarSeccion('sec-accesos')"><i class="ti ti-keyboard"></i> Atajos y Accesos</a>
@@ -641,80 +1012,97 @@ $manualArchivo = $manualesPorRol[$rolId] ?? 'manual_pasante.html';
 </div>
 
 <!-- ═══ RESPALDOS ═══ -->
-<div class="man-sec" id="sec-respaldos" data-keywords="respaldo backup restaurar base de datos exportar SQL archivo">
+<div class="man-sec" id="sec-respaldos" data-keywords="respaldo backup restaurar base de datos exportar SQL archivo nube google drive cloudflare r2 tareas automáticas cron rotación seguridad">
     <div class="man-sec-hd">
         <div class="man-sec-icon" style="background:#f1f5f9;color:#475569;"><i class="ti ti-database"></i></div>
-        <div><p class="man-sec-title">Respaldos</p><p class="man-sec-sub">Copias de seguridad de la base de datos</p></div>
+        <div><p class="man-sec-title">Respaldos y Copias de Seguridad</p><p class="man-sec-sub">Copias locales, integración en la nube y restauración protegida</p></div>
     </div>
     <div class="man-sec-body">
-        <p class="man-p">El módulo de respaldos permite crear y restaurar copias de seguridad completas de la base de datos en formato SQL.</p>
-        <div class="man-h3"><i class="ti ti-download"></i> Crear respaldo</div>
+        <p class="man-p">El módulo de respaldos garantiza la preservación de toda la información institucional (asistencias, evaluaciones, bitácora, usuarios y notas) mediante volcados completos en formato SQL con compresión.</p>
+
+        <div class="man-h3"><i class="ti ti-download"></i> Crear respaldo manual</div>
         <div class="man-steps">
-            <div class="man-step"><p>Ve a <strong>Respaldos</strong>.</p></div>
-            <div class="man-step"><p>Haz clic en <strong>Crear Respaldo Ahora</strong>.</p></div>
-            <div class="man-step"><p>El archivo .sql se genera y guarda en el servidor. También puedes descargarlo.</p></div>
+            <div class="man-step"><p>Ve a <strong>Respaldos</strong> desde el menú lateral.</p></div>
+            <div class="man-step"><p>Haz clic en el botón principal <strong>Crear Respaldo Ahora</strong>.</p></div>
+            <div class="man-step"><p>El sistema genera el volcado SQL con timestamp institucional y lo almacena de forma segura en el servidor. Puedes descargarlo inmediatamente a tu computadora.</p></div>
         </div>
-        <div class="man-warn"><i class="ti ti-alert-triangle"></i><p>Al <strong>restaurar</strong> un respaldo se sobrescribirán todos los datos actuales. Esta acción es irreversible. El sistema genera un respaldo previo automático antes de restaurar.</p></div>
+
+        <div class="man-h3"><i class="ti ti-cloud-upload"></i> Respaldos Automatizados y en la Nube</div>
+        <table class="man-table">
+            <thead><tr><th>Modalidad</th><th>Frecuencia recomendada</th><th>Destino</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Local en Servidor</strong></td><td>Diaria (Fin de jornada laboral)</td><td>Almacenamiento interno protegido</td></tr>
+                <tr><td><strong>Copia en la Nube</strong></td><td>Semanal o mensual</td><td>Google Drive / Cloudflare R2 / S3</td></tr>
+                <tr><td><strong>Punto de Restauración Previo</strong></td><td>Automático antes de cualquier restore</td><td>Carpeta de salvaguarda del sistema</td></tr>
+            </tbody>
+        </table>
+        <div class="man-tip"><i class="ti ti-info-circle"></i><p>El sistema incluye una política de rotación que conserva las copias más recientes y optimiza el espacio en disco sin riesgo de pérdida de datos históricos.</p></div>
+
+        <div class="man-h3"><i class="ti ti-refresh-alert"></i> Restauración segura de datos</div>
+        <p class="man-p">Para restaurar un respaldo selecciona el archivo de la lista o súbelo directamente. El sistema realiza una copia preventiva inmediata de la base actual antes de ejecutar el reemplazo.</p>
+        <div class="man-warn"><i class="ti ti-alert-triangle"></i><p>Al <strong>restaurar</strong> un respaldo los datos activos se sincronizarán al estado exacto del archivo seleccionado. Se recomienda realizar esta acción fuera del horario laboral o de marcaje.</p></div>
     </div>
 </div>
 
 <!-- ═══ BITÁCORA ═══ -->
-<div class="man-sec" id="sec-bitacora" data-keywords="bitácora auditoría historial acciones logs eventos seguridad">
+<div class="man-sec" id="sec-bitacora" data-keywords="bitácora auditoría historial acciones logs eventos seguridad kpi móvil">
     <div class="man-sec-hd">
         <div class="man-sec-icon" style="background:#f1f5f9;color:#64748b;"><i class="ti ti-clipboard-list"></i></div>
-        <div><p class="man-sec-title">Bitácora de Auditoría</p><p class="man-sec-sub">Historial completo de acciones del sistema</p></div>
+        <div><p class="man-sec-title">Bitácora de Auditoría</p><p class="man-sec-sub">Historial completo de acciones y eventos del sistema</p></div>
     </div>
     <div class="man-sec-body">
-        <p class="man-p">La bitácora registra automáticamente cada acción relevante: inicios de sesión, creaciones, modificaciones y eliminaciones. Es de solo lectura.</p>
+        <p class="man-p">La bitácora registra automáticamente cada acción relevante: inicios de sesión, creaciones, modificaciones, eliminaciones y registros de asistencia. Es inmutable y de solo lectura para garantizar la transparencia institucional.</p>
         <table class="man-table">
             <thead><tr><th>Campo</th><th>Descripción</th></tr></thead>
             <tbody>
-                <tr><td><strong>Fecha/Hora</strong></td><td>Cuándo ocurrió la acción</td></tr>
-                <tr><td><strong>Usuario</strong></td><td>Quién realizó la acción</td></tr>
-                <tr><td><strong>Acción</strong></td><td>Tipo de evento (login, crear, editar, eliminar)</td></tr>
-                <tr><td><strong>Módulo</strong></td><td>En qué sección del sistema ocurrió</td></tr>
-                <tr><td><strong>Detalle</strong></td><td>Descripción específica del cambio</td></tr>
+                <tr><td><strong>Fecha/Hora</strong></td><td>Momento exacto en que ocurrió el evento (hora del servidor)</td></tr>
+                <tr><td><strong>Usuario</strong></td><td>Quién ejecutó la acción (cédula y nombre completo)</td></tr>
+                <tr><td><strong>Acción</strong></td><td>Tipo de evento: Login, Crear, Modificar, Eliminar, Asistencia</td></tr>
+                <tr><td><strong>Módulo</strong></td><td>Sección del sistema donde se originó el cambio</td></tr>
+                <tr><td><strong>Detalle</strong></td><td>Descripción detallada del registro o parámetro modificado</td></tr>
             </tbody>
         </table>
+        <div class="man-tip"><i class="ti ti-device-mobile"></i><p>En vista móvil la cabecera e indicadores clave se organizan en una cuadrícula compacta 2x2 para fácil lectura sin scroll excesivo.</p></div>
     </div>
 </div>
 
 <!-- ═══ CONFIGURACIÓN ═══ -->
-<div class="man-sec" id="sec-configuracion" data-keywords="configuración sistema institución nombre SMTP correo ajustes feriados festivos días no laborables calendario laborable">
+<div class="man-sec" id="sec-configuracion" data-keywords="configuración sistema institución nombre SMTP correo ajustes feriados festivos días no laborables calendario laborable cartel qr oficial punto asistencia túnel cloudflare datos móviles token seguridad">
     <div class="man-sec-hd">
         <div class="man-sec-icon" style="background:#f8fafc;color:#475569;"><i class="ti ti-settings"></i></div>
-        <div><p class="man-sec-title">Configuración</p><p class="man-sec-sub">Ajustes generales y calendario de feriados</p></div>
+        <div><p class="man-sec-title">Configuración del Sistema</p><p class="man-sec-sub">Ajustes institucionales, días no laborables y Cartel QR Oficial</p></div>
     </div>
     <div class="man-sec-body">
-        <p class="man-p">Permite personalizar el comportamiento general del SGP: nombre de la institución, logo, configuración de correo SMTP, parámetros de pasantía y el calendario de días feriados.</p>
+        <p class="man-p">Permite personalizar el comportamiento global del SGP: identidad institucional, logo, servidor de correo SMTP, parámetros de pasantías, calendario de feriados y el punto de asistencia móvil por QR.</p>
         <table class="man-table">
             <thead><tr><th>Ajuste</th><th>Descripción</th></tr></thead>
             <tbody>
-                <tr><td><strong>Nombre institución</strong></td><td>Aparece en PDFs y encabezados del sistema</td></tr>
-                <tr><td><strong>Horas por defecto</strong></td><td>Horas meta asignadas automáticamente a nuevos pasantes</td></tr>
-                <tr><td><strong>SMTP</strong></td><td>Servidor de correo para notificaciones automáticas</td></tr>
+                <tr><td><strong>Nombre institución</strong></td><td>Aparece en constancias, reportes PDF oficiales y encabezados</td></tr>
+                <tr><td><strong>Horas por defecto</strong></td><td>Horas meta asignadas automáticamente a nuevos pasantes (Regular: 1440h / Corta: 360h)</td></tr>
+                <tr><td><strong>SMTP</strong></td><td>Servidor de correo saliente para alertas y recuperación de contraseñas</td></tr>
             </tbody>
         </table>
 
+        <!-- NUEVO: Cartel QR Oficial -->
+        <div class="man-h3"><i class="ti ti-qrcode"></i> Punto de Asistencia y Cartel QR Oficial</div>
+        <p class="man-p">Desde este módulo el Administrador gestiona el punto de marcaje autónomo mediante código QR ubicado en la recepción o puerta de acceso del ISP:</p>
+        <div class="man-steps">
+            <div class="man-step"><p><strong>Previsualización y Token Activo:</strong> La tarjeta genera en tiempo real el código QR con el token seguro de la institución.</p></div>
+            <div class="man-step"><p><strong>URL de Red / Túnel Cloudflare:</strong> Configura la dirección web de acceso (ejemplo: URL local IP o subdominio seguro con Túnel Cloudflare). Esto permite que los pasantes registren su entrada usando sus propios <strong>datos móviles (4G/LTE)</strong> sin requerir contraseña del Wi-Fi interno.</p></div>
+            <div class="man-step"><p><strong>Imprimir Cartel Oficial:</strong> Genera la versión lista para imprimir a color en hoja membretada, diseñada para plastificar y colocar en el punto físico de entrada.</p></div>
+            <div class="man-step"><p><strong>Regenerar Token QR:</strong> Si sospechas que el código fue compartido fuera de las instalaciones, puedes regenerar el token con un clic invalidando de inmediato el cartel anterior.</p></div>
+        </div>
+
         <div class="man-h3"><i class="ti ti-calendar-off"></i> Calendario de Días Feriados</div>
-        <p class="man-p">El sistema incluye un calendario para registrar los días festivos nacionales e institucionales. Los días feriados afectan directamente el módulo de asistencias y el almanaque:</p>
+        <p class="man-p">El sistema incluye un calendario interactivo para registrar días festivos nacionales e institucionales:</p>
         <table class="man-table">
             <thead><tr><th>Tipo de día</th><th>Efecto en asistencias</th></tr></thead>
             <tbody>
-                <tr><td><span class="man-badge mb-slate">No laborable</span></td><td>El sistema no permite registrar asistencia ese día. Aparece marcado en el almanaque como día feriado.</td></tr>
-                <tr><td><span class="man-badge mb-green">Laborable</span></td><td>El sistema permite registrar asistencia ese día aunque sea festivo (p. ej., jornadas especiales o recuperación de clases).</td></tr>
+                <tr><td><span class="man-badge mb-slate">No laborable</span></td><td>El sistema inhabilita el marcaje ese día y lo resalta en el almanaque institucional.</td></tr>
+                <tr><td><span class="man-badge mb-green">Laborable</span></td><td>Permite registrar asistencia normalmente a pesar de ser festivo (jornadas de apoyo o recuperación).</td></tr>
             </tbody>
         </table>
-        <div class="man-h3"><i class="ti ti-plus"></i> Agregar un feriado</div>
-        <div class="man-steps">
-            <div class="man-step"><p>Ve a <strong>Configuración → Calendario de Feriados</strong>.</p></div>
-            <div class="man-step"><p>Haz clic en <strong>+ Agregar Feriado</strong>.</p></div>
-            <div class="man-step"><p>Selecciona la fecha y escribe el nombre del feriado (p. ej., "Día de la Independencia").</p></div>
-            <div class="man-step"><p>Elige si el día será <strong>Laborable</strong> (se puede marcar asistencia) o <strong>No laborable</strong> (no se puede).</p></div>
-            <div class="man-step"><p>Guarda. El feriado aparece inmediatamente en el almanaque de todos los pasantes.</p></div>
-        </div>
-        <div class="man-tip"><i class="ti ti-info-circle"></i><p>Si se acerca un feriado no laborable, el sistema enviará una <strong>notificación automática</strong> al Administrador cuando inicie sesión, avisando con antelación.</p></div>
-        <div class="man-warn"><i class="ti ti-alert-triangle"></i><p>Eliminar un feriado que ya tenía asistencias registradas no elimina esas asistencias — solo deja de marcarlo como día especial en el almanaque.</p></div>
+        <div class="man-tip"><i class="ti ti-info-circle"></i><p>El sistema emite avisos automáticos a los administradores con 7 días de anticipación cuando se acerca un feriado registrado.</p></div>
     </div>
 </div>
 <?php endif; ?>
@@ -1009,41 +1397,37 @@ $manualArchivo = $manualesPorRol[$rolId] ?? 'manual_pasante.html';
 </div>
 
 <!-- ═══ KIOSCO DE ASISTENCIA ═══ -->
-<div class="man-sec" id="sec-kiosco" data-keywords="kiosco terminal público asistencia PIN cédula marcaje reloj dispositivo pantalla tablet TV fuera de servicio mantenimiento">
+<div class="man-sec" id="sec-kiosco" data-keywords="kiosco terminal público asistencia PIN cédula marcaje reloj dispositivo pantalla tablet TV fuera de servicio mantenimiento qr cartel facial biometria">
     <div class="man-sec-hd">
         <div class="man-sec-icon" style="background:#ecfdf5;color:#059669;"><i class="ti ti-device-desktop"></i></div>
-        <div><p class="man-sec-title">Kiosco Público de Asistencia</p><p class="man-sec-sub">Terminal autónoma de marcaje por PIN para pasantes</p></div>
+        <div><p class="man-sec-title">Kiosco de Asistencia (Fijo y Móvil QR)</p><p class="man-sec-sub">Terminal física por PIN y autogestión móvil mediante Cartel QR</p></div>
     </div>
     <div class="man-sec-body">
-        <p class="man-p">El Kiosco es una pantalla pública que permite a los pasantes registrar su asistencia de forma autónoma con cédula y PIN, sin necesidad de que intervenga el tutor o el administrador.</p>
+        <p class="man-p">El SGP cuenta con un sistema híbrido de marcaje autónomo para pasantes que elimina las colas en recepción y automatiza el cómputo de horas.</p>
 
-        <div class="man-h3"><i class="ti ti-map-pin"></i> Cómo acceder al Kiosco</div>
-        <p class="man-p">Abre cualquier navegador en el dispositivo dedicado (PC, tablet, televisor) y navega a la URL del sistema seguida de <strong>/kiosco</strong>. No requiere iniciar sesión — es una pantalla completamente pública.</p>
-        <div class="man-tip"><i class="ti ti-info-circle"></i><p>Lo ideal es dejar el Kiosco abierto en un dispositivo fijo en la entrada del área de pasantías, visible para los pasantes al llegar cada mañana.</p></div>
-
-        <div class="man-h3"><i class="ti ti-layout-dashboard"></i> Elementos de la pantalla</div>
+        <div class="man-h3"><i class="ti ti-device-desktop"></i> Modalidad 1 — Terminal Fija de Marcaje (Kiosco PIN)</div>
+        <p class="man-p">Diseñada para una computadora, tablet o televisor en recepción. Se accede ingresando a la URL del sistema seguida de <strong>/kiosco</strong>. No requiere inicio de sesión administrativo.</p>
         <table class="man-table">
-            <thead><tr><th>Elemento</th><th>Descripción</th></tr></thead>
+            <thead><tr><th>Elemento</th><th>Función</th></tr></thead>
             <tbody>
-                <tr><td><strong>Reloj digital</strong></td><td>Hora actual en tiempo real (actualización cada segundo). Sirve de referencia de puntualidad para el pasante.</td></tr>
-                <tr><td><strong>Campo Cédula</strong></td><td>El pasante ingresa su número de cédula para que el sistema lo identifique.</td></tr>
-                <tr><td><strong>Campo PIN</strong></td><td>Código de 4 dígitos personal configurado en el wizard de primer acceso.</td></tr>
-                <tr><td><strong>Botón Registrar</strong></td><td>Envía la asistencia con la hora exacta del servidor.</td></tr>
+                <tr><td><strong>Reloj en vivo</strong></td><td>Sincronizado con el servidor para precisión de puntualidad</td></tr>
+                <tr><td><strong>Cédula + PIN</strong></td><td>El pasante digita su número de documento y su PIN confidencial de 4 dígitos</td></tr>
+                <tr><td><strong>Validación en tiempo real</strong></td><td>Verifica si ya marcó hoy o si tiene permisos activos</td></tr>
             </tbody>
         </table>
 
-        <div class="man-h3"><i class="ti ti-steps"></i> Cómo marca el pasante</div>
+        <div class="man-h3"><i class="ti ti-qrcode"></i> Modalidad 2 — Autogestión Móvil por Cartel QR Oficial</div>
+        <p class="man-p">El pasante llega a la entrada de la institución y escanea con la cámara de su teléfono inteligente el <strong>Cartel QR Oficial</strong> fijado en la pared:</p>
         <div class="man-steps">
-            <div class="man-step"><p>El pasante se acerca al dispositivo al llegar.</p></div>
-            <div class="man-step"><p>Ingresa su <strong>número de cédula</strong>.</p></div>
-            <div class="man-step"><p>Ingresa su <strong>PIN de 4 dígitos</strong>.</p></div>
-            <div class="man-step"><p>Presiona <strong>Registrar Asistencia</strong>.</p></div>
-            <div class="man-step"><p>Aparece una pantalla de confirmación con su nombre y la hora exacta de entrada. El administrador recibe una notificación de escritorio en ese momento.</p></div>
+            <div class="man-step"><p>Apunta con la cámara del celular al código QR del cartel.</p></div>
+            <div class="man-step"><p>Se abre de inmediato el portal de marcaje móvil (compatible con datos móviles 4G/LTE gracias al Túnel Cloudflare o red local).</p></div>
+            <div class="man-step"><p>Ingresa su cédula o verificación biométrica facial y confirma su asistencia en menos de 5 segundos.</p></div>
+            <div class="man-step"><p>El sistema valida la hora del servidor y emite confirmación con feedback sonoro y visual.</p></div>
         </div>
-        <div class="man-tip"><i class="ti ti-info-circle"></i><p>Si un pasante olvidó su PIN o nunca lo configuró, el tutor puede asignárselo desde <strong>Mis Pasantes → ficha del pasante → Cambiar PIN</strong>.</p></div>
+        <div class="man-tip"><i class="ti ti-scan"></i><p>Para aprender más sobre la validación facial de identidad, consulta la sección <strong>Reconocimiento Facial y QR</strong> en este manual.</p></div>
 
         <div class="man-h3"><i class="ti ti-plug-off"></i> Pantalla "Fuera de servicio"</div>
-        <p class="man-p">Si el Kiosco está deshabilitado (días feriados, mantenimiento), la pantalla muestra un aviso de <strong>Terminal fuera de servicio</strong> y no acepta registros. En ese caso la asistencia debe registrarse manualmente desde el panel de administración.</p>
+        <p class="man-p">Si el Kiosco está deshabilitado por feriado o mantenimiento, muestra el aviso de <strong>Terminal fuera de servicio</strong>. En ese caso el tutor o administrador puede registrar la asistencia de forma manual desde el panel.</p>
     </div>
 </div>
 
@@ -1173,6 +1557,115 @@ $manualArchivo = $manualesPorRol[$rolId] ?? 'manual_pasante.html';
     </div>
 </div>
 <?php endif; ?>
+
+<!-- ═══ INSTALACIÓN PWA (APP MÓVIL) ═══ -->
+<div class="man-sec" id="sec-pwa" data-keywords="pwa app aplicacion movil celular instalar android iphone ios safari chrome edge icono pantalla inicio offline service worker">
+    <div class="man-sec-hd">
+        <div class="man-sec-icon" style="background:#eff6ff;color:#2563eb;"><i class="ti ti-device-mobile-down"></i></div>
+        <div><p class="man-sec-title">Instalación como App Móvil (PWA)</p><p class="man-sec-sub">Acceso directo a pantalla completa en teléfonos inteligentes y computadoras</p></div>
+    </div>
+    <div class="man-sec-body">
+        <p class="man-p">El SGP está desarrollado bajo estándares de <strong>Aplicación Web Progresiva (PWA)</strong>. Esto permite instalarlo como si fuera una aplicación nativa descargada de Play Store o App Store, ocupando mínimo espacio, sin necesidad de descargas pesadas y con acceso directo desde tu pantalla de inicio.</p>
+
+        <div class="man-h3"><i class="ti ti-brand-android"></i> Cómo instalar en teléfonos Android (Google Chrome / Edge)</div>
+        <div class="man-steps">
+            <div class="man-step"><p>Abre el navegador Chrome en tu teléfono y visita la dirección web del SGP.</p></div>
+            <div class="man-step"><p>Toca el menú de tres puntos (<strong>⋮</strong>) en la esquina superior derecha.</p></div>
+            <div class="man-step"><p>Selecciona <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.</p></div>
+            <div class="man-step"><p>Confirma en <strong>Instalar</strong>. El ícono oficial blanco del SGP aparecerá junto a tus demás aplicaciones.</p></div>
+        </div>
+
+        <div class="man-h3"><i class="ti ti-brand-apple"></i> Cómo instalar en iPhone o iPad (Apple Safari)</div>
+        <div class="man-steps">
+            <div class="man-step"><p>Abre la página del SGP exclusivamente desde el navegador <strong>Safari</strong>.</p></div>
+            <div class="man-step"><p>Toca el botón <strong>Compartir</strong> (el cuadrado con la flecha apuntando hacia arriba <i class="ti ti-share"></i> en la barra inferior).</p></div>
+            <div class="man-step"><p>Desplaza hacia abajo en las opciones y selecciona <strong>"Añadir a la pantalla de inicio"</strong> (+).</p></div>
+            <div class="man-step"><p>En la esquina superior derecha toca <strong>Añadir</strong>. Se creará el acceso directo con experiencia a pantalla completa sin la barra de direcciones de Safari.</p></div>
+        </div>
+
+        <div class="man-h3"><i class="ti ti-device-laptop"></i> Cómo instalar en PC o Laptop (Chrome / Edge en Windows)</div>
+        <div class="man-steps">
+            <div class="man-step"><p>Al abrir el SGP en tu computadora, observa la barra de direcciones a la derecha.</p></div>
+            <div class="man-step"><p>Haz clic en el ícono de instalación (computadora con flecha hacia abajo <i class="ti ti-download"></i>).</p></div>
+            <div class="man-step"><p>Haz clic en <strong>Instalar</strong>. El sistema se abrirá en su propia ventana independiente y creará un acceso directo en tu escritorio de Windows.</p></div>
+        </div>
+
+        <div class="man-tip"><i class="ti ti-bolt"></i><p><strong>Ventajas de la PWA:</strong> Carga instantánea gracias al Service Worker nativo (<code>sw.js</code>), navegación a pantalla completa sin distracciones y bajo consumo de datos móviles.</p></div>
+    </div>
+</div>
+
+<!-- ═══ RECONOCIMIENTO FACIAL Y QR ═══ -->
+<div class="man-sec" id="sec-biometria" data-keywords="biometria facial rostro reconocimiento camara qr cartel autogestion marcaje validacion pasante celular">
+    <div class="man-sec-hd">
+        <div class="man-sec-icon" style="background:#f0fdf4;color:#059669;"><i class="ti ti-scan"></i></div>
+        <div><p class="man-sec-title">Reconocimiento Facial y Autogestión QR</p><p class="man-sec-sub">Marcaje sin contacto con verificación biométrica en tiempo real</p></div>
+    </div>
+    <div class="man-sec-body">
+        <p class="man-p">Para agilizar el flujo de entrada en horas pico y asegurar la presencia física real de cada pasante, el sistema integra validación biométrica facial combinada con el Cartel QR Oficial.</p>
+
+        <div class="man-h3"><i class="ti ti-list-numbers"></i> Flujo de marcaje autónomo paso a paso</div>
+        <div class="man-steps">
+            <div class="man-step"><p><strong>1. Escaneo del cartel:</strong> El pasante escanea con su celular el Cartel QR fijado en la entrada de la institución.</p></div>
+            <div class="man-step"><p><strong>2. Identificación:</strong> Ingresa su número de cédula en el portal móvil que se abre automáticamente.</p></div>
+            <div class="man-step"><p><strong>3. Verificación Biométrica:</strong> El sistema activa la cámara frontal y muestra una guía circular de encuadre. El pasante centra su rostro durante 1-2 segundos.</p></div>
+            <div class="man-step"><p><strong>4. Confirmación Instantánea:</strong> El algoritmo detecta y valida la identidad biométrica, guardando la asistencia con la hora exacta del servidor y emitiendo un tono de éxito.</p></div>
+        </div>
+
+        <div class="man-h3"><i class="ti ti-shield-check"></i> Mecanismos de Seguridad Anti-Fraude</div>
+        <table class="man-table">
+            <thead><tr><th>Mecanismo</th><th>Protección que ofrece</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Token Dinámico de Cartel</strong></td><td>El código QR requiere un token institucional válido administrable desde Configuración.</td></tr>
+                <tr><td><strong>Validación Biométrica</strong></td><td>Impide que un pasante marque la asistencia de otro pasante ausente.</td></tr>
+                <tr><td><strong>Control de Marcaje Único</strong></td><td>El sistema rechaza intentos de doble marcaje en el mismo día, protegiendo las horas acumuladas.</td></tr>
+                <tr><td><strong>Hora Centralizada del Servidor</strong></td><td>No depende de la hora del teléfono del usuario, evitando alteraciones de puntualidad.</td></tr>
+            </tbody>
+        </table>
+        <div class="man-warn"><i class="ti ti-alert-triangle"></i><p>Para utilizar el reconocimiento facial, el navegador del teléfono solicitará permiso para acceder a la cámara. Debes presionar <strong>"Permitir"</strong> la primera vez que se solicite.</p></div>
+    </div>
+</div>
+
+<!-- ═══ NOVEDADES SGP v2.0 Y PJAX ═══ -->
+<div class="man-sec" id="sec-novedades" data-keywords="novedades pjax sgp-pjax transiciones velocidad rendimiento modo oscuro tema noche temporizador inactividad 25 minutos responsive dock movil bento">
+    <div class="man-sec-hd">
+        <div class="man-sec-icon" style="background:#faf5ff;color:#9333ea;"><i class="ti ti-sparkles"></i></div>
+        <div><p class="man-sec-title">Novedades y Experiencia SGP v2.0</p><p class="man-sec-sub">Navegación fluida SGP-PJAX, Modo Oscuro y seguridad avanzada</p></div>
+    </div>
+    <div class="man-sec-body">
+        <p class="man-p">La versión 2.0 del SGP incorpora mejoras significativas de arquitectura, rendimiento y experiencia de usuario (UI/UX) basadas en el estándar de diseño Bento.</p>
+
+        <div class="man-h3"><i class="ti ti-bolt"></i> SGP-PJAX — Navegación Fluida Ultra Rápida</div>
+        <p class="man-p">El sistema utiliza la tecnología <strong>SGP-PJAX</strong>, que intercepta la navegación para cargar solo el contenido dinámico de cada módulo sin recargar toda la página web:</p>
+        <ul class="man-list">
+            <li><strong>Cero parpadeos blancos:</strong> Las transiciones entre pantallas son suaves y continuas.</li>
+            <li><strong>Barra de progreso superior:</strong> Un indicador sutil azul en la parte superior muestra el progreso de carga instantáneamente.</li>
+            <li><strong>Menor consumo de ancho de banda:</strong> Ahorra hasta un 70% de datos al no volver a descargar estilos ni librerías ya presentes en memoria.</li>
+        </ul>
+
+        <div class="man-h3"><i class="ti ti-moon-stars"></i> Modo Oscuro Integrado (Bento Dark Navy)</div>
+        <p class="man-p">Puedes activar el modo oscuro en cualquier momento haciendo clic en el ícono de la luna <i class="ti ti-moon"></i> situado en la barra superior del sistema:</p>
+        <ul class="man-list">
+            <li>Diseñado con una paleta profunda <strong>Bento Navy</strong> que reduce la fatiga ocular durante jornadas extensas.</li>
+            <li>Optimizado para ahorrar batería en teléfonos móviles con pantalla AMOLED / OLED.</li>
+            <li>Tu preferencia se guarda automáticamente en el navegador para tus próximas visitas.</li>
+        </ul>
+
+        <div class="man-h3"><i class="ti ti-lock-access"></i> Temporizador de Inactividad (25 Minutos)</div>
+        <p class="man-p">Por normativas de protección de datos personales e integridad de notas de pasantía, el sistema supervisa la actividad del usuario (movimiento de ratón, clics y pulsaciones de teclado):</p>
+        <div class="man-warn"><i class="ti ti-clock-pause"></i><p>Si transcurren <strong>25 minutos sin ninguna interacción</strong>, la sesión se cerrará de forma automática y segura, redirigiendo a la pantalla de acceso con un mensaje informativo para evitar accesos no supervisados en terminales compartidas.</p></div>
+
+        <div class="man-h3"><i class="ti ti-layout-grid"></i> Experiencia Móvil Optimizada</div>
+        <table class="man-table">
+            <thead><tr><th>Módulo</th><th>Optimización móvil aplicada</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Dock Inferior</strong></td><td>Navegación estilo iOS ergonómica con botón de menú rápido «Más».</td></tr>
+                <tr><td><strong>Bitácora</strong></td><td>Banner Bento rediseñado y métricas KPI en cuadrícula equilibrada 2x2.</td></tr>
+                <tr><td><strong>Asistencias</strong></td><td>Tabla táctil con desplazamiento suave y botones de registro ajustados.</td></tr>
+                <tr><td><strong>Períodos</strong></td><td>Tarjetas de cohorte en columna adaptativa al 100% sin desbordes horizontales.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
 <!-- ═══ ÍCONOS DE AYUDA ═══ -->
 <div class="man-sec" id="sec-tooltips" data-keywords="tooltips ayuda iconos formularios ayuda en linea requerimientos campo sgp-tip help-circle cédula pin período actividad tutor asistencia">

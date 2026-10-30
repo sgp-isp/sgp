@@ -263,6 +263,11 @@
                 <?= htmlspecialchars($errHint) ?>
             </div>
             <?php endif; ?>
+            <?php if (!empty($errDetails)): ?>
+            <div style="margin-top: 14px; text-align: left; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 10px 14px; font-family: monospace; font-size: 0.78rem; color: #9f1239; word-break: break-all;">
+                <strong>Detalle técnico:</strong> <?= htmlspecialchars($errDetails) ?>
+            </div>
+            <?php endif; ?>
         </div>
 
         <div class="err-divider"></div>

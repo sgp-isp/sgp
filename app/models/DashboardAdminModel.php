@@ -323,7 +323,7 @@ class DashboardAdminModel
                 COALESCE(SUM(a.estado = 'Presente'), 0) AS total_presentes,
                 COUNT(DISTINCT dpa.usuario_id)   AS total_pasantes
             FROM departamentos d
-            LEFT JOIN datos_pasante dpa ON d.id = dpa.departamento_asignado_id
+            LEFT JOIN datos_pasante dpa ON d.id = dpa.departamento_asignado_id AND dpa.estado_pasantia = 'Activo'
             LEFT JOIN asistencias a     ON a.pasante_id = dpa.usuario_id
             WHERE d.activo = 1
             GROUP BY d.id, d.nombre
@@ -346,6 +346,46 @@ class DashboardAdminModel
         return $data;
     }
 
+    public function getAsistenciaPorInstitucion(): array
+    {
+        $data = ['labels' => [], 'series' => [], 'pasantes' => [], 'tipos' => []];
+        try {
+            $this->db->query("
+                SELECT
+                    COALESCE(i.nombre, dpa.institucion_procedencia, 'Sin Institución') AS institucion,
+                    COALESCE(i.tipo, 'Institución')                                   AS tipo,
+                    COUNT(a.id)                                                      AS total_registros,
+                    COALESCE(SUM(a.estado = 'Presente'), 0)                          AS total_presentes,
+                    COUNT(DISTINCT dpa.usuario_id)                                   AS total_pasantes
+                FROM instituciones i
+                INNER JOIN datos_pasante dpa ON (dpa.institucion_id = i.id OR dpa.institucion_procedencia = i.nombre) AND dpa.estado_pasantia = 'Activo'
+                LEFT JOIN asistencias a      ON a.pasante_id = dpa.usuario_id
+                WHERE i.activo = 1
+                GROUP BY i.id, i.nombre, i.tipo
+                HAVING total_pasantes > 0
+                ORDER BY total_presentes DESC, total_pasantes DESC, i.nombre ASC
+                LIMIT 6
+            ");
+
+            $results = $this->db->resultSet();
+            if ($results) {
+                foreach ($results as $r) {
+                    $data['labels'][]   = htmlspecialchars($r->institucion);
+                    $porcentaje = ($r->total_registros > 0)
+                        ? (int) round(($r->total_presentes / $r->total_registros) * 100)
+                        : 0;
+                    $data['series'][]   = $porcentaje;
+                    $data['pasantes'][] = (int)$r->total_pasantes;
+                    $data['tipos'][]    = $r->tipo;
+                }
+            }
+        } catch (\Throwable $e) {
+            error_log('[SGP-DASHBOARD-INSTITUCION] ' . $e->getMessage());
+        }
+
+        return $data;
+    }
+
     public function getAlertasPendientes(int $limit = 5): array
     {
         // Pasantes sin asignar o pasantías a 7 días o menos de vencer
@@ -357,11 +397,11 @@ class DashboardAdminModel
                 dp.apellidos,
                 COALESCE(NULLIF(dpa.estado_pasantia, ''), 'Sin Asignar') AS estado,
                 dpa.fecha_fin_estimada,
-                COALESCE(inst.nombre, dpa.institucion_procedencia) AS institucion_procedencia
+                COALESCE(inst.nombre, NULLIF(dpa.institucion_procedencia, ''), 'No registrada') AS institucion_procedencia
             FROM usuarios u
             LEFT JOIN datos_personales dp ON u.id = dp.usuario_id
             LEFT JOIN datos_pasante dpa ON u.id = dpa.usuario_id
-            LEFT JOIN instituciones inst ON dpa.institucion_procedencia = inst.id
+            LEFT JOIN instituciones inst ON (dpa.institucion_id = inst.id OR dpa.institucion_procedencia = inst.nombre)
             WHERE u.rol_id = 3 
               AND u.estado = 'activo'
               AND (
@@ -487,7 +527,11 @@ class DashboardAdminModel
 
     public function getPeriodosAcademicos(): array
     {
-        $this->db->query("SELECT id, nombre, estado FROM periodos_academicos ORDER BY fecha_inicio DESC");
+        $this->db->query("
+            SELECT id, nombre, estado, fecha_inicio, fecha_fin, tipo 
+            FROM periodos_academicos 
+            ORDER BY FIELD(estado, 'Activo', 'Planificado', 'Cerrado'), fecha_inicio DESC
+        ");
         return $this->db->resultSet();
     }
 

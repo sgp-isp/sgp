@@ -1,12 +1,23 @@
 <?php
+require_once APPROOT . '/lib/MailService.php';
+
 class ConfiguracionController extends Controller {
 
     private $db;
 
     public function __construct() {
         Session::start();
-        AuthMiddleware::require();
-        AuthMiddleware::verificarEstado();
+
+        // Determinar si la acción solicitada es pública (ej. Cartel QR imprimible desde el login)
+        $url = isset($_GET['url']) ? explode('/', filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL)) : [];
+        $action = $url[1] ?? 'index';
+
+        $publicActions = ['cartelQr'];
+
+        if (!in_array($action, $publicActions, true)) {
+            AuthMiddleware::require();
+            AuthMiddleware::verificarEstado();
+        }
 
         $config   = require '../app/config/config.php';
         $this->db = new Database($config['db']);
@@ -31,6 +42,66 @@ class ConfiguracionController extends Controller {
 
     public function index() {
         RoleMiddleware::authorize([0, 1, 2]);
+
+        // ── POST: Guardar Configuración Servidor SMTP de Correo ──────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guardar_smtp') {
+            $this->verifyCsrfOrRedirect();
+            if ((int)Session::get('role_id') !== 0) {
+                Session::setFlash('error', '⛔ Acceso denegado: Solo el Super Administrador puede configurar el servidor SMTP.');
+                header('Location: ' . URLROOT . '/notificaciones/correos#smtp_card');
+                exit;
+            }
+
+            $smtpActivo    = isset($_POST['smtp_activo']) ? 1 : 0;
+            $smtpHost      = trim($_POST['smtp_host'] ?? '');
+            $smtpPort      = (int)($_POST['smtp_port'] ?? 587);
+            $smtpUser      = trim($_POST['smtp_user'] ?? '');
+            $smtpPass      = trim($_POST['smtp_pass'] ?? '');
+            $smtpSecure    = trim($_POST['smtp_secure'] ?? 'tls');
+            $mailFromName  = trim($_POST['mail_from_name'] ?? 'SGP - Instituto de Salud Pública');
+            $mailFromEmail = trim($_POST['mail_from_email'] ?? 'sgp.ispeb@gmail.com');
+
+            $campos = [
+                'smtp_activo'     => [$smtpActivo, 'Habilita o pausa el envío de correos SMTP (1=activo, 0=inactivo)'],
+                'smtp_host'       => [$smtpHost, 'Host o servidor SMTP para notificaciones'],
+                'smtp_port'       => [$smtpPort, 'Puerto del servidor SMTP'],
+                'smtp_user'       => [$smtpUser, 'Usuario o correo autenticado SMTP'],
+                'smtp_secure'     => [$smtpSecure, 'Cifrado SSL/TLS para SMTP'],
+                'mail_from_name'  => [$mailFromName, 'Nombre del remitente institucional'],
+                'mail_from_email' => [$mailFromEmail, 'Correo del remitente institucional']
+            ];
+
+            if ($smtpPass !== '') {
+                $campos['smtp_pass'] = [$smtpPass, 'Contraseña de autenticación SMTP'];
+            }
+
+            try {
+                foreach ($campos as $clave => [$val, $desc]) {
+                    $this->db->query("
+                        INSERT INTO configuracion (clave, valor, descripcion)
+                        VALUES (:clave, :valor, :desc)
+                        ON DUPLICATE KEY UPDATE valor = :valor_up, updated_at = NOW()
+                    ");
+                    $this->db->bind(':clave',    $clave);
+                    $this->db->bind(':valor',    (string)$val);
+                    $this->db->bind(':desc',     $desc);
+                    $this->db->bind(':valor_up', (string)$val);
+                    $this->db->execute();
+                }
+
+                if (class_exists('AuditModel')) {
+                    AuditModel::log('UPDATE_CONFIG_SMTP', 'configuracion', null, ['host' => $smtpHost, 'activo' => $smtpActivo]);
+                }
+
+                Session::setFlash('success', '✅ Configuración del servidor de correo institucional (SMTP) guardada exitosamente.');
+            } catch (\Throwable $e) {
+                error_log('[SGP-CONFIG] guardar_smtp error: ' . $e->getMessage());
+                Session::setFlash('error', '❌ Error al guardar la configuración SMTP: ' . $e->getMessage());
+            }
+
+            header('Location: ' . URLROOT . '/notificaciones/correos#smtp_card');
+            exit;
+        }
 
         // ── POST: Guardar Datos de ISP ────────────────────────────────────
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guardar_isp') {
@@ -637,6 +708,26 @@ class ConfiguracionController extends Controller {
             $statsDB['bitacora_mes'] = (int)($row->total ?? 0);
         } catch (Exception $e) { $statsDB['bitacora_mes'] = 0; }
 
+        // ── Notificaciones Inteligentes (Fase 4) ─────────────────────────
+        $notifAnalytics = [
+            'total_enviadas'    => 0,
+            'total_leidas'      => 0,
+            'total_clickeadas'  => 0,
+            'tasa_lectura'      => 0.0,
+            'tasa_clicks'       => 0.0,
+            'global_activo'     => true,
+            'ultimas'           => []
+        ];
+        $notifUsuarios = [];
+        try {
+            require_once APPROOT . '/models/NotificationModel.php';
+            $notifModel     = new NotificationModel($this->db);
+            $notifAnalytics = $notifModel->getAnalytics();
+            $notifUsuarios  = $notifModel->getUsersList();
+        } catch (\Throwable $e) {
+            error_log('[SGP-CONFIG] Error cargando notificaciones: ' . $e->getMessage());
+        }
+
         // Estado del kiosco
         $kioscoActivo = 1;
         try {
@@ -675,6 +766,57 @@ class ConfiguracionController extends Controller {
             }
         } catch (\Throwable $e) {}
 
+        // Token del Quiosco QR (Fase 5)
+        $kioscoQrToken = 'ISPEB-ASIST-2026-HQ';
+        try {
+            $this->db->query("SELECT valor FROM configuracion WHERE clave = 'kiosco_qr_token' LIMIT 1");
+            $qrRow = $this->db->single();
+            if ($qrRow && !empty($qrRow->valor)) {
+                $kioscoQrToken = $qrRow->valor;
+            }
+        } catch (\Throwable $e) {}
+
+        // URL Pública / Túnel para Cartel QR y móviles
+        $urlPublica = '';
+        try {
+            $this->db->query("SELECT valor FROM configuracion WHERE clave = 'url_publica' LIMIT 1");
+            $uRow = $this->db->single();
+            if ($uRow && !empty($uRow->valor)) {
+                $urlPublica = $uRow->valor;
+            }
+        } catch (\Throwable $e) {}
+
+        // Estado de la Geocerca GPS (Geolocalización)
+        $geocercaActiva = 1;
+        try {
+            $this->db->query("SELECT valor FROM configuracion WHERE clave = 'geocerca_activa' LIMIT 1");
+            $gRow = $this->db->single();
+            if ($gRow) $geocercaActiva = (int)$gRow->valor;
+        } catch (\Throwable $e) {}
+
+        // Configuración de Correo Electrónico Institucional (SMTP)
+        $smtpConfig = MailService::getConfig();
+
+        // Estadísticas biométricas y de acceso móvil
+        $biometriaStats = [
+            'total_dispositivos'  => 0,
+            'usuarios_con_huella' => 0,
+            'accesos_semana'      => 0
+        ];
+        try {
+            $this->db->query("SELECT COUNT(*) AS total, COUNT(DISTINCT usuario_id) AS usuarios FROM usuarios_biometria");
+            $bRow = $this->db->single();
+            if ($bRow) {
+                $biometriaStats['total_dispositivos']  = (int)($bRow->total ?? 0);
+                $biometriaStats['usuarios_con_huella'] = (int)($bRow->usuarios ?? 0);
+            }
+            $this->db->query("SELECT COUNT(*) AS total FROM bitacora WHERE accion = 'LOGIN_BIOMETRIA' AND fecha_hora >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+            $lRow = $this->db->single();
+            if ($lRow) {
+                $biometriaStats['accesos_semana'] = (int)($lRow->total ?? 0);
+            }
+        } catch (\Throwable $e) {}
+
         $data = [
             'title'          => 'Configuración del Sistema',
             'instituciones'  => $instituciones,
@@ -682,14 +824,91 @@ class ConfiguracionController extends Controller {
             'feriados'       => $feriados,
             'statsDB'        => $statsDB,
             'kioscoActivo'   => $kioscoActivo,
+            'geocercaActiva' => $geocercaActiva,
+            'kioscoQrToken'  => $kioscoQrToken,
+            'urlPublica'     => $urlPublica,
             'ispInfo'        => $ispInfo,
             'notifAnalytics' => $notifAnalytics,
             'notifUsuarios'  => $notifUsuarios,
             'colorPrimario'  => $colorPrimario,
             'colorAcento'    => $colorAcento,
+            'smtp'           => $smtpConfig,
+            'biometriaStats' => $biometriaStats,
         ];
 
         $this->view('configuracion/index', $data);
+    }
+
+    /**
+     * AJAX: Enviar correo de prueba para validar credenciales SMTP
+     */
+    public function probarSmtp() {
+        header('Content-Type: application/json; charset=utf-8');
+        ini_set('display_errors', '0');
+        RoleMiddleware::authorize([0, 1, 2]);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            return;
+        }
+
+        $destinatario = trim($_POST['email_destino'] ?? '');
+
+        // Si no se proporcionó destinatario, buscar el correo del usuario en sesión
+        if ($destinatario === '') {
+            $uid = (int)Session::get('user_id');
+            $this->db->query("SELECT correo FROM usuarios WHERE id = :id LIMIT 1");
+            $this->db->bind(':id', $uid);
+            $u = $this->db->single();
+            $destinatario = $u ? ($u->correo ?? '') : '';
+        }
+
+        if (!filter_var($destinatario, FILTER_VALIDATE_EMAIL)) {
+            echo json_encode(['success' => false, 'message' => 'Ingresa una dirección de correo electrónico válida para la prueba.']);
+            return;
+        }
+
+        $nombre = Session::get('user_name') ?: 'Administrador SGP';
+        $fecha = date('d/m/Y h:i:s A');
+
+        $htmlContent = "
+            <p>Hola <strong>{$nombre}</strong>,</p>
+            <p>Este es un <strong>correo de diagnóstico y prueba institucional</strong> emitido por el Sistema de Gestión de Pasantes (SGP) del Instituto de Salud Pública del Estado Bolívar.</p>
+            <div style='background-color: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 16px; margin: 18px 0;'>
+                <div style='font-size: 14px; font-weight: 800; color: #166534; margin-bottom: 6px;'>✅ Conexión SMTP Exitosa</div>
+                <div style='font-size: 13px; color: #15803d;'>El servidor de correo institucional se encuentra correctamente configurado y listo para despachar notificaciones automáticas, exámenes rápidos y alertas biométricas.</div>
+                <div style='font-size: 12px; color: #166534; margin-top: 8px;'><strong>Fecha y Hora de Emisión:</strong> {$fecha}</div>
+            </div>
+            <p style='color: #64748b; font-size: 13px;'>Si recibiste este mensaje, la autenticación SMTP y los protocolos de entrega funcionan óptimamente.</p>
+        ";
+
+        $html = MailService::renderBentoTemplate(
+            'Prueba de Conexión',
+            '#16a34a',
+            'Diagnóstico SMTP — SGP',
+            $htmlContent,
+            '',
+            '',
+            'Mensaje emitido para validar el canal de comunicación SMTP.'
+        );
+
+        $res = MailService::send($destinatario, $nombre, '🧪 Prueba de Conexión SMTP — SGP', $html);
+
+        if (!empty($res['success'])) {
+            $isSimulated = !empty($res['simulated']);
+            echo json_encode([
+                'success' => true,
+                'simulated' => $isSimulated,
+                'message' => $isSimulated
+                    ? 'Modo Simulación: El servicio SMTP no está activo o faltan credenciales en la base de datos (revisa el log).'
+                    : "¡Excelente! Correo de prueba enviado con éxito a: {$destinatario}."
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Fallo al transmitir vía SMTP: ' . ($res['message'] ?? 'Error desconocido')
+            ]);
+        }
     }
 
     /**
@@ -808,6 +1027,165 @@ class ConfiguracionController extends Controller {
             echo json_encode(['success' => false, 'message' => 'Error al resetear PIN']);
         }
         exit;
+    }
+
+    /**
+     * AJAX: Regenerar Token del Quiosco QR de Asistencia (Fase 5)
+     */
+    public function regenerarQrToken()
+    {
+        header('Content-Type: application/json');
+        RoleMiddleware::authorize([0, 1]); // Admin / SuperAdmin
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $csrf = $_POST['_csrf'] ?? $_POST['csrf_token'] ?? '';
+        if (!Session::validateCsrfToken($csrf)) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido o expirado.']);
+            exit;
+        }
+
+        try {
+            // Generar token único y seguro
+            $nuevoToken = 'ISPEB-' . strtoupper(bin2hex(random_bytes(5))) . '-' . date('Y');
+
+            $this->db->query("
+                INSERT INTO configuracion (clave, valor, descripcion)
+                VALUES ('kiosco_qr_token', :token, 'Token secreto para código QR del kiosco de asistencia')
+                ON DUPLICATE KEY UPDATE valor = :token, updated_at = NOW()
+            ");
+            $this->db->bind(':token', $nuevoToken);
+            $this->db->execute();
+
+            if (class_exists('AuditModel')) {
+                AuditModel::log('REGENERAR_QR_KIOSCO', "Se regeneró el token de asistencia QR del Kiosco: {$nuevoToken}");
+            }
+
+            echo json_encode([
+                'success'     => true,
+                'nuevo_token' => $nuevoToken,
+                'qr_url'      => URLROOT . '/kiosco?token=' . $nuevoToken,
+                'message'     => 'Nuevo código QR generado con éxito. Recuerda imprimir y colocar el nuevo cartel en la oficina.'
+            ]);
+        } catch (Exception $e) {
+            error_log('[SGP-CONFIG] Error al regenerar token QR: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error al guardar el nuevo token en la base de datos.']);
+        }
+        exit;
+    }
+
+    /**
+     * AJAX POST: Guardar URL Pública / Túnel para acceso móvil y Cartel QR
+     */
+    public function guardarUrlPublica()
+    {
+        header('Content-Type: application/json');
+        RoleMiddleware::authorize([0, 1]);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $csrf = $_POST['_csrf'] ?? $_POST['csrf_token'] ?? '';
+        if (!Session::validateCsrfToken($csrf)) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido o expirado.']);
+            exit;
+        }
+
+        $url = trim($_POST['url_publica'] ?? '');
+        if (!empty($url)) {
+            $url = rtrim($url, '/');
+            if (!filter_var($url, FILTER_VALIDATE_URL)) {
+                echo json_encode(['success' => false, 'message' => 'Ingresa una URL válida (ejemplo: https://mi-tunel.trycloudflare.com/SGP).']);
+                exit;
+            }
+        }
+
+        try {
+            $this->db->query("
+                INSERT INTO configuracion (clave, valor, descripcion)
+                VALUES ('url_publica', :url, 'URL pública o túnel para acceso móvil y generación del Cartel QR')
+                ON DUPLICATE KEY UPDATE valor = :url, updated_at = NOW()
+            ");
+            $this->db->bind(':url', $url);
+            $this->db->execute();
+
+            if (class_exists('AuditModel')) {
+                AuditModel::log('UPDATE_CONFIG', 'configuracion', null, ['clave' => 'url_publica', 'valor' => $url]);
+            }
+
+            $effectiveUrl = !empty($url) ? $url : rtrim(URLROOT, '/');
+
+            echo json_encode([
+                'success' => true,
+                'url'     => $url,
+                'url_efectiva' => $effectiveUrl,
+                'message' => !empty($url)
+                    ? '✅ URL de red configurada con éxito. El Cartel QR ahora usará esta dirección.'
+                    : '✅ Se restableció a la detección automática local.'
+            ]);
+        } catch (Exception $e) {
+            error_log('[SGP-CONFIG] Error al guardar url_publica: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error al guardar la URL en la base de datos.']);
+        }
+        exit;
+    }
+
+    /**
+     * Vista imprimible del cartel oficial del Quiosco QR para colgar en la oficina (Fase 5)
+     */
+    public function cartelQr()
+    {
+        // Acceso público para permitir imprimir y visualizar el cartel oficial directamente desde el login o configuración
+
+        $token = 'ISPEB-ASIST-2026-HQ';
+        try {
+            $this->db->query("SELECT valor FROM configuracion WHERE clave = 'kiosco_qr_token' LIMIT 1");
+            $row = $this->db->single();
+            if ($row && !empty($row->valor)) {
+                $token = $row->valor;
+            }
+        } catch (\Throwable $e) {}
+
+        // Determinar URL base (priorizar url_publica configurada si existe)
+        $urlBase = rtrim(URLROOT, '/');
+        try {
+            $this->db->query("SELECT valor FROM configuracion WHERE clave = 'url_publica' LIMIT 1");
+            $cfgUrl = $this->db->single();
+            if ($cfgUrl && !empty(trim($cfgUrl->valor))) {
+                $urlBase = rtrim(trim($cfgUrl->valor), '/');
+            }
+        } catch (\Throwable $e) {}
+
+        // Asegurar que urlBase contenga el subdirectorio /SGP si el proyecto corre bajo /SGP
+        if (!preg_match('#/SGP$#i', $urlBase) && strpos(URLROOT, '/SGP') !== false) {
+            $urlBase .= '/SGP';
+        }
+
+        $ispFile = APPROOT . '/config/isp_info.json';
+        $isp = [
+            'nombre'    => 'Instituto de Salud Pública del Estado Bolívar (ISPEB)',
+            'rif'       => 'G-20000366-9',
+            'direccion' => 'Paseo Meneses, Torre ISP, Piso 3'
+        ];
+        if (file_exists($ispFile)) {
+            $json = json_decode(file_get_contents($ispFile), true);
+            if (is_array($json)) $isp = array_merge($isp, $json);
+        }
+
+        $data = [
+            'title'   => 'Cartel Oficial — Registro de Asistencia QR',
+            'token'   => $token,
+            'urlBase' => $urlBase,
+            'qrUrl'   => $urlBase . '/auth/login?token=' . urlencode($token),
+            'isp'     => $isp
+        ];
+
+        $this->view('configuracion/cartel_qr', $data, false);
     }
 
     /**
@@ -1204,6 +1582,47 @@ class ConfiguracionController extends Controller {
         } catch (\Throwable $e) {
             error_log('[SGP-CONFIG] toggleKiosco error: ' . $e->getMessage());
             echo json_encode(['success' => false, 'message' => 'Error al actualizar estado del kiosco']);
+        }
+        exit;
+    }
+
+    /**
+     * AJAX POST: Habilitar o deshabilitar la Geolocalización / Geocerca GPS del Kiosco
+     * Ruta: POST /configuracion/toggleGeocerca
+     */
+    public function toggleGeocerca(): void
+    {
+        header('Content-Type: application/json');
+        RoleMiddleware::authorize([0, 1]);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $activo = isset($_POST['activo']) && (int)$_POST['activo'] === 1 ? '1' : '0';
+        try {
+            $this->db->query("
+                INSERT INTO configuracion (clave, valor, descripcion)
+                VALUES ('geocerca_activa', :val, 'Habilita o deshabilita la validacion GPS del quiosco')
+                ON DUPLICATE KEY UPDATE valor = :val2, updated_at = NOW()
+            ");
+            $this->db->bind(':val', $activo);
+            $this->db->bind(':val2', $activo);
+            $this->db->execute();
+
+            if (class_exists('AuditModel')) {
+                AuditModel::log('UPDATE_CONFIG', "Geolocalización GPS del Kiosco " . ($activo === '1' ? 'activada' : 'desactivada (Modo Pruebas)'));
+            }
+
+            echo json_encode([
+                'success' => true,
+                'activo'  => $activo === '1',
+                'message' => 'Geocerca GPS ' . ($activo === '1' ? 'activada (Restricción por distancia vigente)' : 'desactivada (Permite pruebas sin restricción de GPS)') . '.'
+            ]);
+        } catch (\Throwable $e) {
+            error_log('[SGP-CONFIG] toggleGeocerca error: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar estado de la geocerca']);
         }
         exit;
     }

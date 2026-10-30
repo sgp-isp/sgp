@@ -27,100 +27,125 @@ $estadoConfig = [
 ?>
 
 <style>
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1200px) {
-    .asig-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+/* ===== ASIG-KPI-CARD (Idéntico a Exámenes Rápidos) ===== */
+.asig-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+@media (max-width: 1100px) {
+    .asig-stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
 }
 @media (max-width: 768px) {
-    .asig-stats-grid { grid-template-columns: 1fr !important; }
+    .asig-stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; margin-bottom: 20px !important; }
+}
+@media (max-width: 480px) {
+    .asig-stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
 }
 
-/* ===== ASIG-KPI-CARD (Clase Aislada — evita conflictos de cascada kpi-card) ===== */
 .asig-kpi-card {
     background: #fff;
-    border-radius: 16px;
+    border-radius: 18px;
     padding: 22px;
-    box-shadow: 0 4px 15px rgba(22,38,96,0.05);
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-}
-.asig-kpi-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 25px rgba(22,38,96,0.1);
-}
-.asig-kpi-card .kpi-info {
-    flex: 1;
+    box-shadow: 0 2px 14px rgba(0,0,0,.07);
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
+    cursor: pointer;
 }
-.asig-kpi-card .kpi-label {
-    font-size: 0.78rem;
-    color: #64748b;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin: 0;
+.asig-kpi-card:hover { transform: translateY(-4px); }
+.asig-kpi-card::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    opacity: .07;
 }
-.asig-kpi-card .kpi-value {
-    font-size: 2rem;
-    font-weight: 800;
-    line-height: 1.1;
-    margin: 4px 0 0;
+
+.asig-kpi-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.asig-kpi-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; }
+.asig-kpi-val { font-size: 2.5rem; font-weight: 900; line-height: 1; margin-top: 2px; }
+.asig-kpi-sub { font-size: .74rem; color: #94a3b8; font-weight: 500; }
+.asig-kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+
+.asig-kpi-card.c-blue   { border-top: 3px solid #2563eb; } .asig-kpi-card.c-blue::after   { background: #2563eb; }
+.asig-kpi-card.c-green  { border-top: 3px solid #059669; } .asig-kpi-card.c-green::after  { background: #059669; }
+.asig-kpi-card.c-amber  { border-top: 3px solid #d97706; } .asig-kpi-card.c-amber::after  { background: #d97706; }
+.asig-kpi-card.c-purple { border-top: 3px solid #7c3aed; } .asig-kpi-card.c-purple::after { background: #7c3aed; }
+
+.asig-kpi-card:hover.c-blue   { box-shadow: 0 12px 22px -6px rgba(37, 99, 235, .55) !important; }
+.asig-kpi-card:hover.c-green  { box-shadow: 0 12px 22px -6px rgba(5, 150, 105, .55) !important; }
+.asig-kpi-card:hover.c-amber  { box-shadow: 0 12px 22px -6px rgba(217, 119, 6, .55) !important; }
+.asig-kpi-card:hover.c-purple { box-shadow: 0 12px 22px -6px rgba(124, 58, 237, .55) !important; }
+
+/* Responsive móvil */
+@media (max-width: 768px) {
+    .asig-kpi-card { padding: 16px 14px !important; border-radius: 16px !important; }
+    .asig-kpi-val  { font-size: 1.8rem !important; }
+    .asig-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
 }
-.asig-kpi-card .kpi-sub {
-    font-size: 0.78rem;
-    color: #94a3b8;
-    margin: 2px 0 0;
+@media (max-width: 480px) {
+    .asig-kpi-card { padding: 14px 12px !important; }
+    .asig-kpi-val  { font-size: 1.6rem !important; }
+    .asig-kpi-label { font-size: 0.68rem !important; }
+    .asig-kpi-sub  { font-size: 0.68rem !important; }
 }
-.asig-kpi-card .kpi-icon-box {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    flex-shrink: 0;
+
+/* Modo oscuro */
+[data-theme="dark"] .asig-kpi-card {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
 }
+[data-theme="dark"] .asig-kpi-card.c-blue   { border-top: 3px solid #3b82f6 !important; }
+[data-theme="dark"] .asig-kpi-card.c-green  { border-top: 3px solid #10b981 !important; }
+[data-theme="dark"] .asig-kpi-card.c-amber  { border-top: 3px solid #f59e0b !important; }
+[data-theme="dark"] .asig-kpi-card.c-purple { border-top: 3px solid #a855f7 !important; }
+
+[data-theme="dark"] .asig-kpi-card:hover.c-blue   { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(59, 130, 246, 0.5) !important; border-top-color: #60a5fa !important; }
+[data-theme="dark"] .asig-kpi-card:hover.c-green  { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(16, 185, 129, 0.5) !important; border-top-color: #34d399 !important; }
+[data-theme="dark"] .asig-kpi-card:hover.c-amber  { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(245, 158, 11, 0.5) !important; border-top-color: #fbbf24 !important; }
+[data-theme="dark"] .asig-kpi-card:hover.c-purple { box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(168, 85, 247, 0.5) !important; border-top-color: #c084fc !important; }
+
+[data-theme="dark"] .asig-kpi-val { color: #f8fafc !important; }
+[data-theme="dark"] .asig-kpi-label,
+[data-theme="dark"] .asig-kpi-sub { color: #94a3b8 !important; }
 @media(max-width:1100px){
-    /* [SGP-FIX-ASIG-BANNER] Antes solo se activaba a 768px: entre ~769px y
-       ~1100px (p.ej. con DevTools abierto o pantallas más angostas) el
-       banner seguía en fila única sin wrap y los botones quedaban
-       encimados/cortados contra el título. Se adelanta el quiebre. */
-    .asig-banner { flex-wrap:wrap !important; padding:22px 20px !important; gap:14px !important; }
-    .asig-banner-actions { width:100%;flex-wrap:wrap; }
-    .asig-banner-actions button { flex:1;min-width:140px;justify-content:center;font-size:.82rem !important;padding:10px 14px !important; }
+    .asig-banner { flex-direction: column !important; align-items: flex-start !important; padding: 22px 20px !important; gap: 16px !important; border-radius: 18px !important; }
+    .asig-banner > div:first-of-type { width: 100% !important; }
+    .asig-banner-actions { width: 100% !important; flex-wrap: wrap !important; gap: 10px !important; }
+    .asig-banner-actions button { flex: 1 1 150px !important; justify-content: center !important; font-size: 0.85rem !important; padding: 11px 16px !important; }
 }
 @media(max-width:480px){
-    .asig-banner-actions { flex-direction:column; }
-    .asig-banner-actions button { width:100%; }
+    .asig-banner { padding: 16px 14px !important; border-radius: 16px !important; margin-bottom: 20px !important; }
+    .asig-banner-actions { flex-direction: column !important; gap: 8px !important; }
+    .asig-banner-actions button { width: 100% !important; flex: 1 1 100% !important; }
 }
 </style>
 
 <div class="dashboard-container" style="width: 100%; max-width: 100%; padding: 0;">
 
     <!-- ===== BANNER ===== -->
-    <div class="asig-banner" style="background: linear-gradient(135deg, #172554 0%, #1e3a8a 50%, #2563eb 100%); border-radius: 20px; padding: 32px 40px; margin-bottom: 28px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between;">
+    <div class="asig-banner" style="background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%); border-radius: 20px; padding: 32px 40px; margin-bottom: 28px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between;">
         <div style="position: absolute; top: -40px; right: -40px; width: 220px; height: 220px; background: rgba(255,255,255,0.04); border-radius: 50%;"></div>
         <div style="position: absolute; bottom: -60px; left: 30%; width: 160px; height: 160px; background: rgba(255,255,255,0.03); border-radius: 50%;"></div>
         <div>
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 10px;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="width: 54px; height: 54px; min-width: 54px; background: rgba(255,255,255,0.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
                     <i class="ti ti-link" style="font-size: 28px; color: white;"></i>
                 </div>
                 <div>
-                    <h1 style="color: white; font-size: 1.8rem; font-weight: 700; margin: 0;">Gestión de Asignaciones</h1>
-                    <p style="color: rgba(255,255,255,0.7); margin: 0; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                    <h1 style="color: white; font-size: 1.8rem; font-weight: 700; margin: 0; line-height: 1.2;">Gestión de Asignaciones</h1>
+                    <p style="color: rgba(255,255,255,0.7); margin: 4px 0 0; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <i class="ti ti-arrows-exchange"></i>
-                        Asignación de Pasantes a Tutores y Departamentos
+                        <span>Asignación de Pasantes a Tutores y Departamentos</span>
                         <span style="background: rgba(255,255,255,0.2); color: white; padding: 2px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
                             <?= $total ?> registros
                         </span>
@@ -129,7 +154,7 @@ $estadoConfig = [
             </div>
         </div>
         <div class="asig-banner-actions" style="display: flex; gap: 12px; z-index: 1;">
-            <button onclick="document.getElementById('modalCalcHoras').style.display='flex'"
+            <button onclick="abrirCalculadoraHoras()"
                 style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; transition: all 0.25s; z-index: 1; flex-shrink: 0;"
                 onmouseover="this.style.background='rgba(255,255,255,0.25)'"
                 onmouseout="this.style.background='rgba(255,255,255,0.15)'">
@@ -181,24 +206,25 @@ $estadoConfig = [
     </div>
     <?php endif; ?>
 
-    <!-- ===== KPI CARDS (Asig Standard — Clase Aislada) ===== -->
-    <div class="asig-stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 28px;">
+    <!-- ===== KPI CARDS (Idéntico a Exámenes Rápidos) ===== -->
+    <div class="asig-stats-grid">
         <?php foreach ([
-            ['label' => 'Total Pasantes', 'value' => $total,       'sub' => 'registrados', 'color' => '#1e3a8a', 'icon' => 'ti-users',        'filter' => ''],
-            ['label' => 'Activos',        'value' => $activos,     'sub' => 'en pasantía', 'color' => '#16a34a', 'icon' => 'ti-circle-check', 'filter' => 'Activo'],
-            ['label' => 'Sin Asignar',    'value' => $pendientes,  'sub' => 'sin tutor/depto.', 'color' => '#f59e0b', 'icon' => 'ti-user-exclamation', 'filter' => 'Sin Asignar'],
-            ['label' => 'Finalizados',    'value' => $finalizados, 'sub' => 'completados', 'color' => '#7c3aed', 'icon' => 'ti-award',        'filter' => 'Finalizado'],
+            ['label' => 'Total Pasantes', 'value' => $total,       'sub' => 'registrados',       'color' => '#2563eb', 'bg' => '#eff6ff', 'icon' => 'ti-users',            'filter' => '',            'type' => 'blue'],
+            ['label' => 'Activos',        'value' => $activos,     'sub' => 'en pasantía',       'color' => '#059669', 'bg' => '#f0fdf4', 'icon' => 'ti-circle-check',     'filter' => 'Activo',      'type' => 'green'],
+            ['label' => 'Sin Asignar',    'value' => $pendientes,  'sub' => 'sin tutor/depto.',  'color' => '#d97706', 'bg' => '#fef3c7', 'icon' => 'ti-user-exclamation', 'filter' => 'Sin Asignar', 'type' => 'amber'],
+            ['label' => 'Finalizados',    'value' => $finalizados, 'sub' => 'completados',       'color' => '#7c3aed', 'bg' => '#f5f3ff', 'icon' => 'ti-award',            'filter' => 'Finalizado',  'type' => 'purple'],
         ] as $s): ?>
-        <div class="asig-kpi-card"
-             onclick="filtrarPorEstado('<?= $s['filter'] ?>')"
-             style="border-left: 4px solid <?= $s['color'] ?>;">
-            <div class="kpi-info">
-                <p class="kpi-label"><?= $s['label'] ?></p>
-                <h2 class="kpi-value" style="color: <?= $s['color'] ?>;"><?= $s['value'] ?></h2>
-                <p class="kpi-sub"><?= $s['sub'] ?></p>
-            </div>
-            <div class="kpi-icon-box" style="background: <?= $s['color'] ?>18;">
-                <i class="ti <?= $s['icon'] ?>" style="color: <?= $s['color'] ?>; font-size: 1.4rem;"></i>
+        <div class="asig-kpi-card c-<?= $s['type'] ?>"
+             onclick="filtrarPorEstado('<?= $s['filter'] ?>')">
+            <div class="asig-kpi-top">
+                <div>
+                    <div class="asig-kpi-label"><?= $s['label'] ?></div>
+                    <div class="asig-kpi-val" style="color: <?= $s['color'] ?>;"><?= $s['value'] ?></div>
+                    <div class="asig-kpi-sub"><?= $s['sub'] ?></div>
+                </div>
+                <div class="asig-kpi-icon" style="background: <?= $s['bg'] ?>; color: <?= $s['color'] ?>;">
+                    <i class="ti <?= $s['icon'] ?>"></i>
+                </div>
             </div>
         </div>
         <?php endforeach; ?>
@@ -242,8 +268,8 @@ $estadoConfig = [
     <!-- ===== TABLA DE ASIGNACIONES (Boxy SaaS) ===== -->
     <?php if (empty($asignaciones)): ?>
     <!-- EMPTY STATE INTELIGENTE (Cero errores DataTables TN/18) -->
-    <div class="sgp-solo-desktop" style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); padding: 56px 30px; text-align: center; border: 0;">
-        <div style="width: 76px; height: 76px; border-radius: 22px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); color: #2563eb; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(37,99,235,0.12);">
+    <div class="sgp-solo-desktop asig-empty-state" style="border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); padding: 56px 30px; text-align: center; border: 0;">
+        <div class="asig-empty-icon-wrap" style="width: 76px; height: 76px; border-radius: 22px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); color: #2563eb; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(37,99,235,0.12);">
             <i class="ti ti-link-off" style="font-size: 2.3rem;"></i>
         </div>
         <h3 style="font-size: 1.3rem; font-weight: 800; color: #1e293b; margin: 0 0 10px;">
@@ -271,13 +297,26 @@ $estadoConfig = [
     </div>
     <?php else: ?>
     <div class="sgp-solo-desktop" style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; border: 0;">
-        <div class="table-responsive">
-            <table id="tablaAsignaciones" class="table table-hover align-middle mb-0" style="width: 100%;">
-                <thead class="bg-light text-uppercase text-muted small fw-bold">
+        <div class="table-responsive" style="overflow-x: hidden;">
+            <table id="tablaAsignaciones" class="table table-hover align-middle mb-0" style="width: 100% !important; table-layout: fixed;">
+                <colgroup>
+                    <col style="width: 23%;">
+                    <col style="width: 16%;">
+                    <col style="width: 14%;">
+                    <col style="width: 12%;">
+                    <col style="width: 12%;">
+                    <col style="width: 10%;">
+                    <col style="width: 13%;">
+                </colgroup>
+                <thead class="bg-light text-uppercase text-muted small fw-bold" style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                     <tr>
-                        <?php foreach (['Pasante', 'Cédula', 'Tutor Asignado', 'Departamento', 'Horario', 'Progreso', 'Estado', 'Acciones'] as $h): ?>
-                        <th class="px-4 py-3 border-0"><?= $h ?></th>
-                        <?php endforeach; ?>
+                        <th class="px-3 py-3 border-0">Pasante / Cédula</th>
+                        <th class="px-3 py-3 border-0">Tutor Asignado</th>
+                        <th class="px-3 py-3 border-0">Departamento</th>
+                        <th class="px-3 py-3 border-0">Período</th>
+                        <th class="px-3 py-3 border-0">Progreso</th>
+                        <th class="px-3 py-3 border-0">Estado</th>
+                        <th class="px-3 py-3 border-0 text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="border-top-0">
@@ -296,69 +335,97 @@ $estadoConfig = [
                     <tr class="fila-asignacion" data-estado="<?= htmlspecialchars($estado) ?>" data-nombre="<?= strtolower($nombre) ?>"
                         style="border-bottom: 1px solid #f1f5f9; transition: all 0.2s;"
                         onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-                        <td style="padding: 16px 20px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #162660, #3b82f6); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">
-                                    <?= $iniciales ?>
+                        <td class="px-3 py-2.5">
+                            <div class="dt-name-cell">
+                                <div class="dt-avatar av-pasante"><?= $iniciales ?></div>
+                                <div style="min-width: 0; overflow: hidden; flex: 1;">
+                                    <div class="dt-cell-primary text-truncate" title="<?= $nombre ?>"><?= $nombre ?></div>
+                                    <div class="dt-cell-sub">
+                                        <span class="dt-cedula-badge" title="Cédula: <?= htmlspecialchars($a->cedula ?? '') ?>">
+                                            <i class="ti ti-id"></i> <?= htmlspecialchars($a->cedula ?? '—') ?>
+                                        </span>
+                                    </div>
                                 </div>
-                                <span style="font-weight: 600; color: #1e293b; font-size: 0.9rem;"><?= $nombre ?></span>
                             </div>
                         </td>
-                        <td style="padding: 16px 20px; color: #64748b; font-size: 0.85rem;"><?= htmlspecialchars($a->cedula ?? '—') ?></td>
-                        <td style="padding: 16px 20px; font-size: 0.85rem; font-weight: 500; color: #1e293b;"><?= $tutorNom ?></td>
-                        <td style="padding: 16px 20px; color: #64748b; font-size: 0.85rem;"><?= htmlspecialchars($a->departamento_nombre ?? '—') ?></td>
-                        <td style="padding: 16px 20px; color: #64748b; font-size: 0.85rem;">
+                        <td class="px-3 py-2.5">
+                            <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                                <div style="width: 28px; height: 28px; border-radius: 50%; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0;">
+                                    <i class="ti ti-briefcase"></i>
+                                </div>
+                                <div class="d-inline-block text-truncate" style="max-width: 100%; font-size: 0.84rem; font-weight: 600; color: #1e293b;" title="<?= strip_tags($tutorNom) ?>">
+                                    <?= $tutorNom ?>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-3 py-2.5" style="color: #64748b; font-size: 0.84rem;">
+                            <span class="d-inline-block text-truncate" style="max-width: 100%;" title="<?= htmlspecialchars($a->departamento_nombre ?? '—') ?>">
+                                <?= htmlspecialchars($a->departamento_nombre ?? '—') ?>
+                            </span>
+                        </td>
+                        <td class="px-3 py-2.5" style="color: #64748b; font-size: 0.82rem;">
                             <?php if (!empty($a->fecha_inicio_pasantia)): ?>
-                                <span style="font-size: 0.8rem;"><?= date('d/m/Y', strtotime($a->fecha_inicio_pasantia)) ?></span>
+                                <span style="font-weight: 600; color: #334155;"><?= date('d/m/Y', strtotime($a->fecha_inicio_pasantia)) ?></span>
                                 <?php if (!empty($a->fecha_fin_estimada)): ?>
-                                    <br><span style="font-size: 0.75rem; color: #94a3b8;">al <?= date('d/m/Y', strtotime($a->fecha_fin_estimada)) ?></span>
+                                    <br><span style="font-size: 0.72rem; color: #94a3b8;">al <?= date('d/m/Y', strtotime($a->fecha_fin_estimada)) ?></span>
                                 <?php endif; ?>
                             <?php else: ?>
                                 <span style="color: #94a3b8;">—</span>
                             <?php endif; ?>
                         </td>
-                        <td style="padding: 16px 20px; min-width: 140px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
+                        <td class="px-3 py-2.5">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="flex: 1; height: 6px; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
                                     <div style="width: <?= $progreso ?>%; height: 100%; background: <?= $pColor ?>; border-radius: 4px; transition: width 0.5s;"></div>
                                 </div>
-                                <span style="font-size: 0.8rem; font-weight: 700; color: <?= $pColor ?>; min-width: 35px;"><?= $progreso ?>%</span>
+                                <span style="font-size: 0.76rem; font-weight: 700; color: <?= $pColor ?>;"><?= $progreso ?>%</span>
                             </div>
-                            <span style="font-size: 0.7rem; color: #94a3b8;"><?= $hCumpl ?>/<?= $hMeta ?> hrs</span>
+                            <span style="font-size: 0.68rem; color: #94a3b8;"><?= $hCumpl ?>/<?= $hMeta ?> hrs</span>
                         </td>
-                        <td style="padding: 16px 20px;" data-search="<?= htmlspecialchars($estado) ?>" data-order="<?= htmlspecialchars($estado) ?>">
-                            <span style="background: <?= $cfg['bg'] ?>; color: <?= $cfg['color'] ?>; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
-                                <i class="ti <?= $cfg['icon'] ?>" style="font-size: 0.85rem;"></i>
+                        <td class="px-3 py-2.5" data-search="<?= htmlspecialchars($estado) ?>" data-order="<?= htmlspecialchars($estado) ?>">
+                            <span style="background: <?= $cfg['bg'] ?>; color: <?= $cfg['color'] ?>; padding: 4px 8px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="ti <?= $cfg['icon'] ?>" style="font-size: 0.75rem;"></i>
                                 <?= htmlspecialchars($estado) ?>
                             </span>
                         </td>
 
-                        <td class="px-4 py-3">
-                            <div class="d-flex justify-content-center" style="gap: 12px;">
-                                <button onclick="verDetalleAsignacion(<?= (int)$a->pasante_id ?>)"
-                                        class="btn btn-sm border-0 shadow-sm transition-all" 
-                                        data-bs-toggle="tooltip" title="Ver detalles" 
-                                        style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #2563eb; color: #ffffff; border-radius: 6px !important;">
-                                    <i class="ti ti-eye fs-5 text-white"></i>
+                        <td class="px-3 py-2.5 text-center">
+                            <div class="sgp-action-capsule">
+                                <button type="button" onclick="verDetalleAsignacion(<?= (int)$a->pasante_id ?>)"
+                                        class="sgp-act-btn act-blue" 
+                                        data-bs-toggle="tooltip" data-bs-placement="top" title="Ver detalles de asignación">
+                                    <i class="ti ti-eye"></i>
                                 </button>
                                 
                                 <?php if (in_array($estado, ['Sin Asignar', 'Pendiente'])): 
-                                    $instAsig = htmlspecialchars($a->institucion_procedencia ?? 'No registrada');
+                                    $instAsig = $a->institucion_procedencia ?: 'No registrada';
                                 ?>
-                                <button onclick="editarAsignacion(<?= (int)$a->pasante_id ?>, '<?= addslashes($nombre) ?>', '<?= addslashes($a->cedula) ?>', '<?= addslashes($instAsig) ?>')"
-                                        class="btn btn-sm border-0 shadow-sm transition-all" 
-                                        data-bs-toggle="tooltip" title="Editar asignación" 
-                                        style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #f59e0b; color: #ffffff; border-radius: 6px !important;">
-                                    <i class="ti ti-pencil fs-5 text-white"></i>
+                                <button type="button"
+                                        data-id="<?= (int)$a->pasante_id ?>"
+                                        data-nombre="<?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?>"
+                                        data-cedula="<?= htmlspecialchars($a->cedula ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                        data-institucion="<?= htmlspecialchars($instAsig, ENT_QUOTES, 'UTF-8') ?>"
+                                        onclick="window.abrirAsignacionSegura(this)"
+                                        class="sgp-act-btn act-amber" 
+                                        data-bs-toggle="tooltip" data-bs-placement="top" title="Editar asignación">
+                                    <i class="ti ti-pencil"></i>
+                                </button>
+                                <button type="button"
+                                        data-id="<?= (int)$a->pasante_id ?>"
+                                        data-nombre="<?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?>"
+                                        data-cedula="<?= htmlspecialchars($a->cedula ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                        onclick="window.confirmarDescartarPasante(this)"
+                                        class="sgp-act-btn act-danger-subtle" 
+                                        data-bs-toggle="tooltip" data-bs-placement="top" title="Descartar solicitud">
+                                    <i class="ti ti-trash"></i>
                                 </button>
                                 <?php endif; ?>
 
                                 <?php if ($estado === 'Activo'): ?>
-                                <button onclick="finalizarAsignacion(<?= (int)$a->pasante_id ?>, '<?= addslashes($nombre) ?>')"
-                                        class="btn btn-sm border-0 shadow-sm transition-all" 
-                                        data-bs-toggle="tooltip" title="Finalizar pasantía" 
-                                        style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #7c3aed; color: #ffffff; border-radius: 6px !important;">
-                                    <i class="ti ti-flag fs-5 text-white"></i>
+                                <button type="button" onclick="finalizarAsignacion(<?= (int)$a->pasante_id ?>, '<?= addslashes($nombre) ?>')"
+                                        class="sgp-act-btn act-green" 
+                                        data-bs-toggle="tooltip" data-bs-placement="top" title="Finalizar pasantía">
+                                    <i class="ti ti-flag"></i>
                                 </button>
                                 <?php endif; ?>
                             </div>
@@ -374,8 +441,8 @@ $estadoConfig = [
     <!-- CARD VIEW — solo en móvil (< 992px) -->
     <div class="sgp-solo-mobile gap-3 px-1 pb-3" id="cardsAsignaciones">
     <?php if (empty($asignaciones)): ?>
-        <div style="background: white; border-radius: 16px; padding: 32px 20px; text-align: center; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
-            <div style="width: 56px; height: 56px; border-radius: 16px; background: #eff6ff; color: #2563eb; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+        <div class="asig-empty-mobile" style="border-radius: 16px; padding: 32px 20px; text-align: center; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+            <div class="asig-empty-icon-wrap" style="width: 56px; height: 56px; border-radius: 16px; background: #eff6ff; color: #2563eb; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px;">
                 <i class="ti ti-link-off" style="font-size: 1.8rem;"></i>
             </div>
             <p style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 6px;">No hay asignaciones registradas</p>
@@ -455,11 +522,24 @@ $estadoConfig = [
                 <i class="ti ti-eye"></i> Ver
             </button>
             <?php if (in_array($estado, ['Sin Asignar', 'Pendiente'])):
-                $instAsig = htmlspecialchars($a->institucion_procedencia ?? 'No registrada'); ?>
+                $instAsig = $a->institucion_procedencia ?: 'No registrada'; ?>
             <button class="bca-btn bca-btn-edit"
-                    onclick="editarAsignacion(<?= (int)$a->pasante_id ?>, '<?= addslashes($nombre) ?>', '<?= addslashes($a->cedula) ?>', '<?= addslashes($instAsig) ?>')"
+                    data-id="<?= (int)$a->pasante_id ?>"
+                    data-nombre="<?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?>"
+                    data-cedula="<?= htmlspecialchars($a->cedula ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                    data-institucion="<?= htmlspecialchars($instAsig, ENT_QUOTES, 'UTF-8') ?>"
+                    onclick="window.abrirAsignacionSegura(this)"
                     title="Editar asignación">
                 <i class="ti ti-pencil"></i> Editar
+            </button>
+            <button class="bca-btn"
+                    data-id="<?= (int)$a->pasante_id ?>"
+                    data-nombre="<?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?>"
+                    data-cedula="<?= htmlspecialchars($a->cedula ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                    onclick="window.confirmarDescartarPasante(this)"
+                    style="color: #ef4444; border-color: #fee2e2; background: #fff;"
+                    title="Descartar solicitud">
+                <i class="ti ti-trash"></i> Descartar
             </button>
             <?php endif; ?>
             <?php if ($estado === 'Activo'): ?>
@@ -515,7 +595,7 @@ $(document).ready(function() {
                     }
                 ],
                 columnDefs: [
-                    { orderable: false, targets: 7 } // Desactivar ordenamiento de Acciones
+                    { orderable: false, targets: -1 } // Desactivar ordenamiento de Acciones
                 ],
                 initComplete: function(settings, json) {
                     $(this.api().table().node()).css('opacity', '1');
@@ -534,7 +614,7 @@ $(document).ready(function() {
     $('#filterEstado').on('change', function() {
         if (!dt) return;
         var term = this.value;
-        dt.column(6).search(term ? '^' + term + '$' : '', true, false).draw();
+        dt.column(5).search(term ? '^' + term + '$' : '', true, false).draw();
     });
 
     // Tooltips
@@ -603,8 +683,43 @@ window.filtrarPorEstado = function(estado) {
 @keyframes hc-spin { to{transform:rotate(360deg)} }
 @keyframes hc-gradient { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
-.hc-overlay { display:none;position:fixed;inset:0;background:rgba(2,6,23,.7);backdrop-filter:blur(8px);z-index:1060;align-items:center;justify-content:center; }
-.hc-box { background:#fff;border-radius:24px;width:100%;max-width:700px;margin:16px;box-shadow:0 32px 100px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.1);overflow:hidden;max-height:92vh;overflow-y:auto;animation:hc-fadeIn .3s ease; }
+.hc-overlay {
+    display: none;
+    position: fixed !important;
+    top: -20px !important;
+    left: -20px !important;
+    right: -20px !important;
+    bottom: -20px !important;
+    inset: -20px !important;
+    width: calc(100% + 40px) !important;
+    height: calc(100% + 40px) !important;
+    min-width: calc(100% + 40px) !important;
+    min-height: calc(100% + 40px) !important;
+    max-width: none !important;
+    max-height: none !important;
+    background: rgba(2, 6, 23, 0.72) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    z-index: 99999999 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    box-sizing: border-box !important;
+}
+.hc-box {
+    background: #fff;
+    border-radius: 24px;
+    width: 95%;
+    max-width: 720px;
+    margin: auto !important;
+    position: relative !important;
+    box-shadow: 0 32px 100px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.1);
+    overflow: hidden;
+    max-height: 92vh;
+    overflow-y: auto;
+    animation: hc-fadeIn .3s ease;
+}
 
 /* Header */
 .hc-head { background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 40%,#3b82f6 100%);padding:28px 32px;position:relative;overflow:hidden; }
@@ -698,7 +813,7 @@ window.filtrarPorEstado = function(estado) {
 @media(max-width:400px){ .hc-kpi-grid { grid-template-columns:1fr; } }
 </style>
 
-<div class="hc-overlay" id="modalCalcHoras" onclick="if(event.target===this)this.style.display='none'">
+<div class="hc-overlay" id="modalCalcHoras" onclick="if(event.target===this)cerrarCalculadoraHoras()">
 <div class="hc-box">
     <div class="hc-head">
         <div class="hc-head-inner">
@@ -710,15 +825,18 @@ window.filtrarPorEstado = function(estado) {
                     <div class="hc-head-sub">Estimación inteligente de fechas y distribución</div>
                 </div>
             </div>
-            <button class="hc-close" onclick="document.getElementById('modalCalcHoras').style.display='none'"><i class="ti ti-x"></i></button>
+            <button class="hc-close" onclick="cerrarCalculadoraHoras()"><i class="ti ti-x"></i></button>
         </div>
     </div>
 
     <div class="hc-body">
         <!-- Inputs -->
         <div class="hc-input-row">
-            <div class="hc-input-card">
-                <div class="hc-input-label"><i class="ti ti-calendar-event"></i> Fecha de Inicio</div>
+            <div class="hc-input-card" style="cursor: pointer;" onclick="if(document.getElementById('calcFechaInicio')._flatpickr){document.getElementById('calcFechaInicio')._flatpickr.open();}else{document.getElementById('calcFechaInicio').focus();}">
+                <div class="hc-input-label" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span><i class="ti ti-calendar-event"></i> Fecha de Inicio</span>
+                    <i class="ti ti-calendar" style="color: #2563eb; font-size: 1.1rem;" title="Abrir selector de fecha"></i>
+                </div>
                 <input type="date" class="hc-input" id="calcFechaInicio" value="<?= date('Y-m-d') ?>" onchange="calcularHoras()">
             </div>
             <div class="hc-input-card">
@@ -924,6 +1042,59 @@ window.filtrarPorEstado = function(estado) {
         document.getElementById('calcResultado').style.display = 'block';
     };
 
-    document.addEventListener('DOMContentLoaded', () => { document.getElementById('calcLoading').style.display='none'; });
+    window.abrirCalculadoraHoras = function() {
+        const m = document.getElementById('modalCalcHoras');
+        if (!m) return;
+        if (m.parentElement !== document.body) {
+            document.body.appendChild(m);
+        }
+        m.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        const inp = document.getElementById('calcFechaInicio');
+        if (inp && window.flatpickr) {
+            if (!inp._flatpickr) {
+                window.flatpickr(inp, {
+                    locale: 'es',
+                    dateFormat: 'Y-m-d',
+                    altInput: true,
+                    altFormat: 'd/m/Y',
+                    altInputClass: 'hc-input',
+                    defaultDate: inp.value || 'today',
+                    allowInput: true,
+                    clickOpens: true,
+                    disableMobile: true,
+                    onChange: function() { window.calcularHoras(); }
+                });
+            }
+        }
+        window.calcularHoras();
+    };
+
+    window.cerrarCalculadoraHoras = function() {
+        const m = document.getElementById('modalCalcHoras');
+        if (m) m.style.display = 'none';
+        document.body.style.overflow = '';
+    };
+
+    function asegurarModalEnBody() {
+        const m = document.getElementById('modalCalcHoras');
+        if (m && m.parentElement !== document.body) {
+            document.body.appendChild(m);
+        }
+    }
+
+    asegurarModalEnBody();
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => { 
+            asegurarModalEnBody();
+            document.getElementById('calcLoading').style.display='none'; 
+        });
+    } else {
+        const cl = document.getElementById('calcLoading');
+        if (cl) cl.style.display = 'none';
+        asegurarModalEnBody();
+    }
 })();
 </script>

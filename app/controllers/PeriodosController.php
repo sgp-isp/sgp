@@ -152,6 +152,7 @@ class PeriodosController extends Controller
                                                       ELSE NULL END
                                              )
             LEFT JOIN asistencias        a    ON a.pasante_id    = u.id
+                                             AND a.fecha BETWEEN pa.fecha_inicio AND LEAST(pa.fecha_fin, CURDATE())
             WHERE dpa.periodo_id = :pid AND u.rol_id = 3
             GROUP BY u.id
             ORDER BY dp.apellidos ASC, dp.nombres ASC
@@ -714,6 +715,15 @@ class PeriodosController extends Controller
         $this->db->bind(':pid', $id);
         $restantes = (int)($this->db->single()->restantes ?? 0);
         if ($restantes === 0) {
+            // Resolver pasantes que quedaron en Pendiente o Sin Asignar dentro del período cerrado
+            $this->db->query("
+                UPDATE datos_pasante
+                SET estado_pasantia = 'Retirado'
+                WHERE periodo_id = :pid AND estado_pasantia IN ('Pendiente', 'Sin Asignar')
+            ");
+            $this->db->bind(':pid', $id);
+            $this->db->execute();
+
             $this->db->query("UPDATE periodos_academicos SET estado = 'Cerrado' WHERE id = :id");
             $this->db->bind(':id', $id);
             $this->db->execute();
@@ -747,6 +757,14 @@ class PeriodosController extends Controller
                     URLROOT . '/pasante/dashboard',
                     $id
                 );
+            }
+
+            // 📧 Notificar culminación o cierre de período por correo al pasante
+            try {
+                require_once APPROOT . '/lib/MailService.php';
+                MailService::notifyPeriodClosure((int)$p->usuario_id, $periodo->nombre, $hAcum, $hMeta, $completado);
+            } catch (\Throwable $me) {
+                error_log('[SGP-PERIOD-MAIL] Error notificando cierre a pasante: ' . $me->getMessage());
             }
         }
 
@@ -974,8 +992,13 @@ class PeriodosController extends Controller
             exit;
         }
 
-        // Marcar finalizado y desactivar su usuario
-        $this->db->query("UPDATE datos_pasante SET estado_pasantia = 'Finalizado' WHERE usuario_id = :uid");
+        // Marcar finalizado respetando el período específico (sin alterar historial de otros períodos)
+        if ($periodoId > 0) {
+            $this->db->query("UPDATE datos_pasante SET estado_pasantia = 'Finalizado' WHERE usuario_id = :uid AND periodo_id = :pid");
+            $this->db->bind(':pid', $periodoId);
+        } else {
+            $this->db->query("UPDATE datos_pasante SET estado_pasantia = 'Finalizado' WHERE usuario_id = :uid ORDER BY id DESC LIMIT 1");
+        }
         $this->db->bind(':uid', $pasanteId);
         $this->db->execute();
 
@@ -1137,10 +1160,10 @@ class PeriodosController extends Controller
 
         $baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(__DIR__)) . '/public/img/';
         $cintilloCandidates = [
-            $baseImgDir . 'cintillo-salud.png',
+            $baseImgDir . 'cintillo.png',
             $baseImgDir . 'cintillo_isp_bolivar.jpg',
             $baseImgDir . 'cintillo_pdf.png',
-            $baseImgDir . 'cintillo.png'
+            $baseImgDir . 'cintillo-salud.png'
         ];
         $b64 = '';
         foreach ($cintilloCandidates as $cp) {
@@ -1483,10 +1506,10 @@ class PeriodosController extends Controller
         // ── Cintillo institucional ──────────────────────────────────
         $baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(__DIR__)) . '/public/img/';
         $cintilloCandidates = [
-            $baseImgDir . 'cintillo-salud.png',
+            $baseImgDir . 'cintillo.png',
             $baseImgDir . 'cintillo_isp_bolivar.jpg',
             $baseImgDir . 'cintillo_pdf.png',
-            $baseImgDir . 'cintillo.png'
+            $baseImgDir . 'cintillo-salud.png'
         ];
         $bCintillo = '';
         foreach ($cintilloCandidates as $cp) {
@@ -1694,6 +1717,7 @@ class PeriodosController extends Controller
             echo json_encode(['success' => false, 'message' => 'Token CSRF invalido.']); exit;
         }
         $pasanteId   = (int)($json['pasante_id']   ?? 0);
+        $periodoId   = (int)($json['periodo_id']   ?? 0);
         $fechaInicio = trim($json['fecha_inicio']   ?? '');
         $fechaFin    = trim($json['fecha_fin']      ?? '');
 
@@ -1720,14 +1744,26 @@ class PeriodosController extends Controller
         $lv -= (int)($this->db->single()->total ?? 0);
         $nuevasHoras = max(160, $lv * 8);
 
-        // Actualizar datos_pasante
-        $this->db->query("
-            UPDATE datos_pasante
-            SET fecha_inicio_pasantia = :fi,
-                fecha_fin_estimada    = :ff,
-                horas_meta            = :hm
-            WHERE usuario_id = :uid
-        ");
+        // Actualizar datos_pasante respetando el período específico
+        if ($periodoId > 0) {
+            $this->db->query("
+                UPDATE datos_pasante
+                SET fecha_inicio_pasantia = :fi,
+                    fecha_fin_estimada    = :ff,
+                    horas_meta            = :hm
+                WHERE usuario_id = :uid AND periodo_id = :pid
+            ");
+            $this->db->bind(':pid', $periodoId);
+        } else {
+            $this->db->query("
+                UPDATE datos_pasante
+                SET fecha_inicio_pasantia = :fi,
+                    fecha_fin_estimada    = :ff,
+                    horas_meta            = :hm
+                WHERE usuario_id = :uid
+                ORDER BY id DESC LIMIT 1
+            ");
+        }
         $this->db->bind(':fi',  $fechaInicio);
         $this->db->bind(':ff',  $fechaFin);
         $this->db->bind(':hm',  $nuevasHoras);
@@ -1781,7 +1817,8 @@ class PeriodosController extends Controller
         // Pasantes del período con su fecha de inicio individual
         $this->db->query("
             SELECT dpa.usuario_id,
-                   COALESCE(dpa.fecha_inicio_pasantia, pa.fecha_inicio) AS fecha_inicio
+                   COALESCE(dpa.fecha_inicio_pasantia, pa.fecha_inicio) AS fecha_inicio,
+                   pa.fecha_fin AS periodo_fecha_fin
             FROM datos_pasante dpa
             JOIN periodos_academicos pa ON pa.id = dpa.periodo_id
             WHERE dpa.periodo_id = :pid
@@ -1813,6 +1850,10 @@ class PeriodosController extends Controller
             }
 
             $nuevaFechaFin = $fechaFin->format('Y-m-d');
+            // Respetar la culminación oficial del período si es posterior
+            if (!empty($p->periodo_fecha_fin) && $p->periodo_fecha_fin >= $nuevaFechaFin) {
+                $nuevaFechaFin = $p->periodo_fecha_fin;
+            }
 
             $this->db->query("
                 UPDATE datos_pasante
@@ -1897,9 +1938,8 @@ class PeriodosController extends Controller
 
         while ($lv < $targetDias) {
             $dow  = (int)$cur->format('N');
-            $fStr = $cur->format('Y-m-d');
-            // Días hábiles efectivos: L-V y no feriado no laborable
-            if ($dow < 6 && !in_array($fStr, $feriados, true)) {
+            // Días hábiles calendario L-V (los feriados no postergan la fecha fin, se computan como Justificado)
+            if ($dow < 6) {
                 $lv++;
                 $fechaFin = clone $cur;
             }
@@ -1952,6 +1992,13 @@ class PeriodosController extends Controller
             if ($lv < 180) $cur->modify('+1 day');
         }
         $nuevaFechaFin = $fechaFin->format('Y-m-d');
+        // Respetar la culminación oficial del período si es posterior
+        $this->db->query("SELECT fecha_fin FROM periodos_academicos WHERE id = :pid LIMIT 1");
+        $this->db->bind(':pid', $periodoId);
+        $perObj = $this->db->single();
+        if ($perObj && !empty($perObj->fecha_fin) && $perObj->fecha_fin >= $nuevaFechaFin) {
+            $nuevaFechaFin = $perObj->fecha_fin;
+        }
 
         // Obtener pasantes de esa institución en el período
         // Soporta tanto institucion_id (FK) como institucion_procedencia (numérico texto)

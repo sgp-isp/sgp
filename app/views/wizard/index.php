@@ -27,7 +27,11 @@ $tieneFecha     = !empty($u->fecha_nacimiento);
 $tieneGenero    = !empty($u->genero);
 $tieneCargo     = !empty($u->cargo);
 $tienePin       = !empty($u->pin_asistencia);
-$tieneInst      = !empty($u->institucion_procedencia) && (int)$u->institucion_procedencia > 0;
+$instIdPrevia   = (int)($u->institucion_id ?? 0);
+if (!$instIdPrevia && !empty($u->institucion_procedencia) && is_numeric($u->institucion_procedencia)) {
+    $instIdPrevia = (int)$u->institucion_procedencia;
+}
+$tieneInst      = $instIdPrevia > 0 || !empty($u->institucion_nombre) || (!empty($u->institucion_procedencia) && !is_numeric($u->institucion_procedencia));
 $generoLabels   = ['M' => 'Masculino', 'F' => 'Femenino', 'Otro' => 'Prefiero no decirlo'];
 
 // Estado inicial de los indicadores
@@ -789,23 +793,33 @@ $startStep3 = $creadoPorAdmin ? 'none' : 'block';
                     </label>
                     <?php if ($tieneInst):
                         // Buscar nombre de la institución ya guardada
-                        $instIdExistente = (int)$u->institucion_procedencia;
-                        $instNombreExistente = '';
-                        foreach ($data['instituciones'] as $_inst) {
-                            if ((int)$_inst->id === $instIdExistente) {
-                                $instNombreExistente = $_inst->nombre;
-                                if (!empty($_inst->direccion)) $instNombreExistente .= ' (' . $_inst->direccion . ')';
-                                break;
+                        $instIdExistente = $instIdPrevia;
+                        $instNombreExistente = $u->institucion_nombre ?? '';
+                        if (!empty($u->institucion_direccion)) {
+                            $instNombreExistente .= ' (' . $u->institucion_direccion . ')';
+                        }
+                        if (empty($instNombreExistente) && $instIdExistente > 0) {
+                            foreach ($data['instituciones'] as $_inst) {
+                                if ((int)$_inst->id === $instIdExistente) {
+                                    $instNombreExistente = $_inst->nombre;
+                                    if (!empty($_inst->direccion)) $instNombreExistente .= ' (' . $_inst->direccion . ')';
+                                    break;
+                                }
                             }
+                        }
+                        if (empty($instNombreExistente) && !empty($u->institucion_procedencia)) {
+                            $instNombreExistente = $u->institucion_procedencia;
                         }
                     ?>
                     <div class="input-readonly-wrap">
-                        <div class="input-readonly"><?= htmlspecialchars($instNombreExistente ?: 'Institución registrada') ?></div>
-                        <i class="ti ti-lock input-readonly-lock"></i>
+                        <div class="input-readonly" style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 16px;color:#1e293b;font-weight:600;display:flex;align-items:center;justify-content:space-between;">
+                            <span><?= htmlspecialchars($instNombreExistente ?: 'Institución pre-registrada') ?></span>
+                            <i class="ti ti-lock" style="color:#64748b;font-size:1.15rem;"></i>
+                        </div>
                     </div>
                     <input type="hidden" id="institucion_id" name="institucion_id" value="<?= $instIdExistente ?>">
-                    <p style="color:#2563eb;font-size:0.78rem;margin-top:5px;display:flex;align-items:center;gap:4px;">
-                        <i class="ti ti-lock"></i> Institución registrada. Contacta al administrador si necesitas cambiarla.
+                    <p style="color:#2563eb;font-size:0.78rem;margin-top:6px;display:flex;align-items:center;gap:6px;">
+                        <i class="ti ti-info-circle"></i> Institución asignada en tu registro institucional. Solo lectura para verificación.
                     </p>
                     <?php else: ?>
                     <select name="institucion_id" id="institucion_id" class="input-modern" required style="cursor:pointer;">

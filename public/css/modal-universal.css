@@ -2,33 +2,72 @@
    MODAL UNIVERSAL SGP — Premium Design System
    ============================================ */
 
-/* ─── OVERLAY BACKDROP ─── */
+/* ─── OVERLAY BACKDROP GLOBAL (SGP BLINDAJE DE MODALES ANTI-ZOOM) ─── */
+.sgp-modal-overlay,
+.modal-overlay,
+.modal,
+.hc-overlay,
+.asig-modal-overlay {
+    position: fixed !important;
+    top: -20px !important;
+    left: -20px !important;
+    right: -20px !important;
+    bottom: -20px !important;
+    inset: -20px !important;
+    width: calc(100% + 40px) !important;
+    height: calc(100% + 40px) !important;
+    min-width: calc(100% + 40px) !important;
+    min-height: calc(100% + 40px) !important;
+    max-width: none !important;
+    max-height: none !important;
+    background: rgba(15, 23, 42, 0.72) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    z-index: 99999999 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 24px !important;
+}
+
 .sgp-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 9999;
     display: flex;
-    align-items: center;
-    justify-content: center;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sgp-modal-overlay.active {
-    opacity: 1;
-    visibility: visible;
+.sgp-modal-overlay.active,
+.sgp-modal-overlay[style*="display: flex"],
+.sgp-modal-overlay[style*="display:flex"] {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
 }
 
-/* Fix for SweetAlert2 over SGP Modal */
-.swal2-container {
-    z-index: 10000 !important;
+.sgp-modal-overlay[style*="display: none"],
+.sgp-modal-overlay[style*="display:none"] {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+}
+
+.modal.active,
+.modal-overlay.active,
+.hc-overlay.active,
+.hc-overlay[style*="display: flex"],
+.hc-overlay[style*="display:flex"] {
+    display: flex !important;
+}
+
+/* Fix for SweetAlert2 & Flatpickr over SGP Modals (z-index superior a 99999999) */
+.swal2-container,
+.flatpickr-calendar,
+.flatpickr-calendar.open,
+.flatpickr-calendar.animate.open,
+div.flatpickr-calendar {
+    z-index: 100000000 !important;
 }
 
 /* ─── MODAL CONTAINER ─── */

@@ -245,13 +245,14 @@ if (Session::get('requiere_cambio_clave') == 1) {
         <!-- Logo SGP (Siempre visible) -->
         <li class="nav-item">
             <?php
-            $user_role_id = Session::get('role_id') ?? 0;
+            $user_role_id = (int)(Session::get('role_id') ?? 0);
             $dashboardUrl = URLROOT . '/dashboard';
-            if ($user_role_id == 1) $dashboardUrl = URLROOT . '/admin';
-            if ($user_role_id == 2) $dashboardUrl = URLROOT . '/tutor';
-            if ($user_role_id == 3) $dashboardUrl = URLROOT . '/pasante';
+            if ($user_role_id === 0) $dashboardUrl = URLROOT . '/superadmin';
+            elseif ($user_role_id === 1) $dashboardUrl = URLROOT . '/admin';
+            elseif ($user_role_id === 2) $dashboardUrl = URLROOT . '/tutor';
+            elseif ($user_role_id === 3) $dashboardUrl = URLROOT . '/pasante/dashboard';
             ?>
-            <a href="<?= $dashboardUrl ?>" class="brand-link d-flex align-items-center text-decoration-none">
+            <a href="<?= $dashboardUrl ?>" class="brand-link d-flex align-items-center text-decoration-none" title="Ir al Inicio">
                 <img src="<?= URLROOT ?>/img/logo.png" alt="SGP Logo" 
                      style="height: 40px; width: auto; object-fit: contain;">
             </a>
@@ -279,6 +280,21 @@ if (Session::get('requiere_cambio_clave') == 1) {
     <!-- ZONA DERECHA: Notificaciones + Perfil -->
     <ul class="navbar-nav ml-auto align-items-center" style="gap: 12px;">
         
+        <!-- Control de Escala / Zoom (80% por defecto en desktop) -->
+        <li class="nav-item d-none d-md-flex align-items-center">
+            <div class="sgp-zoom-pill" title="Escala de visualización: Haz clic en el porcentaje para alternar entre 80% (recomendado) y 100%">
+                <button type="button" class="btn-zoom-adjust" onclick="changeSgpZoom(-0.05)" title="Reducir escala (Zoom -)">
+                    <i class="ti ti-minus"></i>
+                </button>
+                <button type="button" id="sgpZoomIndicator" class="btn-zoom-label" onclick="toggleSgpDefaultZoom()" title="Haz clic para alternar entre 80% y 100%">
+                    80%
+                </button>
+                <button type="button" class="btn-zoom-adjust" onclick="changeSgpZoom(0.05)" title="Aumentar escala (Zoom +)">
+                    <i class="ti ti-plus"></i>
+                </button>
+            </div>
+        </li>
+
         <!-- Toggle Modo Oscuro (Fase 5) -->
         <li class="nav-item">
             <button id="themeToggleBtn" class="theme-toggle-btn notif-btn" aria-label="Cambiar tema claro / oscuro" title="Cambiar tema claro / oscuro" onclick="toggleSgpTheme()">
@@ -287,6 +303,38 @@ if (Session::get('requiere_cambio_clave') == 1) {
         </li>
 
         <script>
+        function applySgpZoom(val) {
+            var num = parseFloat(val);
+            if (isNaN(num)) num = 0.90;
+            num = Math.round(num * 100) / 100;
+            num = Math.max(0.60, Math.min(1.20, num));
+            document.documentElement.style.zoom = num.toString();
+            try { localStorage.setItem('sgp_zoom', num.toString()); } catch(e){}
+            var ind = document.getElementById('sgpZoomIndicator');
+            if (ind) {
+                ind.textContent = Math.round(num * 100) + '%';
+            }
+        }
+        function toggleSgpDefaultZoom() {
+            var cur = parseFloat(localStorage.getItem('sgp_zoom') || (document.documentElement.style.zoom || '0.90'));
+            var next = (Math.round(cur * 100) === 90) ? 1.00 : 0.90;
+            applySgpZoom(next);
+        }
+        function changeSgpZoom(delta) {
+            var cur = parseFloat(localStorage.getItem('sgp_zoom') || (document.documentElement.style.zoom || '0.90'));
+            applySgpZoom(cur + delta);
+        }
+        (function() {
+            var isDesktop = window.innerWidth >= 768;
+            var saved = localStorage.getItem('sgp_zoom');
+            if (!saved || saved === '0.80' || saved === '0.8' || saved === '1') {
+                saved = isDesktop ? '0.90' : '1';
+            }
+            if (isDesktop || saved !== '1') {
+                applySgpZoom(saved);
+            }
+        })();
+
         function applySgpTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -307,9 +355,183 @@ if (Session::get('requiere_cambio_clave') == 1) {
             var saved = localStorage.getItem('sgp_theme') || 'light';
             applySgpTheme(saved);
         })();
+
+        function applySgpPalette(primary, accent, name) {
+            if (!primary || !accent) return;
+            document.documentElement.style.setProperty('--color-primary', primary);
+            document.documentElement.style.setProperty('--gradient-mid', primary);
+            document.documentElement.style.setProperty('--gradient-end', primary);
+            document.documentElement.style.setProperty('--color-accent-brand', accent);
+            document.documentElement.style.setProperty('--color-info', accent);
+            document.documentElement.style.setProperty('--icon-active', accent);
+            document.documentElement.style.setProperty('--text-active', accent);
+            document.documentElement.style.setProperty('--sidebar-accent', accent);
+            document.documentElement.style.setProperty('--gradient-start', accent);
+
+            var styleEl = document.getElementById('sgp-palette-dynamic-override');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'sgp-palette-dynamic-override';
+                document.head.appendChild(styleEl);
+            }
+            styleEl.textContent = `
+                :root {
+                    --color-primary: ${primary} !important;
+                    --color-accent-brand: ${accent} !important;
+                    --color-mid: ${primary} !important;
+                    --gradient-start: ${accent} !important;
+                    --gradient-mid: ${primary} !important;
+                    --gradient-end: ${primary} !important;
+                }
+                .main-sidebar {
+                    background: linear-gradient(180deg, ${accent} 0%, ${primary} 45%, ${primary} 100%) !important;
+                }
+                html:not([data-theme="dark"]) .admin-banner,
+                html:not([data-theme="dark"]) .pasantes-banner,
+                html:not([data-theme="dark"]) .superadmin-banner,
+                html:not([data-theme="dark"]) .tutor-banner,
+                html:not([data-theme="dark"]) .users-banner,
+                html:not([data-theme="dark"]) .dashboard-banner,
+                html:not([data-theme="dark"]) .module-banner,
+                html:not([data-theme="dark"]) .asig-banner,
+                html:not([data-theme="dark"]) .ev-banner,
+                html:not([data-theme="dark"]) .ev-hero,
+                html:not([data-theme="dark"]) .man-banner,
+                html:not([data-theme="dark"]) .pb-hero,
+                html:not([data-theme="dark"]) .as-hero,
+                html:not([data-theme="dark"]) .act-hero,
+                html:not([data-theme="dark"]) .con-hero,
+                html:not([data-theme="dark"]) .an-hero,
+                html:not([data-theme="dark"]) .ex-hero,
+                html:not([data-theme="dark"]) .td-hero,
+                html:not([data-theme="dark"]) .ta-hero,
+                html:not([data-theme="dark"]) .cfg-hero,
+                html:not([data-theme="dark"]) .mp-banner,
+                html:not([data-theme="dark"]) .punt-banner,
+                html:not([data-theme="dark"]) .tpp-banner,
+                html:not([data-theme="dark"]) .perm-banner,
+                html:not([data-theme="dark"]) .eg-banner,
+                html:not([data-theme="dark"]) .inst-banner,
+                html:not([data-theme="dark"]) .pc-banner,
+                html:not([data-theme="dark"]) .sc-banner,
+                html:not([data-theme="dark"]) .backup-banner,
+                html:not([data-theme="dark"]) .welcome-banner,
+                html:not([data-theme="dark"]) .p-banner,
+                html:not([data-theme="dark"]) .periodos-banner,
+                html:not([data-theme="dark"]) .modal-head,
+                html:not([data-theme="dark"]) .act-modal-header,
+                html:not([data-theme="dark"]) .con-doc-header,
+                .pb-hero, .cfg-hero, .act-hero, .ex-hero, .con-hero, .ev-hero, .as-hero, .an-hero, .td-hero, .ta-hero, .mp-banner, .punt-banner, .tpp-banner, .perm-banner, .eg-banner, .inst-banner, .pc-banner, .sc-banner {
+                    background: linear-gradient(135deg, ${primary} 0%, ${primary} 45%, ${accent} 100%) !important;
+                }
+                .btn-primary, .btn-brand, a.btn-primary, button.btn-primary,
+                .act-btn-save, .con-btn-primary, .btn-cfg-save, .cfg-btn-save,
+                .bca-btn-primary, .btn-aplicar-paleta, .pb-btn-constancia,
+                .btn-submit, .btn-ver-full, .prev-more, #puntScrollTop {
+                    background: linear-gradient(135deg, ${primary}, ${accent}) !important;
+                    border-color: ${accent} !important;
+                    color: #ffffff !important;
+                }
+                .btn-primary:hover, .btn-brand:hover, a.btn-primary:hover, button.btn-primary:hover,
+                .act-btn-save:hover, .con-btn-primary:hover, .btn-cfg-save:hover, .pb-btn-constancia:hover,
+                .btn-submit:hover, .btn-ver-full:hover, .prev-more:hover {
+                    filter: brightness(1.1) !important;
+                    box-shadow: 0 4px 14px ${accent}55 !important;
+                }
+                .pb-link-asistencia {
+                    color: ${accent} !important;
+                }
+                .pb-btn-actividad {
+                    color: ${accent} !important;
+                    border-color: ${accent}55 !important;
+                }
+                .pb-btn-actividad:hover {
+                    background: ${accent}15 !important;
+                }
+                .pb-card-title i, .pb-info-pill i {
+                    color: ${accent} !important;
+                }
+                .pb-kpi.c-blue {
+                    border-top-color: ${accent} !important;
+                }
+                .pb-kpi.c-blue .pb-kpi-val {
+                    color: ${accent} !important;
+                }
+                .pb-kpi.c-blue .pb-kpi-icon {
+                    background: ${accent}18 !important;
+                    color: ${accent} !important;
+                }
+                .profile-avatar:not(img) {
+                    background: linear-gradient(135deg, ${primary} 0%, ${accent} 100%) !important;
+                    box-shadow: 0 2px 6px ${primary}44 !important;
+                }
+                .dropdown-header {
+                    background: linear-gradient(135deg, ${primary} 0%, ${accent} 100%) !important;
+                }
+                .dock-fab {
+                    background: linear-gradient(135deg, ${primary} 0%, ${primary} 45%, ${accent} 100%) !important;
+                    box-shadow: 0 6px 18px ${primary}66 !important;
+                }
+                .dock-fab i {
+                    color: #ffffff !important;
+                }
+                .dock-item.active {
+                    color: ${accent} !important;
+                }
+                .dock-item.active i {
+                    color: ${accent} !important;
+                    background: ${accent}22 !important;
+                }
+                .dock-item.active span {
+                    color: ${accent} !important;
+                }
+                .dock-item.dock-fab-item span {
+                    color: ${accent} !important;
+                }
+                .dock-sheet-item.active .dock-sheet-icon,
+                .dock-sheet-item:hover .dock-sheet-icon {
+                    background: ${accent}22 !important;
+                    color: ${accent} !important;
+                }
+                .dock-indicator {
+                    background: linear-gradient(135deg, ${primary}, ${accent}) !important;
+                    box-shadow: 0 0 8px ${accent}bb !important;
+                }
+                .main-sidebar .nav-item>a.active, .main-sidebar .nav-link.active, .main-sidebar .nav-item.active>a {
+                    background: rgba(255, 255, 255, 0.16) !important;
+                }
+                .main-sidebar .nav-item>a.active i, .main-sidebar .nav-link.active i {
+                    color: #ffffff !important;
+                    filter: drop-shadow(0 0 6px ${accent}) !important;
+                }
+                .palette-card.active {
+                    border-color: ${accent} !important;
+                    box-shadow: 0 0 0 3px ${accent}33 !important;
+                }
+            `;
+
+            try {
+                localStorage.setItem('sgp_user_palette', JSON.stringify({ primary: primary, accent: accent, name: name || 'Custom' }));
+            } catch(e){}
+        }
+
+        function restoreSgpPalette() {
+            try {
+                var p = JSON.parse(localStorage.getItem('sgp_user_palette'));
+                if (p && p.primary && p.accent) {
+                    applySgpPalette(p.primary, p.accent, p.name);
+                } else {
+                    var el = document.getElementById('sgp-palette-dynamic-override');
+                    if (el) el.remove();
+                }
+            } catch(e){}
+        }
+        restoreSgpPalette();
+
         document.addEventListener('pjax:complete', function() {
             var saved = localStorage.getItem('sgp_theme') || 'light';
             applySgpTheme(saved);
+            restoreSgpPalette();
         });
         </script>
 
@@ -352,9 +574,14 @@ if (Session::get('requiere_cambio_clave') == 1) {
                     </div>
                 </div>
             </div>
-            </div>
         </li>
 
+        <!-- Soporte Técnico / Mesa de Ayuda -->
+        <li class="nav-item">
+            <button type="button" class="notif-btn" onclick="abrirModalSoporteGlobal()" title="Mesa de Ayuda / Soporte Técnico ISPEB" style="color: #64748b;">
+                <i class="ti ti-headset" style="font-size: 21px;"></i>
+            </button>
+        </li>
 
         <!-- Perfil Usuario -->
         <li class="nav-item dropdown">
@@ -388,15 +615,22 @@ if (Session::get('requiere_cambio_clave') == 1) {
                 </div>
                 <i class="ti ti-chevron-down ml-2" style="font-size: 0.8rem; color: #64748b;"></i>
             </a>
-            <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+            <div class="dropdown-menu dropdown-menu-right profile-dropdown" style="min-width: 230px; padding: 6px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); border: 1px solid rgba(0,0,0,0.06);">
                 <!-- Header del Dropdown -->
-                <div class="dropdown-header d-flex align-items-center p-3 mb-2" style="background: linear-gradient(135deg, #162660 0%, #0d1a3d 100%); border-radius: 8px;">
-                    <div class="profile-avatar mr-3" style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3);">
-                        <?= strtoupper(substr($user_name, 0, 1)) ?>
-                    </div>
-                    <div class="text-white text-left overflow-hidden">
-                        <div class="font-weight-bold text-truncate"><?= htmlspecialchars($user_name) ?></div>
-                        <div class="small opacity-75">Conectado</div>
+                <div class="dropdown-header d-flex align-items-center p-3 mb-2" style="border-radius: 12px; background: linear-gradient(135deg, var(--color-primary, #1e3a8a) 0%, var(--color-accent-brand, #2563eb) 100%) !important; color: #ffffff !important;">
+                    <?php if ($_hasAvatar): ?>
+                        <img src="<?= URLROOT ?>/img/avatars/<?= htmlspecialchars($_avatarFile) ?>" alt="Avatar"
+                             class="profile-avatar mr-2" style="width: 40px; height: 40px; min-width: 40px; object-fit: cover; border: 2px solid rgba(255,255,255,0.85); border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+                    <?php else: ?>
+                        <div class="profile-avatar mr-2" style="width: 40px; height: 40px; min-width: 40px; background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #ffffff;">
+                            <?= strtoupper(substr($user_name, 0, 1)) ?>
+                        </div>
+                    <?php endif; ?>
+                    <div class="text-left overflow-hidden" style="color: #ffffff;">
+                        <div class="font-weight-bold text-truncate" style="color: #ffffff; font-size: 0.92rem;"><?= htmlspecialchars($user_name) ?></div>
+                        <div class="small" style="color: rgba(255,255,255,0.85); font-size: 0.75rem; display: flex; align-items: center; gap: 4px;">
+                            <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background-color: #22c55e;"></span> En línea
+                        </div>
                     </div>
                 </div>
 
@@ -433,8 +667,149 @@ function confirmLogout() {
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
+            try { localStorage.setItem('sgp_theme', 'light'); } catch(e){}
             window.location.href = '<?= URLROOT ?>/auth/logout';
         }
     });
 }
+
+function abrirModalSoporteGlobal() {
+    var modal = document.getElementById('modalSoporteGlobal');
+    if (!modal) return;
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    var inputAsunto = document.getElementById('soporteAsunto');
+    if (inputAsunto) setTimeout(function(){ inputAsunto.focus(); }, 100);
+}
+
+function cerrarModalSoporteGlobal() {
+    var modal = document.getElementById('modalSoporteGlobal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+    }
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        var modal = document.getElementById('modalSoporteGlobal');
+        if (modal && (modal.classList.contains('active') || modal.style.display === 'flex')) {
+            cerrarModalSoporteGlobal();
+        }
+    }
+});
+
+function enviarTicketSoporteGlobal(e) {
+    e.preventDefault();
+    var btn = document.getElementById('btnEnviarSoporte');
+    var asunto = document.getElementById('soporteAsunto').value.trim();
+    var prioridad = document.getElementById('soportePrioridad').value;
+    var descripcion = document.getElementById('soporteDescripcion').value.trim();
+
+    if (!asunto || !descripcion) {
+        Swal.fire({ icon: 'warning', title: 'Campos requeridos', text: 'Por favor complete el asunto y la descripción de la incidencia.' });
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i> Enviando...';
+
+    fetch('<?= URLROOT ?>/superAdmin/crearTicketSoporte', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ asunto: asunto, prioridad: prioridad, descripcion: descripcion })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ti ti-send"></i> <span>Enviar Ticket</span>';
+        if (res.success) {
+            cerrarModalSoporteGlobal();
+            document.getElementById('formSoporteGlobal').reset();
+            Swal.fire({
+                icon: 'success',
+                title: 'Ticket Generado #' + (res.codigo || ''),
+                html: '<p style="color:#475569;margin-top:8px;">' + res.message + '</p><div style="margin-top:12px;padding:10px;background:#f0fdf4;border-radius:10px;color:#16a34a;font-size:0.85rem;font-weight:600;"><i class="ti ti-mail-check"></i> Notificación enviada a Dirección de Telemática</div>',
+                confirmButtonColor: '#162660'
+            });
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error', text: res.message || 'No se pudo generar el ticket.' });
+        }
+    })
+    .catch(function(err){
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ti ti-send"></i> <span>Enviar Ticket</span>';
+        Swal.fire({ icon: 'error', title: 'Error de Red', text: 'No se pudo contactar al servidor.' });
+    });
+}
 </script>
+
+<!-- Modal Global de Soporte Técnico / HelpDesk -->
+<div id="modalSoporteGlobal" class="sgp-modal-overlay modal" style="display:none;position:fixed;top:-20px;left:-20px;right:-20px;bottom:-20px;inset:-20px;width:calc(100% + 40px);height:calc(100% + 40px);background:rgba(15,23,42,0.65);z-index:99999999;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:16px;" onclick="if(event.target===this)cerrarModalSoporteGlobal()">
+    <div class="sgp-modal-bento" style="background:#ffffff;border-radius:24px;width:100%;max-width:540px;box-shadow:0 25px 60px rgba(0,0,0,0.25);border:1px solid #e2e8f0;overflow:hidden;animation:bentoModalIn 0.3s cubic-bezier(0.16,1,0.3,1);">
+        <div style="background:linear-gradient(135deg, #162660 0%, #1e3a8a 100%);padding:22px 26px;color:#ffffff;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                    <i class="ti ti-headset"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0;font-size:1.1rem;font-weight:800;color:#ffffff;">Mesa de Ayuda &bull; Soporte ISPEB</h3>
+                    <p style="margin:2px 0 0;font-size:0.78rem;color:rgba(255,255,255,0.8);">Envío de incidencia técnica a Dirección de Telemática</p>
+                </div>
+            </div>
+            <button type="button" onclick="cerrarModalSoporteGlobal()" style="background:none;border:none;color:#ffffff;font-size:1.2rem;cursor:pointer;opacity:0.8;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <form id="formSoporteGlobal" onsubmit="enviarTicketSoporteGlobal(event)" style="padding:24px 26px;">
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:0.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+                    <i class="ti ti-message-2"></i> Asunto de la Incidencia
+                </label>
+                <input type="text" id="soporteAsunto" required placeholder="Ej: Inconsistencia en marcaje de asistencia / Error en evaluación" style="width:100%;padding:10px 14px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:0.9rem;outline:none;font-weight:600;color:#1e293b;">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div>
+                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+                        <i class="ti ti-flag"></i> Prioridad
+                    </label>
+                    <select id="soportePrioridad" style="width:100%;padding:10px 14px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:0.9rem;outline:none;font-weight:600;color:#1e293b;background:#ffffff;">
+                        <option value="Baja">Baja</option>
+                        <option value="Media" selected>Media (Normal)</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Urgente">Urgente (Bloqueante)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+                        <i class="ti ti-mail"></i> Destinatario
+                    </label>
+                    <input type="text" readonly value="sgp.ispeb@gmail.com" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;background:#f8fafc;border-radius:10px;font-size:0.85rem;color:#64748b;font-weight:600;">
+                </div>
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="display:block;font-size:0.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+                    <i class="ti ti-file-text"></i> Descripción Detallada
+                </label>
+                <textarea id="soporteDescripcion" required rows="4" placeholder="Explique con el mayor detalle posible lo que sucede..." style="width:100%;padding:10px 14px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:0.9rem;outline:none;font-weight:500;color:#1e293b;resize:vertical;"></textarea>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;">
+                <button type="button" onclick="cerrarModalSoporteGlobal()" style="padding:10px 18px;border:1.5px solid #cbd5e1;border-radius:10px;background:#ffffff;color:#475569;font-weight:700;font-size:0.88rem;cursor:pointer;">
+                    Cancelar
+                </button>
+                <button type="submit" id="btnEnviarSoporte" style="padding:10px 22px;border:none;border-radius:10px;background:linear-gradient(135deg, #162660, #2563eb);color:#ffffff;font-weight:700;font-size:0.88rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(37,99,235,0.25);">
+                    <i class="ti ti-send"></i> <span>Enviar Ticket</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+

@@ -134,6 +134,15 @@ $estadoConfig = [
                                     <i class="ti ti-id-badge fs-5 text-white"></i>
                                 </a>
 
+                                <?php if (!empty($p->dispositivo_nombre)): ?>
+                                <button onclick="desvincularDispositivo(<?= (int)$p->id ?>, '<?= addslashes($nombre) ?>', '<?= addslashes($p->dispositivo_nombre) ?>')" 
+                                        class="btn btn-sm border-0 shadow-sm transition-all" 
+                                        data-bs-toggle="tooltip" title="Desvincular Teléfono QR (<?= htmlspecialchars($p->dispositivo_nombre) ?>)" 
+                                        style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #6366f1; color: #ffffff; border-radius: 6px !important;">
+                                    <i class="ti ti-device-mobile-rotated fs-5 text-white"></i>
+                                </button>
+                                <?php endif; ?>
+
                                 <?php if ($estado === 'Sin Asignar'): ?>
                                 <button onclick="abrirModalAsignacion(<?= (int)$p->id ?>, '<?= addslashes($nombre) ?>')" 
                                         class="btn btn-sm border-0 shadow-sm transition-all" 
@@ -339,9 +348,11 @@ function confirmarFinalizar(pasanteId, nombre) {
 
         var fd = new FormData();
         fd.append('pasante_id', pasanteId);
+        var csrfMetaFin = document.querySelector('meta[name="csrf-token"]');
+        if (csrfMetaFin) fd.append('_csrf', csrfMetaFin.getAttribute('content'));
 
         try {
-            var resp = await fetch('<?= URLROOT ?>/pasantes/finalizar_pasantia', {
+            var resp = await fetch('<?= URLROOT ?>/asignaciones/finalizar', {
                 method: 'POST',
                 body: fd,
             });
@@ -384,6 +395,41 @@ function filtrarPorEstado(estado) {
             timerProgressBar: true
         });
     }
+function desvincularDispositivo(pasanteId, nombre, dispNombre) {
+    Swal.fire({
+        title: '¿Desvincular Dispositivo?',
+        html: `El pasante <strong>${nombre}</strong> tiene vinculado el equipo: <br><span class="badge bg-light text-dark border mt-2 fs-6">📱 ${dispNombre}</span><br><br><small class="text-muted">Al desvincularlo, el pasante podrá registrar su nuevo teléfono la próxima vez que escanee el código QR en la institución.</small>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, Desvincular',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const formData = new FormData();
+                formData.append('usuario_id', pasanteId);
+                const resp = await fetch('<?= URLROOT ?>/pasantes/desvincularDispositivo', {
+                    method: 'POST',
+                    body: formData
+                });
+                const res = await resp.json();
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Dispositivo Desvinculado',
+                        text: res.message,
+                        confirmButtonColor: '#162660'
+                    }).then(() => window.location.reload());
+                } else {
+                    Swal.fire('Error', res.message || 'No se pudo desvincular.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Error de conexión con el servidor', 'error');
+            }
+        }
+    });
 }
 
 // Inicializar Tooltips y DataTables si no están

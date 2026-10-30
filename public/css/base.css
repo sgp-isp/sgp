@@ -27,6 +27,13 @@ html {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Escala ejecutiva (80% compacto por defecto en pantallas de laptop y escritorio) */
+@media (min-width: 992px) {
+    html {
+        zoom: 0.80;
+    }
+}
+
 body {
     background-color: var(--color-bg);
     color: var(--text-body);

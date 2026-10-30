@@ -5,19 +5,22 @@ class Session
     {
         if (session_status() === PHP_SESSION_NONE) {
             // [FIX-P2] Forzar flags de seguridad en la cookie PHPSESSID antes de session_start()
+            $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                    || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+
             session_set_cookie_params([
                 'lifetime' => 0,                              // Cookie de sesión (expira al cerrar el navegador)
                 'path'     => '/',
-                'domain'   => $_SERVER['HTTP_HOST'] ?? '',
-                'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off', // Solo HTTPS si está disponible
+                'domain'   => '',                             // Dejar vacío para que enlace al host actual (localhost o trycloudflare.com)
+                'secure'   => $isHttps,                       // Solo HTTPS si está disponible o vía túnel
                 'httponly' => true,                           // Bloquea acceso desde JavaScript (anti-XSS)
                 'samesite' => 'Lax'                           // Protección CSRF básica
             ]);
 
             $urlActual = $_SERVER['REQUEST_URI'] ?? '';
 
-            // Si la ruta NO contiene '/public/kiosco', iniciamos sesión normalmente
-            if (strpos($urlActual, '/public/kiosco') === false) {
+            // Si la ruta NO contiene '/kiosco', iniciamos sesión normalmente
+            if (strpos($urlActual, '/kiosco') === false) {
                 session_start();
             }
         }
@@ -48,6 +51,14 @@ class Session
     public static function get($key)
     {
         return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
+    }
+
+    // Delete a session variable
+    public static function delete($key)
+    {
+        if (isset($_SESSION[$key])) {
+            unset($_SESSION[$key]);
+        }
     }
 
     // Check if user is logged in
@@ -127,6 +138,14 @@ class Session
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         }
         return $_SESSION['csrf_token'];
+    }
+
+    /**
+     * Alias compatible de generateCsrfToken
+     */
+    public static function getCsrfToken(): string
+    {
+        return self::generateCsrfToken();
     }
 
     /**

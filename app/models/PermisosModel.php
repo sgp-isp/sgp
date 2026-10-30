@@ -187,6 +187,23 @@ class PermisosModel
     }
 
     /**
+     * Obtiene una acción por su clave única (ej: 'ver_usuarios').
+     *
+     * @param string $clave
+     * @return object|null
+     */
+    public function getAccionPorClave(string $clave): ?object
+    {
+        $this->db->query('SELECT a.id, a.clave, a.nombre, a.tipo, m.nombre AS modulo_nombre 
+                          FROM acciones_modulo a
+                          JOIN modulos_sistema m ON a.modulo_id = m.id
+                          WHERE a.clave = :clave LIMIT 1');
+        $this->db->bind(':clave', $clave);
+        $res = $this->db->single();
+        return $res ?: null;
+    }
+
+    /**
      * Guarda múltiples permisos de un usuario de una sola vez.
      * Recibe array ['clave' => bool, ...]
      *

@@ -89,18 +89,50 @@
 
     /**
      * Actualiza el estado "active" del sidebar sin tocar el DOM del sidebar.
+     * Selecciona con precisión matemática el enlace más específico que coincida con la URL,
+     * evitando activar simultáneamente el enlace raíz de inicio (dashboard) y la sección actual.
      * @param {string} url - URL de destino
      */
     function updateSidebarActive(url) {
-        document.querySelectorAll(NAV_SELECTOR).forEach(function (link) {
-            const href = link.getAttribute('href') || '';
-            // Comparación flexible: la URL actual contiene el path del link
-            if (href && url.includes(new URL(href, window.location.origin).pathname)) {
-                link.classList.add(ACTIVE_CLASS);
-            } else {
-                link.classList.remove(ACTIVE_CLASS);
+        try {
+            const currentPath = new URL(url, window.location.origin).pathname.replace(/\/+$/, '').toLowerCase();
+            const links = Array.from(document.querySelectorAll(NAV_SELECTOR));
+
+            links.forEach(function (l) { l.classList.remove(ACTIVE_CLASS); });
+
+            let bestMatch = null;
+            let bestScore = -1;
+
+            links.forEach(function (link) {
+                const href = link.getAttribute('href');
+                if (!href || href.startsWith('#') || href.includes('logout')) return;
+
+                const linkPath = new URL(href, window.location.origin).pathname.replace(/\/+$/, '').toLowerCase();
+
+                // Match exacto (máxima prioridad)
+                if (currentPath === linkPath) {
+                    const score = 1000 + linkPath.length;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMatch = link;
+                    }
+                } 
+                // Prefijo de sub-ruta (ej: /users/crear activa /users)
+                else if (currentPath.startsWith(linkPath + '/')) {
+                    const score = linkPath.length;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMatch = link;
+                    }
+                }
+            });
+
+            if (bestMatch) {
+                bestMatch.classList.add(ACTIVE_CLASS);
             }
-        });
+        } catch (e) {
+            console.warn('[SGP-PJAX] Error al actualizar estado activo del sidebar:', e);
+        }
     }
 
     /**
@@ -134,13 +166,19 @@
     function execInlineScripts(container) {
         const scripts = container.querySelectorAll('script:not([src])');
         scripts.forEach(function (oldScript) {
-            const newScript = document.createElement('script');
-            // Copiar atributos (type, src, etc.)
-            Array.from(oldScript.attributes).forEach(function (attr) {
-                newScript.setAttribute(attr.name, attr.value);
-            });
-            newScript.textContent = oldScript.textContent;
-            oldScript.parentNode.replaceChild(newScript, oldScript);
+            try {
+                const newScript = document.createElement('script');
+                // Copiar atributos (type, src, etc.)
+                Array.from(oldScript.attributes).forEach(function (attr) {
+                    newScript.setAttribute(attr.name, attr.value);
+                });
+                newScript.textContent = oldScript.textContent;
+                if (oldScript.parentNode) {
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                }
+            } catch (err) {
+                console.warn('[SGP-PJAX] Advertencia ejecutando script inline:', err);
+            }
         });
 
         const externalScripts = container.querySelectorAll('script[src]');

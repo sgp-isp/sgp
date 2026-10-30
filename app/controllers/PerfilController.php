@@ -483,7 +483,11 @@ class PerfilController extends Controller
                 u.cedula,
                 u.rol_id,
                 u.estado,
+                u.pin_asistencia,
                 u.created_at,
+                u.departamento_id,
+                COALESCE(d_usu.nombre, d_pas.nombre, 'Sin Asignar') as departamento_nombre,
+                COALESCE(u.departamento_id, dpa.departamento_asignado_id) as departamento_efectivo_id,
                 CASE WHEN u.rol_id = 0 THEN 'Super Administrador' ELSE r.nombre END as rol_nombre,
                 dp.nombres,
                 dp.apellidos,
@@ -501,8 +505,7 @@ class PerfilController extends Controller
                 i.representante_nombre     as inst_rep_nombre,
                 i.representante_cargo      as inst_rep_cargo,
                 i.representante_correo     as inst_rep_correo,
-                i.representante_telefono   as inst_rep_telefono,
-                d_pas.nombre               as departamento_nombre";
+                i.representante_telefono   as inst_rep_telefono";
         } else {
             $query .= ", u.avatar";
         }
@@ -510,13 +513,13 @@ class PerfilController extends Controller
         $query .= "
             FROM usuarios u
             LEFT JOIN roles r ON u.rol_id = r.id
-            LEFT JOIN datos_personales dp ON u.id = dp.usuario_id";
+            LEFT JOIN datos_personales dp ON u.id = dp.usuario_id
+            LEFT JOIN departamentos d_usu ON d_usu.id = u.departamento_id
+            LEFT JOIN datos_pasante dpa ON u.id = dpa.usuario_id
+            LEFT JOIN departamentos d_pas ON d_pas.id = dpa.departamento_asignado_id";
 
-        // Agregar JOIN específico para pasantes e instituciones
         if ($roleId == 3) {
-            $query .= " LEFT JOIN datos_pasante dpa ON u.id = dpa.usuario_id
-                        LEFT JOIN instituciones i ON dpa.institucion_procedencia = i.id
-                        LEFT JOIN departamentos d_pas ON d_pas.id = dpa.departamento_asignado_id";
+            $query .= " LEFT JOIN instituciones i ON dpa.institucion_procedencia = i.id";
         }
         
         $query .= " WHERE u.id = :uid";
@@ -541,6 +544,10 @@ class PerfilController extends Controller
         // Obtener preguntas de seguridad (para el nuevo modal)
         $preguntas = $this->userModel->getSecurityQuestions();
 
+        // Obtener lista completa de departamentos para el selector de cambio
+        $this->db->query("SELECT id, nombre FROM departamentos ORDER BY nombre ASC");
+        $departamentos = $this->db->resultSet() ?: [];
+
         // Obtener todas las instituciones para el modal si es pasante
         $instituciones = [];
         if ($roleId == 3) {
@@ -558,14 +565,110 @@ class PerfilController extends Controller
         ");
         $this->db->bind(':usuario_id', $userId);
         $respuestas = $this->db->resultSet();
+
+        // Dispositivos biométricos vinculados al usuario
+        $dispositivosBiometria = [];
+        try {
+            $this->db->query("
+                SELECT id, device_name, creado_at, ultimo_uso_at
+                FROM usuarios_biometria
+                WHERE usuario_id = :uid
+                ORDER BY creado_at DESC
+            ");
+            $this->db->bind(':uid', $userId);
+            $dispositivosBiometria = $this->db->resultSet() ?: [];
+        } catch (\Throwable $e) {
+            $dispositivosBiometria = [];
+        }
+
+        // Estado del patrón gestual y dispositivos vinculados
+        $tienePatron = false;
+        $dispositivosFrecuentes = [];
+        try {
+            $this->db->query("SELECT patron_activo FROM usuarios WHERE id = :uid LIMIT 1");
+            $this->db->bind(':uid', $userId);
+            $pRow = $this->db->single();
+            $tienePatron = !empty($pRow->patron_activo);
+
+            require_once APPROOT . '/lib/DeviceSecurityHelper.php';
+            $dispositivosFrecuentes = DeviceSecurityHelper::obtenerDispositivos($userId);
+        } catch (\Throwable $e) {
+            $tienePatron = false;
+            $dispositivosFrecuentes = [];
+        }
         
         $this->view('perfil/ver', [
             'title' => 'Mi Perfil',
             'user' => $dataArray,
             'preguntas' => $preguntas ?: [],
             'respuestas' => $respuestas ?: [],
-            'instituciones' => $instituciones
+            'departamentos' => $departamentos,
+            'instituciones' => $instituciones,
+            'dispositivosBiometria' => $dispositivosBiometria,
+            'tienePatron' => $tienePatron,
+            'dispositivosFrecuentes' => $dispositivosFrecuentes
         ]);
+    }
+
+    /**
+     * AJAX: Cambiar PIN de asistencia para pasantes (4 dígitos)
+     */
+    public function cambiarPin()
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        ini_set('display_errors', '0');
+
+        try {
+            Session::start();
+            $userId = (int)Session::get('user_id');
+            $roleId = (int)Session::get('role_id');
+
+            if ($userId <= 0 || $roleId !== 3) {
+                echo json_encode(['success' => false, 'message' => 'Acción no permitida o no autorizada']);
+                return;
+            }
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+                return;
+            }
+
+            // Validar CSRF
+            $token = $_POST['_csrf'] ?? $_POST['csrf_token'] ?? '';
+            if (!Session::validateCsrfToken($token)) {
+                echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido o expirado. Recarga la página.']);
+                return;
+            }
+
+            $pinNuevo = trim($_POST['pin_nuevo'] ?? '');
+            $pinConf  = trim($_POST['pin_confirmacion'] ?? '');
+
+            if (!preg_match('/^[0-9]{4}$/', $pinNuevo)) {
+                echo json_encode(['success' => false, 'message' => 'El PIN debe contener exactamente 4 dígitos numéricos (ej. 1234).']);
+                return;
+            }
+
+            if ($pinNuevo !== $pinConf) {
+                echo json_encode(['success' => false, 'message' => 'La confirmación del PIN no coincide con el nuevo PIN.']);
+                return;
+            }
+
+            $pinHashed = password_hash($pinNuevo, PASSWORD_DEFAULT);
+            $this->db->query("UPDATE usuarios SET pin_asistencia = :pin WHERE id = :id AND rol_id = 3");
+            $this->db->bind(':pin', $pinHashed);
+            $this->db->bind(':id', $userId);
+
+            if ($this->db->execute()) {
+                if (class_exists('AuditModel')) {
+                    AuditModel::log('CAMBIO_PIN_ASISTENCIA', 'usuarios', $userId, ['rol' => 'pasante']);
+                }
+                echo json_encode(['success' => true, 'message' => '¡Tu PIN de asistencia de 4 dígitos ha sido configurado con éxito!']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Error al guardar el PIN en la base de datos']);
+            }
+        } catch (\Throwable $e) {
+            echo json_encode(['success' => false, 'message' => 'Error en el servidor: ' . $e->getMessage()]);
+        }
     }
     
     
@@ -605,6 +708,18 @@ class PerfilController extends Controller
                 throw new Exception('Usuario no autenticado');
             }
             
+            // Obtener estado actual para comparación y prevención de spam por correo
+            $this->db->query("
+                SELECT dp.*, u.correo, u.cedula, u.departamento_id,
+                       d.nombre AS departamento_nombre
+                FROM usuarios u
+                LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
+                LEFT JOIN departamentos d ON d.id = u.departamento_id
+                WHERE u.id = :uid LIMIT 1
+            ");
+            $this->db->bind(':uid', $userId);
+            $actual = $this->db->single();
+
             $data = [
                 'nombres' => trim(Validator::post('nombres')),
                 'apellidos' => trim(Validator::post('apellidos')),
@@ -615,60 +730,40 @@ class PerfilController extends Controller
             ];
             
             // Validar campos obligatorios
-        if (empty($data['nombres']) || empty($data['apellidos']) || empty($data['telefono'])) {
-            throw new Exception('Los campos Nombres, Apellidos y Teléfono son obligatorios');
-        }
-        
-        // ============================================
-        // VALIDACIONES DE TIPO Y FORMATO
-        // ============================================
-        
-        // Validar formato de teléfono (11 dígitos, formato venezolano)
-        // Acepta formatos: 0414-1234567 o 04141234567
-        if (!preg_match('/^0\d{3}-?\d{7}$/', $data['telefono'])) {
-            throw new Exception('El teléfono debe tener formato válido (ej: 0414-1234567)');
-        }
-        
-        // Validar que nombres solo contengan letras, espacios y acentos
-        if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $data['nombres'])) {
-            throw new Exception('Los nombres solo pueden contener letras');
-        }
-        
-        // Validar que apellidos solo contengan letras, espacios y acentos
-        if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $data['apellidos'])) {
-            throw new Exception('Los apellidos solo pueden contener letras');
-        }
-        
-        // Validar fecha de nacimiento (no futuro, no más de 100 años)
-        if (!empty($data['fecha_nacimiento'])) {
-            $fechaNac = strtotime($data['fecha_nacimiento']);
-            $hoy = time();
-            $hace100 = strtotime('-100 years');
-            
-            if ($fechaNac > $hoy) {
-                throw new Exception('La fecha de nacimiento no puede ser futura');
+            if (empty($data['nombres']) || empty($data['apellidos']) || empty($data['telefono'])) {
+                throw new Exception('Los campos Nombres, Apellidos y Teléfono son obligatorios');
             }
-            
-            if ($fechaNac < $hace100) {
-                throw new Exception('La fecha de nacimiento no puede ser mayor a 100 años');
+        
+            // ============================================
+            // VALIDACIONES DE TIPO Y FORMATO
+            // ============================================
+            if (!preg_match('/^0\d{3}-?\d{7}$/', $data['telefono'])) {
+                throw new Exception('El teléfono debe tener formato válido (ej: 0414-1234567)');
             }
-        }
-        
-        // ============================================
-        // VALIDACIONES DE LONGITUD MÁXIMA
-        // ============================================
-        
-        if (strlen($data['nombres']) > 100) {
-            throw new Exception('Los nombres no pueden exceder 100 caracteres');
-        }
-        
-        if (strlen($data['apellidos']) > 100) {
-            throw new Exception('Los apellidos no pueden exceder 100 caracteres');
-        }
-        
+            if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $data['nombres'])) {
+                throw new Exception('Los nombres solo pueden contener letras');
+            }
+            if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $data['apellidos'])) {
+                throw new Exception('Los apellidos solo pueden contener letras');
+            }
+            if (!empty($data['fecha_nacimiento'])) {
+                $fechaNac = strtotime($data['fecha_nacimiento']);
+                $hoy = time();
+                $hace100 = strtotime('-100 years');
+                if ($fechaNac > $hoy) {
+                    throw new Exception('La fecha de nacimiento no puede ser futura');
+                }
+                if ($fechaNac < $hace100) {
+                    throw new Exception('La fecha de nacimiento no puede ser mayor a 100 años');
+                }
+            }
+            if (strlen($data['nombres']) > 100) {
+                throw new Exception('Los nombres no pueden exceder 100 caracteres');
+            }
+            if (strlen($data['apellidos']) > 100) {
+                throw new Exception('Los apellidos no pueden exceder 100 caracteres');
+            }
 
-            
-        // Logging mínimo (sin estructura interna de datos)
             error_log("[SGP-PERFIL] Actualización de perfil — user_id: $userId");
             
             $this->db->query("
@@ -696,13 +791,34 @@ class PerfilController extends Controller
             if (!$resultado) {
                 throw new Exception('Error al ejecutar la consulta SQL. Verifica los logs del servidor.');
             }
+
+            // Actualizar departamento si fue enviado
+            $nuevoDepId = (int)Validator::post('departamento_id');
+            $nuevoDepNombre = '';
+            if ($nuevoDepId > 0) {
+                $this->db->query("SELECT nombre FROM departamentos WHERE id = :id LIMIT 1");
+                $this->db->bind(':id', $nuevoDepId);
+                $dRow = $this->db->single();
+                $nuevoDepNombre = $dRow->nombre ?? '';
+
+                $this->db->query("UPDATE usuarios SET departamento_id = :dep_id WHERE id = :uid");
+                $this->db->bind(':dep_id', $nuevoDepId);
+                $this->db->bind(':uid',    $userId);
+                $this->db->execute();
+
+                if ((int)Session::get('role_id') === 3) {
+                    $this->db->query("UPDATE datos_pasante SET departamento_asignado_id = :dep_id WHERE usuario_id = :uid");
+                    $this->db->bind(':dep_id', $nuevoDepId);
+                    $this->db->bind(':uid',    $userId);
+                    $this->db->execute();
+                }
+            }
             
             // Si es pasante, actualizar institución (UPSERT: UPDATE o INSERT)
             if (Session::get('role_id') == 3) {
                 $institucion = trim(Validator::post('institucion_procedencia'));
                 if (!empty($institucion)) {
                     try {
-                        // Intentar UPDATE primero
                         $this->db->query("
                             UPDATE datos_pasante
                             SET institucion_procedencia = :institucion
@@ -712,9 +828,7 @@ class PerfilController extends Controller
                         $this->db->bind(':usuario_id', $userId);
                         $this->db->execute();
                         
-                        // Si no se actualizó ninguna fila, el registro no existe → INSERT
                         if ($this->db->rowCount() == 0) {
-                            error_log("=== REGISTRO NO EXISTE EN datos_pasante, CREANDO... ===");
                             $this->db->query("
                                 INSERT INTO datos_pasante (usuario_id, institucion_procedencia)
                                 VALUES (:usuario_id, :institucion)
@@ -722,13 +836,9 @@ class PerfilController extends Controller
                             $this->db->bind(':usuario_id', $userId);
                             $this->db->bind(':institucion', $institucion);
                             $this->db->execute();
-                            error_log("=== REGISTRO CREADO EXITOSAMENTE ===");
-                        } else {
-                            error_log("=== INSTITUCIÓN ACTUALIZADA: $institucion ===");
                         }
                     } catch (Exception $e) {
                         error_log("Error actualizando institución: " . $e->getMessage());
-                        // No lanzar excepción, el perfil principal ya se guardó
                     }
                 }
             }
@@ -736,18 +846,48 @@ class PerfilController extends Controller
             // Actualizar nombre en sesión
             Session::set('user_name', $data['nombres'] . ' ' . $data['apellidos']);
             
+            // Detectar cambios reales para notificar por correo (Antispam)
+            $cambios = [];
+            if ($actual) {
+                if (trim((string)($actual->nombres ?? '')) !== $data['nombres']) {
+                    $cambios[] = ['campo' => 'Nombres', 'anterior' => $actual->nombres, 'nuevo' => $data['nombres']];
+                }
+                if (trim((string)($actual->apellidos ?? '')) !== $data['apellidos']) {
+                    $cambios[] = ['campo' => 'Apellidos', 'anterior' => $actual->apellidos, 'nuevo' => $data['apellidos']];
+                }
+                if (trim((string)($actual->telefono ?? '')) !== $data['telefono']) {
+                    $cambios[] = ['campo' => 'Teléfono', 'anterior' => $actual->telefono, 'nuevo' => $data['telefono']];
+                }
+                if (($actual->genero ?? '') !== ($data['genero'] ?: null)) {
+                    $genAnt = ($actual->genero ?? '') === 'M' ? 'Masculino' : (($actual->genero ?? '') === 'F' ? 'Femenino' : 'No especificado');
+                    $genNue = $data['genero'] === 'M' ? 'Masculino' : ($data['genero'] === 'F' ? 'Femenino' : 'No especificado');
+                    $cambios[] = ['campo' => 'Género', 'anterior' => $genAnt, 'nuevo' => $genNue];
+                }
+                if (($actual->fecha_nacimiento ?? '') !== ($data['fecha_nacimiento'] ?: null)) {
+                    $cambios[] = ['campo' => 'Fecha de Nacimiento', 'anterior' => $actual->fecha_nacimiento, 'nuevo' => $data['fecha_nacimiento']];
+                }
+                if (trim((string)($actual->cargo ?? '')) !== $data['cargo']) {
+                    $cambios[] = ['campo' => 'Cargo', 'anterior' => $actual->cargo, 'nuevo' => $data['cargo']];
+                }
+                if ($nuevoDepId > 0 && (int)($actual->departamento_id ?? 0) !== $nuevoDepId) {
+                    $cambios[] = ['campo' => 'Departamento', 'anterior' => $actual->departamento_nombre ?: 'Sin Asignar', 'nuevo' => $nuevoDepNombre ?: 'Departamento #' . $nuevoDepId];
+                }
+            }
+
             // Registrar en bitácora
             try {
                 require_once '../app/models/AuditModel.php';
                 AuditModel::log('UPDATE_PROFILE', 'datos_personales', $userId, [
-                    'campos_actualizados' => array_keys($data)
+                    'cambios_reales' => $cambios
                 ]);
-            } catch (Exception $e) {
-                error_log("Error en auditoría: " . $e->getMessage());
-                // No lanzar excepción, el perfil ya se guardó
+            } catch (Exception $e) {}
+
+            // Enviar notificación por correo solo si hubo cambios reales (Antispam)
+            if (!empty($cambios) && !empty($actual->correo)) {
+                $nombreUser = $data['nombres'] . ' ' . $data['apellidos'];
+                $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+                MailService::notifyProfileUpdated((string)$actual->correo, $nombreUser, $cambios, $ip);
             }
-            
-            error_log("=== PERFIL ACTUALIZADO EXITOSAMENTE ===");
             
             echo json_encode([
                 'success' => true, 
@@ -1149,5 +1289,173 @@ class PerfilController extends Controller
             'message' => 'Foto actualizada correctamente'
         ]);
         exit;
+    }
+
+    /**
+     * POST /perfil/cambiarCorreo (AJAX)
+     *
+     * Permite a un usuario solicitar y completar el cambio de su correo institucional
+     * con verificación adicional estricta:
+     *  1. Validación de token CSRF.
+     *  2. Verificación de identidad: validación de la contraseña actual con password_verify.
+     *  3. Validación de formato de correo con filter_var.
+     *  4. Validación de coincidencia de nuevo correo y confirmación.
+     *  5. Validación de que el nuevo correo no esté registrado por otra cuenta.
+     *  6. Actualización atómica en base de datos y sesión.
+     *  7. Registro en auditoría (AuditModel).
+     *  8. Notificación in-app a administradores (NotificationModel).
+     *  9. Notificaciones por correo vía MailService (alerta al correo anterior, confirmación al nuevo, aviso a admin).
+     */
+    public function cambiarCorreo(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        ini_set('display_errors', '0');
+
+        try {
+            Session::start();
+            $userId = (int)Session::get('user_id');
+            if ($userId <= 0) {
+                echo json_encode(['success' => false, 'message' => 'Sesión no válida o expirada.']);
+                exit;
+            }
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
+                exit;
+            }
+
+            // Validar CSRF
+            $token = $_POST['_csrf'] ?? $_POST['csrf_token'] ?? '';
+            if (!Session::validateCsrfToken($token)) {
+                echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido o expirado. Recarga la página.']);
+                exit;
+            }
+
+            $passwordActual  = trim($_POST['password_actual'] ?? '');
+            $correoNuevo     = strtolower(trim($_POST['correo_nuevo'] ?? ''));
+            $correoConfirmar = strtolower(trim($_POST['correo_confirmar'] ?? ''));
+
+            if (empty($passwordActual) || empty($correoNuevo) || empty($correoConfirmar)) {
+                echo json_encode(['success' => false, 'message' => 'Por favor completa todos los campos requeridos.']);
+                exit;
+            }
+
+            if (!filter_var($correoNuevo, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode(['success' => false, 'message' => 'El formato del nuevo correo electrónico es inválido.']);
+                exit;
+            }
+
+            if ($correoNuevo !== $correoConfirmar) {
+                echo json_encode(['success' => false, 'message' => 'La confirmación del nuevo correo no coincide.']);
+                exit;
+            }
+
+            // Obtener datos actuales del usuario
+            $this->db->query("
+                SELECT u.id, u.correo, u.password, u.rol_id, r.nombre AS rol_nombre,
+                       CONCAT(COALESCE(dp.nombres, ''), ' ', COALESCE(dp.apellidos, '')) AS nombre_completo
+                FROM usuarios u
+                LEFT JOIN roles r ON r.id = u.rol_id
+                LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
+                WHERE u.id = :id LIMIT 1
+            ");
+            $this->db->bind(':id', $userId);
+            $user = $this->db->single();
+
+            if (!$user) {
+                echo json_encode(['success' => false, 'message' => 'Usuario no encontrado.']);
+                exit;
+            }
+
+            // Verificación de identidad: Contraseña actual
+            if (!password_verify($passwordActual, $user->password)) {
+                echo json_encode(['success' => false, 'message' => 'La contraseña actual ingresada es incorrecta. No se autorizó el cambio.']);
+                exit;
+            }
+
+            $correoAnterior = strtolower(trim($user->correo ?? ''));
+
+            if ($correoNuevo === $correoAnterior) {
+                echo json_encode(['success' => false, 'message' => 'El nuevo correo debe ser diferente a tu correo actual.']);
+                exit;
+            }
+
+            // Verificar si el nuevo correo ya pertenece a otro usuario
+            $this->db->query("SELECT id FROM usuarios WHERE LOWER(correo) = :correo AND id != :uid LIMIT 1");
+            $this->db->bind(':correo', $correoNuevo);
+            $this->db->bind(':uid',    $userId);
+            if ($this->db->single()) {
+                echo json_encode(['success' => false, 'message' => 'El nuevo correo electrónico ya está registrado por otro usuario en el sistema.']);
+                exit;
+            }
+
+            // Actualizar correo
+            $this->db->beginTransaction();
+
+            $this->db->query("UPDATE usuarios SET correo = :correo, updated_at = NOW() WHERE id = :id");
+            $this->db->bind(':correo', $correoNuevo);
+            $this->db->bind(':id',     $userId);
+            $this->db->execute();
+
+            $this->db->commit();
+
+            // Actualizar sesión
+            Session::set('user_email', $correoNuevo);
+
+            // Registro en bitácora
+            $nombreUsuario = trim($user->nombre_completo ?? '');
+            if (empty($nombreUsuario)) $nombreUsuario = 'Usuario #' . $userId;
+            $rolNombre = $user->rol_nombre ?? 'Usuario';
+
+            try {
+                if (class_exists('AuditModel')) {
+                    AuditModel::log('CAMBIO_CORREO', 'usuarios', $userId, [
+                        'correo_anterior' => $correoAnterior,
+                        'correo_nuevo'    => $correoNuevo
+                    ]);
+                }
+            } catch (\Throwable $ae) {
+                error_log('[SGP-PERFIL] AuditModel error: ' . $ae->getMessage());
+            }
+
+            // Notificación in-app (campana) a los administradores
+            try {
+                require_once APPROOT . '/models/NotificationModel.php';
+                $notifModel = new NotificationModel($this->db);
+                $notifModel->notifyAdmins(
+                    'alerta_sistema',
+                    '📧 Cambio de Correo: ' . $nombreUsuario,
+                    "El usuario {$nombreUsuario} ({$rolNombre}) actualizó su correo institucional de {$correoAnterior} a {$correoNuevo}.",
+                    URLROOT . '/users',
+                    $userId
+                );
+            } catch (\Throwable $ne) {
+                error_log('[SGP-PERFIL] Error notif in-app admin: ' . $ne->getMessage());
+            }
+
+            // Notificaciones por correo (correo anterior, nuevo correo, administradores)
+            $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+            try {
+                require_once APPROOT . '/lib/MailService.php';
+                MailService::notifyEmailChange($userId, $correoAnterior, $correoNuevo, $ip);
+            } catch (\Throwable $me) {
+                error_log('[SGP-PERFIL] Error despachando correos de cambio de email: ' . $me->getMessage());
+            }
+
+            echo json_encode([
+                'success'      => true,
+                'message'      => '¡Tu correo electrónico ha sido actualizado con éxito! Se han enviado las notificaciones de seguridad.',
+                'correo_nuevo' => $correoNuevo
+            ]);
+            exit;
+
+        } catch (\Throwable $e) {
+            if (isset($this->db) && $this->db) {
+                try { $this->db->rollBack(); } catch (\Throwable $rb) {}
+            }
+            error_log('[SGP-PERFIL] cambiarCorreo error: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Ocurrió un error en el servidor al actualizar el correo.']);
+            exit;
+        }
     }
 }

@@ -148,6 +148,29 @@ $estado = $pasante->estado_pasantia ?? 'Sin Asignar';
         }
     }
 
+    @media(max-width:768px) {
+        .con-hero {
+            padding: 20px 18px;
+            border-radius: 18px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        .con-hero-seal {
+            width: 52px;
+            height: 52px;
+        }
+        .con-hero-seal i {
+            font-size: 1.5rem !important;
+        }
+        .con-doc-header {
+            padding: 16px 18px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+    }
+
     /* ── documento card ── */
     .con-doc {
         background: #fff;
@@ -395,6 +418,85 @@ $estado = $pasante->estado_pasantia ?? 'Sin Asignar';
         align-items: flex-start;
         gap: 12px;
         animation: conFadeUp .7s ease both;
+    }
+
+    /* ─── DARK MODE SUPPORT (MI CONSTANCIA) ──────────────── */
+    [data-theme="dark"] .con-hero {
+        background: linear-gradient(135deg, #090d16 0%, #0f1c3f 45%, #1e3a8a 100%) !important;
+        border: 1px solid #1e293b !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+    }
+    [data-theme="dark"] .con-doc {
+        background: #111a2e !important;
+        border-color: #1e293b !important;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35) !important;
+    }
+    [data-theme="dark"] .con-preview {
+        background: #0d1526 !important;
+        border-left-color: #38bdf8 !important;
+        color: #cbd5e1 !important;
+    }
+    [data-theme="dark"] .con-grid {
+        border-color: #1e293b !important;
+    }
+    [data-theme="dark"] .con-cell {
+        border-color: #1e293b !important;
+    }
+    [data-theme="dark"] .con-cell-label {
+        color: #94a3b8 !important;
+    }
+    [data-theme="dark"] .con-cell-val {
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] .con-status {
+        background: #111a2e !important;
+        border-color: #1e293b !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+    }
+    [data-theme="dark"] .con-status h4 {
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] .con-status p {
+        color: #94a3b8 !important;
+    }
+    [data-theme="dark"] .con-info-item {
+        background: #0d1526 !important;
+        border-color: #1e293b !important;
+    }
+    [data-theme="dark"] .con-info-item span:first-child {
+        color: #94a3b8 !important;
+    }
+    [data-theme="dark"] .con-info-item strong {
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] .con-action {
+        background: #111a2e !important;
+        border-color: #1e293b !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+    }
+    [data-theme="dark"] .con-btn-disabled {
+        background: #1e293b !important;
+        color: #64748b !important;
+    }
+    [data-theme="dark"] .con-note {
+        background: #0d1526 !important;
+        border-color: #1e293b !important;
+        border-left-color: #38bdf8 !important;
+        color: #cbd5e1 !important;
+    }
+    [data-theme="dark"] .con-note p,
+    [data-theme="dark"] .con-note span {
+        color: #cbd5e1 !important;
+    }
+    [data-theme="dark"] .con-warning {
+        background: rgba(245, 158, 11, 0.1) !important;
+        border-color: rgba(245, 158, 11, 0.25) !important;
+    }
+    [data-theme="dark"] .con-warning strong {
+        color: #fbbf24 !important;
+    }
+    [data-theme="dark"] .con-warning p {
+        color: #fde68a !important;
     }
 </style>
 

@@ -43,6 +43,17 @@ class AdminController extends Controller
         // Traer métricas base en una sola consulta
         $kpis = $this->dashboardModel->getKpiTotales();
 
+        // 🔔 Verificación automática de pasantes sin asignar (emite alerta in-app deduplicada diaria)
+        if (($kpis->pendientesAsignar ?? 0) > 0) {
+            try {
+                require_once APPROOT . '/models/NotificationModel.php';
+                $notifModel = new NotificationModel($this->getDb());
+                $notifModel->verificarYNotificarPasantesSinAsignar();
+            } catch (\Throwable $e) {
+                error_log('[AdminController::index] Error verificando pasantes sin asignar: ' . $e->getMessage());
+            }
+        }
+
         // Traer y estructurar la data cruzada para la vista y el Data Bridge JSON
         $data = [
             'user_name'          => Session::get('user_name') ?? 'Administrador',
@@ -71,6 +82,7 @@ class AdminController extends Controller
                 'asistenciaSemanal'       => $this->dashboardModel->getAsistenciaSemanal(),
                 'asistenciaMensual'       => $this->dashboardModel->getAsistenciaMensual(),
                 'asistenciaDepartamento'  => $this->dashboardModel->getAsistenciaPorDepartamento(),
+                'asistenciaInstitucion'   => $this->dashboardModel->getAsistenciaPorInstitucion(),
             ]
         ];
 

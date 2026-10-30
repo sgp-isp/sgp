@@ -4,19 +4,39 @@
 
 # Logs y almacenamiento temporal
 /storage/logs/
+/app/logs/
 *.log
 
-# Backups pesados de base de datos
+# Backups locales
 /app/storage/backups/
 /storage/backups/
+database/*.sql
+!database/backup_tidb_cloud.sql
 *.sql.gz
 
 # Archivos de entorno y configuración local
 .env
 .env.local
 
+# Binarios y herramientas de túnel local Windows
+*.exe
+*.bat
+*.vbs
+*.iss
+*.zip
+actualizacion_SGP.zip
+paquetes_actualizacion/
+cloudflared.exe
+ngrok.exe
+ngrok.yml
+
+# Scripts temporales y de depuración
+scratch/
+scratch_*.php
+
 # Archivos del sistema operativo e IDE
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+.kilo/

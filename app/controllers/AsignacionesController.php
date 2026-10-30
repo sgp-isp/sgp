@@ -42,11 +42,12 @@ class AsignacionesController extends Controller
     // ─────────────────────────────────────────────────────────
     public function index(): void
     {
-        // [BUG-01 FIX] getAll() ahora filtra internamente por período activo
-        $asignaciones = $this->asignacionModel->getAll();
+        // [BUG-01 FIX] Respetar el período en contexto actual (sesión o activo por defecto)
+        $periodoId     = PeriodoService::getIdContexto();
+        $asignaciones  = $this->asignacionModel->getAll($periodoId);
 
         // Período activo actual (para mostrarlo en la vista)
-        $periodoActivo = $this->asignacionModel->getPeriodoActivo();
+        $periodoActivo = PeriodoService::getActivo();
 
         // Departamentos para el select del modal
         $this->db->query("SELECT id, nombre FROM departamentos WHERE activo = 1 ORDER BY nombre ASC");
@@ -68,7 +69,7 @@ class AsignacionesController extends Controller
 
         // [BUG-06 FIX] Períodos para el modal: solo Activo/Planificado (nunca Cerrado)
         $this->db->query("
-            SELECT id, nombre, estado, fecha_inicio, fecha_fin
+            SELECT id, nombre, estado, fecha_inicio, fecha_fin, tipo
             FROM periodos_academicos
             WHERE estado IN ('Activo', 'Planificado')
             ORDER BY fecha_inicio DESC
@@ -250,6 +251,14 @@ class AsignacionesController extends Controller
                 URLROOT . '/perfil'
             );
 
+            // 📧 Notificar por correo al pasante y al tutor asignado
+            try {
+                require_once APPROOT . '/lib/MailService.php';
+                MailService::notifyAssignment((int)$pasanteId, $deptNombre, $fechaInicio, $fechaFin, (int)$horasMeta, $tutorIdVal ? (int)$tutorIdVal : null);
+            } catch (\Throwable $me) {
+                error_log('[SGP-ASIG] Error notificando asignacion por correo: ' . $me->getMessage());
+            }
+
             echo json_encode([
                 'success'   => true,
                 'message'   => 'Asignación guardada' . ($autoRellenar ? ' y rellenada' : '') . ' correctamente.',
@@ -360,27 +369,35 @@ class AsignacionesController extends Controller
         }
 
         $query = trim($_POST['query'] ?? '');
-        if (strlen($query) < 2) {
-            echo json_encode([]);
-            exit;
-        }
 
         $sql = "
             SELECT u.id AS pasante_id, u.cedula, dp.nombres, dp.apellidos, 
                    COALESCE(inst.nombre, dpa.institucion_procedencia, 'No especificada') AS institucion_procedencia, 
-                   dpa.estado_pasantia
+                   COALESCE(NULLIF(dpa.estado_pasantia, ''), 'Sin Asignar') AS estado_pasantia
             FROM usuarios u
             JOIN datos_personales dp ON u.id = dp.usuario_id
             LEFT JOIN datos_pasante dpa ON u.id = dpa.usuario_id
-            LEFT JOIN instituciones inst ON dpa.institucion_procedencia = inst.id
+            LEFT JOIN instituciones inst ON (dpa.institucion_id = inst.id OR dpa.institucion_procedencia = inst.id)
             WHERE u.rol_id = 3
+              AND u.estado = 'activo'
               AND COALESCE(dpa.tipo_pasantia, 'Regular') = 'Regular'
-              AND (dpa.estado_pasantia IN ('Pendiente', 'Sin Asignar') OR dpa.estado_pasantia IS NULL OR dpa.estado_pasantia = '')
-              AND (u.cedula LIKE :q OR dp.nombres LIKE :q OR dp.apellidos LIKE :q)
-            LIMIT 10
+              AND (
+                  dpa.estado_pasantia IN ('Pendiente', 'Sin Asignar', '') 
+                  OR dpa.estado_pasantia IS NULL 
+                  OR dpa.departamento_asignado_id IS NULL
+              )
         ";
+
+        if ($query !== '') {
+            $sql .= " AND (u.cedula LIKE :q OR dp.nombres LIKE :q OR dp.apellidos LIKE :q OR CONCAT(dp.nombres, ' ', dp.apellidos) LIKE :q)";
+        }
+
+        $sql .= " ORDER BY dp.apellidos ASC, dp.nombres ASC LIMIT 20";
+
         $this->db->query($sql);
-        $this->db->bind(':q', "%{$query}%");
+        if ($query !== '') {
+            $this->db->bind(':q', "%{$query}%");
+        }
         
         echo json_encode($this->db->resultSet());
         exit;
@@ -418,5 +435,115 @@ class AsignacionesController extends Controller
         $this->db->query("SELECT fecha, nombre, tipo FROM dias_feriados WHERE fecha >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) ORDER BY fecha ASC");
         echo json_encode($this->db->resultSet());
         exit;
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // POST /asignaciones/descartar — Descartar solicitud de pasante
+    // ─────────────────────────────────────────────────────────
+    public function descartar(): void
+    {
+        header('Content-Type: application/json');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $this->verifyCsrf();
+
+        $pasanteId = (int)($_POST['pasante_id'] ?? 0);
+        $motivo    = trim($_POST['motivo'] ?? 'No figura en el listado oficial de pasantes de la institución');
+        $accion    = trim($_POST['accion'] ?? 'bloquear'); // 'bloquear' o 'eliminar'
+
+        if (!$pasanteId) {
+            echo json_encode(['success' => false, 'message' => 'ID de pasante inválido.']);
+            exit;
+        }
+
+        try {
+            $this->db->query("
+                SELECT u.id, u.correo, u.cedula, dp.nombres, dp.apellidos 
+                FROM usuarios u 
+                LEFT JOIN datos_personales dp ON dp.usuario_id = u.id 
+                WHERE u.id = :id AND u.rol_id = 3
+            ");
+            $this->db->bind(':id', $pasanteId);
+            $usuario = $this->db->single();
+
+            if (!$usuario) {
+                echo json_encode(['success' => false, 'message' => 'Pasante no encontrado.']);
+                exit;
+            }
+
+            $nombreCompleto = trim(($usuario->nombres ?? '') . ' ' . ($usuario->apellidos ?? ''));
+
+            if ($accion === 'eliminar') {
+                // Eliminar completamente registros de prueba/spam
+                $this->db->query("DELETE FROM asistencias WHERE pasante_id = :id");
+                $this->db->bind(':id', $pasanteId);
+                $this->db->execute();
+
+                $this->db->query("DELETE FROM actividades WHERE pasante_id = :id");
+                $this->db->bind(':id', $pasanteId);
+                $this->db->execute();
+
+                $this->db->query("DELETE FROM evaluaciones WHERE pasante_id = :id");
+                $this->db->bind(':id', $pasanteId);
+                $this->db->execute();
+
+                $this->db->query("DELETE FROM datos_pasante WHERE usuario_id = :id");
+                $this->db->bind(':id', $pasanteId);
+                $this->db->execute();
+
+                $this->db->query("DELETE FROM datos_personales WHERE usuario_id = :id");
+                $this->db->bind(':id', $pasanteId);
+                $this->db->execute();
+
+                $this->db->query("DELETE FROM respuestas_seguridad WHERE usuario_id = :id");
+                $this->db->bind(':id', $pasanteId);
+                $this->db->execute();
+
+                $this->db->query("DELETE FROM usuarios WHERE id = :id AND rol_id = 3");
+                $this->db->bind(':id', $pasanteId);
+                $this->db->execute();
+
+                if (class_exists('AuditModel')) {
+                    AuditModel::log('DESCARTE_PASANTE_ELIMINADO', "Se eliminó definitivamente el registro de {$nombreCompleto} (C.I: {$usuario->cedula}).");
+                }
+
+                echo json_encode(['success' => true, 'message' => "El registro de {$nombreCompleto} ha sido eliminado permanentemente."]);
+                exit;
+            }
+
+            // Bloquear / Desactivar con motivo institucional para que no pueda entrar
+            $this->db->query("UPDATE usuarios SET estado = 'inactivo' WHERE id = :id AND rol_id = 3");
+            $this->db->bind(':id', $pasanteId);
+            $this->db->execute();
+
+            $this->db->query("
+                INSERT INTO datos_pasante (usuario_id, estado_pasantia, tipo_pasantia, horas_meta, horas_acumuladas, observaciones, created_at, updated_at)
+                VALUES (:uid, 'Retirado', 'Regular', 1440, 0, :obs, NOW(), NOW())
+                ON DUPLICATE KEY UPDATE 
+                    estado_pasantia = 'Retirado',
+                    observaciones = :obs_upd,
+                    updated_at = NOW()
+            ");
+            $obsTexto = 'Registro descartado: ' . $motivo;
+            $this->db->bind(':uid', $pasanteId);
+            $this->db->bind(':obs', $obsTexto);
+            $this->db->bind(':obs_upd', $obsTexto);
+            $this->db->execute();
+
+            if (class_exists('AuditModel')) {
+                AuditModel::log('DESCARTE_PASANTE_BLOQUEADO', "Se descartó y bloqueó el registro de {$nombreCompleto} (C.I: {$usuario->cedula}). Motivo: {$motivo}");
+            }
+
+            echo json_encode(['success' => true, 'message' => "La solicitud de {$nombreCompleto} ha sido descartada y su acceso ha sido bloqueado."]);
+            exit;
+
+        } catch (\Throwable $e) {
+            error_log('[SGP-DESCARTAR-ERROR] ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error al procesar el descarte: ' . $e->getMessage()]);
+            exit;
+        }
     }
 }

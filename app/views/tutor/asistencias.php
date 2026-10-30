@@ -32,7 +32,7 @@ $porcAsistencia = $totalActivos > 0 ? round(($presentes + $justificados) / $tota
 
 /* ═══ BANNER ═══ */
 .ta-hero {
-    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 45%, #3b82f6 100%);
+    background: linear-gradient(135deg, var(--color-primary, #0f172a) 0%, var(--gradient-mid, #1e3a8a) 45%, var(--color-accent-brand, #3b82f6) 100%);
     border-radius: 24px;
     padding: 0;
     position: relative;
@@ -580,7 +580,7 @@ $porcAsistencia = $totalActivos > 0 ? round(($presentes + $justificados) / $tota
                         ? "background:rgba(255,255,255,.28);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.4);border-radius:50px;padding:6px 18px;color:#fff;font-size:.84rem;font-weight:700;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.12);"
                         : "background:rgba(255,255,255,.10);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);border-radius:50px;padding:6px 18px;color:rgba(255,255,255,.85);font-size:.84rem;font-weight:600;text-decoration:none;";
                 ?>
-                <a href="<?= $hrefs[$t['key']] ?>" style="<?= $s ?>"
+                <a href="<?= $hrefs[$t['key']] ?>" class="pjax-link <?= $active ? 'active' : '' ?>" style="<?= $s ?>"
                    onmouseover="this.style.background='rgba(255,255,255,.35)'"
                    onmouseout="this.style.background='<?= $active ? 'rgba(255,255,255,.28)' : 'rgba(255,255,255,.10)' ?>'">
                     <?= $t['label'] ?>
@@ -1386,10 +1386,15 @@ document.getElementById('modalManual').addEventListener('click', function(e) {
 function taToggle(el) {
     el.classList.toggle('collapsed');
 }
-/* Spin animation for loader */
-const _ss = document.createElement('style');
-_ss.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
-document.head.appendChild(_ss);
+/* Spin animation for loader (encapsulado para PJAX) */
+(function() {
+    if (!document.getElementById('sgp-spin-style')) {
+        var s = document.createElement('style');
+        s.id = 'sgp-spin-style';
+        s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+        document.head.appendChild(s);
+    }
+})();
 
 /* ── Marcar todos (Presente) ── */
 window.marcarTodosDiaria = async function() {

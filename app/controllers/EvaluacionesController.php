@@ -33,11 +33,20 @@ class EvaluacionesController extends Controller {
         $rol_id        = (int)(Session::get('role_id') ?? 0);
         $tutorActualId = ($rol_id === 2) ? (int)Session::get('user_id') : null;
 
+        $periodoActivo    = PeriodoService::getActivo();
+        $hayPeriodoActivo = ($periodoActivo !== null);
+        $periodoId        = $hayPeriodoActivo ? (int)$periodoActivo->id : null;
+
         // Tutor: solo ve evaluaciones de sus propios pasantes
         // Admin: ve todas las evaluaciones
-        $evaluaciones = ($rol_id === 2)
-            ? $this->evaluacionModel->getByTutor($tutorActualId)
-            : $this->evaluacionModel->getAll();
+        // Ambos: filtrados estrictamente por el período académico activo (Enfoque 1)
+        if ($hayPeriodoActivo) {
+            $evaluaciones = ($rol_id === 2)
+                ? $this->evaluacionModel->getByTutor($tutorActualId, $periodoId)
+                : $this->evaluacionModel->getAll($periodoId);
+        } else {
+            $evaluaciones = [];
+        }
 
         // Tutor: solo sus pasantes asignados / Admin: todos los pasantes activos
         $baseSelect = "
@@ -67,9 +76,6 @@ class EvaluacionesController extends Controller {
                     FROM evaluaciones GROUP BY pasante_id
                 ) eval_stats ON eval_stats.pasante_id = u.id
         ";
-
-        $periodoActivo    = PeriodoService::getActivo();
-        $hayPeriodoActivo = ($periodoActivo !== null);
 
         if ($hayPeriodoActivo) {
             if ($rol_id === 2) {
@@ -270,6 +276,14 @@ class EvaluacionesController extends Controller {
                     "{$nombreTutor} ha registrado tu evaluación{$lapsoTexto} con un promedio de {$promedio}/5.",
                     URLROOT . '/perfil'
                 );
+
+                // 📧 Enviar reporte de evaluación por correo al pasante
+                try {
+                    require_once APPROOT . '/lib/MailService.php';
+                    MailService::notifyEvaluation((int)$pasanteId, (int)$tutorId, (float)$promedio, (string)$lapso, (string)$obs);
+                } catch (\Throwable $me) {
+                    error_log('[SGP-EVAL] Error notificando evaluacion por correo: ' . $me->getMessage());
+                }
 
                 AuditModel::log('CREAR_EVALUACION', 'evaluaciones', $pasanteId, [
                     'tutor_id' => $tutorId,

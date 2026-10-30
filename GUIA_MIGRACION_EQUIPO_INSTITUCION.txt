@@ -1,0 +1,77 @@
+======================================================================
+ GUIA DE INSTALACION Y PUESTA EN MARCHA DEL SGP EN EL EQUIPO INSTITUCIONAL
+======================================================================
+Instituto de Salud Publica del Estado Bolivar (ISPEB)
+Sistema de Gestion de Pasantes (SGP)
+
+----------------------------------------------------------------------
+PASO 1: EN TU LAPTOP (ANTES DE SALIR)
+----------------------------------------------------------------------
+1. Abre tu carpeta: C:\xampp\htdocs\SGP
+2. Haz doble clic en el archivo:
+   👉 exportar_bd_laptop.bat
+   (Esto generara la copia mas reciente de tu base de datos
+   en: C:\xampp\htdocs\SGP\database\backup_sgp_actual.sql con todos los
+   usuarios, notas, configuraciones y la URL fija ya programada).
+3. Conecta tu pendrive y copia TODA la carpeta SGP completa:
+   Copiar: C:\xampp\htdocs\SGP  ──▶  Al pendrive.
+
+----------------------------------------------------------------------
+PASO 2: EN EL EQUIPO DE LA INSTITUCION (LLEGANDO ALLA)
+----------------------------------------------------------------------
+Requisitos previos en el equipo del ISPEB:
+a) Tener instalado XAMPP (preferiblemente en C:\xampp).
+b) Abrir el "XAMPP Control Panel" y darle clic a "Start" en:
+   - Apache
+   - MySQL
+
+----------------------------------------------------------------------
+PASO 3: COPIAR EL SISTEMA AL EQUIPO INSTITUCIONAL
+----------------------------------------------------------------------
+1. Inserta el pendrive en la computadora del ISPEB.
+2. Copia la carpeta "SGP" del pendrive a:
+   C:\xampp\htdocs\
+   De modo que la ruta final quede exactamente:
+   C:\xampp\htdocs\SGP
+
+----------------------------------------------------------------------
+PASO 4: RESTAURAR LA BASE DE DATOS (1 SOLO CLIC)
+----------------------------------------------------------------------
+1. Entra a C:\xampp\htdocs\SGP en esa computadora.
+2. Haz doble clic en el archivo:
+   👉 importar_bd_institucion.bat
+3. El script creara la base de datos 'proyecto_sgp' si no existe
+   e importara todas las tablas con su informacion al 100%.
+
+----------------------------------------------------------------------
+PASO 5: ELEGIR METODO DE CONEXION (TUNEL O RED LOCAL WI-FI)
+----------------------------------------------------------------------
+OPCION A (RECOMENDADA: RED LOCAL WI-FI DIRECTA POR IP Y HTTPS):
+1. En la carpeta C:\xampp\htdocs\SGP:
+2. Haz clic derecho sobre:
+   👉 configurar_red_local_https.bat
+   y selecciona: "Ejecutar como Administrador".
+3. El script automáticamente:
+   - Detecta la IP del equipo en el router del ISPE.
+   - Abre los puertos 80 y 443 en el Firewall de Windows.
+   - Actualiza el Cartel QR en la base de datos con la URL HTTPS local.
+   - Muestra las instrucciones para las pasantes al conectarse al Wi-Fi.
+
+OPCION B (TUNEL EN SEGUNDO PLANO PARA ACCESO CON DATOS MOVILES):
+1. Si prefieres que el túnel esté activo en segundo plano:
+   Haz clic derecho sobre:
+   👉 instalar_servicio_cloudflared.bat (o instalar_servicio_ngrok.bat)
+   y selecciona: "Ejecutar como Administrador".
+
+----------------------------------------------------------------------
+PASO 6: PROBAR EL SISTEMA LOCALMENTE Y DESDE CELULARES
+----------------------------------------------------------------------
+1. Localmente en esa PC:
+   👉 http://localhost/SGP
+   👉 http://localhost/SGP/kiosco
+
+2. Desde cualquier celular con datos móviles o Wi-Fi:
+   👉 https://rounding-unhidden-glitter.ngrok-free.dev/SGP/kiosco
+
+¡El sistema quedara 100% operativo y blindado en la institución!
+======================================================================

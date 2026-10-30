@@ -67,13 +67,26 @@ class ReportesController extends Controller
                 ORDER BY dp.nombres ASC
             ");
         }
-        $pasantes = $this->db->resultSet();
+        // Técnicos y Tutores del sistema para firmas y asignación en constancias
+        $this->db->query("
+            SELECT u.id, u.cedula,
+                   CONCAT(dp.nombres, ' ', dp.apellidos) as nombre,
+                   COALESCE(NULLIF(dp.cargo, ''), 'Técnico') as cargo,
+                   COALESCE(d.nombre, 'Soporte Técnico') as departamento
+            FROM usuarios u
+            JOIN datos_personales dp ON dp.usuario_id = u.id
+            LEFT JOIN departamentos d ON d.id = u.departamento_id
+            WHERE u.rol_id IN (1, 2) AND u.estado = 'activo'
+            ORDER BY dp.nombres ASC
+        ");
+        $tutores = $this->db->resultSet() ?: [];
 
         $this->view('reportes/index', [
             'title'         => 'Centro de Reportes',
             'departamentos' => $departamentos,
             'instituciones' => $instituciones,
             'pasantes'      => $pasantes,
+            'tutores'       => $tutores,
             'rolId'         => $rolId,   // ← para filtrar tarjetas admin-only en la vista
         ]);
     }
@@ -850,7 +863,22 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 13px;
                 exit;
 
             case 'constancias':
-                // Verificar que el pasante exista y tenga datos completos
+                $modoEmision = $_POST['modo_emision'] ?? 'registrado';
+                if ($modoEmision === 'manual' || !empty($_POST['es_manual'])) {
+                    $mNombreCompleto = trim($_POST['manual_nombre_completo'] ?? '');
+                    if ($mNombreCompleto === '') {
+                        $mNombreCompleto = trim(($_POST['manual_nombres'] ?? '') . ' ' . ($_POST['manual_apellidos'] ?? ''));
+                    }
+                    $mCedula = trim($_POST['manual_cedula'] ?? '');
+                    if (empty($mNombreCompleto) || empty($mCedula)) {
+                        echo json_encode(['success' => false, 'message' => 'Por favor ingresa el nombre y la cédula del pasante para generar el documento.']);
+                        exit;
+                    }
+                    echo json_encode(['success' => true, 'count' => 1, 'message' => 'Documento manual listo para emitir.']);
+                    exit;
+                }
+
+                // Verificar que el pasante exista y tenga datos completos (modo registrado)
                 $cPid  = (int)($_POST['pasante_id'] ?? 0);
                 $cTipo = $_POST['tipo_constancia'] ?? 'servicio';
                 if (!$cPid) {
@@ -1904,11 +1932,192 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 13px;
 
     private function generarConstancias(array $filtros): void
     {
+        $tipo        = $filtros['tipo_constancia'] ?? 'servicio';
+        $modoEmision = $filtros['modo_emision'] ?? 'registrado';
+
+        // ══════════════════════════════════════════════════════════════
+        // MODO MANUAL / HISTÓRICO (Egresados de períodos anteriores)
+        // ══════════════════════════════════════════════════════════════
+        if ($modoEmision === 'manual' || !empty($filtros['es_manual'])) {
+            $tipo = $filtros['tipo_constancia_manual'] ?? $filtros['tipo_constancia'] ?? $tipo;
+            
+            $nombreCompletoInput = trim($filtros['manual_nombre_completo'] ?? '');
+            if ($nombreCompletoInput === '') {
+                $nombreCompletoInput = trim(($filtros['manual_nombres'] ?? '') . ' ' . ($filtros['manual_apellidos'] ?? ''));
+            }
+            $cedula = trim($filtros['manual_cedula'] ?? '');
+            
+            if (empty($nombreCompletoInput) || empty($cedula)) {
+                $this->renderErrorPage('Datos incompletos', 'Debe indicar el nombre y cédula del pasante.');
+                return;
+            }
+
+            // Duración por períodos (3, 6, 9 meses)
+            $duracionMeses = (int)($filtros['manual_duracion_meses'] ?? 6);
+            if (!in_array($duracionMeses, [3, 6, 9, 12])) {
+                $duracionMeses = 6;
+            }
+
+            // Horas según la duración solicitada
+            $mapaHoras = [
+                3  => 480,
+                6  => 960,
+                9  => 1440,
+                12 => 1920
+            ];
+            $horasMeta = $mapaHoras[$duracionMeses] ?? 960;
+            $horasAcum = $horasMeta;
+
+            $anioInicio = trim($filtros['manual_anio_inicio'] ?? $filtros['manual_anio_egreso'] ?? (date('Y') - 1));
+            $anioFin    = trim($filtros['manual_anio_fin'] ?? $anioInicio);
+            
+            if (!empty($filtros['manual_periodo_texto'])) {
+                $periodoTexto = "{$duracionMeses} Meses (" . trim($filtros['manual_periodo_texto']) . ")";
+            } elseif (!empty($anioInicio) && !empty($anioFin) && $anioInicio !== $anioFin) {
+                $periodoTexto = "{$duracionMeses} Meses (Período {$anioInicio} – {$anioFin})";
+            } elseif (!empty($anioInicio)) {
+                $periodoTexto = "{$duracionMeses} Meses (Año {$anioInicio})";
+            } else {
+                $periodoTexto = "{$duracionMeses} Meses";
+            }
+
+            // Departamento
+            $deptoInput   = trim($filtros['manual_departamento'] ?? '');
+            if ($deptoInput === 'otro' && !empty($filtros['manual_departamento_otro'])) {
+                $departamento = trim($filtros['manual_departamento_otro']);
+            } else {
+                $departamento = $deptoInput ?: 'Informática y Sistemas';
+            }
+
+            // Institución
+            $instInput = trim($filtros['manual_institucion'] ?? '');
+            if (($instInput === 'otra' || $instInput === '__OTRA__') && !empty($filtros['manual_institucion_otra'])) {
+                $institucion = trim($filtros['manual_institucion_otra']);
+            } else {
+                $institucion = ($instInput !== '__OTRA__') ? $instInput : 'N/D';
+                $institucion = $institucion ?: 'N/D';
+            }
+
+            // Tutor empresarial / Técnico del sistema
+            $tutorId = (int)($filtros['manual_tutor_id'] ?? 0);
+            $tutorNombre = 'Tutor Empresarial';
+            $tutorCedula = '';
+            $tutorCargo  = 'Tutor Empresarial';
+
+            if ($tutorId > 0) {
+                $this->db->query("
+                    SELECT u.cedula,
+                           CONCAT(dp.nombres, ' ', dp.apellidos) AS nombre,
+                           COALESCE(NULLIF(dp.cargo, ''), 'Técnico') AS cargo
+                    FROM usuarios u
+                    JOIN datos_personales dp ON dp.usuario_id = u.id
+                    WHERE u.id = :tid LIMIT 1
+                ");
+                $this->db->bind(':tid', $tutorId);
+                $tut = $this->db->single();
+                if ($tut) {
+                    $tutorNombre = $tut->nombre;
+                    $tutorCedula = $tut->cedula ?? '';
+                    $tutorCargo  = $tut->cargo;
+                }
+            } elseif (!empty($filtros['manual_tutor_nombre'])) {
+                $tutorNombre = trim($filtros['manual_tutor_nombre']);
+                $tutorCedula = trim($filtros['manual_tutor_cedula'] ?? '');
+                $tutorCargo  = trim($filtros['manual_tutor_cargo'] ?? 'Tutor Empresarial');
+            }
+
+            // Si vienen fechas opcionales, se conservan, si no quedan nulas (el PDF se adaptará al período)
+            $fechaInicio  = !empty($filtros['manual_fecha_inicio']) ? $filtros['manual_fecha_inicio'] : null;
+            $fechaFin     = !empty($filtros['manual_fecha_fin']) ? $filtros['manual_fecha_fin'] : null;
+            $rawEmision   = !empty($filtros['manual_fecha_emision']) ? $filtros['manual_fecha_emision'] : null;
+
+            // Datos institucionales del jefe / admin para firma
+            $this->db->query("
+                SELECT dp2.nombres, dp2.apellidos, dp2.cargo
+                FROM datos_personales dp2
+                JOIN usuarios u2 ON u2.id = dp2.usuario_id
+                WHERE u2.rol_id = 1 AND u2.estado = 'activo'
+                ORDER BY u2.id ASC LIMIT 1
+            ");
+            $adm = $this->db->single();
+
+            $pasante = (object)[
+                'nombre_completo'  => $nombreCompletoInput,
+                'nombres'          => $nombreCompletoInput,
+                'apellidos'        => '',
+                'cedula'           => preg_replace('/[^0-9]/', '', $cedula),
+                'departamento'     => $departamento,
+                'institucion'      => $institucion,
+                'estado_pasantia'  => ($tipo === 'culminacion' ? 'Finalizado' : 'Activo'),
+                'horas_acumuladas' => $horasAcum,
+                'horas_meta'       => $horasMeta,
+                'duracion_meses'   => $duracionMeses,
+                'periodo_texto'    => $periodoTexto,
+                'anio_egreso'      => $anioEgreso,
+                'fecha_inicio'     => $fechaInicio,
+                'fecha_fin'        => $fechaFin,
+                'tutor_nombre'     => $tutorNombre,
+                'tutor_cedula'     => $tutorCedula,
+                'tutor_cargo'      => $tutorCargo,
+                'jefe_nombres'     => $adm->nombres ?? '',
+                'jefe_apellidos'   => $adm->apellidos ?? '',
+                'jefe_cargo'       => $adm->cargo ?? ''
+            ];
+
+            $meses = ['', 'enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+            if ($rawEmision) {
+                $ts = strtotime($rawEmision);
+                $fechaEmision = date('d', $ts) . ' de ' . ($meses[(int)date('n', $ts)] ?? date('F', $ts)) . ' de ' . date('Y', $ts);
+                $diaEmision   = date('d', $ts);
+                $mesEmision   = $meses[(int)date('n', $ts)] ?? date('F', $ts);
+                $anioEmision  = date('Y', $ts);
+            } else {
+                $fechaEmision = date('d') . ' de ' . $meses[(int)date('n')] . ' de ' . date('Y');
+                $diaEmision   = date('d');
+                $mesEmision   = $meses[(int)date('n')];
+                $anioEmision  = date('Y');
+            }
+
+            $jefeNombre = mb_strtoupper(
+                trim(($pasante->jefe_nombres ?? '') . ' ' . ($pasante->jefe_apellidos ?? '')),
+                'UTF-8'
+            );
+
+            // Respaldo oficial de la constancia emitida en base de datos y auditoría
+            $codigoConstancia = $this->registrarRespaldoConstancia(
+                $tipo,
+                'manual',
+                null,
+                $cedula,
+                $nombreCompletoInput,
+                $institucion,
+                $departamento,
+                $tutorId,
+                $tutorNombre,
+                'Jefe de la División de Soporte Técnico de la Dirección de Telemática',
+                $duracionMeses,
+                $periodoTexto,
+                $horasMeta
+            );
+
+            ob_start();
+            include '../app/views/reportes/pdf_constancia.php';
+            $html = ob_get_clean();
+
+            $nombreArchivo = ($tipo === 'culminacion' ? 'Carta_Culminacion' : 'Constancia_Servicio')
+                . '_' . ($pasante->cedula ?? 'Historico') . '_' . $codigoConstancia;
+            $this->pdf->renderDomPdf($html, $nombreArchivo, false);
+            return;
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // MODO REGISTRADO (Pasante existente en la base de datos)
+        // ══════════════════════════════════════════════════════════════
         $pasanteId = (int)($filtros['pasante_id'] ?? 0);
-        $tipo      = $filtros['tipo_constancia'] ?? 'servicio';
 
         if (!$pasanteId) {
             $this->renderErrorPage('Datos incompletos', 'Seleccione un pasante.');
+            return;
         }
 
         // Obtener datos completos del pasante
@@ -1971,13 +2180,329 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 13px;
             'UTF-8'
         );
 
+        $nombreCompletoReg = trim(($pasante->nombres ?? '') . ' ' . ($pasante->apellidos ?? ''));
+        // Respaldo oficial de la constancia emitida en base de datos y auditoría
+        $codigoConstancia = $this->registrarRespaldoConstancia(
+            $tipo,
+            'registrado',
+            $pasanteId,
+            $pasante->cedula ?? '',
+            $nombreCompletoReg,
+            $pasante->institucion ?? 'N/D',
+            $pasante->departamento ?? 'N/D',
+            null,
+            $pasante->tutor_nombre ?? 'Tutor de División',
+            'Jefe de la División de Soporte Técnico de la Dirección de Telemática',
+            6,
+            $pasante->periodo_texto ?? null,
+            (int)($pasante->horas_meta ?? 960)
+        );
+
         ob_start();
         include '../app/views/reportes/pdf_constancia.php';
         $html = ob_get_clean();
 
         $nombreArchivo = ($tipo === 'culminacion' ? 'Carta_Culminacion' : 'Constancia_Servicio')
-            . '_' . ($pasante->cedula ?? $pasanteId);
+            . '_' . ($pasante->cedula ?? $pasanteId) . '_' . $codigoConstancia;
         $this->pdf->renderDomPdf($html, $nombreArchivo, false);
+    }
+
+    /**
+     * Registra el respaldo oficial de una constancia emitida en la base de datos y auditoría.
+     */
+    private function registrarRespaldoConstancia(
+        string $tipoConstancia,
+        string $modoEmision,
+        ?int $pasanteId,
+        string $cedula,
+        string $nombreCompleto,
+        string $institucion,
+        string $departamento,
+        ?int $tutorId,
+        string $tutorNombre,
+        string $tutorCargo,
+        int $duracionMeses,
+        ?string $periodoTexto,
+        int $horasMeta
+    ): string {
+        try {
+            $anioActual = date('Y');
+            $this->db->query("SELECT COUNT(*) AS total FROM constancias_emitidas WHERE YEAR(created_at) = :anio");
+            $this->db->bind(':anio', $anioActual);
+            $rowCont = $this->db->single();
+            $numeroSecuencia = ((int)($rowCont->total ?? 0)) + 1;
+            $codigoConstancia = sprintf("CST-%s-%04d", $anioActual, $numeroSecuencia);
+
+            $this->db->query("
+                INSERT INTO constancias_emitidas (
+                    codigo_constancia, tipo_constancia, modo_emision, pasante_id,
+                    cedula, nombre_completo, institucion, departamento,
+                    tutor_id, tutor_nombre, tutor_cargo,
+                    duracion_meses, periodo_texto, horas_meta, emitido_por
+                ) VALUES (
+                    :codigo, :tipo, :modo, :pasante_id,
+                    :cedula, :nombre, :institucion, :departamento,
+                    :tutor_id, :tutor_nombre, :tutor_cargo,
+                    :duracion, :periodo_texto, :horas, :emitido_por
+                )
+            ");
+            $this->db->bind(':codigo', $codigoConstancia);
+            $this->db->bind(':tipo', $tipoConstancia);
+            $this->db->bind(':modo', $modoEmision);
+            $this->db->bind(':pasante_id', $pasanteId ?: null);
+            $this->db->bind(':cedula', $cedula);
+            $this->db->bind(':nombre', $nombreCompleto);
+            $this->db->bind(':institucion', $institucion);
+            $this->db->bind(':departamento', $departamento);
+            $this->db->bind(':tutor_id', $tutorId ?: null);
+            $this->db->bind(':tutor_nombre', $tutorNombre);
+            $this->db->bind(':tutor_cargo', $tutorCargo);
+            $this->db->bind(':duracion', $duracionMeses);
+            $this->db->bind(':periodo_texto', $periodoTexto);
+            $this->db->bind(':horas', $horasMeta);
+            $this->db->bind(':emitido_por', (int)Session::get('user_id'));
+            $this->db->execute();
+            $regId = $this->db->lastInsertId();
+
+            // Registro en bitácora de auditoría del sistema
+            $this->db->query("
+                INSERT INTO bitacora (usuario_id, accion, tabla_afectada, registro_id, ip_address, detalles)
+                VALUES (:uid, 'EMISION_CONSTANCIA', 'constancias_emitidas', :rid, :ip, :detalles)
+            ");
+            $this->db->bind(':uid', (int)Session::get('user_id'));
+            $this->db->bind(':rid', $regId);
+            $this->db->bind(':ip', $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+            $this->db->bind(':detalles', sprintf(
+                "Emisión de %s (%s) para %s (C.I. %s) - %s",
+                $tipoConstancia === 'culminacion' ? 'Carta de Culminación' : 'Constancia de Servicio',
+                $codigoConstancia,
+                $nombreCompleto,
+                $cedula,
+                $periodoTexto ?: 'Carga Horaria Estándar'
+            ));
+            $this->db->execute();
+
+            return $codigoConstancia;
+        } catch (\Throwable $e) {
+            error_log("[SGP-CONSTANCIAS-RESPALDO] Error al guardar constancia: " . $e->getMessage());
+            return sprintf("CST-%s-%s", date('Y'), strtoupper(substr(md5(uniqid()), 0, 6)));
+        }
+    }
+
+    /**
+     * GET /reportes/historialConstancias
+     * Devuelve en JSON el listado de constancias respaldadas en la base de datos.
+     */
+    public function historialConstancias(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        try {
+            $this->db->query("
+                SELECT c.*, 
+                       COALESCE(CONCAT(dp.nombres, ' ', dp.apellidos), u.correo, 'Sistema') AS emitido_por_nombre
+                FROM constancias_emitidas c
+                LEFT JOIN usuarios u ON u.id = c.emitido_por
+                LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
+                ORDER BY c.id DESC
+                LIMIT 150
+            ");
+            $data = $this->db->resultSet() ?: [];
+            echo json_encode(['success' => true, 'data' => $data], JSON_UNESCAPED_UNICODE);
+        } catch (\Throwable $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+    /**
+     * GET /reportes/reimprimirConstancia?id=X o ?codigo=CST-2026-XXXX
+     * Abre y regenera el PDF respaldado de la constancia con su número de control original.
+     */
+    public function reimprimirConstancia(): void
+    {
+        $id     = (int)($_GET['id'] ?? 0);
+        $codigo = trim($_GET['codigo'] ?? '');
+
+        if ($id > 0) {
+            $this->db->query("SELECT * FROM constancias_emitidas WHERE id = :id LIMIT 1");
+            $this->db->bind(':id', $id);
+        } elseif (!empty($codigo)) {
+            $this->db->query("SELECT * FROM constancias_emitidas WHERE codigo_constancia = :cod LIMIT 1");
+            $this->db->bind(':cod', $codigo);
+        } else {
+            $this->renderErrorPage('Parámetros inválidos', 'Debe especificar el ID o código de la constancia.');
+            return;
+        }
+
+        $row = $this->db->single();
+        if (!$row) {
+            $this->renderErrorPage('Constancia no encontrada', 'El registro solicitado no existe en el respaldo.');
+            return;
+        }
+
+        $tipo = $row->tipo_constancia;
+        $codigoConstancia = $row->codigo_constancia;
+        $pasante = (object)[
+            'nombre_completo'      => $row->nombre_completo,
+            'nombres'              => $row->nombre_completo,
+            'apellidos'            => '',
+            'cedula'               => $row->cedula,
+            'departamento'         => $row->departamento,
+            'institucion'          => $row->institucion,
+            'estado_pasantia'      => ($tipo === 'culminacion' ? 'Finalizado' : 'Activo'),
+            'horas_acumuladas'     => (int)$row->horas_meta,
+            'horas_meta'           => (int)$row->horas_meta,
+            'duracion_meses'       => (int)$row->duracion_meses,
+            'periodo_texto'        => $row->periodo_texto,
+            'cuerpo_personalizado' => $row->cuerpo_personalizado ?? null,
+            'tutor_nombre'         => $row->tutor_nombre,
+            'tutor_cedula'         => '',
+            'tutor_cargo'          => $row->tutor_cargo ?: 'Jefe de la División de Soporte Técnico de la Dirección de Telemática',
+        ];
+
+        $ts = strtotime($row->created_at);
+        $meses = ['', 'enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        $fechaEmision = date('d', $ts) . ' de ' . ($meses[(int)date('n', $ts)] ?? date('F', $ts)) . ' de ' . date('Y', $ts);
+        $diaEmision   = date('d', $ts);
+        $mesEmision   = $meses[(int)date('n', $ts)] ?? date('F', $ts);
+        $anioEmision  = date('Y', $ts);
+
+        $jefeNombre = mb_strtoupper($row->tutor_nombre ?: 'RESPONSABLE DE SOPORTE TÉCNICO', 'UTF-8');
+
+        ob_start();
+        include '../app/views/reportes/pdf_constancia.php';
+        $html = ob_get_clean();
+
+        $download = (!empty($_GET['download']) && $_GET['download'] == 1);
+        $nombreArchivo = ($tipo === 'culminacion' ? 'Carta_Culminacion' : 'Constancia_Servicio')
+            . '_' . ($pasante->cedula ?? 'Historico') . '_' . $codigoConstancia;
+        $this->pdf->renderDomPdf($html, $nombreArchivo, $download);
+    }
+
+    /**
+     * POST /reportes/actualizarConstancia
+     * Actualiza los datos y cuerpo personalizado de una constancia respaldada.
+     */
+    public function actualizarConstancia(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        try {
+            $id = (int)($_POST['id'] ?? 0);
+            if (!$id) {
+                echo json_encode(['success' => false, 'error' => 'ID de constancia inválido']);
+                exit;
+            }
+
+            $nombre              = trim($_POST['nombre_completo'] ?? '');
+            $cedula              = trim($_POST['cedula'] ?? '');
+            $institucion         = trim($_POST['institucion'] ?? '');
+            $departamento        = trim($_POST['departamento'] ?? '');
+            $periodoTexto        = trim($_POST['periodo_texto'] ?? '');
+            $duracionMeses       = (int)($_POST['duracion_meses'] ?? 6);
+            $horasMeta           = (int)($_POST['horas_meta'] ?? 960);
+            $tutorNombre         = trim($_POST['tutor_nombre'] ?? '');
+            $tutorCargo          = trim($_POST['tutor_cargo'] ?? '');
+            $cuerpoPersonalizado = trim($_POST['cuerpo_personalizado'] ?? '');
+
+            if (empty($nombre) || empty($cedula)) {
+                echo json_encode(['success' => false, 'error' => 'El nombre y cédula no pueden estar vacíos']);
+                exit;
+            }
+
+            $this->db->query("
+                UPDATE constancias_emitidas SET
+                    nombre_completo      = :nombre,
+                    cedula               = :cedula,
+                    institucion          = :institucion,
+                    departamento         = :departamento,
+                    periodo_texto        = :periodo_texto,
+                    duracion_meses       = :duracion_meses,
+                    horas_meta           = :horas_meta,
+                    tutor_nombre         = :tutor_nombre,
+                    tutor_cargo          = :tutor_cargo,
+                    cuerpo_personalizado = :cuerpo
+                WHERE id = :id
+            ");
+            $this->db->bind(':nombre', $nombre);
+            $this->db->bind(':cedula', $cedula);
+            $this->db->bind(':institucion', $institucion);
+            $this->db->bind(':departamento', $departamento);
+            $this->db->bind(':periodo_texto', $periodoTexto);
+            $this->db->bind(':duracion_meses', $duracionMeses);
+            $this->db->bind(':horas_meta', $horasMeta);
+            $this->db->bind(':tutor_nombre', $tutorNombre);
+            $this->db->bind(':tutor_cargo', $tutorCargo ?: 'Jefe de la División de Soporte Técnico de la Dirección de Telemática');
+            $this->db->bind(':cuerpo', !empty($cuerpoPersonalizado) ? $cuerpoPersonalizado : null);
+            $this->db->bind(':id', $id);
+            $this->db->execute();
+
+            // Auditoría
+            $this->db->query("
+                INSERT INTO bitacora (usuario_id, accion, tabla_afectada, registro_id, ip_address, detalles)
+                VALUES (:uid, 'EDITAR_CONSTANCIA', 'constancias_emitidas', :rid, :ip, :detalles)
+            ");
+            $this->db->bind(':uid', (int)Session::get('user_id'));
+            $this->db->bind(':rid', $id);
+            $this->db->bind(':ip', $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+            $this->db->bind(':detalles', sprintf("Modificación de constancia ID #%d para %s (C.I. %s)", $id, $nombre, $cedula));
+            $this->db->execute();
+
+            echo json_encode(['success' => true]);
+        } catch (\Throwable $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+    /**
+     * POST /reportes/eliminarConstancia
+     * Elimina un registro de constancia respaldada.
+     */
+    public function eliminarConstancia(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        try {
+            $id = (int)($_POST['id'] ?? 0);
+            if (!$id) {
+                echo json_encode(['success' => false, 'error' => 'ID inválido']);
+                exit;
+            }
+
+            // Datos previos para auditoría
+            $this->db->query("SELECT * FROM constancias_emitidas WHERE id = :id LIMIT 1");
+            $this->db->bind(':id', $id);
+            $c = $this->db->single();
+
+            if (!$c) {
+                echo json_encode(['success' => false, 'error' => 'Constancia no encontrada']);
+                exit;
+            }
+
+            $this->db->query("DELETE FROM constancias_emitidas WHERE id = :id");
+            $this->db->bind(':id', $id);
+            $this->db->execute();
+
+            // Auditoría
+            $this->db->query("
+                INSERT INTO bitacora (usuario_id, accion, tabla_afectada, registro_id, ip_address, detalles)
+                VALUES (:uid, 'ELIMINAR_CONSTANCIA', 'constancias_emitidas', :rid, :ip, :detalles)
+            ");
+            $this->db->bind(':uid', (int)Session::get('user_id'));
+            $this->db->bind(':rid', $id);
+            $this->db->bind(':ip', $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+            $this->db->bind(':detalles', sprintf(
+                "Eliminación de constancia %s de %s (C.I. %s)",
+                $c->codigo_constancia,
+                $c->nombre_completo,
+                $c->cedula
+            ));
+            $this->db->execute();
+
+            echo json_encode(['success' => true]);
+        } catch (\Throwable $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+        exit;
     }
 
     // ══════════════════════════════════════════════════════════════

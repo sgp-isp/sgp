@@ -195,28 +195,76 @@
 #tablaPasantes th:nth-child(2) { width: 9%; }
 #tablaPasantes th:nth-child(3) { width: 15%; }
 #tablaPasantes th:nth-child(4) { width: 12%; }
-#tablaPasantes th:nth-child(5) { width: 15%; }
+#tablaPasantes th:nth-child(5) { width: 14%; }
 #tablaPasantes th:nth-child(6) { width: 9%; }
-#tablaPasantes th:nth-child(7) { width: 20%; }
+#tablaPasantes th:nth-child(7) { width: 21%; }
+
+/* Barra de filtros de pasantes */
+.pasantes-filter-bar {
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: white;
+    padding: 18px 24px;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+.pasantes-filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    flex: 1;
+}
+
+.pasantes-search-wrapper {
+    flex: 0 1 320px;
+    min-width: 220px;
+}
 
 @media (max-width: 1200px) {
     .kpi-pasantes-grid {
         grid-template-columns: repeat(2, 1fr) !important;
     }
     .pasantes-filter-bar {
-        flex-direction: column;
+        flex-direction: column !important;
         align-items: stretch !important;
+        gap: 14px !important;
+    }
+    .pasantes-filter-controls {
+        width: 100% !important;
+        flex: 0 0 auto !important;
+        gap: 12px !important;
+    }
+    .pasantes-search-wrapper {
+        width: 100% !important;
+        flex: 0 0 auto !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
     }
     .pasantes-filter-bar .choices {
         width: 100% !important;
-        margin-bottom: 10px;
+        margin-bottom: 0 !important;
     }
-    #filterDepto, #filterInst { width: 100% !important; }
-    .pasantes-filter-bar > div { flex: 1 1 100%; width: 100%; }
+    #filterDepto, #filterInst {
+        width: 100% !important;
+    }
 }
 @media (max-width: 768px) {
     .kpi-pasantes-grid {
         grid-template-columns: 1fr 1fr !important;
+    }
+    .pasantes-filter-bar {
+        padding: 16px 18px !important;
+        gap: 12px !important;
+    }
+    .pasantes-filter-controls {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
     }
 }
 @media (max-width: 640px) {
@@ -229,28 +277,26 @@
     .kpi-pasantes-grid {
         grid-template-columns: 1fr !important;
     }
-    /* Barra de filtros: contenedor interior en columna */
     .pasantes-filter-bar {
         padding: 14px 16px !important;
         gap: 10px !important;
     }
-    .pasantes-filter-bar > div:first-child {
+    .pasantes-filter-controls {
         flex-direction: column !important;
         align-items: stretch !important;
         gap: 8px !important;
     }
-    .pasantes-filter-bar > div:first-child > p {
+    .pasantes-filter-controls > p {
         margin-bottom: 0 !important;
     }
-    /* Selectores: ancho completo */
     #filterDepto, #filterInst {
         width: 100% !important;
         box-sizing: border-box !important;
         min-width: 0 !important;
     }
-    /* Buscador: ancho completo */
-    .pasantes-filter-bar > div:last-child {
-        flex: 1 1 100% !important;
+    .pasantes-search-wrapper {
+        flex: 0 0 auto !important;
+        width: 100% !important;
         min-width: 0 !important;
     }
 }
@@ -352,8 +398,8 @@ sort($filtro_inst_nombres);
     </div>
 
     <!-- Filtros Inteligentes (Bento UI) -->
-    <div class="pasantes-filter-bar" style="margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; background: white; padding: 18px 24px; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04);">
-        <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; flex: 1;">
+    <div class="pasantes-filter-bar">
+        <div class="pasantes-filter-controls">
             <p style="font-size: 0.9rem; font-weight: 700; color: #64748b; margin: 0; display:flex; align-items:center; gap:6px;">
                 <i class="ti ti-filter" style="font-size:1.1rem; color:#2563eb;"></i> Filtros:
             </p>
@@ -374,7 +420,7 @@ sort($filtro_inst_nombres);
         </div>
 
         <!-- Buscador Inteligente -->
-        <div style="flex: 0 1 300px; min-width: 200px;">
+        <div class="pasantes-search-wrapper">
             <div style="position: relative; width: 100%;">
                 <i class="ti ti-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #1D4ED8; font-size: 1.2rem; z-index: 2; pointer-events: none;"></i>
                 <input type="text" id="customSearchPasantes" placeholder="Buscar pasante, cédula..."
@@ -431,13 +477,17 @@ sort($filtro_inst_nombres);
             <?php endif; ?>
         <?php else: ?>
         <!-- TABLA — solo en pantallas grandes (≥ 992px) -->
-        <div class="table-responsive sgp-solo-desktop" style="padding: 20px;">
-            <table id="tablaPasantes" class="table table-hover align-middle mb-0" style="width:100%; opacity: 0; transition: opacity 0.4s ease-in-out;">
+        <div class="table-responsive sgp-solo-desktop" style="padding: 16px 20px; overflow-x: hidden;">
+            <table id="tablaPasantes" class="table table-hover align-middle mb-0" style="width: 100% !important; table-layout: fixed; opacity: 0; transition: opacity 0.4s ease-in-out;">
                 <thead class="bg-light text-uppercase text-muted small fw-bold">
                     <tr>
-                        <?php foreach (['Pasante','Cédula','Institución','Departamento','Progreso (Días)','Estado','Acciones'] as $th): ?>
-                        <th class="px-4 py-3 border-0"><?= $th ?></th>
-                        <?php endforeach; ?>
+                        <th class="px-3 py-3 border-0">Pasante</th>
+                        <th class="px-3 py-3 border-0">Cédula</th>
+                        <th class="px-3 py-3 border-0">Institución</th>
+                        <th class="px-3 py-3 border-0">Departamento</th>
+                        <th class="px-3 py-3 border-0">Progreso</th>
+                        <th class="px-3 py-3 border-0">Estado</th>
+                        <th class="px-3 py-3 border-0 text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -465,62 +515,73 @@ sort($filtro_inst_nombres);
                     $inicial = strtoupper(substr($p->nombres ?? 'P', 0, 1));
                 ?>
                 <tr>
-                    <td class="px-4 py-3">
+                    <td class="px-3 py-2.5">
                         <div class="dt-name-cell">
-                            <div class="dt-avatar"><?= $inicial ?></div>
-                            <div>
-                                <span class="dt-cell-primary dt-cell-truncate" title="<?= $nombres ?>"><?= $nombres ?></span><!-- [SGP-FIX-PASANTES-ALTURA-FILA] truncar a 1 línea para igualar altura de fila (mismo patrón que Institución) -->
+                            <div class="dt-avatar av-pasante"><?= $inicial ?></div>
+                            <div style="min-width:0;overflow:hidden;flex:1;">
+                                <div class="dt-cell-primary dt-cell-truncate d-inline-block text-truncate" style="max-width: 100%;" title="<?= $nombres ?>"><?= $nombres ?></div>
+                                <?php if (!empty($p->correo)): ?>
+                                <div class="dt-cell-sub">
+                                    <span class="dt-email-sub text-truncate" style="max-width: 150px;" title="<?= htmlspecialchars($p->correo) ?>">
+                                        <i class="ti ti-mail"></i> <?= htmlspecialchars($p->correo) ?>
+                                    </span>
+                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </td>
-                    <td class="px-4 py-3 text-muted"><?= $cedula ?></td>
-                    <td class="px-4 py-3 text-muted">
-                        <span class="dt-cell-truncate" title="<?= $inst ?>"><?= $inst ?></span>
-                        <?php if($instRep): ?><div style="font-size:0.7rem; color:#94a3b8; margin-top:2px; line-height:1;"><i class="ti ti-user" style="font-size:0.7rem;"></i> Rep: <?= $instRep ?></div><?php endif; ?>
+                    <td class="px-3 py-2.5">
+                        <span class="dt-cedula-badge" title="Cédula de Identidad">
+                            <i class="ti ti-id"></i> <?= $cedula ?>
+                        </span>
                     </td>
-                    <td class="px-4 py-3 text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= $depto !== 'Sin asignar' ? $depto : '' ?>"><!-- [SGP-FIX-PASANTES-ANCHO-TABLA] evitar que un depto largo rompa la altura de fila con table-layout:fixed -->
+                    <td class="px-3 py-2.5 text-muted">
+                        <span class="dt-cell-truncate d-inline-block text-truncate" style="max-width: 100%;" title="<?= $inst ?>"><?= $inst ?></span>
+                        <?php if($instRep): ?><div style="font-size:0.7rem; color:#94a3b8; margin-top:2px; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><i class="ti ti-user" style="font-size:0.7rem;"></i> Rep: <?= $instRep ?></div><?php endif; ?>
+                    </td>
+                    <td class="px-3 py-2.5 text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= $depto !== 'Sin asignar' ? $depto : '' ?>">
                         <?php if ($depto === 'Sin asignar'): ?>
-                            <span onclick="cambiarEstado('<?= UrlSecurity::encrypt($p->id) ?>', '<?= addslashes($nombres) ?>')" title="Sin departamento – clic para gestionar" style="display:inline-flex;align-items:center;gap:4px;background:#fff7ed;color:#ea580c;border:1.5px dashed #fb923c;border-radius:8px;padding:3px 10px;font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#ea580c';this.style.color='white'" onmouseout="this.style.background='#fff7ed';this.style.color='#ea580c'">
-                                <i class="ti ti-map-pin-off" style="font-size:0.85rem;"></i> Sin asignar
+                            <span onclick="cambiarEstado('<?= UrlSecurity::encrypt($p->id) ?>', '<?= addslashes($nombres) ?>')" title="Sin departamento – clic para gestionar" style="display:inline-flex;align-items:center;gap:4px;background:#fff7ed;color:#ea580c;border:1.5px dashed #fb923c;border-radius:8px;padding:2px 8px;font-size:0.76rem;font-weight:700;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#ea580c';this.style.color='white'" onmouseout="this.style.background='#fff7ed';this.style.color='#ea580c'">
+                                <i class="ti ti-map-pin-off" style="font-size:0.8rem;"></i> Sin asignar
                             </span>
                         <?php else: ?>
-                            <?= $depto ?>
+                            <span class="d-inline-block text-truncate" style="max-width: 100%;"><?= $depto ?></span>
                         <?php endif; ?>
                     </td>
-                    <td class="px-4 py-3">
+                    <td class="px-3 py-2.5">
                         <div class="progress-wrap">
-                            <div class="progress-label">
-                                Día <?= $diasAcum ?> / <?= $diasTotal ?>
+                            <div class="progress-label" style="font-size: 0.74rem;">
+                                Día <?= $diasAcum ?>/<?= $diasTotal ?>
                                 <span class="progress-pct"><?= $pct ?>%</span>
                             </div>
-                            <div class="progress-track">
+                            <div class="progress-track" style="height: 6px;">
                                 <div class="progress-fill" style="width:<?= $pct ?>%;"></div>
                             </div>
                         </div>
                     </td>
-                    <td class="px-4 py-3">
+                    <td class="px-3 py-2.5">
                         <?php $esAccion = in_array($estado, ['Pendiente','Sin asignar']); ?>
-                        <span class="badge badge-<?= strtolower($estado) ?>" style="background:<?= $cfg['bg'] ?>;color:<?= $cfg['color'] ?>;<?= $esAccion ? 'cursor:pointer;border:1.5px dashed currentColor;' : '' ?>"
+                        <span class="badge badge-<?= strtolower($estado) ?>" style="background:<?= $cfg['bg'] ?>;color:<?= $cfg['color'] ?>;padding: 4px 8px; font-size: 0.76rem;<?= $esAccion ? 'cursor:pointer;border:1.5px dashed currentColor;' : '' ?>"
                               <?= $esAccion ? "onclick=\"cambiarEstado('" . UrlSecurity::encrypt($p->id) . "', '" . addslashes($nombres) . "')\" title=\"Clic para cambiar estado\"" : '' ?>>
-                            <?= $esAccion ? '<i class="ti ti-click" style="font-size:0.75rem;margin-right:2px;"></i>' : '' ?>
+                            <?= $esAccion ? '<i class="ti ti-click" style="font-size:0.72rem;margin-right:2px;"></i>' : '' ?>
                             <?= $estado ?>
                         </span>
                     </td>
-                    <td class="px-4 py-3 text-center">
-                        <div class="d-flex justify-content-center gap-2 flex-nowrap dt-row-actions">
-                            <button onclick="SGPModal.verUsuario(<?= $p->id ?>)" class="btn-action btn-view" title="Ver perfil">
+                    <td class="px-3 py-2.5 text-center">
+                        <div class="sgp-action-capsule">
+                            <button type="button" onclick="SGPModal.verUsuario(<?= $p->id ?>)" class="sgp-act-btn act-blue" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver expediente">
                                 <i class="ti ti-eye"></i>
                             </button>
-                            <a href="<?= URLROOT ?>/asistencias/almanaque/<?= $p->id ?>" class="btn-action" style="color:#0ea5e9;background:#e0f2fe;text-decoration:none;" title="Ver Almanaque">
+                            <a href="<?= URLROOT ?>/asistencias/almanaque/<?= $p->id ?>" class="sgp-act-btn act-cyan" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Almanaque">
                                 <i class="ti ti-calendar-stats"></i>
                             </a>
-                            <button onclick="window.abrirModalEditarPasante(<?= $p->id ?>)" class="btn-action btn-edit" title="Editar Datos Personales">
-                                <i class="ti ti-edit"></i>
+                            <button type="button" onclick="window.abrirModalEditarPasante(<?= $p->id ?>)" class="sgp-act-btn act-amber" data-bs-toggle="tooltip" data-bs-placement="top" title="Editar Datos">
+                                <i class="ti ti-pencil"></i>
                             </button>
-                            <button onclick="cambiarEstado('<?= UrlSecurity::encrypt($p->id) ?>', '<?= $nombres ?>')" class="btn-action btn-config" title="Cambiar Estado">
+                            <button type="button" onclick="cambiarEstado('<?= UrlSecurity::encrypt($p->id) ?>', '<?= $nombres ?>')" class="sgp-act-btn act-slate" data-bs-toggle="tooltip" data-bs-placement="top" title="Cambiar Estado">
                                 <i class="ti ti-settings"></i>
                             </button>
-                            <button onclick="confirmarEliminarPasante(<?= $p->id ?>, '<?= addslashes($nombres) ?>', '<?= addslashes($cedula) ?>')" class="btn-action" style="color:#dc2626;background:#fef2f2;" title="Eliminar Pasante">
+                            <button type="button" onclick="confirmarEliminarPasante(<?= $p->id ?>, '<?= addslashes($nombres) ?>', '<?= addslashes($cedula) ?>')" class="sgp-act-btn act-danger-subtle" data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar Pasante">
                                 <i class="ti ti-trash"></i>
                             </button>
                         </div>

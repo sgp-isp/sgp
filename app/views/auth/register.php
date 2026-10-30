@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SGP - Registro</title>
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="<?= URLROOT ?>/img/favicon.png">
+    <link rel="icon" type="image/png" href="<?= URLROOT ?>/img/favicon.png?v=3">
     
     <!-- CSS Assets -->
     <link rel="stylesheet" href="<?= URLROOT ?>/css/tabler-icons.min.css">
@@ -73,6 +72,13 @@
             if (!emailRegex.test(email.value)) {
                 NotificationService.error('Por favor ingresa un correo electrónico válido');
                 email.focus();
+                return false;
+            }
+            
+            var institucion = document.getElementById('institucion_id');
+            if (!institucion || !institucion.value) {
+                NotificationService.error('Por favor selecciona tu institución de procedencia');
+                if (institucion) institucion.focus();
                 return false;
             }
             
@@ -288,6 +294,26 @@
                     </label>
                     <div class="email-feedback"></div>
                     <small class="form-hint">Usaremos este correo para recuperar tu cuenta</small>
+                </div>
+
+                <!-- Institución de Procedencia -->
+                <div class="form-group" style="margin-top: 1.25rem;">
+                    <label for="institucion_id" class="form-label" style="display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.85rem; color: #374151;">
+                        <i class="ti ti-school" style="margin-right: 6px; color: #2563eb;"></i>Institución Educativa de Procedencia *
+                    </label>
+                    <select name="institucion_id" id="institucion_id" class="input-modern" required style="cursor: pointer;">
+                        <option value="">Selecciona tu universidad o instituto...</option>
+                        <?php 
+                        $instList = $data['instituciones'] ?? $instituciones ?? [];
+                        foreach ($instList as $instItem):
+                            $iId = is_object($instItem) ? $instItem->id : $instItem['id'];
+                            $iNom = is_object($instItem) ? $instItem->nombre : $instItem['nombre'];
+                            $selected = (isset($_POST['institucion_id']) && (int)$_POST['institucion_id'] === (int)$iId) ? 'selected' : '';
+                        ?>
+                        <option value="<?= (int)$iId ?>" <?= $selected ?>><?= htmlspecialchars($iNom) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small class="form-hint" style="margin-top: 4px; display: block;">Casa de estudios de donde provienes</small>
                 </div>
 
                 <!-- Contraseña -->
@@ -506,6 +532,14 @@
                     </div>
                 <?php endif; ?>
 
+                <!-- Aceptación de Términos y Privacidad -->
+                <div style="margin: 1.2rem 0; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: flex-start; gap: 10px;">
+                    <input type="checkbox" name="acepta_terminos" id="acepta_terminos" required style="margin-top: 3px; cursor: pointer; width: 18px; height: 18px; accent-color: #1e3a8a;">
+                    <label for="acepta_terminos" style="font-size: 0.82rem; color: #475569; line-height: 1.4; cursor: pointer;">
+                        He leído y acepto los <a href="<?= URLROOT ?>/legal/terminos" target="_blank" style="color: #1e3a8a; font-weight: 700; text-decoration: underline;">Términos de Servicio</a> y la <a href="<?= URLROOT ?>/legal/privacidad" target="_blank" style="color: #1e3a8a; font-weight: 700; text-decoration: underline;">Política de Privacidad</a> del ISPEB.
+                    </label>
+                </div>
+
                 <!-- Botones de navegación -->
                 <div class="step-buttons">
                     <button type="button" class="btn-secondary" onclick="window.prevStep()">
@@ -520,6 +554,11 @@
         
         <div class="auth-footer">
             ¿Ya tienes cuenta? <a href="<?= URLROOT ?>/auth/login" class="auth-link">Inicia Sesión</a>
+            <div style="margin-top: 12px; font-size: 0.74rem; color: #94a3b8; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <a href="<?= URLROOT ?>/legal/terminos" target="_blank" style="color: #64748b; text-decoration: none; font-weight: 600;">Términos de Servicio</a>
+                <span>•</span>
+                <a href="<?= URLROOT ?>/legal/privacidad" target="_blank" style="color: #64748b; text-decoration: none; font-weight: 600;">Política de Privacidad</a>
+            </div>
         </div>
     </div>
 

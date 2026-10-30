@@ -1,0 +1,233 @@
+/**
+ * Bento OTP Morphing Component — SGP ISPEB
+ * Inspirado en la animación SETTIGATION (Morphing: Casillas -> Colapso Central -> Spinner Orbital -> Checkmark SVG)
+ * Paleta: Bento Navy Institucional (#162660, #2563eb, #38bdf8, #10b981)
+ */
+
+.bento-otp-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+}
+
+/* Contenedor principal de casillas */
+.bento-otp-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 64px;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Casillas individuales cuadradas Bento */
+.bento-otp-box {
+    width: 48px;
+    height: 56px;
+    border: 2px solid #cbd5e1;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #162660;
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+    outline: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.bento-otp-box:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15), 0 4px 12px rgba(37, 99, 235, 0.1);
+    transform: translateY(-2px);
+}
+
+.bento-otp-box.filled {
+    border-color: #162660;
+    background: #f8fafc;
+}
+
+/* Estado de Error: Shake animado */
+.bento-otp-container.error .bento-otp-box {
+    border-color: #ef4444;
+    color: #ef4444;
+    animation: bentoShake 0.45s ease-in-out;
+}
+
+@keyframes bentoShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+}
+
+/* ══════════════════════════════════════════════════════
+   FASE 1: MORPHING — COLAPSO DE CASILLAS AL CENTRO
+   ══════════════════════════════════════════════════════ */
+.bento-otp-container.morphing .bento-otp-box {
+    opacity: 0;
+    transform: scale(0.2);
+    pointer-events: none;
+}
+
+/* Desplazamiento convergente al centro según posición (6 casillas) */
+.bento-otp-container.morphing .bento-otp-box:nth-child(1) { transform: translateX(110px) scale(0.1); transition: all 0.4s ease-in; }
+.bento-otp-container.morphing .bento-otp-box:nth-child(2) { transform: translateX(65px) scale(0.1); transition: all 0.38s ease-in; }
+.bento-otp-container.morphing .bento-otp-box:nth-child(3) { transform: translateX(20px) scale(0.1); transition: all 0.35s ease-in; }
+.bento-otp-container.morphing .bento-otp-box:nth-child(4) { transform: translateX(-20px) scale(0.1); transition: all 0.35s ease-in; }
+.bento-otp-container.morphing .bento-otp-box:nth-child(5) { transform: translateX(-65px) scale(0.1); transition: all 0.38s ease-in; }
+.bento-otp-container.morphing .bento-otp-box:nth-child(6) { transform: translateX(-110px) scale(0.1); transition: all 0.4s ease-in; }
+
+/* ══════════════════════════════════════════════════════
+   FASE 2: SPINNER ORBITAL DE ESFERAS BENTO
+   ══════════════════════════════════════════════════════ */
+.bento-otp-orbital {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 60px;
+    height: 60px;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+}
+
+.bento-otp-container.morphing .bento-otp-orbital {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.bento-orbital-ring {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    animation: bentoOrbitalSpin 1.4s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+}
+
+.bento-orbital-dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #162660;
+    box-shadow: 0 0 10px rgba(22, 38, 96, 0.4);
+}
+
+.bento-orbital-dot:nth-child(1) { top: 0; left: 50%; margin-left: -6px; background: #162660; }
+.bento-orbital-dot:nth-child(2) { top: 50%; right: 0; margin-top: -6px; background: #2563eb; }
+.bento-orbital-dot:nth-child(3) { bottom: 0; left: 50%; margin-left: -6px; background: #38bdf8; }
+.bento-orbital-dot:nth-child(4) { top: 50%; left: 0; margin-top: -6px; background: #1d4ed8; }
+
+@keyframes bentoOrbitalSpin {
+    0%   { transform: rotate(0deg) scale(0.9); }
+    50%  { transform: rotate(180deg) scale(1.15); }
+    100% { transform: rotate(360deg) scale(0.9); }
+}
+
+/* ══════════════════════════════════════════════════════
+   FASE 3: CHECKMARK SVG TRAZADO ANIMADO
+   ══════════════════════════════════════════════════════ */
+.bento-otp-success {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+}
+
+.bento-otp-container.success .bento-otp-orbital {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+}
+
+.bento-otp-container.success .bento-otp-success {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.bento-otp-checkmark-svg {
+    width: 34px;
+    height: 34px;
+}
+
+.bento-otp-check-path {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 4px;
+    stroke: #ffffff;
+    fill: none;
+    transition: stroke-dashoffset 0.5s ease-out 0.2s;
+}
+
+.bento-otp-container.success .bento-otp-check-path {
+    stroke-dashoffset: 0;
+}
+
+/* Texto de estado inferior */
+.bento-otp-status {
+    margin-top: 18px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: #64748b;
+    text-align: center;
+    min-height: 22px;
+    transition: all 0.3s ease;
+}
+
+.bento-otp-status.success {
+    color: #059669;
+    font-weight: 700;
+}
+
+.bento-otp-status.error {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+/* Reenviar código */
+.bento-otp-resend {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: #2563eb;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s ease;
+}
+
+.bento-otp-resend:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+.bento-otp-resend:disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+    text-decoration: none;
+}

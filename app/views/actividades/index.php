@@ -20,22 +20,62 @@ $periodoCortoActivo   = $data['periodoCortoActivo']   ?? null;
 .hub-grid-2 { display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:24px; }
 .hub-card   { background:white;border-radius:20px;padding:22px;box-shadow:0 4px 20px rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.05);animation:hub-fadeUp .4s ease both; }
 
-/* KPI */
-.hub-kpi { display:flex;justify-content:space-between;align-items:center;border-radius:16px;padding:22px;background:white;box-shadow:0 2px 12px rgba(0,0,0,0.06);transition:all .3s cubic-bezier(.4,0,.2,1); }
-.hub-kpi:hover { transform:translateY(-4px); }
+/* KPI Tipo Exámenes Rápidos */
+.hub-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.hub-kpi {
+    background: white;
+    border-radius: 18px;
+    padding: 20px 22px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
+    cursor: default;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+.hub-kpi:hover { transform: translateY(-4px); }
+.hub-kpi-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.hub-kpi-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+.hub-kpi-val { font-size: 2.2rem; font-weight: 800; line-height: 1; margin-top: 2px; }
+.hub-kpi-sub { font-size: 0.74rem; color: #94a3b8; font-weight: 500; }
+.hub-kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+
+.hub-kpi.hub-kpi-blue   { border-top: 3px solid #2563eb; }
+.hub-kpi.hub-kpi-green  { border-top: 3px solid #059669; }
+.hub-kpi.hub-kpi-purple { border-top: 3px solid #7c3aed; }
+.hub-kpi.hub-kpi-amber  { border-top: 3px solid #d97706; }
+
+.hub-kpi.hub-kpi-blue:hover   { box-shadow: 0 12px 22px -6px rgba(37, 99, 235, 0.55) !important; }
+.hub-kpi.hub-kpi-green:hover  { box-shadow: 0 12px 22px -6px rgba(5, 150, 105, 0.55) !important; }
+.hub-kpi.hub-kpi-purple:hover { box-shadow: 0 12px 22px -6px rgba(124, 58, 237, 0.55) !important; }
+.hub-kpi.hub-kpi-amber:hover  { box-shadow: 0 12px 22px -6px rgba(217, 119, 6, 0.55) !important; }
+
+[data-theme="dark"] .hub-kpi {
+    background-color: #111a2e !important;
+    border: 1px solid #1e293b !important;
+}
 
 /* Nav buttons glass */
 .hub-nav-btn {
-    display:flex;align-items:center;gap:12px;
-    background:rgba(255,255,255,0.12);
-    border:1px solid rgba(255,255,255,0.25);
-    backdrop-filter:blur(12px);
-    color:white;padding:12px 22px;border-radius:12px;
-    font-weight:700;font-size:.88rem;cursor:pointer;
-    transition:all .2s;text-decoration:none;
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: white; padding: 11px 20px; border-radius: 12px;
+    font-weight: 700; font-size: .88rem; cursor: pointer;
+    transition: all .2s; text-decoration: none;
 }
-.hub-nav-btn:hover { background:rgba(255,255,255,0.22);color:white;transform:translateY(-2px); }
-.hub-nav-btn i { font-size:1.2rem; }
+.hub-nav-btn:hover { background: rgba(255,255,255,0.28); color: white; transform: translateY(-2px); }
+.hub-nav-btn i { font-size: 1.2rem; }
 
 /* Preview cards */
 .prev-item { display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f8fafc; }
@@ -43,12 +83,8 @@ $periodoCortoActivo   = $data['periodoCortoActivo']   ?? null;
 .prev-avatar { width:36px;height:36px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem; }
 .prev-name  { font-weight:700;color:#1e293b;font-size:.85rem; }
 .prev-sub   { font-size:.73rem;color:#94a3b8;margin-top:2px; }
-.prev-more  { display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#172554,#2563eb);color:white;padding:8px 16px;border-radius:9px;font-size:.8rem;font-weight:700;text-decoration:none;margin-top:14px;transition:all .2s; }
+.prev-more  { display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--color-primary, #172554),var(--color-accent-brand, #2563eb));color:white;padding:8px 16px;border-radius:9px;font-size:.8rem;font-weight:700;text-decoration:none;margin-top:14px;transition:all .2s; }
 .prev-more:hover { opacity:.9;color:white; }
-
-/* Período badge */
-.per-badge-activo { display:inline-flex;align-items:center;gap:6px;background:#dcfce7;color:#059669;border-radius:100px;padding:5px 14px;font-size:.78rem;font-weight:700; }
-.per-badge-none   { display:inline-flex;align-items:center;gap:6px;background:#fef2f2;color:#ef4444;border-radius:100px;padding:5px 14px;font-size:.78rem;font-weight:700; }
 
 /* Donut chart container */
 .donut-wrap { display:flex;align-items:center;gap:20px; }
@@ -62,134 +98,160 @@ $periodoCortoActivo   = $data['periodoCortoActivo']   ?? null;
     .hub-grid-2 { grid-template-columns:1fr; }
 }
 
-/* ── KPIs responsivos ── */
-@media(max-width:767px) {
-    /* Banner compacto */
-    .hub-banner-wrap {
-        padding: 16px 14px !important;
-        margin-bottom: 14px !important;
+@media (max-width: 1100px) {
+    .hub-kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 16px !important;
+    }
+}
+
+/* ── Banner & KPIs responsivos ── */
+.hub-banner-actions {
+    display: flex;
+    gap: 10px;
+    z-index: 1;
+    flex-wrap: wrap;
+}
+@media(max-width: 991px) {
+    .module-banner.hub-banner {
         flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 12px !important;
+        padding: 20px 18px !important;
+        gap: 16px !important;
+        border-radius: 18px !important;
     }
-    /* Ocultar botones de texto del banner — se sustituyen por iconos */
-    .hub-nav-btn span { display: none !important; }
-    .hub-nav-btn { padding: 9px 12px !important; }
-    .hub-nav-btn i { font-size: 1.1rem !important; margin: 0 !important; }
-
-    /* KPI grid: 2 columnas en móvil */
+    .module-banner.hub-banner > div:first-child {
+        display: none !important;
+    }
+    .hub-banner-actions {
+        width: 100% !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+    .hub-nav-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 11px 16px !important;
+        font-size: 0.88rem !important;
+        border-radius: 12px !important;
+        min-height: 42px !important;
+    }
     .hub-kpi-grid {
-        grid-template-columns: 1fr 1fr !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        margin-bottom: 20px !important;
+    }
+    .hub-kpi {
+        padding: 16px 14px !important;
+        border-radius: 16px !important;
+    }
+    .hub-kpi-val { font-size: 1.8rem !important; }
+    .hub-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
+}
+@media(max-width: 480px) {
+    .module-banner.hub-banner {
+        padding: 18px 16px !important;
+        gap: 14px !important;
+        border-radius: 18px !important;
+        margin-bottom: 18px !important;
+    }
+    .module-banner.hub-banner h1 { font-size: 1.4rem !important; }
+    .hub-kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 10px !important;
-        margin-bottom: 14px !important;
     }
     .hub-kpi {
         padding: 14px 12px !important;
-        border-radius: 14px !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 10px !important;
     }
-    .hub-kpi > div:first-child { width: 100% !important; }
-    .hub-kpi p:first-child {
-        font-size: 0.62rem !important;
-        letter-spacing: 0.3px !important;
-        margin-bottom: 4px !important;
-        white-space: normal !important;
-        line-height: 1.2 !important;
-    }
-    .hub-kpi h2 { font-size: 1.75rem !important; }
-    .hub-kpi p:last-child { font-size: 0.62rem !important; }
-    /* Icono KPI: más pequeño y alineado abajo */
-    .hub-kpi > div:last-child {
-        width: 36px !important; height: 36px !important;
-        border-radius: 9px !important;
-        font-size: 1.1rem !important;
-        align-self: flex-end !important;
-        margin-top: -28px !important;
-    }
-
-    /* Preview cards en 1 columna */
+    .hub-kpi-val { font-size: 1.6rem !important; }
+    .hub-kpi-label { font-size: 0.68rem !important; }
+    .hub-kpi-sub { font-size: 0.68rem !important; }
     .hub-grid-3 { grid-template-columns: 1fr !important; gap: 12px !important; }
     .hub-grid-2 { grid-template-columns: 1fr !important; gap: 12px !important; }
     .hub-card { padding: 14px !important; border-radius: 14px !important; }
-
-    /* Donut: apilar verticalmente */
     .donut-wrap { flex-direction: column !important; align-items: center !important; gap: 14px !important; }
+}
+[data-theme="dark"] .module-banner.hub-banner {
+    background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%) !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
 }
 </style>
 
 <div style="width:100%;">
 
 <!-- ══ BANNER ══════════════════════════════════════════════════ -->
-<div style="background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);border-radius:20px;padding:32px 40px;margin-bottom:28px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;">
-    <div style="position:absolute;top:-40px;right:-40px;width:220px;height:220px;background:rgba(255,255,255,0.04);border-radius:50%;pointer-events:none;"></div>
-    <div style="display:flex;align-items:center;gap:16px;z-index:1;">
-        <div style="background:rgba(255,255,255,0.15);border-radius:14px;padding:14px;">
+<div class="module-banner hub-banner" style="background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--gradient-mid, #1e3a8a) 50%,var(--color-accent-brand, #2563eb) 100%);border-radius:20px;padding:32px 36px;margin-bottom:28px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;box-shadow:0 8px 32px rgba(15,23,42,0.35);">
+    <div style="position:absolute;top:-40px;right:-40px;width:220px;height:220px;background:radial-gradient(circle,rgba(255,255,255,.12) 0%,rgba(255,255,255,0) 70%);border-radius:50%;pointer-events:none;"></div>
+    <div style="display:flex;align-items:center;gap:18px;z-index:1;">
+        <div style="background:rgba(255,255,255,0.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.25);border-radius:16px;width:58px;height:58px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <i class="ti ti-stack-2" style="font-size:32px;color:white;"></i>
         </div>
         <div>
-            <h1 style="color:white;font-size:1.75rem;font-weight:800;margin:0;line-height:1.1;">Actividades Extras</h1>
-            <p style="color:rgba(255,255,255,0.7);margin:5px 0 0;font-size:.88rem;">
+            <h1 style="color:white;font-size:1.85rem;font-weight:800;margin:0 0 4px;letter-spacing:-0.5px;">Actividades Extras</h1>
+            <p style="color:rgba(255,255,255,0.82);margin:0;font-size:0.9rem;">
                 Módulo independiente · Pasantías Cortas &amp; Servicio Comunitario
             </p>
         </div>
     </div>
     <!-- Botones de navegación glass -->
-    <div style="display:flex;gap:12px;z-index:1;flex-wrap:wrap;">
+    <div class="hub-banner-actions">
         <a href="<?= URLROOT ?>/actividades/instituciones" class="hub-nav-btn">
-            <i class="ti ti-building-bank"></i> Instituciones
+            <i class="ti ti-building-bank"></i> <span>Instituciones</span>
         </a>
         <a href="<?= URLROOT ?>/actividades/pasantias" class="hub-nav-btn">
-            <i class="ti ti-user-star"></i> Pasantías Cortas
+            <i class="ti ti-user-star"></i> <span>Pasantías Cortas</span>
         </a>
         <a href="<?= URLROOT ?>/actividades/servicio" class="hub-nav-btn">
-            <i class="ti ti-hearts"></i> Servicio Comunitario
+            <i class="ti ti-hearts"></i> <span>Servicio Comunitario</span>
         </a>
     </div>
 </div>
 
-<div class="hub-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
-    <div class="hub-kpi" style="border-left:4px solid #2563eb;"
-         onmouseover="this.style.boxShadow='0 12px 25px rgba(37,99,235,0.2)'"
-         onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.06)'">
-        <div>
-            <p style="color:#64748b;font-size:.78rem;margin:0 0 6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Pasantes Cortos Activos</p>
-            <h2 style="font-size:2.2rem;font-weight:800;color:#2563eb;margin:0;line-height:1;"><?= $kpiCortosActivos ?></h2>
-            <p style="color:#94a3b8;font-size:.72rem;margin:3px 0 0;"><?= $kpiPasantesCortos ?> total registrados</p>
+<div class="hub-kpi-grid">
+    <div class="hub-kpi hub-kpi-blue">
+        <div class="hub-kpi-top">
+            <div>
+                <div class="hub-kpi-label">Pasantes Cortos Activos</div>
+                <div class="hub-kpi-val" style="color:#2563eb;"><?= $kpiCortosActivos ?></div>
+                <div class="hub-kpi-sub"><?= $kpiPasantesCortos ?> total registrados</div>
+            </div>
+            <div class="hub-kpi-icon" style="background:#eff6ff;color:#2563eb;"><i class="ti ti-user-check"></i></div>
         </div>
-        <div style="background:#eff6ff;color:#2563eb;width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;"><i class="ti ti-user-check"></i></div>
     </div>
-    <div class="hub-kpi" style="border-left:4px solid #059669;"
-         onmouseover="this.style.boxShadow='0 12px 25px rgba(5,150,105,0.2)'"
-         onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.06)'">
-        <div>
-            <p style="color:#64748b;font-size:.78rem;margin:0 0 6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Actividades SC</p>
-            <h2 style="font-size:2.2rem;font-weight:800;color:#059669;margin:0;line-height:1;"><?= $kpiActividadesCom ?></h2>
+    <div class="hub-kpi hub-kpi-green">
+        <div class="hub-kpi-top">
+            <div>
+                <div class="hub-kpi-label">Actividades SC</div>
+                <div class="hub-kpi-val" style="color:#059669;"><?= $kpiActividadesCom ?></div>
+                <div class="hub-kpi-sub"><?= $kpiActividadesCom === 1 ? '1 actividad SC' : "$kpiActividadesCom actividades SC" ?></div>
+            </div>
+            <div class="hub-kpi-icon" style="background:#f0fdf4;color:#059669;"><i class="ti ti-hearts"></i></div>
         </div>
-        <div style="background:#f0fdf4;color:#059669;width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;"><i class="ti ti-hearts"></i></div>
     </div>
-    <div class="hub-kpi" style="border-left:4px solid #7c3aed;"
-         onmouseover="this.style.boxShadow='0 12px 25px rgba(124,58,237,0.2)'"
-         onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.06)'">
-        <div>
-            <p style="color:#64748b;font-size:.78rem;margin:0 0 6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Instituciones Aliadas</p>
-            <h2 style="font-size:2.2rem;font-weight:800;color:#7c3aed;margin:0;line-height:1;"><?= $kpiInstituciones ?></h2>
+    <div class="hub-kpi hub-kpi-purple">
+        <div class="hub-kpi-top">
+            <div>
+                <div class="hub-kpi-label">Instituciones Aliadas</div>
+                <div class="hub-kpi-val" style="color:#7c3aed;"><?= $kpiInstituciones ?></div>
+                <div class="hub-kpi-sub"><?= $kpiInstituciones === 1 ? '1 aliada' : "$kpiInstituciones aliadas" ?></div>
+            </div>
+            <div class="hub-kpi-icon" style="background:#fdf4ff;color:#7c3aed;"><i class="ti ti-building-bank"></i></div>
         </div>
-        <div style="background:#fdf4ff;color:#7c3aed;width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;"><i class="ti ti-building-bank"></i></div>
     </div>
-    <div class="hub-kpi" style="border-left:4px solid #d97706;"
-         onmouseover="this.style.boxShadow='0 12px 25px rgba(217,119,6,0.2)'"
-         onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.06)'">
-        <div>
-            <p style="color:#64748b;font-size:.78rem;margin:0 0 6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Período Corto</p>
-            <?php if ($periodoCortoActivo): ?>
-                <div class="per-badge-activo"><span style="width:7px;height:7px;background:#10b981;border-radius:50%;animation:hub-pulse 2s infinite;"></span><?= htmlspecialchars($periodoCortoActivo->nombre) ?></div>
-            <?php else: ?>
-                <div class="per-badge-none"><i class="ti ti-alert-circle"></i> Sin período activo</div>
-            <?php endif; ?>
+    <div class="hub-kpi hub-kpi-amber">
+        <div class="hub-kpi-top">
+            <div>
+                <div class="hub-kpi-label">Período Corto</div>
+                <div class="hub-kpi-val" style="color:<?= $periodoCortoActivo ? '#059669' : '#d97706' ?>; font-size:1.45rem; margin-top:6px;">
+                    <?= $periodoCortoActivo ? 'En Curso' : 'Sin Cohorte' ?>
+                </div>
+                <div class="hub-kpi-sub" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">
+                    <?= $periodoCortoActivo ? htmlspecialchars($periodoCortoActivo->nombre) : 'Inactivo actualmente' ?>
+                </div>
+            </div>
+            <div class="hub-kpi-icon" style="background:#fffbeb;color:#d97706;"><i class="ti ti-calendar-event"></i></div>
         </div>
-        <div style="background:#fffbeb;color:#d97706;width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;"><i class="ti ti-calendar-event"></i></div>
     </div>
 </div>
 
@@ -323,7 +385,7 @@ $periodoCortoActivo   = $data['periodoCortoActivo']   ?? null;
             if ($hoy > $pFin)    $transD = $totalD;
             $ppct = round($transD / $totalD * 100);
         ?>
-        <div style="background:linear-gradient(135deg,#172554,#1e3a8a);border-radius:14px;padding:20px;color:white;">
+        <div style="background:linear-gradient(135deg,var(--color-primary, #172554),var(--gradient-mid, #1e3a8a));border-radius:14px;padding:20px;color:white;">
             <div style="font-size:.72rem;font-weight:800;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Período Activo</div>
             <div style="font-size:1.1rem;font-weight:800;margin-bottom:14px;"><?= htmlspecialchars($periodoCortoActivo->nombre) ?></div>
             <div style="background:rgba(255,255,255,.15);border-radius:100px;height:8px;margin-bottom:8px;overflow:hidden;">
@@ -358,7 +420,7 @@ $periodoCortoActivo   = $data['periodoCortoActivo']   ?? null;
                 <div style="font-weight:700;color:#1e293b;margin-bottom:4px;">Sin período corto activo</div>
                 <div style="font-size:.8rem;color:#94a3b8;">Ve a Configuración → Períodos para crear uno de tipo "Corto"</div>
             </div>
-            <a href="<?= URLROOT ?>/periodos" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#172554,#2563eb);color:white;padding:9px 18px;border-radius:10px;font-size:.82rem;font-weight:700;text-decoration:none;">
+            <a href="<?= URLROOT ?>/periodos" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--color-primary, #172554),var(--color-accent-brand, #2563eb));color:white;padding:9px 18px;border-radius:10px;font-size:.82rem;font-weight:700;text-decoration:none;">
                 <i class="ti ti-settings"></i> Ir a Configuración
             </a>
         </div>

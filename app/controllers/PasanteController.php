@@ -50,7 +50,12 @@ class PasanteController extends Controller
      */
     public function index(): void
     {
-        if (!in_array((int)Session::get('role_id'), [0, 1])) {
+        $roleId = (int)Session::get('role_id');
+        if ($roleId === 3) {
+            $this->redirect('/pasante/dashboard');
+            return;
+        }
+        if (!in_array($roleId, [0, 1])) {
             Session::setFlash('error', 'No tienes permisos para esta sección.');
             $this->redirect('/dashboard');
             return;
@@ -179,6 +184,41 @@ class PasanteController extends Controller
             }
         } catch (\Throwable $e) { /* tabla puede no existir */ }
 
+        // Calcular Racha Consecutiva (Gamificación 🔥)
+        $rachaActual = 0;
+        try {
+            $this->db->query("
+                SELECT DISTINCT fecha
+                FROM asistencias
+                WHERE pasante_id = :uid
+                  AND estado IN ('Presente', 'Justificado')
+                  AND fecha <= CURDATE()
+                ORDER BY fecha DESC
+            ");
+            $this->db->bind(':uid', $userId);
+            $asistList = $this->db->resultSet() ?: [];
+            $fechasPresentes = array_map(fn($r) => $r->fecha, $asistList);
+
+            if (!empty($fechasPresentes)) {
+                $cursor = new DateTime(date('Y-m-d'));
+                // Si hoy no ha marcado, ver si la racha venía hasta el último día hábil anterior
+                if (!in_array($cursor->format('Y-m-d'), $fechasPresentes)) {
+                    do {
+                        $cursor->modify('-1 day');
+                    } while ((int)$cursor->format('N') >= 6);
+                }
+
+                while (in_array($cursor->format('Y-m-d'), $fechasPresentes)) {
+                    $rachaActual++;
+                    do {
+                        $cursor->modify('-1 day');
+                    } while ((int)$cursor->format('N') >= 6);
+                }
+            }
+        } catch (\Throwable $e) {
+            $rachaActual = 0;
+        }
+
         $this->view('pasante/dashboard', [
             'title'          => 'Mi Panel',
             'pasante'        => $pasante,
@@ -189,6 +229,7 @@ class PasanteController extends Controller
             'user_name'      => Session::get('user_name') ?? 'Pasante',
             'proRata'        => $proRata,
             'feriadosMap'    => $feriadosMap,
+            'rachaActual'    => $rachaActual,
         ]);
 
     }
@@ -982,6 +1023,22 @@ class PasanteController extends Controller
             return;
         }
 
+        // Verificar que la pasantía esté activa
+        $this->db->query("
+            SELECT estado_pasantia FROM datos_pasante
+            WHERE usuario_id = :uid
+            ORDER BY FIELD(estado_pasantia, 'Activo', 'Pendiente', 'Sin Asignar', 'Finalizado', 'Retirado') ASC, id DESC
+            LIMIT 1
+        ");
+        $this->db->bind(':uid', $userId);
+        $dpRow = $this->db->single();
+
+        if (!$dpRow || ($dpRow->estado_pasantia ?? '') !== 'Activo') {
+            Session::setFlash('error', 'Solo los pasantes con pasantía activa pueden presentar exámenes.');
+            $this->redirect('/pasante/dashboard');
+            return;
+        }
+
         // Cargar examen (activo y dentro de rango)
         $this->db->query("
             SELECT * FROM examenes
@@ -1288,6 +1345,28 @@ class PasanteController extends Controller
             'porcentaje'       => $porcentaje,
             'aprobado'         => $porcentaje >= 60,
             'resultados'       => $resultados,
+        ]);
+    }
+
+    /**
+     * Vista de Configuración Personal del Pasante.
+     * Permite personalizar la apariencia visual y cambiar el tema del sistema (Claro / Oscuro).
+     */
+    public function configuracion(): void
+    {
+        if (Session::get('role_id') != 3) {
+            Session::setFlash('error', 'No tienes permisos para esta sección.');
+            $this->redirect('/dashboard');
+            return;
+        }
+
+        $userId = (int)Session::get('user_id');
+        $pasante = $this->pasanteModel->getByUsuarioId($userId);
+
+        $this->view('pasante/configuracion', [
+            'title'     => 'Configuración · Pasante',
+            'user_name' => Session::get('user_name'),
+            'pasante'   => $pasante,
         ]);
     }
 }

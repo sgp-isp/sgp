@@ -1,0 +1,255 @@
+================================================================================
+  SISTEMA DE GESTIÓN DE PASANTES (SGP) — INSTITUTO DE SALUD PÚBLICA DEL ESTADO BOLÍVAR
+             GUÍA OFICIAL DE INSTALACIÓN Y PUESTA EN MARCHA EN NUEVOS EQUIPOS
+================================================================================
+Versión del Sistema: SGP v3.0 (Arquitectura 3NF + Quiosco Bento UI + Cloudflare Tunnel)
+Fecha de Elaboración: Octubre 2026
+Destinatario: Personal Técnico de Informática / Administradores de Sistemas del ISPEB
+================================================================================
+
+ÍNDICE DE CONTENIDOS:
+  1. Descripción del Sistema y Arquitectura
+  2. Requisitos Previos del Servidor / Computadora
+  3. Paso 1: Instalación y Configuración del Servidor Web (XAMPP)
+  4. Paso 2: Instalación del Código Fuente del SGP
+  5. Paso 3: Configuración e Importación de la Base de Datos MySQL
+  6. Paso 4: Ajuste de Parámetros del Sistema (config.php)
+  7. Paso 5: Puesta en Marcha del Quiosco y Túnel Seguro (Cloudflare)
+  8. Paso 6: Generación e Impresión del Cartel Oficial QR para la Oficina
+  9. Paso 7: Verificación del Flujo de Asistencia (Móvil y PC)
+  10. Medidas de Seguridad Implementadas
+  11. Preguntas Frecuentes y Solución de Problemas (Troubleshooting)
+
+================================================================================
+1. DESCRIPCIÓN DEL SISTEMA Y ARQUITECTURA
+================================================================================
+El SGP es una plataforma web desarrollada bajo el patrón de arquitectura Modelo-Vista-
+Controlador (MVC) en PHP nativo, MySQL (PDO), JavaScript moderno (Vanilla / SweetAlert2 /
+Notyf) y CSS Bento UI.
+
+Cuenta con un módulo público de asistencia ("Quiosco") diseñado para que los pasantes
+marquen su asistencia diaria en la oficina de dos maneras:
+  a) Escaneando un Cartel QR estático ubicado en la sede desde su propio smartphone
+     usando datos móviles, a través de un túnel cifrado HTTPS de Cloudflare.
+  b) Ingresando su Cédula y su PIN numérico personal de 4 dígitos.
+
+La base de datos y el panel administrativo permanecen 100% locales en la red del ISPEB,
+garantizando que ninguna información sensible quede expuesta a internet.
+
+================================================================================
+2. REQUISITOS PREVIOS DEL SERVIDOR / COMPUTADORA
+================================================================================
+* Sistema Operativo: Windows 10, Windows 11 o Windows Server (64 bits).
+* Memoria RAM mínima: 4 GB (Recomendado: 8 GB o superior).
+* Espacio en disco disponible: Mínimo 2 GB libres.
+* Software servidor: XAMPP para Windows con soporte para PHP 8.1 o PHP 8.2+.
+* Conexión a Internet: Necesaria para la descarga inicial de componentes y para
+  mantener activo el túnel de Cloudflare durante el horario de oficina.
+
+================================================================================
+3. PASO 1: INSTALACIÓN Y CONFIGURACIÓN DEL SERVIDOR WEB (XAMPP)
+================================================================================
+1. Descargue e instale XAMPP desde el sitio oficial: https://www.apachefriends.org
+   (Seleccione la versión con PHP 8.1.x o PHP 8.2.x).
+2. Durante la instalación, asegúrese de marcar los componentes:
+   - Apache
+   - MySQL
+   - phpMyAdmin
+3. Ruta recomendada de instalación: C:\xampp
+4. Abra el "XAMPP Control Panel" e inicie los módulos:
+   - Apache  ➔ Clic en "Start" (debe quedar en verde).
+   - MySQL   ➔ Clic en "Start" (debe quedar en verde).
+5. Verificación de módulos Apache en C:\xampp\apache\conf\httpd.conf:
+   Asegúrese de que las siguientes directivas estén activas (sin '#' al inicio):
+     LoadModule rewrite_module modules/mod_rewrite.so
+     LoadModule headers_module modules/mod_headers.so
+   Y que en la sección <Directory "C:/xampp/htdocs">:
+     AllowOverride All
+   (En instalaciones estándar de XAMPP vienen habilitadas por defecto).
+
+================================================================================
+4. PASO 2: INSTALACIÓN DEL CÓDIGO FUENTE DEL SGP
+================================================================================
+1. Copie la carpeta completa del proyecto "SGP" dentro del directorio htdocs de XAMPP:
+   Ruta final:
+   C:\xampp\htdocs\SGP
+
+2. Verifique la estructura principal de directorios:
+   C:\xampp\htdocs\SGP\
+     ├── app\                  (Lógica MVC: controladores, modelos, vistas, config)
+     ├── database\             (Esquemas y migraciones SQL)
+     ├── public\               (Punto de entrada web, css, js, img)
+     ├── cloudflared.exe       (Ejecutable del túnel de Cloudflare)
+     ├── instalar_cloudflared.bat
+     ├── iniciar_quiosco_tunel.bat
+     └── index.php / .htaccess
+
+3. Permisos de carpetas:
+   Verifique que las siguientes carpetas tengan permisos de lectura y escritura:
+   - C:\xampp\htdocs\SGP\app\storage\
+   - C:\xampp\htdocs\SGP\public\uploads\
+
+================================================================================
+5. PASO 3: CONFIGURACIÓN E IMPORTACIÓN DE LA BASE DE DATOS MYSQL
+================================================================================
+1. Abra su navegador web e ingrese a phpMyAdmin:
+   http://localhost/phpmyadmin
+
+2. Cree una nueva base de datos:
+   - Nombre: proyecto_sgp
+   - Cotejamiento (Collation): utf8mb4_unicode_ci
+   - Clic en "Crear".
+
+3. Importe el respaldo de la base de datos:
+   - Seleccione la base de datos "proyecto_sgp" en la barra lateral izquierda.
+   - Vaya a la pestaña "Importar" en el menú superior.
+   - Clic en "Seleccionar archivo" y busque el respaldo SQL más reciente ubicado en:
+     C:\xampp\htdocs\SGP\app\storage\backups\
+     (O el archivo de migración provisto por el equipo técnico).
+   - Clic en "Importar" al final de la página.
+   - Debe indicar: "La importación se ejecutó exitosamente".
+
+4. Verifique la tabla de configuración:
+   Ejecute en la pestaña "SQL" de phpMyAdmin para confirmar el token de asistencia:
+   SELECT * FROM configuracion WHERE clave = 'kiosco_qr_token';
+   Si no existe, se creará automáticamente con el valor inicial: ISPEB-ASIST-2026-HQ.
+
+================================================================================
+6. PASO 4: AJUSTE DE PARÁMETROS DEL SISTEMA (config.php)
+================================================================================
+Abra con un editor de texto el archivo:
+C:\xampp\htdocs\SGP\app\config\config.php
+
+Verifique que los parámetros de conexión coincidan con su servidor local:
+  'db' => [
+      'host'    => 'localhost',
+      'user'    => 'root',         // Usuario por defecto de XAMPP
+      'pass'    => '',             // Contraseña en blanco por defecto en XAMPP
+      'name'    => 'proyecto_sgp', // Nombre de la BD creada
+      'charset' => 'utf8mb4',
+      'port'    => 3306,
+  ],
+
+Nota sobre URLROOT:
+El sistema calcula el URLROOT dinámicamente tanto para entornos locales (localhost)
+como cuando recibe solicitudes externas vía Cloudflare Tunnel (cabeceras
+HTTP_X_FORWARDED_HOST y HTTP_X_FORWARDED_PROTO), por lo que NO requiere ajustes manuales.
+
+================================================================================
+7. PASO 5: PUESTA EN MARCHA DEL QUIOSCO Y TÚNEL SEGURO (CLOUDFLARE)
+================================================================================
+En la computadora de la institución que servirá de servidor:
+
+OPCIÓN RÁPIDA (Un solo clic):
+1. Ingrese a la carpeta del proyecto: C:\xampp\htdocs\SGP\
+2. Haga doble clic sobre el archivo:
+   iniciar_quiosco_tunel.bat
+
+3. ¿Qué hace este archivo automáticamente?
+   - Si no tiene cloudflared.exe instalado, lo descarga e instala de inmediato.
+   - Verifica que Apache esté en ejecución.
+   - Establece el túnel seguro hacia http://localhost/SGP/public.
+   - Imprime en la consola la URL pública temporal generada por Cloudflare:
+     Ejemplo: https://palabras-aleatorias.trycloudflare.com
+
+4. Ruta del Quiosco para Pasantes:
+   Los pasantes usarán esa URL añadiendo /SGP/kiosco:
+   https://palabras-aleatorias.trycloudflare.com/SGP/kiosco
+
+⚠️ IMPORTANTE: Mantenga la ventana negra del archivo .bat abierta durante la jornada.
+Al cerrarla, el túnel se desconecta por seguridad.
+
+================================================================================
+8. PASO 6: GENERACIÓN E IMPRESIÓN DEL CARTEL OFICIAL QR PARA LA OFICINA
+================================================================================
+Para que los pasantes puedan escanear el código QR en la pared de la oficina:
+
+1. Desde el navegador de la computadora servidora, ingrese al panel administrativo:
+   http://localhost/SGP
+   (Inicie sesión con cuenta de Administrador o Superadministrador).
+
+2. En el menú lateral, diríjase a:
+   "Configuración del Sistema" (http://localhost/SGP/configuracion)
+
+3. En la tarjeta "Configuración del Kiosco":
+   - Verá el "Token del Cartel" activo.
+   - Haga clic en el botón "Imprimir Cartel".
+   - Se abrirá una pestaña con el diseño formal institucional del ISPEB:
+     * Cabecera oficial de la Gobernación y Dirección de RRHH.
+     * Código QR de alta resolución con el enlace activo.
+     * Pasos de marcaje en 3 pasos.
+     * Identificador de seguridad y advertencia legal.
+   - Presione el botón verde "Imprimir Cartel (Carta / A4)" o use Ctrl+P.
+   - Imprima la hoja y péguela en el área designada de asistencia en la oficina.
+
+4. ¿Qué hacer si desea cambiar el código QR por seguridad?
+   En la misma tarjeta de Configuración, presione "Regenerar":
+   - El sistema generará una clave aleatoria nueva al instante.
+   - El cartel anterior dejará de funcionar de inmediato.
+   - Imprima el nuevo cartel con el botón correspondiente.
+
+================================================================================
+9. PASO 7: VERIFICACIÓN DEL FLUJO DE ASISTENCIA
+================================================================================
+Prueba con un pasante real o de prueba:
+1. El pasante abre la cámara de su teléfono móvil conectado a sus datos móviles.
+2. Apunta al cartel oficial pegado en la pared.
+3. El enlace lo lleva a la pantalla del Quiosco con el token ya verificado.
+4. Escribe su Cédula y presiona "Continuar".
+5. El sistema presenta su Bento UI con su nombre, avatar, departamento, porcentaje
+   de horas cumplidas y meta total.
+6. Presiona "Confirmar con QR de Oficina" o "Marcar con PIN" (4 dígitos).
+7. La pantalla emite una confirmación visual y el registro se guarda de inmediato
+   en la base de datos local con fecha, hora exacta y método ('Kiosco QR' o 'Kiosco PIN').
+
+================================================================================
+10. MEDIDAS DE SEGURIDAD IMPLEMENTADAS
+================================================================================
+* Blindaje Apache (.htaccess):
+  Si una petición proviene del túnel de Cloudflare (cabecera CF-Ray detectada):
+  - Solamente se permite el acceso a la ruta /kiosco y a los recursos visuales
+    públicos (/css/, /js/, /img/, /fonts/).
+  - Cualquier intento de acceder a /admin, /login, /usuarios o /configuracion desde
+    internet devuelve automáticamente un error "403 Forbidden".
+  - El acceso a la administración solo es posible desde la propia máquina local o
+    computadoras autorizadas en la red interna del ISPEB.
+
+* Prevención de Ataques de Fuerza Bruta (Throttling en Kiosco):
+  - Máximo 3 intentos fallidos de PIN por cédula/IP antes de aplicar un bloqueo
+    temporal de enfriamiento (cooldown).
+
+* Stateless Kiosk:
+  - La vista del quiosco no inicia ni depende de sesiones PHP de usuario administrador,
+    impidiendo el secuestro de credenciales o cruce de sesiones.
+
+================================================================================
+11. PREGUNTAS FRECUENTES Y SOLUCIÓN DE PROBLEMAS (TROUBLESHOOTING)
+================================================================================
+
+P1: Al ejecutar iniciar_quiosco_tunel.bat dice que Apache está detenido.
+R1: Abra el panel de control de XAMPP (C:\xampp\xampp-control.exe) y haga clic en
+    "Start" en el módulo Apache y MySQL.
+
+P2: Apache no inicia porque el puerto 80 está ocupado.
+R2: Puede ser causado por los servicios de IIS de Windows o Skype.
+    - En XAMPP Control Panel, clic en Config de Apache ➔ httpd.conf.
+    - Cambie "Listen 80" por "Listen 8080".
+    - En iniciar_quiosco_tunel.bat cambie la URL a: http://localhost:8080/SGP/public
+
+P3: En el smartphone la cámara no abre al intentar escanear desde la web.
+R3: Los navegadores modernos (Chrome, Safari, Firefox) exigen HTTPS para activar la
+    cámara. Asegúrese de que el pasante ingrese utilizando el enlace seguro
+    proporcionado por Cloudflare (https://...), el cual provee certificado SSL válido.
+
+P4: Al navegar por el sistema sale error 404 en las páginas internas.
+R4: Verifique que el módulo rewrite esté activo en C:\xampp\apache\conf\httpd.conf
+    y que exista el archivo C:\xampp\htdocs\SGP\public\.htaccess intacto.
+
+P5: ¿Cómo hacer una copia de seguridad de la base de datos?
+R5: Desde el panel de administración del SGP, ingrese a "Copia de Seguridad"
+    (http://localhost/SGP/backup) y presione "Crear Respaldo Ahora". El archivo
+    se descargará y se archivará automáticamente en app/storage/backups/.
+
+================================================================================
+Fin del Documento — Departamento de Informática y Sistemas / ISPEB 2026
+================================================================================

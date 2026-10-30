@@ -13,10 +13,10 @@ class EvaluacionModel {
     }
 
     /**
-     * Obtener todas las evaluaciones
+     * Obtener todas las evaluaciones (opcionalmente filtradas por periodo)
      */
-    public function getAll() {
-        $this->db->query("
+    public function getAll(?int $periodoId = null) {
+        $sql = "
             SELECT 
                 e.*,
                 dp.nombres   AS pasante_nombres,
@@ -25,19 +25,27 @@ class EvaluacionModel {
                 tp.nombres   AS tutor_nombres,
                 tp.apellidos AS tutor_apellidos
             FROM evaluaciones e
-            LEFT JOIN datos_personales dp ON dp.usuario_id = e.pasante_id
-            LEFT JOIN usuarios         u  ON u.id = e.pasante_id
-            LEFT JOIN datos_personales tp ON tp.usuario_id = e.tutor_id
-            ORDER BY e.created_at DESC
-        ");
+            LEFT JOIN datos_personales dp  ON dp.usuario_id  = e.pasante_id
+            LEFT JOIN usuarios         u   ON u.id           = e.pasante_id
+            LEFT JOIN datos_personales tp  ON tp.usuario_id  = e.tutor_id
+        ";
+        if ($periodoId !== null) {
+            $sql .= " INNER JOIN datos_pasante dpa ON dpa.usuario_id = e.pasante_id AND dpa.periodo_id = :periodo_id ";
+        }
+        $sql .= " ORDER BY e.created_at DESC";
+
+        $this->db->query($sql);
+        if ($periodoId !== null) {
+            $this->db->bind(':periodo_id', $periodoId);
+        }
         return $this->db->resultSet();
     }
 
     /**
-     * Obtener evaluaciones de los pasantes de un tutor específico
+     * Obtener evaluaciones de los pasantes de un tutor específico (opcionalmente filtradas por periodo)
      */
-    public function getByTutor(int $tutorId) {
-        $this->db->query("
+    public function getByTutor(int $tutorId, ?int $periodoId = null) {
+        $sql = "
             SELECT
                 e.*,
                 dp.nombres   AS pasante_nombres,
@@ -46,13 +54,20 @@ class EvaluacionModel {
                 tp.nombres   AS tutor_nombres,
                 tp.apellidos AS tutor_apellidos
             FROM evaluaciones e
-            LEFT JOIN datos_personales dp ON dp.usuario_id = e.pasante_id
-            LEFT JOIN usuarios         u  ON u.id = e.pasante_id
-            LEFT JOIN datos_personales tp ON tp.usuario_id = e.tutor_id
-            WHERE e.tutor_id = :tutor_id
-            ORDER BY e.created_at DESC
-        ");
+            LEFT JOIN datos_personales dp  ON dp.usuario_id  = e.pasante_id
+            LEFT JOIN usuarios         u   ON u.id           = e.pasante_id
+            LEFT JOIN datos_personales tp  ON tp.usuario_id  = e.tutor_id
+        ";
+        if ($periodoId !== null) {
+            $sql .= " INNER JOIN datos_pasante dpa ON dpa.usuario_id = e.pasante_id AND dpa.periodo_id = :periodo_id ";
+        }
+        $sql .= " WHERE e.tutor_id = :tutor_id ORDER BY e.created_at DESC";
+
+        $this->db->query($sql);
         $this->db->bind(':tutor_id', $tutorId);
+        if ($periodoId !== null) {
+            $this->db->bind(':periodo_id', $periodoId);
+        }
         return $this->db->resultSet();
     }
 

@@ -11,8 +11,9 @@ if (!isset($user) || empty($user)) {
 <div class="container-fluid mt-4">
     <div class="row" style="display: flex; gap: 24px; flex-wrap: wrap;">
         <!-- Left Column: Profile Summary -->
-        <div class="col-md-4" style="flex: 1; min-width: 300px; max-width: 400px;">
-            <div class="smart-card" style="text-align: center;">
+        <!-- Left Column: Profile Summary -->
+        <div class="col-md-4" style="flex: 1; min-width: 320px; max-width: 420px;">
+            <div class="smart-card profile-main-card" style="text-align: center; border-top: 4px solid #2563eb; position: relative;">
                 <!-- Avatar con opción de cambio -->
                 <?php
                 $avatarFile = $user['avatar'] ?? 'default.png';
@@ -20,75 +21,84 @@ if (!isset($user) || empty($user)) {
                     ? URLROOT . '/img/avatars/' . htmlspecialchars($avatarFile)
                     : null;
                 ?>
-                <div style="position:relative;width:120px;height:120px;margin:0 auto 20px;">
+                <div style="position: relative; width: 128px; height: 128px; margin: 6px auto 18px;">
                     <?php if ($avatarUrl): ?>
                     <img id="profileAvatarImg" src="<?= $avatarUrl ?>" alt="Foto de perfil"
-                         style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid #e2e8f0;">
+                         style="width: 128px; height: 128px; border-radius: 50%; object-fit: cover; border: 4px solid #ffffff; box-shadow: 0 8px 24px rgba(37,99,235,0.18);">
                     <?php else: ?>
-                    <div id="profileAvatarInitials" style="width:120px;height:120px;background:var(--color-primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:48px;color:white;font-weight:700;">
+                    <div id="profileAvatarInitials" style="width: 128px; height: 128px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 52px; color: white; font-weight: 800; border: 4px solid #ffffff; box-shadow: 0 8px 24px rgba(37,99,235,0.22);">
                         <?= strtoupper(substr($user['nombres'] ?? $user['correo'], 0, 1)) ?>
                     </div>
                     <?php endif; ?>
                     <!-- Botón cambiar foto -->
-                    <label for="inputFotoPerfil" title="Cambiar foto — JPG, PNG o WEBP, máx. 2 MB"
-                           style="position:absolute;bottom:0;right:0;width:32px;height:32px;background:#162660;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid white;transition:background .2s;"
-                           onmouseover="this.style.background='#6366f1'" onmouseout="this.style.background='#162660'">
-                        <i class="ti ti-camera" style="color:white;font-size:0.9rem;"></i>
+                    <label for="inputFotoPerfil" title="Cambiar foto de perfil — JPG, PNG o WEBP, máx. 2 MB"
+                           style="position: absolute; bottom: 4px; right: 4px; width: 36px; height: 36px; background: #1e3a8a; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: all .25s ease;"
+                           onmouseover="this.style.background='#2563eb'; this.style.transform='scale(1.1)';" 
+                           onmouseout="this.style.background='#1e3a8a'; this.style.transform='scale(1)';">
+                        <i class="ti ti-camera" style="color: white; font-size: 1rem;"></i>
                     </label>
                     <input type="file" id="inputFotoPerfil" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="subirFotoPerfil(this)">
                 </div>
                 
                 <!-- Name -->
-                <h3 style="font-size: 1.25rem; color: var(--color-primary); font-weight: 700; margin-bottom: 8px;">
+                <h3 style="font-size: 1.35rem; color: #0f172a; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px;">
                     <?= htmlspecialchars(($user['nombres'] ?? '') . ' ' . ($user['apellidos'] ?? '')) ?: 'Usuario' ?>
                 </h3>
                 
                 <!-- Role Badge -->
-                <span style="display: inline-block; background: rgba(22, 38, 96, 0.1); color: var(--color-primary); padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 16px;">
-                    <?= htmlspecialchars($user['rol_nombre'] ?? 'Sin rol') ?>
-                </span>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 12px;">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(37, 99, 235, 0.08); color: #1d4ed8; border: 1px solid rgba(37, 99, 235, 0.2); padding: 5px 14px; border-radius: 999px; font-size: 0.82rem; font-weight: 700;">
+                        <i class="ti ti-shield-check" style="font-size: 14px;"></i>
+                        <?= htmlspecialchars($user['rol_nombre'] ?? 'Sin rol') ?>
+                    </span>
+                </div>
                 
                 <!-- Status -->
-                <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 24px;">
-                    <i class="ti ti-circle-check" style="color: #10B981; font-size: 16px;"></i>
-                    <span style="color: #059669; font-size: 0.9rem; font-weight: 600;">
+                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 4px 14px; border-radius: 999px; margin-bottom: 22px;">
+                    <span style="display: inline-block; width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);"></span>
+                    <span style="color: #065f46; font-size: 0.82rem; font-weight: 700;">
                         <?= ucfirst($user['estado'] ?? 'activo') ?>
                     </span>
                 </div>
                 
-                <!-- Divider -->
-                <div style="border-top: 1px solid #E5E7EB; padding-top: 20px; text-align: left;">
-                    <!-- Email -->
-                    <div style="margin-bottom: 16px;">
-                        <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                            <i class="ti ti-mail" style="color: var(--color-primary); font-size: 14px; margin-right: 8px;"></i>
-                            <span style="font-size: 0.7rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px;">Correo</span>
+                <!-- Divider & Contact info -->
+                <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: left; display: flex; flex-direction: column; gap: 14px;">
+                    <!-- Email con botón de cambio directo -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i class="ti ti-mail" style="color: #2563eb; font-size: 15px;"></i>
+                                <span style="font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Correo Institucional</span>
+                            </div>
+                            <button type="button" onclick="openEmailModal()" title="Cambiar correo electrónico" style="background: none; border: none; color: #2563eb; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px; border-radius: 6px; transition: background .15s;" onmouseover="this.style.background='rgba(37,99,235,0.1)'" onmouseout="this.style.background='none'">
+                                <i class="ti ti-edit"></i> Cambiar
+                            </button>
                         </div>
-                        <div style="color: var(--color-primary); font-weight: 500; font-size: 0.9rem; word-break: break-word;">
+                        <div id="leftProfileEmailDisplay" style="color: #0f172a; font-weight: 600; font-size: 0.88rem; word-break: break-all;">
                             <?= htmlspecialchars($user['correo']) ?>
                         </div>
                     </div>
                     
                     <?php if (!empty($user['departamento_nombre'])): ?>
                     <!-- Department -->
-                    <div style="margin-bottom: 16px;">
-                        <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                            <i class="ti ti-building" style="color: var(--color-primary); font-size: 14px; margin-right: 8px;"></i>
-                            <span style="font-size: 0.7rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px;">Departamento</span>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                            <i class="ti ti-building" style="color: #2563eb; font-size: 15px;"></i>
+                            <span style="font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Departamento</span>
                         </div>
-                        <div style="color: var(--color-primary); font-weight: 500; font-size: 0.9rem;">
+                        <div style="color: #0f172a; font-weight: 600; font-size: 0.88rem;">
                             <?= htmlspecialchars($user['departamento_nombre']) ?>
                         </div>
                     </div>
                     <?php endif; ?>
                     
                     <!-- Member Since -->
-                    <div>
-                        <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                            <i class="ti ti-calendar" style="color: var(--color-primary); font-size: 14px; margin-right: 8px;"></i>
-                            <span style="font-size: 0.7rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px;">Miembro desde</span>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                            <i class="ti ti-calendar" style="color: #2563eb; font-size: 15px;"></i>
+                            <span style="font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Miembro desde</span>
                         </div>
-                        <div style="color: var(--color-primary); font-weight: 500; font-size: 0.9rem;">
+                        <div style="color: #0f172a; font-weight: 600; font-size: 0.88rem;">
                             <?= date('d/m/Y', strtotime($user['created_at'])) ?>
                         </div>
                     </div>
@@ -97,7 +107,7 @@ if (!isset($user) || empty($user)) {
         </div>
 
         <!-- Right Column: Detailed Info -->
-        <div class="col-md-8" style="flex: 2; min-width: 300px;">
+        <div class="col-md-8" style="flex: 2; min-width: 320px;">
             <div class="smart-card">
                 <?php 
                 // ALERTA: Perfil Incompleto (solo para pasantes)
@@ -105,91 +115,108 @@ if (!isset($user) || empty($user)) {
                     $incompleto = empty($user['telefono']) || empty($user['institucion_procedencia']);
                     if ($incompleto):
                 ?>
-                <div class="alert alert-warning" style="background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
-                    <i class="ti ti-alert-circle" style="color: #F59E0B; font-size: 24px;"></i>
+                <div class="alert alert-warning" style="background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 14px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px;">
+                    <i class="ti ti-alert-circle" style="color: #F59E0B; font-size: 26px; flex-shrink: 0;"></i>
                     <div>
-                        <strong style="color: #92400E; font-size: 14px; display: block; margin-bottom: 4px;">⚠️ Perfil Incompleto</strong>
-                        <span style="color: #78350F; font-size: 13px;">Actualiza tus datos de contacto e institución de procedencia para completar tu perfil.</span>
+                        <strong style="color: #92400E; font-size: 14px; display: block; margin-bottom: 2px;">⚠️ Perfil Incompleto</strong>
+                        <span style="color: #78350F; font-size: 13px;">Por favor actualiza tus datos de contacto e institución de procedencia para completar tu expediente.</span>
                     </div>
                 </div>
                 <?php endif; } ?>
                 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-top: 1px solid #E5E7EB;">
-                    <h3 style="font-size: 1.2rem; color: var(--color-primary); font-weight: 700; margin: 0;">
-                        <i class="ti ti-user" style="margin-right: 8px;"></i> Datos Personales
-                    </h3>
-                    <button class="btn-primary" style="width: auto; padding: 8px 16px; font-size: 0.9rem;" onclick="openEditModal()">
-                        <i class="ti ti-edit"></i> Editar
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid #E5E7EB;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(37,99,235,0.08); display: flex; align-items: center; justify-content: center; color: #2563eb;">
+                            <i class="ti ti-user" style="font-size: 20px;"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.15rem; color: #0f172a; font-weight: 800; margin: 0;">Datos Personales</h3>
+                            <span style="font-size: 0.8rem; color: #64748b;">Información básica de tu perfil en el sistema</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width: auto; padding: 8px 18px; font-size: 0.88rem; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px;" onclick="openEditModal()">
+                        <i class="ti ti-edit"></i> Editar Datos
                     </button>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
                     <!-- Cédula -->
-                    <div>
-                        <div style="display: flex; align-items: center; margin-bottom: 6px;">
-                            <i class="ti ti-id-badge" style="color: var(--color-primary); margin-right: 8px;"></i>
-                            <span style="font-size: 0.75rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Cédula de Identidad</span>
+                    <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                            <i class="ti ti-id-badge" style="color: #475569; font-size: 16px;"></i>
+                            <span style="font-size: 0.72rem; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Cédula de Identidad</span>
                         </div>
-                        <h5 style="font-weight: 600; margin: 0; color: #1F2937; font-size: 1.05rem;">
+                        <div style="font-weight: 700; color: #0f172a; font-size: 1.05rem;">
                             <?= htmlspecialchars($user['cedula'] ?? 'No especificado') ?>
-                        </h5>
+                        </div>
                     </div>
                     
                     <!-- Teléfono -->
-                    <div>
-                        <div style="display: flex; align-items: center; margin-bottom: 6px;">
-                            <i class="ti ti-phone" style="color: var(--color-primary); margin-right: 8px;"></i>
-                            <span style="font-size: 0.75rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Teléfono</span>
+                    <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(37,99,235,0.04);">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                            <i class="ti ti-phone" style="color: #2563eb; font-size: 16px;"></i>
+                            <span style="font-size: 0.72rem; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Teléfono</span>
                         </div>
-                        <h5 style="font-weight: 600; margin: 0; color: #1F2937; font-size: 1.05rem;">
+                        <div style="font-weight: 700; color: #1e3a8a; font-size: 1.05rem;">
                             <?= htmlspecialchars($user['telefono'] ?? 'No especificado') ?>
-                        </h5>
+                        </div>
+                    </div>
+
+                    <!-- Departamento -->
+                    <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(22,163,74,0.04);">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                            <i class="ti ti-building" style="color: #16a34a; font-size: 16px;"></i>
+                            <span style="font-size: 0.72rem; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Departamento</span>
+                        </div>
+                        <div style="font-weight: 700; color: #14532d; font-size: 1.05rem;">
+                            <?= htmlspecialchars($user['departamento_nombre'] ?? 'Sin Asignar') ?>
+                        </div>
                     </div>
                     
                     <!-- Cargo (SOLO para Admin/Tutor, NO para Pasantes) -->
                     <?php if (Session::get('role_id') != 3): ?>
-                    <div>
-                        <div style="display: flex; align-items: center; margin-bottom: 6px;">
-                            <i class="ti ti-briefcase" style="color: var(--color-primary); margin-right: 8px;"></i>
-                            <span style="font-size: 0.75rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Cargo</span>
+                    <div style="background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(234,88,12,0.04);">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                            <i class="ti ti-briefcase" style="color: #ea580c; font-size: 16px;"></i>
+                            <span style="font-size: 0.72rem; color: #9a3412; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Cargo / Función</span>
                         </div>
-                        <h5 style="font-weight: 600; margin: 0; color: #1F2937; font-size: 1.05rem;">
+                        <div style="font-weight: 700; color: #7c2d12; font-size: 1.05rem;">
                             <?= htmlspecialchars($user['cargo'] ?? 'No especificado') ?>
-                        </h5>
+                        </div>
                     </div>
                     <?php endif; ?>
                     
-                    <!-- Teléfono -->
-                    <div>
-                        <div style="display: flex; align-items: center; margin-bottom: 6px;">
-                            <i class="ti ti-gender-bigender" style="color: var(--color-primary); margin-right: 8px;"></i>
-                            <span style="font-size: 0.75rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Género</span>
+                    <!-- Género -->
+                    <div style="background: #faf5ff; border: 1.5px solid #d8b4fe; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(124,58,237,0.04);">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                            <i class="ti ti-gender-bigender" style="color: #7c3aed; font-size: 16px;"></i>
+                            <span style="font-size: 0.72rem; color: #6b21a8; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Género</span>
                         </div>
-                        <h5 style="font-weight: 600; margin: 0; color: #1F2937; font-size: 1.05rem;">
+                        <div style="font-weight: 700; color: #581c87; font-size: 1.05rem;">
                             <?= isset($user['genero']) ? ($user['genero'] == 'M' ? 'Masculino' : 'Femenino') : 'No especificado' ?>
-                        </h5>
+                        </div>
                     </div>
                     
                     <!-- Fecha de Nacimiento -->
-                    <div>
-                        <div style="display: flex; align-items: center; margin-bottom: 6px;">
-                            <i class="ti ti-cake" style="color: var(--color-primary); margin-right: 8px;"></i>
-                            <span style="font-size: 0.75rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Fecha de Nacimiento</span>
+                    <div style="background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(225,29,72,0.04);">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                            <i class="ti ti-cake" style="color: #e11d48; font-size: 16px;"></i>
+                            <span style="font-size: 0.72rem; color: #9f1239; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Fecha de Nacimiento</span>
                         </div>
-                        <h5 style="font-weight: 600; margin: 0; color: #1F2937; font-size: 1.05rem;">
+                        <div style="font-weight: 700; color: #881337; font-size: 1.05rem;">
                             <?= isset($user['fecha_nacimiento']) ? date('d/m/Y', strtotime($user['fecha_nacimiento'])) : 'No especificado' ?>
-                        </h5>
+                        </div>
                     </div>
                     
                     <?php if (Session::get('role_id') == 3 && !empty($user['institucion_procedencia'])): ?>
-                    <div style="grid-column: 1 / -1;">
-                        <div style="display: flex; align-items: center; margin-bottom: 6px;">
-                            <i class="ti ti-building-bank" style="color: var(--color-primary); margin-right: 8px;"></i>
-                            <span style="font-size: 0.75rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Institución de Procedencia</span>
+                    <div style="grid-column: 1 / -1; background: #ecfeff; border: 1.5px solid #a5f3fc; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(8,145,178,0.04);">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                            <i class="ti ti-building-bank" style="color: #0891b2; font-size: 16px;"></i>
+                            <span style="font-size: 0.72rem; color: #155e75; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Institución Educativa de Procedencia</span>
                         </div>
-                        <h5 style="font-weight: 600; margin: 0; color: #1F2937; font-size: 1.05rem;">
+                        <div style="font-weight: 700; color: #164e63; font-size: 1.05rem;">
                             <?= htmlspecialchars($user['institucion_nombre'] ?? $user['institucion_procedencia'] ?? 'No especificada') ?>
-                        </h5>
+                        </div>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -199,8 +226,8 @@ if (!isset($user) || empty($user)) {
             <?php if (Session::get('role_id') == 3 && !empty($user['inst_rep_nombre'])): ?>
             <div class="smart-card" style="margin-top: 24px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #E5E7EB;">
-                    <h3 style="font-size:1.1rem;color:var(--color-primary);font-weight:700;margin:0;">
-                        <i class="ti ti-school" style="margin-right:8px;"></i> Representante de Institución
+                    <h3 style="font-size:1.1rem;color:#0f172a;font-weight:700;margin:0;">
+                        <i class="ti ti-school" style="margin-right:8px; color: #2563eb;"></i> Representante de Institución
                     </h3>
                 </div>
                 <div style="display:flex;gap:16px;align-items:flex-start;background:#f0f9ff;border:1px solid #bae6fd;border-radius:14px;padding:18px;">
@@ -229,44 +256,373 @@ if (!isset($user) || empty($user)) {
             </div>
             <?php endif; ?>
 
-            <!-- Tarjeta de Seguridad -->
+            <!-- Tarjeta de Seguridad y Accesos -->
             <div class="smart-card" style="margin-top: 24px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #E5E7EB;">
-                    <h3 style="font-size: 1.2rem; color: var(--color-primary); font-weight: 700; margin: 0;">
-                        <i class="ti ti-shield" style="margin-right: 8px;"></i> Seguridad
-                    </h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid #E5E7EB;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(37,99,235,0.08); display: flex; align-items: center; justify-content: center; color: #2563eb;">
+                            <i class="ti ti-shield-lock" style="font-size: 20px;"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.15rem; color: #0f172a; font-weight: 800; margin: 0;">Seguridad & Control de Acceso</h3>
+                            <span style="font-size: 0.8rem; color: #64748b;">Protección de identidad, credenciales y autenticación</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="profile-security-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-                    <!-- Cambiar Contraseña -->
-                    <div style="background: #F9FAFB; padding: 20px; border-radius: 12px; border: 1px solid #E5E7EB;">
-                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
-                            <i class="ti ti-key" style="color: var(--color-primary); font-size: 24px; margin-right: 12px;"></i>
-                            <div>
-                                <h5 style="margin: 0; font-weight: 600; color: var(--color-primary);">Contraseña</h5>
-                                <p style="margin: 0; font-size: 0.85rem; color: #6B7280;">Actualiza tu contraseña periódicamente</p>
+                <div class="profile-security-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px;">
+                    
+                    <!-- 1. NUEVO: Cambiar Correo Institucional -->
+                    <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 20px; border-radius: 14px; border: 1.5px solid #93c5fd; display: flex; flex-direction: column; justify-content: space-between; transition: all .2s ease; box-shadow: 0 2px 6px rgba(14,165,233,0.04);">
+                        <div>
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 40px; height: 40px; border-radius: 10px; background: #0284c7; color: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(2,132,199,0.25);">
+                                        <i class="ti ti-mail" style="font-size: 22px;"></i>
+                                    </div>
+                                    <div>
+                                        <h5 style="margin: 0; font-weight: 700; color: #075985; font-size: 0.98rem;">Correo de Acceso</h5>
+                                        <p style="margin: 0; font-size: 0.8rem; color: #0369a1;">Inicio de sesión y alertas</p>
+                                    </div>
+                                </div>
+                                <span style="font-size: 0.72rem; font-weight: 800; background: #0284c7; color: white; padding: 2px 8px; border-radius: 999px;">
+                                    Verificado
+                                </span>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.85); border: 1px solid #bae6fd; border-radius: 8px; padding: 8px 10px; margin-bottom: 14px; font-size: 0.82rem; color: #0369a1; font-weight: 700; word-break: break-all; display: flex; align-items: center; gap: 6px;">
+                                <i class="ti ti-at" style="color: #0284c7;"></i>
+                                <span id="securityProfileEmailDisplay"><?= htmlspecialchars($user['correo']) ?></span>
                             </div>
                         </div>
-                        <button class="btn-primary" style="width: 100%; margin-top: 12px;" onclick="openPasswordModal()">
+                        <button class="btn-primary" style="width: 100%; border-radius: 10px; padding: 10px; font-size: 0.88rem; font-weight: 700; background: linear-gradient(135deg, #0284c7, #0369a1); border: none; box-shadow: 0 4px 12px rgba(2,132,199,0.25); display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="openEmailModal()">
+                            <i class="ti ti-mail-cog"></i> Cambiar Correo
+                        </button>
+                    </div>
+
+                    <!-- 2. Cambiar Contraseña -->
+                    <div style="background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%); padding: 20px; border-radius: 14px; border: 1.5px solid #c7d2fe; display: flex; flex-direction: column; justify-content: space-between; transition: all .2s ease; box-shadow: 0 2px 6px rgba(79,70,229,0.04);">
+                        <div>
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 40px; height: 40px; border-radius: 10px; background: #4f46e5; color: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(79,70,229,0.25);">
+                                        <i class="ti ti-key" style="font-size: 22px;"></i>
+                                    </div>
+                                    <div>
+                                        <h5 style="margin: 0; font-weight: 700; color: #312e81; font-size: 0.98rem;">Contraseña</h5>
+                                        <p style="margin: 0; font-size: 0.8rem; color: #4338ca;">Clave personal de acceso</p>
+                                    </div>
+                                </div>
+                                <span style="font-size: 0.72rem; font-weight: 800; background: #4f46e5; color: white; padding: 2px 8px; border-radius: 999px;">
+                                    Encriptada
+                                </span>
+                            </div>
+                            <p style="margin: 0 0 14px; font-size: 0.82rem; color: #4338ca; line-height: 1.4;">
+                                Actualiza tu contraseña regularmente para mantener blindada tu cuenta.
+                            </p>
+                        </div>
+                        <button class="btn-primary" style="width: 100%; border-radius: 10px; padding: 10px; font-size: 0.88rem; font-weight: 700; background: linear-gradient(135deg, #4f46e5, #4338ca); border: none; box-shadow: 0 4px 12px rgba(79,70,229,0.25); display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="openPasswordModal()">
                             <i class="ti ti-lock"></i> Cambiar Contraseña
                         </button>
                     </div>
 
-                    <!-- Preguntas de Seguridad -->
-                    <div style="background: #F9FAFB; padding: 20px; border-radius: 12px; border: 1px solid #E5E7EB;">
-                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
-                            <i class="ti ti-help-circle" style="color: var(--color-primary); font-size: 24px; margin-right: 12px;"></i>
-                            <div>
-                                <h5 style="margin: 0; font-weight: 600; color: var(--color-primary);">Preguntas de Seguridad</h5>
-                                <p style="margin: 0; font-size: 0.85rem; color: #6B7280;">Para recuperación de cuenta</p>
+                    <!-- 3. Preguntas de Seguridad -->
+                    <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); padding: 20px; border-radius: 14px; border: 1.5px solid #fde68a; display: flex; flex-direction: column; justify-content: space-between; transition: all .2s ease; box-shadow: 0 2px 6px rgba(217,119,6,0.04);">
+                        <div>
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 40px; height: 40px; border-radius: 10px; background: #d97706; color: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(217,119,6,0.25);">
+                                        <i class="ti ti-help-circle" style="font-size: 22px;"></i>
+                                    </div>
+                                    <div>
+                                        <h5 style="margin: 0; font-weight: 700; color: #78350f; font-size: 0.98rem;">Preguntas Clave</h5>
+                                        <p style="margin: 0; font-size: 0.8rem; color: #92400e;">Recuperación de cuenta</p>
+                                    </div>
+                                </div>
+                                <span style="font-size: 0.72rem; font-weight: 800; background: #d97706; color: white; padding: 2px 8px; border-radius: 999px;">
+                                    3 Activas
+                                </span>
                             </div>
+                            <p style="margin: 0 0 14px; font-size: 0.82rem; color: #92400e; line-height: 1.4;">
+                                Permiten restablecer tu cuenta si olvidas tu contraseña institucional.
+                            </p>
                         </div>
-                        <button class="btn-primary" style="width: 100%; margin-top: 12px;" onclick="openPreguntasModal()">
+                        <button class="btn-primary" style="width: 100%; border-radius: 10px; padding: 10px; font-size: 0.88rem; font-weight: 700; background: linear-gradient(135deg, #d97706, #b45309); border: none; box-shadow: 0 4px 12px rgba(217,119,6,0.25); display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="openPreguntasModal()">
                             <i class="ti ti-settings"></i> Gestionar Preguntas
                         </button>
                     </div>
+
+                    <?php if (Session::get('role_id') == 3): ?>
+                    <!-- 4. PIN de Asistencia Kiosco (Solo Pasantes) -->
+                    <div style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); padding: 20px; border-radius: 14px; border: 1.5px solid #fed7aa; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 6px rgba(234,88,12,0.04);">
+                        <div>
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 40px; height: 40px; border-radius: 10px; background: #ea580c; color: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(234,88,12,0.25);">
+                                        <i class="ti ti-dialpad" style="font-size: 22px;"></i>
+                                    </div>
+                                    <div>
+                                        <h5 style="margin: 0; font-weight: 700; color: #7c2d12; font-size: 0.98rem;">PIN de Asistencia</h5>
+                                        <p style="margin: 0; font-size: 0.8rem; color: #9a3412;">Marcaje en Quiosco</p>
+                                    </div>
+                                </div>
+                                <?php if (!empty($user['pin_asistencia'])): ?>
+                                    <span style="font-size: 0.72rem; font-weight: 800; background: #16a34a; color: white; padding: 2px 8px; border-radius: 999px;">
+                                        Activo
+                                    </span>
+                                <?php else: ?>
+                                    <span style="font-size: 0.72rem; font-weight: 800; background: #f59e0b; color: white; padding: 2px 8px; border-radius: 999px;">
+                                        Pendiente
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                            <p style="margin: 0 0 14px; font-size: 0.82rem; color: #9a3412; line-height: 1.4;">
+                                Código numérico de 4 dígitos para registrar entrada y salida en quiosco.
+                            </p>
+                        </div>
+                        <button class="btn-primary" style="width: 100%; border-radius: 10px; padding: 10px; font-size: 0.88rem; font-weight: 700; background: linear-gradient(135deg, #ea580c, #c2410c); border: none; box-shadow: 0 4px 12px rgba(234,88,12,0.25); display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="openPinModal()">
+                            <i class="ti ti-dialpad"></i> <?= !empty($user['pin_asistencia']) ? 'Cambiar PIN' : 'Crear PIN' ?>
+                        </button>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- 5. Acceso Biométrico Móvil (Huella Dactilar / Face ID) -->
+                    <?php 
+                    $tieneBiometria = !empty($dispositivosBiometria);
+                    $primerDispositivo = $tieneBiometria ? $dispositivosBiometria[0] : null;
+                    ?>
+                    <div style="background: <?= $tieneBiometria ? 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)' : '#F8FAFC' ?>; padding: 20px; border-radius: 14px; border: 1.5px solid <?= $tieneBiometria ? '#86efac' : '#E2E8F0' ?>; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 40px; height: 40px; border-radius: 10px; background: <?= $tieneBiometria ? '#16a34a' : 'rgba(37,99,235,0.1)' ?>; display: flex; align-items: center; justify-content: center; color: <?= $tieneBiometria ? '#ffffff' : '#2563eb' ?>; flex-shrink: 0;">
+                                        <i class="ti ti-fingerprint" style="font-size: 22px;"></i>
+                                    </div>
+                                    <div>
+                                        <h5 style="margin: 0; font-weight: 700; color: <?= $tieneBiometria ? '#14532d' : '#0f172a' ?>; font-size: 0.98rem;">Huella / Biometría</h5>
+                                        <p style="margin: 0; font-size: 0.8rem; color: <?= $tieneBiometria ? '#15803d' : '#64748b' ?>;">Acceso sin contraseña</p>
+                                    </div>
+                                </div>
+                                <?php if ($tieneBiometria): ?>
+                                    <span style="font-size: 0.72rem; font-weight: 800; background: #22c55e; color: white; padding: 2px 8px; border-radius: 999px; text-transform: uppercase;">
+                                        Vinculada
+                                    </span>
+                                <?php else: ?>
+                                    <span style="font-size: 0.72rem; font-weight: 700; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 999px;">
+                                        Opcional
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+
+                            <?php if ($tieneBiometria): ?>
+                                <div style="background: rgba(255,255,255,0.9); border-radius: 8px; padding: 10px; font-size: 0.8rem; color: #166534; line-height: 1.4; border: 1px solid #bbf7d0; margin-bottom: 14px;">
+                                    <i class="ti ti-circle-check" style="color: #16a34a; margin-right: 4px;"></i>
+                                    Dispositivo: <strong><?= htmlspecialchars($primerDispositivo->device_name ?? 'Dispositivo') ?></strong>
+                                </div>
+                            <?php else: ?>
+                                <p style="margin: 0 0 14px; font-size: 0.82rem; color: #64748b; line-height: 1.4;">
+                                    Inicia sesión de forma rápida con el lector de huella o sensor biométrico de tu teléfono móvil.
+                                </p>
+                            <?php endif; ?>
+                        </div>
+
+                        <?php if ($tieneBiometria): ?>
+                            <button type="button" 
+                                    style="width: 100%; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; border-radius: 10px; padding: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all .2s;" 
+                                    onmouseover="this.style.background='#fecaca'" 
+                                    onmouseout="this.style.background='#fee2e2'"
+                                    onclick="window.sgpEliminarBiometria(<?= (int)$primerDispositivo->id ?>, '<?= htmlspecialchars($primerDispositivo->device_name ?? 'Dispositivo Móvil') ?>')">
+                                <i class="ti ti-trash"></i> Desafiliar Biometría
+                            </button>
+                        <?php else: ?>
+                            <button type="button" 
+                                    class="btn-primary" 
+                                    style="width: 100%; border-radius: 10px; padding: 10px; font-size: 0.88rem; font-weight: 700; background: linear-gradient(135deg, #16a34a, #059669); border: none; box-shadow: 0 4px 12px rgba(22,163,74,0.25); display: flex; align-items: center; justify-content: center; gap: 6px;"
+                                    onclick="sgpActivarHuellaConConfirmacion()">
+                                <i class="ti ti-fingerprint"></i> Activar Huella Dactilar
+                            </button>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- 6. Patrón de Desbloqueo Gestual (Alternativa Universal para Equipos sin Huella) -->
+                    <div style="background: <?= !empty($tienePatron) ? 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)' : '#F8FAFC' ?>; padding: 20px; border-radius: 14px; border: 1.5px solid <?= !empty($tienePatron) ? '#c4b5fd' : '#E2E8F0' ?>; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 40px; height: 40px; border-radius: 10px; background: <?= !empty($tienePatron) ? '#7c3aed' : 'rgba(124,58,237,0.1)' ?>; display: flex; align-items: center; justify-content: center; color: <?= !empty($tienePatron) ? '#ffffff' : '#7c3aed' ?>; flex-shrink: 0;">
+                                        <i class="ti ti-grid-dots" style="font-size: 22px;"></i>
+                                    </div>
+                                    <div>
+                                        <h5 style="margin: 0; font-weight: 700; color: <?= !empty($tienePatron) ? '#4c1d95' : '#0f172a' ?>; font-size: 0.98rem;">Patrón de Seguridad</h5>
+                                        <p style="margin: 0; font-size: 0.8rem; color: <?= !empty($tienePatron) ? '#6d28d9' : '#64748b' ?>;">Acceso gestual (9 puntos)</p>
+                                    </div>
+                                </div>
+                                <?php if (!empty($tienePatron)): ?>
+                                    <span style="font-size: 0.72rem; font-weight: 800; background: #7c3aed; color: white; padding: 2px 8px; border-radius: 999px; text-transform: uppercase;">
+                                        Activo
+                                    </span>
+                                <?php else: ?>
+                                    <span style="font-size: 0.72rem; font-weight: 700; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 999px;">
+                                        Opcional
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+
+                            <p style="margin: 0 0 14px; font-size: 0.82rem; color: #64748b; line-height: 1.4;">
+                                <?= !empty($tienePatron) 
+                                    ? 'Tienes un patrón gestual activo para acceder rápidamente sin contraseña desde tus dispositivos autorizados.' 
+                                    : 'Ideal para computadoras o teléfonos sin lector de huellas. Configúralo con autorización por correo.' ?>
+                            </p>
+                        </div>
+
+                        <button type="button" 
+                                class="btn-primary" 
+                                style="width: 100%; border-radius: 10px; padding: 10px; font-size: 0.88rem; font-weight: 700; background: linear-gradient(135deg, #7c3aed, #6366f1); border: none; box-shadow: 0 4px 12px rgba(124,58,237,0.25); display: flex; align-items: center; justify-content: center; gap: 6px;"
+                                onclick="SgpDispositivos.iniciarVinculacionBancaria('patron')">
+                            <i class="ti ti-grid-dots"></i> <?= !empty($tienePatron) ? 'Cambiar Patrón' : 'Configurar Patrón' ?>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 7. Panel de Dispositivos Frecuentes Vinculados (Estándar Bancario) -->
+                <div style="margin-top: 24px; padding-top: 20px; border-top: 1.5px dashed #e2e8f0;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 0.98rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                                <i class="ti ti-devices" style="color: #2563eb; font-size: 20px;"></i> Dispositivos Confiables Autorizados
+                            </h4>
+                            <p style="margin: 2px 0 0; font-size: 0.8rem; color: #64748b;">
+                                Equipos autorizados mediante código OTP para acceso biométrico y gestual.
+                            </p>
+                        </div>
+                        <button type="button" 
+                                onclick="SgpDispositivos.iniciarVinculacionBancaria()" 
+                                style="background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; border-radius: 10px; padding: 7px 14px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all .2s;"
+                                onmouseover="this.style.background='#dbeafe'"
+                                onmouseout="this.style.background='#eff6ff'">
+                            <i class="ti ti-device-mobile-plus"></i> Vincular Este Dispositivo
+                        </button>
+                    </div>
+
+                    <?php if (!empty($dispositivosFrecuentes)): ?>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
+                            <?php foreach ($dispositivosFrecuentes as $disp): ?>
+                                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                                    <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #3b82f6; flex-shrink: 0;">
+                                            <i class="<?= $disp->metodo_auth === 'patron' ? 'ti ti-grid-dots' : 'ti ti-device-mobile' ?>" style="font-size: 20px;"></i>
+                                        </div>
+                                        <div style="min-width: 0;">
+                                            <div style="font-weight: 700; font-size: 0.86rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                <?= htmlspecialchars($disp->nombre_dispositivo) ?>
+                                            </div>
+                                            <div style="font-size: 0.74rem; color: #64748b; margin-top: 2px;">
+                                                Método: <strong style="color: #2563eb;"><?= ucfirst($disp->metodo_auth ?? 'huella') ?></strong>
+                                                <?php if (!empty($disp->verificado_at)): ?>
+                                                    · <?= date('d/m/y', strtotime($disp->verificado_at)) ?>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" 
+                                            title="Desvincular Dispositivo"
+                                            onclick="desvincularDispositivoSgp(<?= (int)$disp->id ?>, '<?= htmlspecialchars($disp->nombre_dispositivo) ?>')"
+                                            style="background: transparent; border: none; color: #ef4444; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .2s;"
+                                            onmouseover="this.style.background='#fee2e2'"
+                                            onmouseout="this.style.background='transparent'">
+                                        <i class="ti ti-trash" style="font-size: 17px;"></i>
+                                    </button>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 18px; text-align: center; color: #64748b; font-size: 0.85rem;">
+                            <i class="ti ti-shield-lock" style="font-size: 24px; color: #94a3b8; display: block; margin-bottom: 6px;"></i>
+                            No tienes dispositivos vinculados como frecuentes. Pulsa <strong>"Vincular Este Dispositivo"</strong> para autorizarlo mediante código OTP.
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Cambiar Correo Institucional con Verificación Adicional -->
+<div id="emailModal" class="modal">
+    <div class="modal-content" style="max-width: 520px;">
+        <div class="modal-header">
+            <div class="modal-header-info">
+                <div class="modal-header-icon" style="background: rgba(255,255,255,0.18); border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                    <i class="ti ti-mail-cog"></i>
+                </div>
+                <div>
+                    <h2 class="modal-title">Cambiar Correo</h2>
+                    <p class="modal-subtitle">Actualización segura con verificación de contraseña</p>
+                </div>
+            </div>
+            <button class="modal-close" onclick="closeEmailModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body-scroll">
+            <form id="formCambiarCorreo" onsubmit="ejecutarCambioCorreo(event)">
+                <input type="hidden" name="_csrf" value="<?= Session::getCsrfToken() ?>">
+
+                <!-- Banner explicativo de seguridad -->
+                <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; gap: 12px; align-items: flex-start;">
+                    <i class="ti ti-shield-lock" style="color: #2563eb; font-size: 24px; flex-shrink: 0; margin-top: 1px;"></i>
+                    <div style="font-size: 0.82rem; color: #1e3a8a; line-height: 1.45;">
+                        <strong>Verificación de Seguridad Obligatoria:</strong> Por protección de tu cuenta institucional, requerimos validar tu <strong>contraseña actual</strong>. Se enviará una alerta de seguridad al correo anterior, una confirmación al nuevo correo y una notificación a la administración.
+                    </div>
+                </div>
+
+                <!-- Correo Actual (Solo Lectura) -->
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">
+                        <i class="ti ti-mail" style="margin-right: 4px;"></i> Correo Actual (Asociado)
+                    </label>
+                    <input type="text" id="modal_correo_actual" readonly value="<?= htmlspecialchars($user['correo']) ?>" class="input-modern" style="background-color: #f8fafc; cursor: not-allowed; color: #64748b; font-weight: 600;">
+                </div>
+
+                <!-- Nuevo Correo -->
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">
+                        <i class="ti ti-at" style="margin-right: 4px;"></i> Nuevo Correo Electrónico *
+                    </label>
+                    <input type="email" name="correo_nuevo" id="modal_correo_nuevo" required placeholder="ejemplo@ispeb.gob.ve" class="input-modern" autocomplete="email">
+                </div>
+
+                <!-- Confirmar Nuevo Correo -->
+                <div class="form-group" style="margin-bottom: 18px;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">
+                        <i class="ti ti-check" style="margin-right: 4px;"></i> Confirmar Nuevo Correo *
+                    </label>
+                    <input type="email" name="correo_confirmar" id="modal_correo_confirmar" required placeholder="Repite tu nuevo correo electrónico" class="input-modern" autocomplete="email">
+                </div>
+
+                <!-- Contraseña Actual (Verificación Adicional) -->
+                <div class="form-group has-toggle" style="margin-bottom: 24px;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">
+                        <i class="ti ti-lock" style="margin-right: 4px;"></i> Contraseña Actual (Verificación de Identidad) *
+                    </label>
+                    <div style="position: relative;">
+                        <input type="password" name="password_actual" id="modal_password_actual" required placeholder="Ingresa tu contraseña actual" class="input-modern" style="padding-right: 46px;">
+                        <i class="ti ti-eye password-toggle" onclick="togglePasswordVisibility('modal_password_actual', this)" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; font-size: 1.15rem;"></i>
+                    </div>
+                    <small style="color: #64748b; font-size: 0.78rem; margin-top: 4px; display: block;">
+                        Requerida para autorizar la actualización de tu cuenta en el sistema.
+                    </small>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" onclick="closeEmailModal()" class="btn-cancel" style="flex: 1; padding: 12px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; border-radius: 12px; font-weight: 700; cursor: pointer;">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnGuardarCorreo" class="btn-primary" style="flex: 2; padding: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i class="ti ti-shield-check"></i> Verificar y Actualizar
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -363,6 +719,18 @@ if (!isset($user) || empty($user)) {
                     </div>
                 </div>
                 
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label><i class="ti ti-building" style="color: #16a34a; margin-right: 4px;"></i> Departamento Adscrito *</label>
+                    <select name="departamento_id" id="edit_departamento" required class="input-modern">
+                        <option value="">Seleccione Departamento...</option>
+                        <?php foreach (($departamentos ?? []) as $dep): ?>
+                            <option value="<?= $dep->id ?>" <?= (($user['departamento_id'] ?? $user['departamento_efectivo_id'] ?? '') == $dep->id) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($dep->nombre) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 
                 <?php if (Session::get('role_id') == 3): // Pasante ?>
                 <div class="form-group" style="margin-bottom: 24px;">
@@ -597,34 +965,135 @@ if (!isset($user) || empty($user)) {
     </div>
 </div>
 
+<!-- Modal PIN de Asistencia (4 dígitos para pasantes) -->
+<div id="pinModal" class="modal">
+    <div class="modal-content" style="max-width: 440px;">
+        <div class="modal-header">
+            <div class="modal-header-info">
+                <div class="modal-header-icon" style="background:rgba(255,255,255,0.2);color:white;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                    <i class="ti ti-dialpad" style="font-size:22px;"></i>
+                </div>
+                <div>
+                    <h2 class="modal-title" style="margin:0;font-size:1.15rem;font-weight:800;color:white;">PIN de Asistencia</h2>
+                    <p class="modal-subtitle" style="margin:2px 0 0;font-size:0.8rem;color:rgba(255,255,255,0.8);">Código de 4 dígitos para marcar en el quiosco</p>
+                </div>
+            </div>
+            <button class="modal-close" onclick="closePinModal()" style="background:transparent;border:none;color:white;cursor:pointer;font-size:1.3rem;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body-scroll" style="padding: 24px;">
+            <form id="formCambiarPin" onsubmit="guardarPinAsistencia(event)">
+                <input type="hidden" name="_csrf" value="<?= Session::getCsrfToken() ?>">
+                
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px;margin-bottom:18px;display:flex;gap:10px;align-items:center;">
+                    <i class="ti ti-info-circle" style="color:#2563eb;font-size:20px;flex-shrink:0;"></i>
+                    <span style="font-size:0.82rem;color:#1e40af;line-height:1.4;">
+                        El PIN de 4 dígitos es tu clave personal para registrar entrada y salida rápidamente en el Quiosco de Asistencia.
+                    </span>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 18px;">
+                    <label style="font-size:0.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">
+                        Nuevo PIN (4 Dígitos) *
+                    </label>
+                    <div style="position:relative;">
+                        <input type="password" 
+                               name="pin_nuevo" 
+                               id="pin_nuevo" 
+                               maxlength="4" 
+                               pattern="[0-9]{4}" 
+                               inputmode="numeric" 
+                               placeholder="••••" 
+                               required 
+                               class="input-modern" 
+                               style="font-size:1.4rem;letter-spacing:10px;text-align:center;font-weight:800;padding-right:44px;"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4)">
+                        <i class="ti ti-eye" id="togglePinNuevoIcon" 
+                           onclick="toggleInputPass('pin_nuevo', 'togglePinNuevoIcon')" 
+                           style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:#94a3b8;font-size:1.15rem;"></i>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label style="font-size:0.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">
+                        Confirmar Nuevo PIN *
+                    </label>
+                    <div style="position:relative;">
+                        <input type="password" 
+                               name="pin_confirmacion" 
+                               id="pin_confirmacion" 
+                               maxlength="4" 
+                               pattern="[0-9]{4}" 
+                               inputmode="numeric" 
+                               placeholder="••••" 
+                               required 
+                               class="input-modern" 
+                               style="font-size:1.4rem;letter-spacing:10px;text-align:center;font-weight:800;padding-right:44px;"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4)">
+                        <i class="ti ti-eye" id="togglePinConfIcon" 
+                           onclick="toggleInputPass('pin_confirmacion', 'togglePinConfIcon')" 
+                           style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:#94a3b8;font-size:1.15rem;"></i>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:10px;">
+                    <button type="button" onclick="closePinModal()" style="flex:1;padding:11px;background:#f1f5f9;border:1px solid #cbd5e1;color:#475569;border-radius:10px;font-weight:700;cursor:pointer;">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnGuardarPin" class="btn-primary" style="flex:2;padding:11px;font-weight:700;">
+                        <i class="ti ti-check"></i> Guardar PIN
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 <style>
     .modal {
         display: none;
-        position: fixed;
-        z-index: 1100;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(6px);
-        animation: fadeIn 0.3s;
-        align-items: center;
-        justify-content: center;
+        position: fixed !important;
+        z-index: 99999999 !important;
+        top: -20px !important;
+        left: -20px !important;
+        right: -20px !important;
+        bottom: -20px !important;
+        inset: -20px !important;
+        width: calc(100% + 40px) !important;
+        height: calc(100% + 40px) !important;
+        min-width: calc(100% + 40px) !important;
+        min-height: calc(100% + 40px) !important;
+        background: rgba(15, 23, 42, 0.72) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        animation: fadeIn 0.25s ease-out;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+        padding: 24px !important;
+        box-sizing: border-box !important;
     }
     
     .modal.active {
-        display: flex;
+        display: flex !important;
     }
     
     .modal-content {
         background: white;
         border-radius: 24px;
-        max-width: 520px;
-        width: 90%;
+        max-width: 540px !important;
+        width: 95% !important;
         max-height: 90vh;
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        animation: slideUp 0.3s;
-        box-shadow: 0 32px 80px rgba(15, 23, 42, 0.3);
+        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 32px 80px rgba(15, 23, 42, 0.45);
+        margin: auto !important;
+        position: relative !important;
     }
     
     @keyframes fadeIn {
@@ -788,9 +1257,14 @@ if (!isset($user) || empty($user)) {
         color: #059669;
     }
     
-    .password-requirement.met .requirement-icon {
-        color: #10B981;
-        transform: scale(1.1);
+    /* Pulse dot y detalles de animación */
+    @keyframes sgpPulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+    .pulse-dot {
+        animation: sgpPulse 2s infinite;
     }
 </style>
 
@@ -808,18 +1282,45 @@ if (!isset($user) || empty($user)) {
         NotificationService.error('<?= addslashes(Session::getFlash('error')) ?>');
     <?php endif; ?>
 
+    // Helper universal para asegurar teletransporte al body
+    function _sgpActivarModal(id) {
+        const m = document.getElementById(id);
+        if (!m) return null;
+        if (m.parentElement !== document.body) {
+            document.body.appendChild(m);
+        }
+        m.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        return m;
+    }
+    function _sgpDesactivarModal(id) {
+        const m = document.getElementById(id);
+        if (m) m.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
     // Edit Modal Functions
     function openEditModal() {
-        document.getElementById('editModal').classList.add('active');
+        _sgpActivarModal('editModal');
     }
     
     function closeEditModal() {
-        document.getElementById('editModal').classList.remove('active');
+        _sgpDesactivarModal('editModal');
+    }
+
+    // Email Modal Functions
+    function openEmailModal() {
+        _sgpActivarModal('emailModal');
+    }
+    function closeEmailModal() {
+        _sgpDesactivarModal('emailModal');
+        const form = document.getElementById('formCambiarCorreo');
+        if (form) form.reset();
     }
 
     // Password Modal Functions
     function openPasswordModal() {
-        document.getElementById('passwordModal').classList.add('active');
+        _sgpActivarModal('passwordModal');
         
         // Inicializar validación de contraseña
         const passwordInput = document.getElementById('password_nueva');
@@ -827,12 +1328,13 @@ if (!isset($user) || empty($user)) {
         const strengthText = document.getElementById('strength-text');
         
         // Limpiar campos
-        passwordInput.value = '';
-        document.getElementById('password_confirmar').value = '';
+        if (passwordInput) passwordInput.value = '';
+        const conf = document.getElementById('password_confirmar');
+        if (conf) conf.value = '';
         
         // Resetear barra y checks
-        strengthBar.className = 'password-strength-bar';
-        strengthText.textContent = '';
+        if (strengthBar) strengthBar.className = 'password-strength-bar';
+        if (strengthText) strengthText.textContent = '';
         
         // Resetear todos los requisitos
         ['req-length', 'req-uppercase', 'req-lowercase', 'req-number', 'req-special'].forEach(id => {
@@ -842,24 +1344,271 @@ if (!isset($user) || empty($user)) {
     }
     
     function closePasswordModal() {
-        document.getElementById('passwordModal').classList.remove('active');
-        document.getElementById('changePasswordForm').reset();
+        _sgpDesactivarModal('passwordModal');
+        const form = document.getElementById('changePasswordForm');
+        if (form) form.reset();
     }
     
     function openPreguntasModal() {
-        document.getElementById('preguntasModal').classList.add('active');
+        _sgpActivarModal('preguntasModal');
     }
     
     function closePreguntasModal() {
-        document.getElementById('preguntasModal').classList.remove('active');
-        document.getElementById('formSecurityQuestions').reset();
+        _sgpDesactivarModal('preguntasModal');
+        const form = document.getElementById('formSecurityQuestions');
+        if (form) form.reset();
+    }
+
+    // PIN de Asistencia Modal Functions (Pasantes)
+    function openPinModal() {
+        const modal = _sgpActivarModal('pinModal');
+        if (modal) {
+            const pinInput = document.getElementById('pin_nuevo');
+            if (pinInput) {
+                pinInput.value = '';
+                const conf = document.getElementById('pin_confirmacion');
+                if (conf) conf.value = '';
+                setTimeout(() => pinInput.focus(), 120);
+            }
+        }
+    }
+
+    function closePinModal() {
+        _sgpDesactivarModal('pinModal');
+        const form = document.getElementById('formCambiarPin');
+        if (form) form.reset();
+    }
+
+    function toggleInputPass(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (!input || !icon) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'ti ti-eye-off';
+        } else {
+            input.type = 'password';
+            icon.className = 'ti ti-eye';
+        }
+    }
+
+    async function guardarPinAsistencia(e) {
+        e.preventDefault();
+        const pinNuevo = document.getElementById('pin_nuevo').value.trim();
+        const pinConf  = document.getElementById('pin_confirmacion').value.trim();
+
+        if (pinNuevo.length !== 4 || !/^\d{4}$/.test(pinNuevo)) {
+            if (window.Swal) {
+                Swal.fire({ icon: 'warning', title: 'PIN Inválido', text: 'El PIN debe constar exactamente de 4 dígitos numéricos.', confirmButtonColor: '#2563eb' });
+            } else {
+                alert('El PIN debe constar exactamente de 4 dígitos numéricos.');
+            }
+            return;
+        }
+
+        if (pinNuevo !== pinConf) {
+            if (window.Swal) {
+                Swal.fire({ icon: 'warning', title: 'No coincide', text: 'La confirmación del PIN no coincide con el nuevo PIN.', confirmButtonColor: '#2563eb' });
+            } else {
+                alert('La confirmación del PIN no coincide con el nuevo PIN.');
+            }
+            return;
+        }
+
+        const btn = document.getElementById('btnGuardarPin');
+        const origHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ti ti-loader-2 ti-spin me-1"></i> Guardando...';
+
+        const formData = new FormData(document.getElementById('formCambiarPin'));
+
+        try {
+            const resp = await fetch('<?= URLROOT ?>/perfil/cambiarPin', {
+                method: 'POST',
+                body: formData
+            });
+            const res = await resp.json();
+
+            if (res.success) {
+                closePinModal();
+                if (window.Swal) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡PIN Actualizado!',
+                        text: res.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+                window.location.reload();
+            } else {
+                throw new Error(res.message || 'Error al guardar el PIN');
+            }
+        } catch (err) {
+            if (window.Swal) {
+                Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#2563eb' });
+            } else {
+                alert(err.message);
+            }
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+        }
+    }
+
+    async function sgpActivarHuellaConConfirmacion() {
+        if (!window.Swal) {
+            window.sgpRegistrarBiometria();
+            return;
+        }
+        const result = await Swal.fire({
+            title: '🔐 Activar Huella Dactilar',
+            html: `
+                <div style="text-align:center;margin-bottom:14px;">
+                    <div style="width:64px;height:64px;margin:0 auto 12px;background:#eff6ff;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <i class="ti ti-fingerprint" style="font-size:36px;color:#2563eb;"></i>
+                    </div>
+                    <h4 style="font-size:16px;color:#0f172a;margin:0 0 6px;font-weight:800;">¿Deseas activar el acceso biométrico?</h4>
+                    <p style="font-size:13px;color:#64748b;margin:0;">
+                        Al confirmar, tu navegador o teléfono móvil solicitará tu <strong>huella dactilar o Face ID</strong> para vincularlo a tu cuenta institucional.
+                    </p>
+                </div>
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px;font-size:12px;color:#166534;text-align:left;">
+                    <i class="ti ti-shield-check me-1"></i>Tus datos biométricos quedan guardados únicamente en tu teléfono. Recibirás un correo de confirmación de seguridad.
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: '<i class="ti ti-fingerprint me-1"></i>Sí, escanear mi huella',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#16a34a',
+            cancelButtonColor: '#64748b',
+            reverseButtons: true
+        });
+
+        if (result.isConfirmed) {
+            if (typeof window.sgpRegistrarBiometria === 'function') {
+                await window.sgpRegistrarBiometria();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Módulo Biométrico',
+                    text: 'El servicio biométrico no se ha cargado aún. Por favor recarga la página e inténtalo de nuevo.',
+                    confirmButtonColor: '#2563eb'
+                });
+            }
+        }
     }
     
+    // Email Modal Functions
+    function openEmailModal() {
+        const modal = document.getElementById('emailModal');
+        if (modal) {
+            modal.classList.add('active');
+            const nuevoInput = document.getElementById('modal_correo_nuevo');
+            if (nuevoInput) {
+                nuevoInput.value = '';
+                document.getElementById('modal_correo_confirmar').value = '';
+                document.getElementById('modal_password_actual').value = '';
+                setTimeout(() => nuevoInput.focus(), 120);
+            }
+        }
+    }
+
+    function closeEmailModal() {
+        const modal = document.getElementById('emailModal');
+        if (modal) modal.classList.remove('active');
+        const form = document.getElementById('formCambiarCorreo');
+        if (form) form.reset();
+    }
+
+    async function ejecutarCambioCorreo(e) {
+        e.preventDefault();
+        const correoNuevo = document.getElementById('modal_correo_nuevo').value.trim();
+        const correoConfirmar = document.getElementById('modal_correo_confirmar').value.trim();
+        const passActual = document.getElementById('modal_password_actual').value;
+
+        if (!correoNuevo || !correoConfirmar || !passActual) {
+            NotificationService.error('Todos los campos son obligatorios');
+            return;
+        }
+
+        if (correoNuevo.toLowerCase() === document.getElementById('modal_correo_actual').value.trim().toLowerCase()) {
+            NotificationService.error('El nuevo correo no puede ser idéntico al actual');
+            return;
+        }
+
+        if (correoNuevo !== correoConfirmar) {
+            NotificationService.error('Los correos electrónicos ingresados no coinciden');
+            return;
+        }
+
+        const btn = document.getElementById('btnGuardarCorreo');
+        const origHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ti ti-loader-2 ti-spin me-1"></i> Verificando...';
+
+        const formData = new FormData(document.getElementById('formCambiarCorreo'));
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (csrfMeta && !formData.has('_csrf')) {
+            formData.append('_csrf', csrfMeta);
+        }
+
+        try {
+            const resp = await fetch('<?= URLROOT ?>/perfil/cambiarCorreo', {
+                method: 'POST',
+                body: formData
+            });
+            const res = await resp.json();
+
+            if (res.success) {
+                closeEmailModal();
+                if (window.Swal) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Correo Actualizado!',
+                        text: res.message,
+                        confirmButtonColor: '#2563eb'
+                    });
+                } else {
+                    NotificationService.success(res.message);
+                }
+
+                // Actualizar interfaz
+                const leftDisplay = document.getElementById('leftProfileEmailDisplay');
+                if (leftDisplay) leftDisplay.textContent = res.nuevo_correo || correoNuevo;
+                const secDisplay = document.getElementById('securityProfileEmailDisplay');
+                if (secDisplay) secDisplay.textContent = res.nuevo_correo || correoNuevo;
+                const modalActual = document.getElementById('modal_correo_actual');
+                if (modalActual) modalActual.value = res.nuevo_correo || correoNuevo;
+
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                throw new Error(res.message || 'Error al actualizar el correo electrónico');
+            }
+        } catch (err) {
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Verificación fallida',
+                    text: err.message,
+                    confirmButtonColor: '#2563eb'
+                });
+            } else {
+                NotificationService.error(err.message);
+            }
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+        }
+    }
+
     // Close modal on outside click
     window.onclick = function(event) {
         const editModal = document.getElementById('editModal');
         const passwordModal = document.getElementById('passwordModal');
         const preguntasModal = document.getElementById('preguntasModal');
+        const pinModal = document.getElementById('pinModal');
+        const emailModal = document.getElementById('emailModal');
         
         if (event.target === editModal) {
             closeEditModal();
@@ -869,6 +1618,12 @@ if (!isset($user) || empty($user)) {
         }
         if (event.target === preguntasModal) {
             closePreguntasModal();
+        }
+        if (event.target === pinModal) {
+            closePinModal();
+        }
+        if (event.target === emailModal) {
+            closeEmailModal();
         }
     }
 
@@ -1163,5 +1918,44 @@ function subirFotoPerfil(input) {
         });
 
     input.value = '';
+}
+
+async function desvincularDispositivoSgp(id, nombre) {
+    if (!window.Swal) return;
+    const result = await Swal.fire({
+        title: '¿Desvincular Dispositivo?',
+        text: `¿Deseas revocar el acceso autorizado para "${nombre}"? Tendrás que volver a validar por código OTP si deseas usarlo nuevamente.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '<i class="ti ti-trash me-1"></i>Sí, desvincular',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const resp = await fetch('<?= URLROOT ?>/dispositivos/desvincular', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dispositivo_id: id })
+            });
+            const data = await resp.json();
+            if (data.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Desvinculado',
+                    text: data.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                location.reload();
+            } else {
+                throw new Error(data.message || 'Error al desvincular');
+            }
+        } catch (e) {
+            Swal.fire({ icon: 'error', title: 'Error', text: e.message, confirmButtonColor: '#2563eb' });
+        }
+    }
 }
 </script>

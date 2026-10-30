@@ -1,6 +1,40 @@
 <?php
+// ── Heartbeat de Usuario En Línea y Comprobación de Mantenimiento ──
+$_currentUserId = (int)(Session::get('user_id') ?? 0);
+$_currentUserRole = (int)(Session::get('role_id') ?? 99);
+
+try {
+    $_dbLayout = Database::getInstance();
+
+    // 1. Verificar Modo Mantenimiento (Si está activo y el usuario no es SuperAdmin rol 0)
+    $_dbLayout->query("SELECT valor FROM configuracion WHERE clave = 'modo_mantenimiento'");
+    $_maintRow = $_dbLayout->single();
+    if ($_maintRow && $_maintRow->valor === '1' && $_currentUserRole !== 0) {
+        $_dbLayout->query("SELECT valor FROM configuracion WHERE clave = 'modo_mantenimiento_mensaje'");
+        $_maintMsgRow = $_dbLayout->single();
+        $mensaje_mantenimiento = $_maintMsgRow ? $_maintMsgRow->valor : null;
+        require APPROOT . '/views/errors/mantenimiento.php';
+        exit;
+    }
+
+    // 2. Registrar Heartbeat en Tiempo Real
+    if ($_currentUserId > 0) {
+        $_userIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        $_userUa = substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 250);
+        $_sessId = session_id();
+        $_dbLayout->query("UPDATE usuarios SET ultima_actividad = NOW(), ultima_ip = :ip, ultimo_user_agent = :ua, sesion_id = :sid WHERE id = :uid");
+        $_dbLayout->bind(':ip', $_userIp);
+        $_dbLayout->bind(':ua', $_userUa);
+        $_dbLayout->bind(':sid', $_sessId);
+        $_dbLayout->bind(':uid', $_currentUserId);
+        $_dbLayout->execute();
+    }
+} catch (\Throwable $_layoutEx) {
+    // Protección silenciosa
+}
+
 // ── Auto-fill global: 1 vez al día cuando un admin/tutor carga cualquier página ──
-$_rolAutoFill = (int)(Session::get('role_id') ?? 99);
+$_rolAutoFill = $_currentUserRole;
 if (in_array($_rolAutoFill, [0, 1, 2])) {
     $_hoyAutoFill = date('Y-m-d');
     if (Session::get('autofill_last_run') !== $_hoyAutoFill) {
@@ -35,13 +69,202 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
             if (theme === 'dark') document.documentElement.classList.add('dark');
         })();
     </script>
+    <!-- Escala de Visualización Global (Cero FOUC: 90% en pantallas de escritorio para máxima ergonomía visual) -->
+    <script>
+        (function() {
+            try {
+                var isDesktop = window.innerWidth >= 768;
+                var savedZoom = localStorage.getItem('sgp_zoom');
+                if (!savedZoom || savedZoom === '0.80' || savedZoom === '0.8' || savedZoom === '1') {
+                    savedZoom = isDesktop ? '0.90' : '1';
+                    try { localStorage.setItem('sgp_zoom', savedZoom); } catch(e){}
+                }
+                if (isDesktop || savedZoom !== '1') {
+                    document.documentElement.style.zoom = savedZoom;
+                }
+            } catch(e) {}
+        })();
+    </script>
     <style>
         html[data-theme="dark"], html[data-theme="dark"] body { background-color: #090e1a !important; color: #f8fafc !important; }
+        /* Escala compacta 90% por defecto en pantallas de laptop y escritorio (>=768px) */
+        @media (min-width: 768px) {
+            html {
+                zoom: 0.90;
+            }
+        }
+        /* Fijación absoluta de la barra lateral desde el topbar hasta el borde inferior de la ventana */
+        .main-sidebar, .sidebar {
+            top: var(--header-height, 70px) !important;
+            bottom: 0 !important;
+            height: auto !important;
+        }
     </style>
+    <!-- User Palette Pre-render (Inyección dinámica inmediata de colores personalizados) -->
+    <script>
+        (function() {
+            try {
+                var p = JSON.parse(localStorage.getItem('sgp_user_palette'));
+                if (p && p.primary && p.accent) {
+                    var style = document.createElement('style');
+                    style.id = 'sgp-palette-dynamic-override';
+                    style.textContent = `
+                        :root {
+                            --color-primary: ${p.primary} !important;
+                            --color-accent-brand: ${p.accent} !important;
+                            --color-mid: ${p.primary} !important;
+                            --gradient-start: ${p.accent} !important;
+                            --gradient-mid: ${p.primary} !important;
+                            --gradient-end: ${p.primary} !important;
+                        }
+                        .main-sidebar {
+                            background: linear-gradient(180deg, ${p.accent} 0%, ${p.primary} 45%, ${p.primary} 100%) !important;
+                        }
+                        html:not([data-theme="dark"]) .admin-banner,
+                        html:not([data-theme="dark"]) .pasantes-banner,
+                        html:not([data-theme="dark"]) .superadmin-banner,
+                        html:not([data-theme="dark"]) .tutor-banner,
+                        html:not([data-theme="dark"]) .users-banner,
+                        html:not([data-theme="dark"]) .dashboard-banner,
+                        html:not([data-theme="dark"]) .module-banner,
+                        html:not([data-theme="dark"]) .asig-banner,
+                        html:not([data-theme="dark"]) .ev-banner,
+                        html:not([data-theme="dark"]) .ev-hero,
+                        html:not([data-theme="dark"]) .man-banner,
+                        html:not([data-theme="dark"]) .pb-hero,
+                        html:not([data-theme="dark"]) .as-hero,
+                        html:not([data-theme="dark"]) .act-hero,
+                        html:not([data-theme="dark"]) .con-hero,
+                        html:not([data-theme="dark"]) .an-hero,
+                        html:not([data-theme="dark"]) .ex-hero,
+                        html:not([data-theme="dark"]) .td-hero,
+                        html:not([data-theme="dark"]) .ta-hero,
+                        html:not([data-theme="dark"]) .cfg-hero,
+                        html:not([data-theme="dark"]) .mp-banner,
+                        html:not([data-theme="dark"]) .punt-banner,
+                        html:not([data-theme="dark"]) .tpp-banner,
+                        html:not([data-theme="dark"]) .perm-banner,
+                        html:not([data-theme="dark"]) .eg-banner,
+                        html:not([data-theme="dark"]) .inst-banner,
+                        html:not([data-theme="dark"]) .pc-banner,
+                        html:not([data-theme="dark"]) .sc-banner,
+                        html:not([data-theme="dark"]) .backup-banner,
+                        html:not([data-theme="dark"]) .welcome-banner,
+                        html:not([data-theme="dark"]) .p-banner,
+                        html:not([data-theme="dark"]) .periodos-banner,
+                        html:not([data-theme="dark"]) .modal-head,
+                        html:not([data-theme="dark"]) .act-modal-header,
+                        html:not([data-theme="dark"]) .con-doc-header,
+                        .pb-hero, .cfg-hero, .act-hero, .ex-hero, .con-hero, .ev-hero, .as-hero, .an-hero, .td-hero, .ta-hero, .mp-banner, .punt-banner, .tpp-banner, .perm-banner, .eg-banner, .inst-banner, .pc-banner, .sc-banner {
+                            background: linear-gradient(135deg, ${p.primary} 0%, ${p.primary} 45%, ${p.accent} 100%) !important;
+                        }
+                        .btn-primary, .btn-brand, a.btn-primary, button.btn-primary,
+                        .act-btn-save, .con-btn-primary, .btn-cfg-save, .cfg-btn-save,
+                        .bca-btn-primary, .btn-aplicar-paleta, .pb-btn-constancia,
+                        .btn-submit, .btn-ver-full, .prev-more, #puntScrollTop {
+                            background: linear-gradient(135deg, ${p.primary}, ${p.accent}) !important;
+                            border-color: ${p.accent} !important;
+                            color: #ffffff !important;
+                        }
+                        .btn-primary:hover, .btn-brand:hover, a.btn-primary:hover, button.btn-primary:hover,
+                        .act-btn-save:hover, .con-btn-primary:hover, .btn-cfg-save:hover, .pb-btn-constancia:hover,
+                        .btn-submit:hover, .btn-ver-full:hover, .prev-more:hover {
+                            filter: brightness(1.1) !important;
+                            box-shadow: 0 4px 14px ${p.accent}55 !important;
+                        }
+                        .pb-link-asistencia {
+                            color: ${p.accent} !important;
+                        }
+                        .pb-btn-actividad {
+                            color: ${p.accent} !important;
+                            border-color: ${p.accent}55 !important;
+                        }
+                        .pb-btn-actividad:hover {
+                            background: ${p.accent}15 !important;
+                        }
+                        .pb-card-title i, .pb-info-pill i {
+                            color: ${p.accent} !important;
+                        }
+                        .pb-kpi.c-blue {
+                            border-top-color: ${p.accent} !important;
+                        }
+                        .pb-kpi.c-blue .pb-kpi-val {
+                            color: ${p.accent} !important;
+                        }
+                        .pb-kpi.c-blue .pb-kpi-icon {
+                            background: ${p.accent}18 !important;
+                            color: ${p.accent} !important;
+                        }
+                        .profile-avatar:not(img) {
+                            background: linear-gradient(135deg, ${p.primary} 0%, ${p.accent} 100%) !important;
+                            box-shadow: 0 2px 6px ${p.primary}44 !important;
+                        }
+                        .dropdown-header {
+                            background: linear-gradient(135deg, ${p.primary} 0%, ${p.accent} 100%) !important;
+                        }
+                        .dock-fab {
+                            background: linear-gradient(135deg, ${p.primary} 0%, ${p.primary} 45%, ${p.accent} 100%) !important;
+                            box-shadow: 0 6px 18px ${p.primary}66 !important;
+                        }
+                        .dock-fab i {
+                            color: #ffffff !important;
+                        }
+                        .dock-item.active {
+                            color: ${p.accent} !important;
+                        }
+                        .dock-item.active i {
+                            color: ${p.accent} !important;
+                            background: ${p.accent}22 !important;
+                        }
+                        .dock-item.active span {
+                            color: ${p.accent} !important;
+                        }
+                        .dock-item.dock-fab-item span {
+                            color: ${p.accent} !important;
+                        }
+                        .dock-sheet-item.active .dock-sheet-icon,
+                        .dock-sheet-item:hover .dock-sheet-icon {
+                            background: ${p.accent}22 !important;
+                            color: ${p.accent} !important;
+                        }
+                        .dock-indicator {
+                            background: linear-gradient(135deg, ${p.primary}, ${p.accent}) !important;
+                            box-shadow: 0 0 8px ${p.accent}bb !important;
+                        }
+                        .main-sidebar .nav-item>a.active, .main-sidebar .nav-link.active, .main-sidebar .nav-item.active>a {
+                            background: rgba(255, 255, 255, 0.16) !important;
+                        }
+                        .main-sidebar .nav-item>a.active i, .main-sidebar .nav-link.active i {
+                            color: #ffffff !important;
+                            filter: drop-shadow(0 0 6px ${p.accent}) !important;
+                        }
+                        .palette-card.active {
+                            border-color: ${p.accent} !important;
+                            box-shadow: 0 0 0 3px ${p.accent}33 !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            } catch(e){}
+        })();
+    </script>
+    <!-- SGP-FIX [sesión_inactividad / 1.1] CSRF meta tag para fetch() JS -->
     <!-- SGP-FIX [sesión_inactividad / 1.1] CSRF meta tag para fetch() JS -->
     <?php echo CsrfHelper::meta(); ?>
     <title>SGP - Sistema de Gestión de Pasantías</title>
-    <link rel="icon" type="image/png" href="<?= URLROOT ?>/img/favicon.png">
+    
+    <!-- PWA & Mobile Meta Tags -->
+    <meta name="theme-color" content="#162660">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SGP ISPEB">
+    <meta name="application-name" content="SGP ISPEB">
+    <link rel="manifest" href="<?= URLROOT ?>/manifest.json?v=2">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?= URLROOT ?>/img/apple-touch-icon.png?v=2">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= URLROOT ?>/img/favicon-32.png?v=<?= @filemtime(APPROOT . '/../public/img/favicon-32.png') ?: 3 ?>">
+    <link rel="icon" type="image/png" href="<?= URLROOT ?>/img/favicon.png?v=<?= @filemtime(APPROOT . '/../public/img/favicon.png') ?: 3 ?>">
+    <link rel="icon" type="image/png" sizes="192x192" href="<?= URLROOT ?>/img/pwa-icon-192.png?v=2">
 
 
     <!-- CSS Assets (Local) -->
@@ -59,10 +282,9 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     <link rel="stylesheet" href="<?= URLROOT ?>/css/base.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/animations.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/notifications.css">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/modal-universal.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/datatables-sgp.css?v=2">
     <link rel="stylesheet" href="<?= URLROOT ?>/assets/libs/flatpickr/flatpickr.min.css">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/flatpickr-sgp.css">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/flatpickr-sgp.css?v=<?= @filemtime(APPROOT . '/../public/css/flatpickr-sgp.css') ?: time() ?>">
     <link rel="stylesheet" href="<?= URLROOT ?>/assets/libs/choices/choices.min.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/choices-sgp.css">
     <!-- DataTables Global (usado en Usuarios, Asistencias, Reportes) -->
@@ -72,16 +294,20 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     <!-- Grid.js (Bitácora / Auditoría) -->
     <link rel="stylesheet" href="<?= URLROOT ?>/css/gridjs-mermaid.min.css">
     <!-- Modal Asignación CSS (componente reutilizable) -->
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/modal-asignacion.css">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/modal-asignacion.css?v=<?= @filemtime(APPROOT . '/../public/css/modal-asignacion.css') ?: time() ?>">
+    <!-- Bento OTP Morphing CSS (2FA / Vinculación) -->
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/bento-otp.css?v=<?= @filemtime(APPROOT . '/../public/css/bento-otp.css') ?: time() ?>">
 
     <!-- IMPORTANTE: style.css debe cargar AL FINAL para tener prioridad sobre otros frameworks -->
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/style.css?v=3">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/sidebar.css?v=5">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/mobile-dock.css?v=7">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/topbar.css?v=6">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/style.css?v=10">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/sidebar.css?v=10">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/mobile-dock.css?v=<?= @filemtime(APPROOT . '/../public/css/mobile-dock.css') ?: 11 ?>">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/topbar.css?v=10">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/loading.css">
     <!-- Dark Mode CSS (Fase 5) -->
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/dark-mode.css?v=19">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/dark-mode.css?v=21">
+    <!-- SGP Modal Universal (Blindaje absoluto y máxima prioridad sobre layout y sidebars) -->
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/modal-universal.css?v=<?= @filemtime(APPROOT . '/../public/css/modal-universal.css') ?: time() ?>">
 
     <?php
     // Branding Dinámico (Fase 5)
@@ -113,10 +339,39 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     }
     html:not([data-theme="dark"]) .admin-banner,
     html:not([data-theme="dark"]) .pasantes-banner,
+    html:not([data-theme="dark"]) .superadmin-banner,
+    html:not([data-theme="dark"]) .tutor-banner,
     html:not([data-theme="dark"]) .users-banner,
     html:not([data-theme="dark"]) .dashboard-banner,
     html:not([data-theme="dark"]) .module-banner,
-    html:not([data-theme="dark"]) .asig-banner {
+    html:not([data-theme="dark"]) .asig-banner,
+    html:not([data-theme="dark"]) .ev-banner,
+    html:not([data-theme="dark"]) .ev-hero,
+    html:not([data-theme="dark"]) .man-banner,
+    html:not([data-theme="dark"]) .pb-hero,
+    html:not([data-theme="dark"]) .as-hero,
+    html:not([data-theme="dark"]) .act-hero,
+    html:not([data-theme="dark"]) .con-hero,
+    html:not([data-theme="dark"]) .an-hero,
+    html:not([data-theme="dark"]) .ex-hero,
+    html:not([data-theme="dark"]) .td-hero,
+    html:not([data-theme="dark"]) .ta-hero,
+    html:not([data-theme="dark"]) .cfg-hero,
+    html:not([data-theme="dark"]) .mp-banner,
+    html:not([data-theme="dark"]) .punt-banner,
+    html:not([data-theme="dark"]) .tpp-banner,
+    html:not([data-theme="dark"]) .perm-banner,
+    html:not([data-theme="dark"]) .eg-banner,
+    html:not([data-theme="dark"]) .inst-banner,
+    html:not([data-theme="dark"]) .pc-banner,
+    html:not([data-theme="dark"]) .sc-banner,
+    html:not([data-theme="dark"]) .backup-banner,
+    html:not([data-theme="dark"]) .welcome-banner,
+    html:not([data-theme="dark"]) .p-banner,
+    html:not([data-theme="dark"]) .periodos-banner,
+    html:not([data-theme="dark"]) .modal-head,
+    html:not([data-theme="dark"]) .act-modal-header,
+    html:not([data-theme="dark"]) .con-doc-header {
         background: linear-gradient(135deg, var(--color-primary, #172554) 0%, var(--gradient-mid, #1e3a8a) 50%, var(--color-accent-brand, #2563eb) 100%) !important;
     }
     </style>
@@ -303,14 +558,15 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     <script src="<?= URLROOT ?>/js/modern-charts.js"></script>
     <script src="<?= URLROOT ?>/js/notifications.js?v=3"></script>
     <script src="<?= URLROOT ?>/js/sidebar.js?v=3"></script>
-    <script src="<?= URLROOT ?>/js/mobile-dock.js?v=5"></script>
+    <script src="<?= URLROOT ?>/js/mobile-dock.js?v=<?= @filemtime(APPROOT . '/../public/js/mobile-dock.js') ?: 6 ?>"></script>
     <script src="<?= URLROOT ?>/js/validation.js?v=2"></script>
-    <script src="<?= URLROOT ?>/js/modal-universal.js"></script>
+    <script src="<?= URLROOT ?>/js/modal-universal.js?v=<?= @filemtime(APPROOT . '/../public/js/modal-universal.js') ?: time() ?>"></script>
     <script src="<?= URLROOT ?>/assets/libs/flatpickr/flatpickr.min.js"></script>
     <script src="<?= URLROOT ?>/assets/libs/flatpickr/flatpickr-es.js"></script>
     <script src="<?= URLROOT ?>/js/flatpickr-init.js?v=3"></script>
     <script src="<?= URLROOT ?>/assets/libs/choices/choices.min.js"></script>
     <script src="<?= URLROOT ?>/js/choices-init.js"></script>
+    <script src="<?= URLROOT ?>/js/qrcode.min.js"></script>
     <!-- SGP-PJAX: Navegación fluida sin recarga de página -->
     <script src="<?= URLROOT ?>/js/sgp-pjax.js?v=4"></script>
     <!-- Rol del usuario autenticado (usado por scripts de notificaciones) -->
@@ -728,6 +984,29 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     })();
     </script>
     <?php endif; ?>
+    <script src="<?= URLROOT ?>/js/sgp-biometria.js?v=<?= @filemtime(APPROOT . '/../public/js/sgp-biometria.js') ?: time() ?>"></script>
+    <script src="<?= URLROOT ?>/js/sgp-pattern-lock.js?v=<?= @filemtime(APPROOT . '/../public/js/sgp-pattern-lock.js') ?: time() ?>"></script>
+    <script src="<?= URLROOT ?>/js/sgp-dispositivos.js?v=<?= @filemtime(APPROOT . '/../public/js/sgp-dispositivos.js') ?: time() ?>"></script>
+    <script src="<?= URLROOT ?>/js/bento-otp.js?v=<?= @filemtime(APPROOT . '/../public/js/bento-otp.js') ?: time() ?>"></script>
+    <script>
+    if ('serviceWorker' in navigator) {
+        var isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        var isSelfSignedLocalHttps = location.protocol === 'https:' && isLocalhost;
+        if (isSelfSignedLocalHttps) {
+            // En https://localhost de XAMPP con certificado autofirmado el navegador rechaza
+            // los Service Workers con error SSL. Desregistramos para mantener la consola limpia.
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+                regs.forEach(function(r) { r.unregister(); });
+            }).catch(function(){});
+        } else {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('<?= URLROOT ?>/sw.js?v=<?= @filemtime(APPROOT . '/../public/sw.js') ?: time() ?>')
+                    .then(function(reg) { if (reg) reg.update(); })
+                    .catch(function(){});
+            });
+        }
+    }
+    </script>
 </body>
 
 </html>

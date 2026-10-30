@@ -1,0 +1,102 @@
+/**
+ * ============================================
+ * VARIABLES CSS - Sistema de Diseño SGP
+ * ============================================
+ * 
+ * Este archivo contiene todas las variables CSS globales
+ * del sistema. Modificar aquí afecta todo el diseño.
+ */
+
+:root {
+    color-scheme: light only;
+
+    /* ==================== LAYOUT ==================== */
+    --sidebar-width: 280px;
+    --topbar-height: 70px;
+
+    /* ==================== COLORES ==================== */
+    /* Colores Principales */
+    --color-primary: #162660;
+    /* Azul Institucional */
+    --color-bg: #F0F5FA;
+    /* Fondo General */
+    --color-card: #FFFFFF;
+    /* Fondo de Tarjetas */
+    --color-accent: #F1E4D1;
+    /* Color de Acento */
+
+    /* Colores de Texto */
+    --text-body: #64748B;
+    /* Texto Normal */
+    --text-muted: #94A3B8;
+    /* Texto Secundario */
+    --text-dark: #1E293B;
+    /* Texto Oscuro */
+
+    /* Colores de Estado */
+    --color-success: #10B981;
+    /* Verde - Éxito */
+    --color-error: #EF4444;
+    /* Rojo - Error */
+    --color-warning: #F59E0B;
+    /* Amarillo - Advertencia */
+    --color-info: #3B82F6;
+    /* Azul - Información */
+
+    /* ==================== SIDEBAR ==================== */
+    --sidebar-bg: #0F172A;
+    /* Fondo Sidebar */
+    --marker-bg: #F8FAFC;
+    /* Marcador Activo */
+    --text-inactive: #94A3B8;
+    /* Texto Inactivo */
+    --text-active: #1E293B;
+    /* Texto Activo */
+    --icon-active: #3B82F6;
+    /* Icono Activo */
+    --curve-size: 20px;
+    /* Tamaño Curva Líquida */
+
+    /* ==================== BORDER RADIUS ==================== */
+    --card-radius: 24px;
+    --btn-radius: 12px;
+    --input-radius: 12px;
+    --badge-radius: 10px;
+    --dropdown-radius: 16px;
+
+    /* ==================== SPACING ==================== */
+    --spacing-internal: 28px;
+    /* Padding Interno */
+    --spacing-gap: 24px;
+    /* Gap entre Elementos */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    /* ==================== SHADOWS ==================== */
+    --smart-shadow: 0px 12px 24px -10px rgba(22, 38, 96, 0.08);
+    --hover-shadow: 0px 20px 40px -10px rgba(22, 38, 96, 0.15);
+    --dropdown-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    /* ==================== TRANSITIONS ==================== */
+    --transition-speed: 0.3s;
+    --transition-fast: 0.2s;
+    --transition-slow: 0.5s;
+    --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ==================== Z-INDEX ==================== */
+    --z-dropdown: 1000;
+    --z-sidebar: 1040;
+    --z-topbar: 1050;
+    --z-modal: 1060;
+    --z-tooltip: 1070;
+
+    /* ==================== ALIASES (Compatibilidad) ==================== */
+    --deep-azure: var(--color-primary);
+    --soft-sand: var(--color-accent);
+    --white: #FFFFFF;
+}
+

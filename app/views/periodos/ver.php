@@ -39,7 +39,7 @@
 .form-label { display:block; font-size:0.8rem; font-weight:700; color:#374151; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px; }
 .form-input { width:100%; padding:12px; border:2px solid #e5e7eb; border-radius:12px; font-size:0.95rem; color:#1e293b; background:#fafafa; transition: border-color 0.2s; }
 .form-input:focus { outline:none; border-color:#2563eb; }
-.btn-submit { width:100%; padding:14px; background:linear-gradient(135deg,#172554 0%,#2563eb 100%); color:white; border:none; border-radius:12px; font-size:0.95rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-submit { width:100%; padding:14px; background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--color-accent-brand, #2563eb) 100%); color:white; border:none; border-radius:12px; font-size:0.95rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
 
 /* ── KPI Cards V2 ─────────────────────────────────────────────────── */
 .per-kpi-ver2 {
@@ -70,9 +70,29 @@
 /* ── Bento Pasantes Cards V2 ──────────────────────────────────────── */
 .pasantes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
 @media (max-width: 1300px) { .pasantes-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 768px)  { .pasantes-grid { grid-template-columns: 1fr; } }
-@media (max-width: 1024px) { .kpi-grid-4 { grid-template-columns: repeat(2,1fr) !important; } }
-@media (max-width: 600px)  { .kpi-grid-4 { grid-template-columns: 1fr !important; } }
+@media (max-width: 900px)  { .pasantes-grid { grid-template-columns: 1fr !important; gap: 16px !important; } }
+@media (max-width: 1024px) { .kpi-grid-4 { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; } }
+@media (max-width: 768px)  { 
+    .pasantes-grid { grid-template-columns: 1fr !important; gap: 14px !important; margin-top: 14px !important; }
+    .dept-accordion { border-radius: 14px !important; margin-bottom: 14px !important; }
+    .dept-acc-header { padding: 14px 16px !important; }
+    .dept-acc-body { padding: 0 12px 16px !important; }
+    .sw-pcard { padding: 14px !important; border-radius: 14px !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
+    .kpi-grid-4 { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+    .per-kpi-ver2 { padding: 14px 16px !important; border-radius: 14px !important; }
+    .per-kpi-label { font-size: 0.72rem !important; }
+    .per-kpi-val { font-size: 1.5rem !important; }
+    .per-kpi-icon { width: 36px !important; height: 36px !important; font-size: 1.1rem !important; border-radius: 10px !important; }
+    .module-banner.periodos-banner { padding: 20px 16px !important; border-radius: 16px !important; }
+}
+@media (max-width: 480px)  {
+    .kpi-grid-4 { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+    .per-kpi-ver2 { padding: 12px 10px !important; }
+    .per-kpi-label { font-size: 0.65rem !important; }
+    .per-kpi-val { font-size: 1.3rem !important; }
+    .sw-pcard-actions { gap: 6px !important; }
+    .btn-p-acti { font-size: 0.7rem !important; padding: 7px 4px !important; gap: 4px !important; }
+}
 
 .sw-pcard {
     background: white; border-radius: 16px; border: 1px solid #e2e8f0;
@@ -149,6 +169,11 @@
     transition: all 0.2s;
 }
 .rpt-date-input:focus { border-color: #1D4ED8; background: #fff; box-shadow: 0 0 0 4px rgba(29,78,216,0.07); }
+[data-theme="dark"] .module-banner.periodos-banner {
+    background: linear-gradient(135deg, #090d16 0%, #0f1c3f 50%, #1e3a8a 100%) !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
 </style>
 
 <div class="dashboard-container">
@@ -163,7 +188,7 @@
     ?>
 
     <!-- ── Banner Bento del Período ─────────────────────────────────────── -->
-    <div style="background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);border-radius:24px;padding:32px;margin-bottom:24px;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(30,58,138,0.25);">
+    <div class="module-banner periodos-banner" style="background:linear-gradient(135deg,var(--color-primary, #172554) 0%,var(--gradient-mid, #1e3a8a) 50%,var(--color-accent-brand, #2563eb) 100%);border-radius:24px;padding:32px;margin-bottom:24px;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(30,58,138,0.25);">
         <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);border-radius:50%;pointer-events:none;"></div>
         
         <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:20px;position:relative;z-index:1;">
@@ -677,7 +702,7 @@ function generarInformePeriodo(id, estado, event) {
 }
 
 // ── Ajustar fechas individuales de un pasante ────────────────
-let _ajPasanteId = 0;
+var _ajPasanteId = 0;
 
 function abrirAjustarFechas(id, nombre, fechaIni, fechaFin, horasMeta) {
     _ajPasanteId = id;
@@ -977,9 +1002,9 @@ async function ajustarTodosA1440(periodoId) {
     }
 }
 
-// ── Reabrir período desde la vista de detalle ────────────────
-const _CSRF_VER  = '<?= Session::generateCsrfToken() ?>';
-const _PERIODO_ID = <?= (int)($periodo->id ?? 0) ?>;
+// ── Reabrir período desde la vista de detalle (var para PJAX) ────
+var _CSRF_VER  = '<?= Session::generateCsrfToken() ?>';
+var _PERIODO_ID = <?= (int)($periodo->id ?? 0) ?>;
 
 <?php
 // Recopilar instituciones únicas de los pasantes de este período
@@ -993,7 +1018,7 @@ foreach ($pasantes as $p) {
 }
 ?>
 // Mapa institución nombre → id (desde query dedicada en el controlador)
-const _INST_MAP = <?php
+var _INST_MAP = <?php
     $instMap = [];
     foreach ($institucionesPeriodo ?? [] as $inst) {
         if (!empty($inst->nombre) && (int)$inst->id > 0) {

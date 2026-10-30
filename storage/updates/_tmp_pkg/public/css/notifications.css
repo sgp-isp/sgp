@@ -1,0 +1,584 @@
+/**
+ * ============================================
+ * NOTIFICACIONES - Estilos y Animaciones
+ * ============================================
+ * 
+ * Estilos para el sistema de notificaciones del topbar.
+ * Incluye: ícono de campana, badge, dropdown, items.
+ */
+
+/* ==================== BOTÓN DE NOTIFICACIONES ==================== */
+
+.header-icon-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px !important;
+    padding: 10px !important;
+    border-radius: var(--btn-radius);
+    background: transparent;
+    border: none;
+    color: var(--text-body);
+    cursor: pointer;
+    transition: all var(--transition-fast) ease;
+}
+
+/* ✨ MEJORADO: Hover más visible, no oculta el icono */
+.header-icon-btn:hover {
+    background: rgba(22, 38, 96, 0.1);
+    transform: translateY(-2px) scale(1.05);
+    color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ✨ MEJORADO: Icono de campana con color institucional */
+.header-icon-btn i {
+    font-size: 26px;
+    color: #162660;
+    /* Azul oscuro institucional (mismo del perfil) */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ✨ MEJORADO: Hover más llamativo sin oscurecer */
+.header-icon-btn:hover i {
+    color: #0d1a3d;
+    /* Azul más oscuro */
+    transform: translateY(-3px) scale(1.15);
+    filter: drop-shadow(0 4px 8px rgba(22, 38, 96, 0.5));
+}
+
+/* ✨ MEJORADO: Color dorado cuando hay notificaciones */
+.header-icon-btn.has-notifications i {
+    color: #f59e0b;
+    /* Dorado llamativo */
+    animation: bellShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both,
+        bellGlow 2s ease-in-out infinite;
+}
+
+/* ✨ MEJORADO: Hover con notificaciones - Dorado intenso */
+.header-icon-btn.has-notifications:hover i {
+    color: #d97706;
+    /* Dorado más intenso */
+    transform: translateY(-3px) scale(1.15);
+    filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.6));
+    animation: bellShake 0.5s ease-in-out infinite;
+}
+
+/* ==================== ANIMACIONES ==================== */
+
+/* Animación de resplandor para notificaciones */
+@keyframes bellGlow {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.4));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.8));
+    }
+}
+
+/* ==================== BADGE DE NOTIFICACIONES ==================== */
+
+.notification-badge {
+    /* Oculto por defecto — JS lo muestra añadiendo la clase .badge-visible */
+    display: none;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--color-error);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--badge-radius);
+    padding: 0 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Visible solo cuando JS confirma que hay notificaciones */
+.notification-badge.badge-visible {
+    display: flex;
+    animation: badgePulse 2s ease-in-out infinite,
+               badgeRipple 2s ease-in-out infinite;
+}
+
+/* Badge sin animación cuando dropdown está abierto */
+.dropdown-menu.show~.header-icon-btn .notification-badge {
+    animation: none;
+}
+
+/* ==================== DROPDOWN DE NOTIFICACIONES ==================== */
+
+#notificationsDropdown {
+    border-radius: var(--dropdown-radius);
+    box-shadow: var(--dropdown-shadow);
+    border: none;
+    min-width: 320px;
+    max-width: 400px;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Header del dropdown */
+#notificationsDropdown .dropdown-header {
+    background: linear-gradient(135deg, var(--color-primary) 0%, #1e3a8a 100%);
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 12px 16px;
+    border-radius: var(--dropdown-radius) var(--dropdown-radius) 0 0;
+}
+
+/* Lista de notificaciones */
+#notificationList {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden !important;
+    padding: 8px 0;
+}
+
+/* Scrollbar personalizado */
+#notificationList::-webkit-scrollbar {
+    width: 6px;
+}
+
+#notificationList::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#notificationList::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+#notificationList::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ==================== ITEMS DE NOTIFICACIONES ==================== */
+
+.notification-item {
+    padding: 12px 16px;
+    border-left: 3px solid transparent;
+    transition: all var(--transition-fast) ease;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.notification-item:hover {
+    background: rgba(22, 38, 96, 0.05);
+    border-left-color: var(--color-primary);
+    transform: none;
+}
+
+/* Notificación no leída */
+.notification-item.unread {
+    background: rgba(59, 130, 246, 0.05);
+    font-weight: 600;
+}
+
+.notification-item.unread::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--color-info);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+}
+
+/* Icono de notificación */
+.notification-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+}
+
+.notification-icon.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--color-success);
+}
+
+.notification-icon.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--color-error);
+}
+
+.notification-icon.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--color-warning);
+}
+
+.notification-icon.info {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--color-info);
+}
+
+/* Contenido de notificación */
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.notification-message {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.notification-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ==================== FOOTER DEL DROPDOWN ==================== */
+
+.dropdown-footer {
+    background: #f8fafc;
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    border-top: 1px solid #e2e8f0;
+    transition: background var(--transition-fast) ease;
+}
+
+.dropdown-footer:hover {
+    background: #f1f5f9;
+    color: #1e3a8a;
+}
+
+/* Botón "Marcar todas como leídas" */
+#markAllReadBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+#markAllReadBtn i {
+    font-size: 16px;
+}
+
+/* ==================== ESTADOS VACÍOS ==================== */
+
+.notification-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.notification-empty i {
+    font-size: 48px;
+    color: #cbd5e1;
+    margin-bottom: 12px;
+}
+
+.notification-empty p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+@media (max-width: 767px) {
+    #notificationsDropdown {
+        /* Sobrescrito por el media query en header.php (position: fixed full-width) */
+        min-width: 100vw;
+        max-width: 100vw;
+        max-height: 70vh;
+        border-radius: 0 0 20px 20px;
+    }
+
+    #notificationList {
+        /* Sin max-height fijo: el dropdown ya tiene 70vh como límite */
+        max-height: none;
+    }
+
+    .notif-item {
+        padding: 14px 16px;
+    }
+}
+
+/* === SGP TOAST CONTAINER === */
+#sgp-toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+/* === TOAST CARD === */
+.sgp-toast {
+    width: 320px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(22, 38, 96, 0.1);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    pointer-events: auto;
+}
+
+.sgp-toast.toast-show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.sgp-toast.toast-hide {
+    transform: translateX(120%);
+    opacity: 0;
+}
+
+/* === RESPONSIVE MÓVIL TOASTS === */
+@media (max-width: 768px) {
+    #sgp-toast-container {
+        top: 14px;
+        left: 12px;
+        right: 12px;
+        width: auto;
+        z-index: 999999;
+        align-items: center;
+    }
+    .sgp-toast {
+        width: 100%;
+        max-width: 440px;
+        transform: translateY(-40px);
+        box-shadow: 0 12px 36px rgba(15, 23, 42, 0.22);
+    }
+    .sgp-toast.toast-show {
+        transform: translateY(0);
+    }
+    .sgp-toast.toast-hide {
+        transform: translateY(-40px);
+        opacity: 0;
+    }
+}
+
+/* === TOAST CONTENT === */
+.toast-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.toast-body {
+    flex-grow: 1;
+}
+
+.toast-title {
+    margin: 0 0 4px 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.toast-msg {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 2px;
+    transition: color 0.2s;
+}
+
+.toast-close:hover {
+    color: #1e293b;
+}
+
+/* === TOAST PROGRESS BAR === */
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.1);
+    width: 100%;
+    border-radius: 0 0 12px 12px;
+}
+
+.toast-progress-bar {
+    height: 100%;
+    width: 100%;
+    animation: toast-shrink 2.8s linear forwards;
+}
+
+@keyframes toast-shrink {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+/* === TOAST VARIANTS (Solid Color Backgrounds + White Contrast) === */
+.toast-success {
+    background: linear-gradient(135deg, #2ecc71 0%, #219150 100%);
+}
+
+.toast-success .toast-icon {
+    color: #d1fae5;
+}
+
+.toast-success .toast-title {
+    color: #ffffff;
+}
+
+.toast-success .toast-msg {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.toast-success .toast-close {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.toast-success .toast-close:hover {
+    color: #fff;
+}
+
+.toast-success .toast-progress {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.toast-success .toast-progress-bar {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.toast-error {
+    background: #DC2626;
+}
+
+.toast-error .toast-icon {
+    color: #fecaca;
+}
+
+.toast-error .toast-title {
+    color: #ffffff;
+}
+
+.toast-error .toast-msg {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.toast-error .toast-close {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.toast-error .toast-close:hover {
+    color: #fff;
+}
+
+.toast-error .toast-progress {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.toast-error .toast-progress-bar {
+    background: #fecaca;
+}
+
+.toast-warning {
+    background: #D97706;
+}
+
+.toast-warning .toast-icon {
+    color: #fef3c7;
+}
+
+.toast-warning .toast-title {
+    color: #ffffff;
+}
+
+.toast-warning .toast-msg {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.toast-warning .toast-close {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.toast-warning .toast-close:hover {
+    color: #fff;
+}
+
+.toast-warning .toast-progress {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.toast-warning .toast-progress-bar {
+    background: #fef3c7;
+}
+
+.toast-info {
+    background: #2563eb;
+}
+
+.toast-info .toast-icon {
+    color: #dbeafe;
+}
+
+.toast-info .toast-title {
+    color: #ffffff;
+}
+
+.toast-info .toast-msg {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.toast-info .toast-close {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.toast-info .toast-close:hover {
+    color: #fff;
+}
+
+.toast-info .toast-progress {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.toast-info .toast-progress-bar {
+    background: #dbeafe;
+}

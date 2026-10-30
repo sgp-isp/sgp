@@ -71,12 +71,48 @@ class UsersController extends Controller
         $db->query("SELECT id, nombre FROM instituciones ORDER BY nombre");
         $instituciones = $db->resultSet();
 
+        // Estado del período académico (para advertencias preventivas en creación de pasantes)
+        require_once APPROOT . '/helpers/PeriodoService.php';
+        $periodoActivo = PeriodoService::getActivo();
+
         $this->view('users/index', [
             'users'         => $users,
             'kpis'          => $kpis,
             'roles'         => $roles,
             'departamentos' => $departamentos,
             'instituciones' => $instituciones,
+            'periodoActivo' => $periodoActivo,
+        ]);
+    }
+
+    /**
+     * Listado exclusivo de Pasantes Egresados (cohorte / período cerrado)
+     */
+    public function egresados()
+    {
+        $egresados = $this->userModel->getEgresadosUsers();
+        $kpis = $this->userModel->getUsersKPIs();
+        
+        $db = Database::getInstance();
+        $db->query("SELECT id, nombre, estado, fecha_inicio, fecha_fin FROM periodos_academicos ORDER BY fecha_inicio DESC");
+        $periodos = $db->resultSet();
+        
+        $db->query("SELECT id, nombre FROM instituciones ORDER BY nombre");
+        $instituciones = $db->resultSet();
+
+        $db->query("SELECT id, nombre FROM departamentos ORDER BY nombre");
+        $departamentos = $db->resultSet();
+
+        $db->query("SELECT id, nombre FROM roles ORDER BY id");
+        $roles = $db->resultSet();
+
+        $this->view('users/egresados', [
+            'egresados'     => $egresados,
+            'kpis'          => $kpis,
+            'periodos'      => $periodos,
+            'instituciones' => $instituciones,
+            'departamentos' => $departamentos,
+            'roles'         => $roles,
         ]);
     }
 
@@ -141,13 +177,22 @@ class UsersController extends Controller
 
             // 4. Si es Pasante con institución: crear registro mínimo en datos_pasante
             if ($rol_id == 3 && $institucion_id) {
+                $instNombre = '';
+                $db->query("SELECT nombre FROM instituciones WHERE id = :iid LIMIT 1");
+                $db->bind(':iid', $institucion_id);
+                $iRow = $db->single();
+                if ($iRow) $instNombre = $iRow->nombre;
+
                 $db->query("
-                    INSERT INTO datos_pasante (usuario_id, estado_pasantia, institucion_id)
-                    VALUES (:uid, 'Sin Asignar', :inst)
-                    ON DUPLICATE KEY UPDATE institucion_id = VALUES(institucion_id)
+                    INSERT INTO datos_pasante (usuario_id, estado_pasantia, institucion_id, institucion_procedencia)
+                    VALUES (:uid, 'Sin Asignar', :inst, :inst_nom)
+                    ON DUPLICATE KEY UPDATE
+                        institucion_id = VALUES(institucion_id),
+                        institucion_procedencia = VALUES(institucion_procedencia)
                 ");
-                $db->bind(':uid',  $userId);
-                $db->bind(':inst', $institucion_id);
+                $db->bind(':uid',      $userId);
+                $db->bind(':inst',     $institucion_id);
+                $db->bind(':inst_nom', $instNombre ?: $institucion_id);
                 $db->execute();
             }
 
@@ -170,6 +215,187 @@ class UsersController extends Controller
             // [FIX-C2] Mensaje genérico al cliente — detalle interno solo en log
             error_log('[SGP-USERS] create() Error: ' . $e->getMessage());
             $this->jsonResponse(false, 'Error al crear el usuario. Intente de nuevo.');
+        }
+    }
+
+    /**
+     * AJAX: Registro Grupal / Masivo de Pasantes por Institución
+     * POST /users/crearGrupal
+     */
+    public function crearGrupal(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->jsonResponse(false, 'Método no permitido.');
+        }
+
+        $csrf = $_POST['csrf_token'] ?? '';
+        if (!Session::validateCsrfToken($csrf)) {
+            $this->jsonResponse(false, 'Token CSRF inválido o sesión expirada. Recarga la página.');
+        }
+
+        $institucionId = !empty($_POST['institucion_id']) ? (int)$_POST['institucion_id'] : null;
+
+        // Decodificar lista de pasantes
+        $pasantesRaw = $_POST['pasantes'] ?? [];
+        if (is_string($pasantesRaw)) {
+            $pasantesRaw = json_decode($pasantesRaw, true) ?? [];
+        }
+
+        if (empty($pasantesRaw) || !is_array($pasantesRaw)) {
+            $this->jsonResponse(false, 'Debe incluir al menos un pasante con datos válidos.');
+        }
+
+        if (count($pasantesRaw) > 50) {
+            $this->jsonResponse(false, 'El límite máximo por lote es de 50 pasantes.');
+        }
+
+        $db = Database::getInstance();
+        $limpios = [];
+        $cedulasVistas = [];
+        $correosVistos = [];
+
+        // 1. Pre-validación de filas y unicidad interna dentro del lote
+        foreach ($pasantesRaw as $idx => $p) {
+            $filaNum = $idx + 1;
+            $cedula = trim($p['cedula'] ?? '');
+            $nombres = trim($p['nombres'] ?? '');
+            $apellidos = trim($p['apellidos'] ?? '');
+            $correo = strtolower(trim($p['correo'] ?? ''));
+
+            // Omitir filas completamente vacías
+            if ($cedula === '' && $nombres === '' && $apellidos === '' && $correo === '') {
+                continue;
+            }
+
+            // Validar cédula: entre 7 y 8 dígitos numéricos
+            if (!preg_match('/^[0-9]{7,8}$/', $cedula)) {
+                $this->jsonResponse(false, "Fila #{$filaNum}: Cédula '{$cedula}' inválida. Debe tener 7 u 8 dígitos numéricos.");
+            }
+
+            // Validar nombres y apellidos
+            if (empty($nombres) || mb_strlen($nombres) < 2) {
+                $this->jsonResponse(false, "Fila #{$filaNum}: El nombre es obligatorio (mínimo 2 letras).");
+            }
+            if (empty($apellidos) || mb_strlen($apellidos) < 2) {
+                $this->jsonResponse(false, "Fila #{$filaNum}: El apellido es obligatorio (mínimo 2 letras).");
+            }
+
+            // Validar correo
+            if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+                $this->jsonResponse(false, "Fila #{$filaNum}: El correo '{$correo}' no es válido.");
+            }
+
+            // Unicidad interna
+            if (isset($cedulasVistas[$cedula])) {
+                $this->jsonResponse(false, "La cédula {$cedula} está repetida varias veces en la lista a registrar.");
+            }
+            if (isset($correosVistos[$correo])) {
+                $this->jsonResponse(false, "El correo {$correo} está repetido varias veces en la lista a registrar.");
+            }
+
+            $cedulasVistas[$cedula] = true;
+            $correosVistos[$correo] = true;
+
+            $limpios[] = [
+                'cedula'    => $cedula,
+                'nombres'   => $nombres,
+                'apellidos' => $apellidos,
+                'correo'    => $correo,
+            ];
+        }
+
+        if (empty($limpios)) {
+            $this->jsonResponse(false, 'No hay pasantes válidos para registrar en el formulario.');
+        }
+
+        // 2. Pre-validación contra base de datos
+        foreach ($limpios as $item) {
+            if ($this->userModel->findByCedula($item['cedula'])) {
+                $this->jsonResponse(false, "La cédula {$item['cedula']} ({$item['nombres']} {$item['apellidos']}) ya está registrada en el sistema.");
+            }
+            if ($this->userModel->findByEmail($item['correo'])) {
+                $this->jsonResponse(false, "El correo {$item['correo']} ya está registrado en el sistema.");
+            }
+        }
+
+        // 3. Inserción atómica en base de datos
+        $creados = [];
+        try {
+            $db->beginTransaction();
+
+            foreach ($limpios as $item) {
+                $userData = [
+                    'cedula'          => $item['cedula'],
+                    'correo'          => $item['correo'],
+                    'rol_id'          => 3, // Pasante
+                    'departamento_id' => null,
+                ];
+
+                if (!$this->userModel->createWithTempPassword($userData)) {
+                    throw new Exception("Error al crear usuario para cédula {$item['cedula']}.");
+                }
+
+                $userId = (int)$db->lastInsertId();
+
+                // Datos personales
+                $db->query("INSERT INTO datos_personales (usuario_id, nombres, apellidos) VALUES (:uid, :nom, :ape)");
+                $db->bind(':uid', $userId);
+                $db->bind(':nom', $item['nombres']);
+                $db->bind(':ape', $item['apellidos']);
+                if (!$db->execute()) {
+                    throw new Exception("Error al guardar datos personales para {$item['nombres']} {$item['apellidos']}.");
+                }
+
+                // Datos pasante vinculados a la institución
+                $instBatchNombre = '';
+                if ($institucionId) {
+                    $db->query("SELECT nombre FROM instituciones WHERE id = :iid LIMIT 1");
+                    $db->bind(':iid', $institucionId);
+                    $ibRow = $db->single();
+                    if ($ibRow) $instBatchNombre = $ibRow->nombre;
+                }
+
+                $db->query("
+                    INSERT INTO datos_pasante (usuario_id, estado_pasantia, institucion_id, institucion_procedencia)
+                    VALUES (:uid, 'Sin Asignar', :inst, :inst_nom)
+                    ON DUPLICATE KEY UPDATE
+                        institucion_id = VALUES(institucion_id),
+                        institucion_procedencia = VALUES(institucion_procedencia)
+                ");
+                $db->bind(':uid',      $userId);
+                $db->bind(':inst',     $institucionId);
+                $db->bind(':inst_nom', $instBatchNombre ?: $institucionId);
+                $db->execute();
+
+                AuditModel::log('CREATE_USER_BATCH', 'usuarios', $userId, [
+                    'cedula'          => $item['cedula'],
+                    'rol_id'          => 3,
+                    'email'           => $item['correo'],
+                    'nombre_completo' => $item['nombres'] . ' ' . $item['apellidos'],
+                    'institucion_id'  => $institucionId,
+                ]);
+
+                $tempPass = $this->userModel->generateTempPassword($item['cedula']);
+                $creados[] = [
+                    'id'        => $userId,
+                    'cedula'    => $item['cedula'],
+                    'nombre'    => $item['nombres'] . ' ' . $item['apellidos'],
+                    'correo'    => $item['correo'],
+                    'password'  => $tempPass,
+                ];
+            }
+
+            $db->commit();
+
+            $this->jsonResponse(true, 'Se registraron exitosamente ' . count($creados) . ' pasantes.', [
+                'total'   => count($creados),
+                'creados' => $creados,
+            ]);
+
+        } catch (Exception $e) {
+            $db->rollBack();
+            error_log('[SGP-USERS] crearGrupal() Error: ' . $e->getMessage());
+            $this->jsonResponse(false, 'Error en el registro grupal: ' . $e->getMessage());
         }
     }
 
@@ -241,7 +467,7 @@ public function update()
     // 2a. Protección de integridad: bloquear cambio de rol entre familias incompatibles
     $nuevoRolId = (int)($_POST['rol_id'] ?? 0);
     $db = Database::getInstance();
-    $db->query("SELECT rol_id, cedula FROM usuarios WHERE id = :id LIMIT 1");
+    $db->query("SELECT rol_id, cedula, departamento_id FROM usuarios WHERE id = :id LIMIT 1");
     $db->bind(':id', $id);
     $currentRow = $db->single();
     $rolActual  = (int)($currentRow->rol_id ?? 0);
@@ -254,13 +480,13 @@ public function update()
         $this->jsonResponse(false, 'Acceso Denegado: Solo el SuperAdmin tiene privilegios para modificar la cédula de un usuario.');
     }
 
-    if ($nuevoRolId) {
-        // Familia A: Admin(1) y Tutor(2) | Familia B: Pasante(3)
+    if ($nuevoRolId !== null && $_POST['rol_id'] !== '') {
+        // Familia A: SuperAdmin(0), Admin(1) y Tutor(2) | Familia B: Pasante(3)
         $familiaActual = ($rolActual === 3) ? 'B' : 'A';
         $familiaNew    = ($nuevoRolId  === 3) ? 'B' : 'A';
 
-        if ($rolActual > 0 && $familiaActual !== $familiaNew) {
-            $nombres = [1 => 'Administrador', 2 => 'Tutor', 3 => 'Pasante'];
+        if ($familiaActual !== $familiaNew) {
+            $nombres = [0 => 'SuperAdministrador', 1 => 'Administrador', 2 => 'Tutor', 3 => 'Pasante'];
             $this->jsonResponse(false,
                 'No se puede cambiar el rol de ' . ($nombres[$rolActual] ?? "ID $rolActual") .
                 ' a ' . ($nombres[$nuevoRolId] ?? "ID $nuevoRolId") .
@@ -393,18 +619,23 @@ public function update()
             return ['success' => false, 'message' => 'La cédula ya se encuentra registrada en el sistema'];
         }
 
-        // Rol requerido
-        if (!$rol_id || $rol_id <= 0) {
+        // Rol requerido (0=SuperAdmin, 1=Admin, 2=Tutor, 3=Pasante)
+        if ($rol_id === false || $rol_id === null || $rol_id < 0) {
             return ['success' => false, 'message' => 'Debe seleccionar un rol para el usuario.'];
         }
 
-        // Tutors strict dependencies
+        // Tutors y Administradores: dependencias de departamento
         $departamento_id = null;
         if ($rol_id == 2) {
+            // Tutor: departamento estrictamente obligatorio
             $departamento_id = filter_var($datos['departamento_id'] ?? null, FILTER_VALIDATE_INT);
             if (!$departamento_id) {
                 return ['success' => false, 'message' => 'Debe seleccionar obligatoriamente un departamento para asignar al tutor'];
             }
+        } elseif (in_array($rol_id, [0, 1])) {
+            // SuperAdmin y Admin: departamento opcional
+            $depVal = filter_var($datos['departamento_id'] ?? null, FILTER_VALIDATE_INT);
+            $departamento_id = $depVal ?: null;
         }
 
         return [

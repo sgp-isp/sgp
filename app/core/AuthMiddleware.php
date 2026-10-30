@@ -138,7 +138,7 @@ class AuthMiddleware
 
                     $msg = 'Tu sesión fue cerrada porque tu cuenta fue desactivada.';
                     if ($roleId === 3) {
-                        // Consultar si fue por fin de período
+                        // Consultar si fue por fin de período o retiro
                         try {
                             $db->query("
                                 SELECT estado_pasantia FROM datos_pasante
@@ -151,6 +151,8 @@ class AuthMiddleware
                             if ($dp && $dp->estado_pasantia === 'Finalizado') {
                                 $msg = 'Tu período de pasantía ha finalizado. Tu sesión fue cerrada automáticamente. '
                                      . 'Comunícate con el administrador para más información.';
+                            } elseif ($dp && $dp->estado_pasantia === 'Retirado') {
+                                $msg = 'Tu condición de pasantía ha cambiado a Retirado. Tu sesión fue cerrada automáticamente.';
                             }
                         } catch (\Throwable $e) {}
                     }

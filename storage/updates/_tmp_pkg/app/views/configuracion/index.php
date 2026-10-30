@@ -1,0 +1,4297 @@
+<?php
+// Vista Configuración del Sistema — Bento UI
+$flashSuccess = Session::getFlash('success');
+$flashError = Session::getFlash('error');
+$instituciones   = $data['instituciones'] ?? [];
+$departamentos   = $data['departamentos'] ?? [];
+$kioscoActivo    = (int) ($data['kioscoActivo'] ?? 1);
+$feriados        = $data['feriados'] ?? [];
+$totalInst       = count($instituciones);
+$totalDepto      = count($departamentos);
+$totalFeriados   = count($feriados);
+$anioActual      = (int) date('Y');
+$hoy             = date('Y-m-d');
+?>
+<style>
+    /* ── ESTILOS COMPARTIDOS ────────────────────────── */
+    .cfg-edit-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #2563eb;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .2s;
+    }
+    .cfg-edit-btn:hover {
+        background: #dbeafe;
+    }
+
+    /* ── BENTO GRID ─────────────────────────────── */
+    .cfg-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 22px;
+        margin-bottom: 22px;
+    }
+
+    .cfg-card {
+        background: white;
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+        border: 1.5px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .cfg-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12), 0 4px 8px rgba(15, 23, 42, 0.06);
+        border-color: #cbd5e1;
+    }
+
+    .cfg-card.cfg-kpi-green:hover  { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(16, 185, 129, 0.5) !important; border-color: #10b981 !important; }
+    .cfg-card.cfg-kpi-blue:hover   { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(37, 99, 235, 0.5) !important; border-color: #3b82f6 !important; }
+    .cfg-card.cfg-kpi-amber:hover  { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(245, 158, 11, 0.5) !important; border-color: #f59e0b !important; }
+    .cfg-card.cfg-kpi-kiosco:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 20px -8px rgba(16, 185, 129, 0.5) !important; border-color: #10b981 !important; }
+
+    .cg-3 {
+        grid-column: span 3;
+    }
+
+    .cg-4 {
+        grid-column: span 4;
+    }
+
+    .cg-5 {
+        grid-column: span 5;
+    }
+
+    .cg-6 {
+        grid-column: span 6;
+    }
+
+    .cg-7 {
+        grid-column: span 7;
+    }
+
+    .cg-8 {
+        grid-column: span 8;
+    }
+
+    .cg-12 {
+        grid-column: span 12;
+    }
+
+    /* ── RESPONSIVE BENTO GRID & MÓVIL ─────────── */
+    @media (max-width: 991px) {
+        .cfg-grid {
+            gap: 16px;
+        }
+        .cg-3, .cg-4, .cg-5, .cg-6, .cg-7, .cg-8 {
+            grid-column: span 12 !important;
+        }
+        .cfg-card {
+            padding: 18px 16px;
+            border-radius: 16px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .cfg-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .cg-3, .cg-4, .cg-5, .cg-6, .cg-7, .cg-8, .cg-12 {
+            width: 100% !important;
+            grid-column: auto !important;
+        }
+        .cfg-card {
+            padding: 16px 14px !important;
+            border-radius: 14px !important;
+        }
+        .cfg-card-header {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 12px !important;
+        }
+        .notif-bento-grid {
+            grid-template-columns: 1fr !important;
+            gap: 14px !important;
+        }
+        .notif-header-flex {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+        }
+        .notif-tab-pills {
+            width: 100% !important;
+            display: flex !important;
+        }
+        .notif-tab-pills button {
+            flex: 1 !important;
+            text-align: center !important;
+            justify-content: center !important;
+            padding: 7px 10px !important;
+        }
+        .notif-search-wrap {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+        }
+        .cfg-kpis-grid {
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+        }
+        .notif-history-item, .notif-proxima-item, .notif-user-card {
+            padding: 10px 10px !important;
+            gap: 10px !important;
+        }
+        .cfg-hist-title {
+            max-width: 180px;
+        }
+    }
+
+    /* ── KPI CARDS ──────────────────────────────── */
+    .cfg-kpi-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 14px;
+    }
+
+    .cfg-kpi-value {
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 5px;
+    }
+
+    .cfg-kpi-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    /* ── CARD HEADERS ───────────────────────────── */
+    .cfg-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .cfg-card-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .cfg-icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .cfg-badge {
+        font-size: 0.72rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 700;
+    }
+
+    /* ── LIST ITEMS ──────────────────────────────── */
+    .cfg-list-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #f8fafc;
+    }
+
+    .cfg-list-item:last-child {
+        border-bottom: none;
+    }
+
+    .cfg-list-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cfg-list-name {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.88rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cfg-list-sub {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 260px;
+    }
+
+    .cfg-delete-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        background: #fef2f2;
+        color: #ef4444;
+        cursor: pointer;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .cfg-delete-btn:hover {
+        background: #fee2e2;
+        transform: scale(1.08);
+    }
+
+    /* ── ADD FORM (inline) ───────────────────────── */
+    .cfg-add-form {
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 2px dashed #e2e8f0;
+    }
+
+    .cfg-field-label {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 6px;
+    }
+
+    .cfg-input {
+        width: 100%;
+        padding: 10px 13px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        color: #1e293b;
+        background: white;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+        font-family: inherit;
+    }
+
+    .cfg-input:focus {
+        outline: none;
+        border-color: #2563eb;
+    }
+
+    .cfg-btn-primary {
+        width: 100%;
+        padding: 11px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        background: linear-gradient(135deg, #172554 0%, #2563eb 100%);
+        color: white;
+        font-size: 0.9rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        font-family: inherit;
+    }
+
+    .cfg-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+    }
+
+    /* ── READONLY FIELD ──────────────────────────── */
+    .cfg-readonly {
+        width: 100%;
+        padding: 10px 13px;
+        border: 2px solid #f1f5f9;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        color: #64748b;
+        background: #f8fafc;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    /* ── TOGGLE SWITCH ───────────────────────────── */
+    .cfg-toggle-wrap {
+        position: relative;
+        display: inline-block;
+        width: 54px;
+        height: 30px;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .cfg-toggle-wrap input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .cfg-toggle-track {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #e2e8f0;
+        border-radius: 30px;
+        transition: 0.3s;
+    }
+
+    .cfg-toggle-dot {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 22px;
+        height: 22px;
+        background: white;
+        border-radius: 50%;
+        transition: 0.3s;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+    }
+
+    .cfg-toggle-wrap input:checked~.cfg-toggle-track {
+        background: #22c55e;
+    }
+
+    .cfg-toggle-wrap input:checked~.cfg-toggle-dot {
+        left: 28px;
+    }
+
+    /* ── INFO ROW (datos ISP) ────────────────────── */
+    .cfg-info-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        background: #f8fafc;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        border: 1px solid #f1f5f9;
+    }
+
+    .cfg-info-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cfg-info-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .cfg-info-value {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-top: 1px;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────── */
+    @media (max-width: 1200px) {
+        .cg-3 {
+            grid-column: span 6;
+        }
+
+        .cg-4 {
+            grid-column: span 6;
+        }
+
+        .cg-5 {
+            grid-column: span 12;
+        }
+
+        .cg-7 {
+            grid-column: span 12;
+        }
+
+        .cg-8 {
+            grid-column: span 12;
+        }
+    }
+
+    @media (max-width: 760px) {
+
+        .cg-3,
+        .cg-4,
+        .cg-6 {
+            grid-column: span 12;
+        }
+    }
+</style>
+
+<div style="width:100%;">
+
+    <!-- ===== BANNER ===== -->
+    <style>
+        @media (max-width: 991px) {
+            .dashboard-banner {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                padding: 24px 20px !important;
+                gap: 20px !important;
+            }
+
+            .dashboard-banner>div:first-child,
+            .dashboard-banner>div:nth-child(2) {
+                display: none !important;
+            }
+
+            .dashboard-banner>div:last-child {
+                width: 100% !important;
+                text-align: left !important;
+            }
+        }
+    </style>
+    <div class="dashboard-banner"
+        style="background:linear-gradient(135deg,#172554 0%,#1e3a8a 50%,#2563eb 100%);border-radius:24px;padding:38px 40px;margin-bottom:28px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;box-shadow:0 10px 30px rgba(23,37,84,0.15);">
+        <div
+            style="position:absolute;top:-40px;right:-40px;width:220px;height:220px;background:rgba(255,255,255,0.05);border-radius:50%;">
+        </div>
+        <div
+            style="position:absolute;bottom:-50px;left:-30px;width:180px;height:180px;background:rgba(255,255,255,0.04);border-radius:50%;">
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;z-index:1;">
+            <div style="background:rgba(255,255,255,0.15);border-radius:16px;padding:14px;">
+                <i class="ti ti-settings-2" style="font-size:32px;color:white;"></i>
+            </div>
+            <div>
+                <h1 style="color:white;font-size:1.85rem;font-weight:800;margin:0;letter-spacing:-0.5px;">
+                    Configuración del Sistema
+                </h1>
+                <p style="color:rgba(255,255,255,0.7);margin:4px 0 0;font-size:0.9rem;">
+                    <i class="ti ti-building-community"></i> <?= $totalDepto ?>
+                    departamento<?= $totalDepto !== 1 ? 's' : '' ?>
+                    &nbsp;·&nbsp; <i class="ti ti-school"></i> <?= $totalInst ?>
+                    institución<?= $totalInst !== 1 ? 'es' : '' ?>
+                </p>
+            </div>
+        </div>
+        <div style="z-index:1;text-align:right;">
+            <div
+                style="background:rgba(255,255,255,0.12);border-radius:12px;padding:10px 18px;color:rgba(255,255,255,0.9);font-size:0.82rem;font-weight:600;">
+                <i class="ti ti-building-hospital"></i> Instituto de Salud Pública<br>
+                <span style="opacity:0.7;font-weight:400;">SGP · Sistema de Gestión</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FILA KPIs ===== -->
+    <div class="cfg-grid">
+
+        <!-- KPI: Departamentos -->
+        <div class="cfg-card cg-3 cfg-kpi-green" style="border-left:4px solid #059669;">
+            <div class="cfg-kpi-icon" style="background:#f0fdf4;color:#059669;">
+                <i class="ti ti-building-community"></i>
+            </div>
+            <div class="cfg-kpi-value" style="color:#059669;"><?= $totalDepto ?></div>
+            <div class="cfg-kpi-label">Departamentos activos</div>
+        </div>
+
+        <!-- KPI: Instituciones -->
+        <div class="cfg-card cg-3 cfg-kpi-blue" style="border-left:4px solid #2563eb;">
+            <div class="cfg-kpi-icon" style="background:#eff6ff;color:#2563eb;">
+                <i class="ti ti-school"></i>
+            </div>
+            <div class="cfg-kpi-value" style="color:#2563eb;"><?= $totalInst ?></div>
+            <div class="cfg-kpi-label">Escuelas técnicas aliadas</div>
+        </div>
+
+        <!-- KPI: Kiosco -->
+        <div class="cfg-card cg-3 cfg-kpi-kiosco" style="border-left:4px solid <?= $kioscoActivo ? '#22c55e' : '#dc2626' ?>;"
+            id="kpi-kiosco-card">
+            <div class="cfg-kpi-icon"
+                style="background:<?= $kioscoActivo ? '#dcfce7' : '#fee2e2' ?>;color:<?= $kioscoActivo ? '#16a34a' : '#dc2626' ?>;"
+                id="kpi-kiosco-icon-box">
+                <i class="ti ti-device-desktop"></i>
+            </div>
+            <div class="cfg-kpi-value"
+                style="color:<?= $kioscoActivo ? '#16a34a' : '#dc2626' ?>;font-size:1.3rem;padding-top:4px;"
+                id="kpi-kiosco-label"><?= $kioscoActivo ? 'Activo' : 'Inactivo' ?></div>
+            <div class="cfg-kpi-label">Estado del kiosco</div>
+        </div>
+
+        <!-- KPI: Meta de horas -->
+        <div class="cfg-card cg-3 cfg-kpi-amber" style="border-left:4px solid #f59e0b;">
+            <div class="cfg-kpi-icon" style="background:#fef3c7;color:#d97706;">
+                <i class="ti ti-clock-hour-4"></i>
+            </div>
+            <div class="cfg-kpi-value" style="color:#d97706;font-size:1.3rem;padding-top:4px;">Dinámica</div>
+            <div class="cfg-kpi-label">Horas meta por pasante</div>
+        </div>
+
+    </div><!-- /KPIs -->
+
+    <!-- ===== CARD DESTACADA: PUNTO DE ASISTENCIA QR OFICIAL ===== -->
+    <div class="cfg-grid" style="margin-bottom:22px;">
+        <div class="cfg-card cg-12" style="background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%);border:2px solid #334155;color:#fff;padding:26px 28px;position:relative;overflow:hidden;box-shadow:0 15px 35px rgba(0,0,0,0.25);">
+            <!-- Glow background decorativo -->
+            <div style="position:absolute;top:-50px;right:-30px;width:240px;height:240px;background:radial-gradient(circle, rgba(16,185,129,0.22) 0%, transparent 70%);border-radius:50%;pointer-events:none;"></div>
+            <div style="position:absolute;bottom:-60px;left:35%;width:200px;height:200px;background:radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%);border-radius:50%;pointer-events:none;"></div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;position:relative;z-index:2;">
+                <!-- Columna Izquierda: QR Preview y Datos -->
+                <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap;">
+                    <div style="background:#fff;padding:12px;border-radius:18px;border:3px solid #10b981;box-shadow:0 8px 24px rgba(16,185,129,0.3);flex-shrink:0;">
+                        <div id="cfgMiniQr" style="width:124px;height:124px;display:flex;align-items:center;justify-content:center;"></div>
+                    </div>
+                    <div>
+                        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);color:#34d399;padding:4px 12px;border-radius:999px;font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">
+                            <i class="ti ti-point-filled"></i> Quiosco de Autogestión Móvil
+                        </div>
+                        <h2 style="color:#fff;font-size:1.45rem;font-weight:900;margin:0 0 6px;letter-spacing:-0.3px;">Punto de Asistencia y Cartel QR Oficial</h2>
+                        <p style="color:#94a3b8;font-size:0.86rem;margin:0 0 12px;max-width:580px;line-height:1.45;">
+                            Este código QR se imprime y se ubica en el área de recepción o entrada de la institución. Los pasantes lo escanean desde su smartphone usando sus datos móviles (a través de Cloudflare Tunnel) para registrar su entrada o salida diaria de forma autónoma.
+                        </p>
+                        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+                            <span style="font-size:0.8rem;color:#cbd5e1;font-weight:600;">Token Activo de Seguridad:</span>
+                            <span style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);padding:4px 12px;border-radius:8px;font-family:monospace;font-size:0.84rem;font-weight:800;color:#38bdf8;letter-spacing:1px;" id="tokenBadgeHeader">
+                                <?= htmlspecialchars($data['kioscoQrToken'] ?? 'ISPEB-ASIST-2026-HQ') ?>
+                            </span>
+                        </div>
+
+                        <!-- Configuración de URL Pública / Túnel Móvil -->
+                        <div style="background:rgba(0,0,0,0.28);border:1px solid rgba(255,255,255,0.14);border-radius:12px;padding:12px 14px;max-width:580px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                                <label style="font-size:0.75rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.6px;display:flex;align-items:center;gap:6px;">
+                                    <i class="ti ti-world" style="color:#38bdf8;font-size:0.95rem;"></i> URL de Red / Túnel para Datos Móviles:
+                                </label>
+                                <span style="font-size:0.7rem;color:#34d399;font-weight:700;" id="cfgUrlStatusBadge">
+                                    <i class="ti ti-circle-check"></i> Activo
+                                </span>
+                            </div>
+                            <div style="display:flex;gap:8px;">
+                                <input type="url" id="cfgUrlPublicaInput"
+                                       value="<?= htmlspecialchars($data['urlPublica'] ?? '') ?>"
+                                       placeholder="<?= htmlspecialchars(rtrim(URLROOT, '/')) ?>"
+                                       style="flex:1;background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.22);color:#fff;padding:8px 12px;border-radius:8px;font-size:0.83rem;outline:none;font-family:monospace;">
+                                <button type="button" onclick="guardarUrlPublica(this)"
+                                        style="background:linear-gradient(135deg, #2563eb, #1d4ed8);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 3px 10px rgba(37,99,235,0.35);">
+                                    <i class="ti ti-device-floppy"></i> Guardar
+                                </button>
+                            </div>
+                            <div style="font-size:0.72rem;color:#64748b;margin-top:6px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+                                <span>Destino del Cartel: <code style="color:#38bdf8;font-weight:700;" id="cfgEffectiveUrlLabel"><?= htmlspecialchars(!empty($data['urlPublica']) ? $data['urlPublica'] : rtrim(URLROOT, '/')) ?></code></span>
+                                <a href="javascript:void(0)" onclick="restablecerUrlLocal()" style="color:#94a3b8;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:4px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">
+                                    <i class="ti ti-rotate-2"></i> Usar Detección Local
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Acciones Rápidas -->
+                <div style="display:flex;flex-direction:column;gap:10px;min-width:240px;">
+                    <a href="<?= URLROOT ?>/configuracion/cartelQr" target="_blank"
+                       style="padding:12px 20px;background:linear-gradient(135deg, #10b981 0%, #059669 100%);color:#fff;border-radius:12px;font-size:0.92rem;font-weight:800;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 20px rgba(16,185,129,0.35);transition:all 0.2s;"
+                       onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                        <i class="ti ti-printer" style="font-size:1.2rem;"></i> Imprimir Cartel Oficial
+                    </a>
+                    <button type="button" onclick="regenerarTokenQr(this)"
+                       style="padding:11px 18px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.2);color:#e2e8f0;border-radius:12px;font-size:0.86rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;"
+                       onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+                        <i class="ti ti-refresh" style="font-size:1.1rem;color:#f59e0b;"></i> Regenerar Token QR
+                    </button>
+                    <a href="<?= URLROOT ?>/kiosco" target="_blank"
+                       style="padding:10px 18px;background:transparent;border:1.5px dashed rgba(255,255,255,0.25);color:#94a3b8;border-radius:12px;font-size:0.82rem;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;"
+                       onmouseover="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,0.5)'" onmouseout="this.style.color='#94a3b8';this.style.borderColor='rgba(255,255,255,0.25)'">
+                        <i class="ti ti-external-link"></i> Abrir Vista del Quiosco
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FILA 2: Departamentos + Instituciones ===== -->
+    <div class="cfg-grid">
+
+        <!-- CARD: Departamentos -->
+        <div class="cfg-card cg-6">
+            <div class="cfg-card-header">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#f0fdf4;">
+                        <i class="ti ti-building-community" style="font-size:1.1rem;color:#059669;"></i>
+                    </div>
+                    <div>
+                        <div>Departamentos</div>
+                        <div style="font-size:0.72rem;color:#94a3b8;font-weight:500;margin-top:1px;">Áreas internas del
+                            ISP</div>
+                    </div>
+                </div>
+                <span class="cfg-badge" style="background:#f0fdf4;color:#059669;"><?= $totalDepto ?>
+                    activo<?= $totalDepto !== 1 ? 's' : '' ?></span>
+            </div>
+
+            <!-- Lista -->
+            <div style="flex:1;overflow-y:auto;max-height:300px;">
+                <?php if (empty($departamentos)): ?>
+                    <div style="text-align:center;padding:36px 20px;color:#94a3b8;">
+                        <i class="ti ti-building-community"
+                            style="font-size:2.5rem;display:block;margin-bottom:10px;opacity:0.5;"></i>
+                        <p style="margin:0;font-size:0.88rem;">No hay departamentos registrados.</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($departamentos as $depto): ?>
+                        <div class="cfg-list-item">
+                            <div class="cfg-list-avatar" style="background:linear-gradient(135deg,#172554,#1e3a8a);">
+                                <i class="ti ti-building-community" style="font-size:1rem;color:white;"></i>
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div class="cfg-list-name"><?= htmlspecialchars($depto['nombre']) ?></div>
+                                <?php if (!empty($depto['descripcion'])): ?>
+                                    <div class="cfg-list-sub"><?= htmlspecialchars($depto['descripcion']) ?></div>
+                                <?php endif; ?>
+                            </div>
+                            <div style="display:flex;gap:4px;align-items:center;">
+                                <button type="button" class="cfg-edit-btn"
+                                    onclick="abrirEditarDepto(<?= (int) $depto['id'] ?>, '<?= htmlspecialchars($depto['nombre'], ENT_QUOTES) ?>', '<?= htmlspecialchars($depto['descripcion'] ?? '', ENT_QUOTES) ?>')"
+                                    title="Editar departamento">
+                                    <i class="ti ti-pencil" style="font-size:0.95rem;"></i>
+                                </button>
+                                <form method="POST" action="<?= URLROOT ?>/configuracion" style="margin:0;">
+                                    <input type="hidden" name="accion" value="eliminar_departamento">
+                                    <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+                                    <input type="hidden" name="id" value="<?= (int) $depto['id'] ?>">
+                                    <button type="button" class="cfg-delete-btn"
+                                        onclick="confirmarEliminar(this, 'departamento', '<?= htmlspecialchars($depto['nombre'], ENT_QUOTES) ?>')"
+                                        title="Eliminar departamento">
+                                        <i class="ti ti-trash" style="font-size:0.95rem;"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+
+            <!-- Botón abrir modal -->
+            <div class="cfg-add-form" style="padding:16px;">
+                <button type="button" onclick="abrirModalDepto()" class="cfg-btn-primary"
+                    style="width:100%;padding:11px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <i class="ti ti-circle-plus"></i> Nuevo Departamento
+                </button>
+            </div>
+        </div>
+
+        <!-- CARD: Instituciones / Escuelas Técnicas -->
+        <div class="cfg-card cg-6">
+            <div class="cfg-card-header">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#eff6ff;">
+                        <i class="ti ti-school" style="font-size:1.1rem;color:#2563eb;"></i>
+                    </div>
+                    <div>
+                        <div>Escuelas Técnicas Aliadas</div>
+                        <div style="font-size:0.72rem;color:#94a3b8;font-weight:500;margin-top:1px;">Origen de los
+                            pasantes</div>
+                    </div>
+                </div>
+                <span class="cfg-badge" style="background:#eff6ff;color:#2563eb;"><?= $totalInst ?>
+                    institución<?= $totalInst !== 1 ? 'es' : '' ?></span>
+            </div>
+
+            <!-- Lista -->
+            <div style="flex:1;overflow-y:auto;max-height:300px;">
+                <?php if (empty($instituciones)): ?>
+                    <div style="text-align:center;padding:36px 20px;color:#94a3b8;">
+                        <i class="ti ti-school" style="font-size:2.5rem;display:block;margin-bottom:10px;opacity:0.5;"></i>
+                        <p style="margin:0;font-size:0.88rem;">No hay escuelas registradas aún.</p>
+                        <p style="margin:6px 0 0;font-size:0.78rem;">Usa el formulario para agregar la primera.</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($instituciones as $inst): ?>
+                        <div class="cfg-list-item">
+                            <div class="cfg-list-avatar" style="background:linear-gradient(135deg,#1e40af,#3b82f6);">
+                                <i class="ti ti-building-factory-2" style="font-size:1rem;color:white;"></i>
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div class="cfg-list-name"><?= htmlspecialchars($inst['nombre']) ?></div>
+                                <div class="cfg-list-sub">
+                                    <i class="ti ti-map-pin"
+                                        style="margin-right:2px;"></i><?= htmlspecialchars($inst['direccion'] ?? '—') ?>
+                                </div>
+                                <?php if (!empty($inst['representante_nombre'])): ?>
+                                    <div
+                                        style="margin-top:4px;font-size:0.75rem;color:#4f46e5;display:flex;align-items:center;gap:4px;">
+                                        <i class="ti ti-user-check" style="font-size:0.8rem;"></i>
+                                        <span><?= htmlspecialchars($inst['representante_nombre']) ?></span>
+                                        <?php if (!empty($inst['representante_cargo'])): ?>
+                                            <span style="color:#94a3b8;">· <?= htmlspecialchars($inst['representante_cargo']) ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div style="display:flex;gap:4px;align-items:center;">
+                                <button type="button" class="cfg-edit-btn"
+                                    onclick="abrirEditarInstitucion(<?= (int) $inst['id'] ?>, <?= htmlspecialchars(json_encode($inst), ENT_QUOTES) ?>)"
+                                    title="Editar institución">
+                                    <i class="ti ti-pencil" style="font-size:0.95rem;"></i>
+                                </button>
+                                <form method="POST" action="<?= URLROOT ?>/configuracion" style="margin:0;">
+                                    <input type="hidden" name="accion" value="eliminar_institucion">
+                                    <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+                                    <input type="hidden" name="id" value="<?= (int) $inst['id'] ?>">
+                                    <button type="button" class="cfg-delete-btn"
+                                        onclick="confirmarEliminar(this, 'institución', '<?= htmlspecialchars($inst['nombre'], ENT_QUOTES) ?>')"
+                                        title="Eliminar institución">
+                                        <i class="ti ti-trash" style="font-size:0.95rem;"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+
+            <!-- Botón abrir modal -->
+            <div class="cfg-add-form" style="padding:16px;">
+                <button type="button" onclick="abrirModalInstitucion()" class="cfg-btn-primary"
+                    style="width:100%;padding:11px;background:linear-gradient(135deg,#1e40af,#3b82f6);box-shadow:0 4px 12px rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <i class="ti ti-circle-plus"></i> Nueva Institución
+                </button>
+            </div>
+        </div>
+
+    </div><!-- /Fila 2 -->
+
+    <!-- ===== FILA 3: Datos ISP + Kiosco ===== -->
+    <div class="cfg-grid">
+
+        <!-- CARD: Datos de la Institución (Editable) -->
+        <div class="cfg-card cg-4">
+            <div class="cfg-card-header">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#fef3c7;">
+                        <i class="ti ti-building-hospital" style="font-size:1.1rem;color:#d97706;"></i>
+                    </div>
+                    <div>
+                        <div>Datos de la Institución</div>
+                        <div style="font-size:0.72rem;color:#94a3b8;font-weight:500;margin-top:1px;">Información del ISP
+                        </div>
+                    </div>
+                </div>
+                <button type="button" onclick="abrirModalISP()" style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.2s;" onmouseover="this.style.background='#dbeafe';" onmouseout="this.style.background='#eff6ff';">
+                    <i class="ti ti-edit"></i> Editar
+                </button>
+            </div>
+
+            <?php
+            $isp = $data['ispInfo'] ?? [];
+            $infoCampos = [
+                ['icon' => 'ti-building-hospital', 'bg' => '#fef3c7', 'clr' => '#d97706', 'label' => 'Nombre', 'value' => $isp['nombre'] ?? 'Instituto de Salud Pública del Estado Bolívar (ISP)'],
+                ['icon' => 'ti-id-badge', 'bg' => '#eff6ff', 'clr' => '#2563eb', 'label' => 'RIF', 'value' => $isp['rif'] ?? 'G-20000366-9'],
+                ['icon' => 'ti-map', 'bg' => '#f0fdf4', 'clr' => '#059669', 'label' => 'Estado', 'value' => $isp['estado'] ?? 'Bolívar'],
+                ['icon' => 'ti-map-pin', 'bg' => '#fdf2f8', 'clr' => '#9333ea', 'label' => 'Ciudad', 'value' => $isp['ciudad'] ?? 'Ciudad Bolívar'],
+                ['icon' => 'ti-home', 'bg' => '#f8fafc', 'clr' => '#64748b', 'label' => 'Dirección', 'value' => $isp['direccion'] ?? 'Paseo Meneses, Torre ISP, Piso 3'],
+            ];
+            foreach ($infoCampos as $c): ?>
+                <div class="cfg-info-row">
+                    <div class="cfg-info-icon" style="background:<?= $c['bg'] ?>;">
+                        <i class="ti <?= $c['icon'] ?>" style="font-size:0.95rem;color:<?= $c['clr'] ?>;"></i>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="cfg-info-label"><?= $c['label'] ?></div>
+                        <div class="cfg-info-value" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= htmlspecialchars($c['value']) ?>">
+                            <?= htmlspecialchars($c['value']) ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- CARD: Kiosco -->
+        <div class="cfg-card cg-4">
+            <div class="cfg-card-header">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#fef3c7;">
+                        <i class="ti ti-device-desktop" style="font-size:1.1rem;color:#d97706;"></i>
+                    </div>
+                    <div>
+                        <div>Configuración del Kiosco</div>
+                        <div style="font-size:0.72rem;color:#94a3b8;font-weight:500;margin-top:1px;">Registro de
+                            asistencia de pasantes</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <!-- Toggle Estado -->
+                <div
+                    style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <p style="margin:0;font-weight:700;color:#1e293b;font-size:0.92rem;">Estado del Kiosco</p>
+                        <p style="margin:3px 0 0;color:#64748b;font-size:0.78rem;">Habilitar o deshabilitar el acceso
+                        </p>
+                    </div>
+                    <label class="cfg-toggle-wrap">
+                        <input type="checkbox" id="kioscoToggle" <?= $kioscoActivo ? 'checked' : '' ?>>
+                        <span class="cfg-toggle-track"></span>
+                        <span class="cfg-toggle-dot"></span>
+                    </label>
+                </div>
+
+                <div id="kioscoStatusBadge"
+                    style="background:#d1fae5;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:9px;">
+                    <i class="ti ti-circle-check" id="kioscoStatusIcon"
+                        style="color:#059669;font-size:1.15rem;flex-shrink:0;"></i>
+                    <div>
+                        <p style="margin:0;font-size:0.82rem;font-weight:700;" id="kioscoStatusText">Kiosco activo y
+                            operativo</p>
+                        <p style="margin:2px 0 0;font-size:0.73rem;color:#065f46;" id="kioscoStatusSub">Los pasantes
+                            pueden registrar asistencia</p>
+                    </div>
+                </div>
+
+                <!-- Toggle Geolocalización / Geocerca GPS -->
+                <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <i class="ti ti-map-pin" style="color:#0284c7;font-size:1.05rem;"></i>
+                            <p style="margin:0;font-weight:700;color:#1e293b;font-size:0.92rem;">Geolocalización GPS</p>
+                        </div>
+                        <p style="margin:3px 0 0;color:#64748b;font-size:0.78rem;">Exigir ubicación en sede ISPEB (200m) al marcar</p>
+                    </div>
+                    <label class="cfg-toggle-wrap">
+                        <input type="checkbox" id="geocercaToggle" <?= ($data['geocercaActiva'] ?? 1) ? 'checked' : '' ?>>
+                        <span class="cfg-toggle-track"></span>
+                        <span class="cfg-toggle-dot"></span>
+                    </label>
+                </div>
+
+                <div id="geocercaStatusBadge" style="background:<?= ($data['geocercaActiva'] ?? 1) ? '#e0f2fe' : '#fef3c7' ?>;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:9px;">
+                    <i class="ti <?= ($data['geocercaActiva'] ?? 1) ? 'ti-shield-check' : 'ti-shield-off' ?>" id="geocercaStatusIcon"
+                        style="color:<?= ($data['geocercaActiva'] ?? 1) ? '#0284c7' : '#d97706' ?>;font-size:1.15rem;flex-shrink:0;"></i>
+                    <div>
+                        <p style="margin:0;font-size:0.82rem;font-weight:700;color:<?= ($data['geocercaActiva'] ?? 1) ? '#0369a1' : '#92400e' ?>;" id="geocercaStatusText">
+                            <?= ($data['geocercaActiva'] ?? 1) ? 'Restricción GPS activa' : 'Modo Pruebas (GPS Desactivado)' ?>
+                        </p>
+                        <p style="margin:2px 0 0;font-size:0.73rem;color:<?= ($data['geocercaActiva'] ?? 1) ? '#075985' : '#78350f' ?>;" id="geocercaStatusSub">
+                            <?= ($data['geocercaActiva'] ?? 1) ? 'Solo se permite marcar dentro del radio de 200m de la institución' : 'Permite marcar asistencia desde cualquier ubicación (ideal para pruebas)' ?>
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    style="background:#f1f5f9;border-radius:9px;padding:10px 13px;display:flex;align-items:flex-start;gap:8px;">
+                    <i class="ti ti-info-circle" style="color:#64748b;font-size:1rem;flex-shrink:0;margin-top:1px;"></i>
+                    <span style="font-size:0.76rem;color:#64748b;line-height:1.5;">
+                        El quiosco permite registro automático mediante código QR oficial o PIN de 4 dígitos.
+                    </span>
+                </div>
+
+                <!-- Cartel Oficial QR (Fase 5) -->
+                <div style="background:#f8fafc;border-radius:14px;padding:14px;border:1px solid #e2e8f0;display:flex;flex-direction:column;gap:10px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <span style="font-size:0.78rem;font-weight:700;color:#334155;">Token del Cartel:</span>
+                        <code id="displayQrToken" style="background:#e2e8f0;padding:2px 8px;border-radius:6px;font-size:0.76rem;font-weight:800;color:#0f172a;letter-spacing:0.5px;">
+                            <?= htmlspecialchars($data['kioscoQrToken'] ?? 'ISPEB-ASIST-2026-HQ') ?>
+                        </code>
+                    </div>
+                    
+                    <div style="display:flex;gap:8px;">
+                        <a href="<?= URLROOT ?>/configuracion/cartelQr" target="_blank"
+                           style="flex:1;padding:9px 12px;background:#1e3a8a;color:#ffffff;border-radius:9px;text-align:center;font-size:0.78rem;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;"
+                           onmouseover="this.style.background='#172554'" onmouseout="this.style.background='#1e3a8a'">
+                            <i class="ti ti-printer"></i> Imprimir Cartel
+                        </a>
+                        <button type="button" onclick="regenerarTokenQr(this)"
+                           style="padding:9px 12px;background:#ffffff;border:1.5px solid #cbd5e1;color:#475569;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all 0.2s;"
+                           title="Regenerar Token del Cartel"
+                           onmouseover="this.style.borderColor='#94a3b8';this.style.background='#f1f5f9';" onmouseout="this.style.borderColor='#cbd5e1';this.style.background='#ffffff';">
+                            <i class="ti ti-refresh"></i> Regenerar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD: Reset PIN -->
+        <div class="cfg-card cg-4">
+            <div class="cfg-card-header">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#fef3c7;">
+                        <i class="ti ti-key" style="font-size:1.1rem;color:#d97706;"></i>
+                    </div>
+                    <div>
+                        <div>Restablecer PIN</div>
+                        <div style="font-size:0.72rem;color:#94a3b8;font-weight:500;margin-top:1px;">De Pasante</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <button onclick="SGPModal.buscar()"
+                    style="width:100%;padding:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;box-shadow:0 4px 12px rgba(245,158,11,0.3);font-family:inherit;">
+                    <i class="ti ti-key" style="font-size:1.1rem;"></i> Buscar Pasante
+                </button>
+
+                <div
+                    style="background:#fef3c7;border-radius:10px;padding:10px 13px;display:flex;align-items:flex-start;gap:8px;">
+                    <i class="ti ti-info-circle" style="color:#92400e;font-size:1rem;flex-shrink:0;margin-top:2px;"></i>
+                    <span style="font-size:0.76rem;color:#92400e;font-weight:500;line-height:1.4;">
+                        Genera un nuevo PIN aleatorio de 4 dígitos. Se mostrará una sola vez.
+                    </span>
+                </div>
+
+                <!-- Quick links -->
+                <div style="display:flex;gap:8px;flex-direction:column;margin-top:4px;">
+                    <a href="<?= URLROOT ?>/kiosco" target="_blank"
+                        style="padding:10px;border:2px solid #fef3c7;border-radius:9px;text-align:center;font-size:0.78rem;font-weight:700;color:#d97706;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;transition:all 0.2s;"
+                        onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='transparent'">
+                        <i class="ti ti-external-link"></i> Abrir Kiosco
+                    </a>
+                    <a href="<?= URLROOT ?>/asistencias"
+                        style="padding:10px;border:2px solid #e0e7ff;border-radius:9px;text-align:center;font-size:0.78rem;font-weight:700;color:#6366f1;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;transition:all 0.2s;"
+                        onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='transparent'">
+                        <i class="ti ti-clipboard-list"></i> Ver Asistencias
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /Fila 3 -->
+
+    <!-- ===== FILA 4: Días Feriados + Mantenimiento ===== -->
+    <div class="cfg-grid">
+
+        <!-- CARD: Días Feriados (Premium Redesign) -->
+        <div class="cfg-card cg-8">
+            <?php
+            $meses_es    = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            $diasSemanaF = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+            $tipoPalF    = [
+                'Nacional'      => ['gradient'=>'linear-gradient(135deg,#7c3aed,#a78bfa)', 'bg'=>'#f5f3ff', 'color'=>'#7c3aed', 'dot'=>'#8b5cf6', 'border'=>'#ddd6fe'],
+                'Regional'      => ['gradient'=>'linear-gradient(135deg,#16a34a,#22c55e)', 'bg'=>'#f0fdf4', 'color'=>'#16a34a', 'dot'=>'#22c55e', 'border'=>'#bbf7d0'],
+                'Institucional' => ['gradient'=>'linear-gradient(135deg,#1e3a8a,#2563eb)', 'bg'=>'#eff6ff', 'color'=>'#2563eb', 'dot'=>'#3b82f6', 'border'=>'#bfdbfe'],
+            ];
+            $feriadosObj = array_map(fn($f) => (object)$f, $feriados);
+
+            // Próximo feriado
+            $proximoF  = null; $diasProx = 0;
+            foreach ($feriadosObj as $f) {
+                if ($f->fecha >= $hoy) { $proximoF = $f; $diasProx = (int)round((strtotime($f->fecha) - strtotime($hoy)) / 86400); break; }
+            }
+            // Agrupar por mes
+            $porMes = [];
+            foreach ($feriadosObj as $f) { $porMes[date('Y-m', strtotime($f->fecha))][] = $f; }
+            ?>
+
+            <!-- Header -->
+            <div class="cfg-card-header">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#f5f3ff;">
+                        <i class="ti ti-calendar-event" style="font-size:1.1rem;color:#7c3aed;"></i>
+                    </div>
+                    <div>
+                        <div>Días Feriados</div>
+                        <div style="font-size:0.72rem;color:#94a3b8;font-weight:500;margin-top:1px;">Días no laborables — excluidos del auto-fill de asistencias</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span class="cfg-badge" style="background:#f5f3ff;color:#7c3aed;"><?= $totalFeriados ?> en <?= $anioActual ?></span>
+                    <!-- Botón de sincronización API -->
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <button type="button" id="btnSyncFeriados" onclick="sincronizarFeriados(<?= date('Y') ?>)"
+                            style="background:linear-gradient(135deg,#059669,#10b981);color:white;padding:7px 13px;border:none;border-radius:10px;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .2s;box-shadow:0 4px 10px rgba(5,150,105,0.3);"
+                            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 14px rgba(5,150,105,0.4)'"
+                            onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 10px rgba(5,150,105,0.3)'">
+                            <i class="ti ti-refresh" id="iconSyncFeriados"></i> Sincronizar
+                        </button>
+                    </div>
+                    <a href="<?= URLROOT ?>/configuracion/calendario_feriados" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;padding:7px 12px;border-radius:10px;font-size:0.8rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:5px;transition:all .2s;box-shadow:0 4px 10px rgba(124,58,237,0.3);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                        <i class="ti ti-calendar-stats"></i> Almanaque
+                    </a>
+                </div>
+            </div>
+
+            <?php if (empty($feriados)): ?>
+            <!-- Estado vacío -->
+            <div style="text-align:center;padding:44px 20px;color:#94a3b8;flex:1;">
+                <i class="ti ti-calendar-off" style="font-size:3rem;display:block;margin-bottom:12px;opacity:.4;"></i>
+                <p style="margin:0;font-size:.88rem;font-weight:600;">No hay días feriados registrados</p>
+                <p style="margin:6px 0 0;font-size:.78rem;">Agrega feriados para excluirlos del auto-fill de asistencias.</p>
+            </div>
+
+            <?php else: ?>
+
+            <!-- ── Banner: Próximo Feriado ── -->
+            <?php if ($proximoF):
+                $palP = $tipoPalF[$proximoF->tipo] ?? $tipoPalF['Nacional'];
+                $tsP  = strtotime($proximoF->fecha);
+                $countdownLabel = $diasProx === 0 ? '¡Hoy!' : ($diasProx === 1 ? 'Mañana' : "En {$diasProx} días");
+            ?>
+            <div style="background:<?= $palP['bg'] ?>;border:1px solid <?= $palP['border'] ?>;border-radius:14px;padding:13px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+                <div style="background:<?= $palP['gradient'] ?>;border-radius:10px;width:46px;min-width:46px;text-align:center;padding:7px 0;box-shadow:0 4px 10px rgba(0,0,0,.15);flex-shrink:0;">
+                    <div style="font-size:1.2rem;font-weight:900;color:white;line-height:1;"><?= date('d',$tsP) ?></div>
+                    <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.6px;"><?= strtoupper(substr($meses_es[(int)date('n',$tsP)],0,3)) ?></div>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:<?= $palP['color'] ?>;margin-bottom:2px;">Próximo feriado</div>
+                    <div style="font-size:.9rem;font-weight:800;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($proximoF->nombre) ?></div>
+                    <div style="font-size:.7rem;color:#94a3b8;margin-top:2px;"><?= $diasSemanaF[(int)date('w',$tsP)] ?> <?= date('d',$tsP) ?> de <?= $meses_es[(int)date('n',$tsP)] ?></div>
+                </div>
+                <div style="background:<?= $palP['gradient'] ?>;color:white;border-radius:20px;padding:6px 13px;font-size:.75rem;font-weight:800;flex-shrink:0;white-space:nowrap;box-shadow:0 3px 8px rgba(0,0,0,.15);">
+                    <?= $countdownLabel ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- ── Lista agrupada por mes ── -->
+            <div style="flex:1;overflow-y:auto;max-height:280px;padding-right:2px;">
+
+                <?php
+                $hayHistoricos = array_reduce($feriadosObj, fn($c,$f) => $c || $f->fecha < $hoy, false);
+                if ($hayHistoricos): ?>
+                <div style="display:flex;align-items:flex-start;gap:7px;padding:8px 10px;background:#f8fafc;border:1px solid #f1f5f9;border-radius:10px;margin-bottom:12px;">
+                    <i class="ti ti-info-circle" style="font-size:.88rem;color:#94a3b8;flex-shrink:0;margin-top:1px;"></i>
+                    <span style="font-size:.72rem;color:#94a3b8;line-height:1.45;">Los feriados <strong>en gris</strong> ya transcurrieron — su fecha y eliminación están bloqueadas para proteger el historial, pero puedes <strong>editar su nombre y tipo</strong> con el <i class="ti ti-pencil" style="font-size:.7rem;"></i>.</span>
+                </div>
+                <?php endif; ?>
+
+                <?php foreach ($porMes as $mesKey => $feriadosMes):
+                    $mesNum  = (int)date('n', strtotime($mesKey.'-01'));
+                    $anioMes = date('Y', strtotime($mesKey.'-01'));
+                    $hayProx = array_reduce($feriadosMes, fn($c,$f) => $c || $f->fecha >= $hoy, false);
+                ?>
+                <!-- Separador de mes -->
+                <div style="display:flex;align-items:center;gap:8px;margin:0 0 8px;padding-top:4px;">
+                    <span style="font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:<?= $hayProx ? '#7c3aed' : '#94a3b8' ?>;white-space:nowrap;"><?= $meses_es[$mesNum] ?> <?= $anioMes ?></span>
+                    <div style="flex:1;height:1px;background:<?= $hayProx ? '#ddd6fe' : '#f1f5f9' ?>;"></div>
+                    <span style="font-size:.65rem;font-weight:700;color:<?= $hayProx ? '#a78bfa' : '#cbd5e1' ?>;background:<?= $hayProx ? '#f5f3ff' : '#f8fafc' ?>;border-radius:20px;padding:1px 7px;"><?= count($feriadosMes) ?></span>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
+                <?php foreach ($feriadosMes as $f):
+                    $esPasado = $f->fecha < $hoy;
+                    $esHoy    = $f->fecha === $hoy;
+                    $ts       = strtotime($f->fecha);
+                    $diasR    = (int)round((strtotime($f->fecha) - strtotime($hoy)) / 86400);
+                    $pal      = $tipoPalF[$f->tipo] ?? $tipoPalF['Nacional'];
+                    $diaNom   = $diasSemanaF[(int)date('w',$ts)];
+                    $numDia   = date('d',$ts);
+                    $mesNom   = $meses_es[(int)date('n',$ts)];
+                ?>
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;background:<?= $esPasado ? '#fafafa' : 'white' ?>;border-radius:12px;border:1px solid <?= $esPasado ? '#f1f5f9' : $pal['border'] ?>;transition:border-color .15s,background .15s;"
+                     onmouseover="this.style.background='<?= $esPasado ? '#f8fafc' : $pal['bg'] ?>';this.style.borderColor='<?= $esPasado ? '#e2e8f0' : $pal['dot'] ?>'"
+                     onmouseout="this.style.background='<?= $esPasado ? '#fafafa' : 'white' ?>';this.style.borderColor='<?= $esPasado ? '#f1f5f9' : $pal['border'] ?>'">
+
+                    <!-- Bloque fecha -->
+                    <div style="background:<?= $esPasado ? '#e2e8f0' : $pal['gradient'] ?>;border-radius:9px;width:40px;min-width:40px;text-align:center;padding:6px 0;flex-shrink:0;<?= $esPasado ? '' : 'box-shadow:0 3px 8px rgba(0,0,0,.12);' ?>">
+                        <div style="font-size:1rem;font-weight:900;color:<?= $esPasado ? '#94a3b8' : 'white' ?>;line-height:1;"><?= $numDia ?></div>
+                        <div style="font-size:.54rem;font-weight:700;color:<?= $esPasado ? '#94a3b8' : 'rgba(255,255,255,.85)' ?>;text-transform:uppercase;letter-spacing:.5px;"><?= strtoupper(substr($mesNom,0,3)) ?></div>
+                    </div>
+
+                    <!-- Info -->
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:.83rem;font-weight:700;color:<?= $esPasado ? '#94a3b8' : '#1e293b' ?>;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($f->nombre) ?></div>
+                        <div style="display:flex;align-items:center;gap:5px;margin-top:3px;">
+                            <span style="font-size:.68rem;color:#94a3b8;"><?= $diaNom ?></span>
+                            <span style="font-size:.65rem;color:#cbd5e1;">·</span>
+                            <?php if (!$esPasado): ?>
+                            <span style="display:inline-flex;align-items:center;gap:3px;background:<?= $pal['bg'] ?>;color:<?= $pal['color'] ?>;font-size:.62rem;font-weight:700;padding:1px 7px;border-radius:20px;">
+                                <span style="width:5px;height:5px;border-radius:50%;background:<?= $pal['dot'] ?>;flex-shrink:0;display:inline-block;"></span>
+                                <?= htmlspecialchars($f->tipo) ?>
+                            </span>
+                            <?php else: ?>
+                            <span style="display:inline-flex;align-items:center;gap:3px;background:#f1f5f9;color:#94a3b8;font-size:.62rem;font-weight:700;padding:1px 7px;border-radius:20px;">
+                                <i class="ti ti-history" style="font-size:.6rem;"></i> Histórico
+                            </span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Derecha: countdown / editar / trash -->
+                    <?php if ($esPasado): ?>
+                        <button type="button" class="cfg-delete-btn"
+                            style="background:#f5f3ff;color:#7c3aed;flex-shrink:0;"
+                            onclick="abrirEditarFeriado(<?= (int)$f->id ?>, '<?= htmlspecialchars($f->nombre, ENT_QUOTES) ?>', '<?= htmlspecialchars($f->tipo, ENT_QUOTES) ?>', '<?= $f->fecha ?>')"
+                            title="Editar nombre y tipo">
+                            <i class="ti ti-pencil" style="font-size:.9rem;"></i>
+                        </button>
+                    <?php else: ?>
+                        <span style="background:<?= $pal['bg'] ?>;color:<?= $pal['color'] ?>;border-radius:20px;padding:3px 9px;font-size:.68rem;font-weight:800;flex-shrink:0;white-space:nowrap;">
+                            <?= $esHoy ? '¡Hoy!' : ($diasR === 1 ? 'Mañana' : "+{$diasR}d") ?>
+                        </span>
+                        <form method="POST" action="<?= URLROOT ?>/configuracion" style="margin:0;flex-shrink:0;">
+                            <input type="hidden" name="accion" value="eliminar_feriado">
+                            <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+                            <input type="hidden" name="id"     value="<?= (int)$f->id ?>">
+                            <button type="button" class="cfg-delete-btn"
+                                onclick="confirmarEliminarFeriado(this, '<?= htmlspecialchars($f->nombre, ENT_QUOTES) ?>')"
+                                title="Eliminar feriado">
+                                <i class="ti ti-trash" style="font-size:.9rem;"></i>
+                            </button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
+
+            <?php endif; ?>
+
+            <!-- Botón agregar -->
+            <div class="cfg-add-form" style="padding-top:16px;">
+                <button type="button" onclick="abrirModalFeriado()" class="cfg-btn-primary">
+                    <i class="ti ti-circle-plus"></i> Registrar Día Feriado
+                </button>
+            </div>
+        </div>
+
+        <!-- CARD: Mantenimiento del Sistema -->
+        <div class="cfg-card cg-4">
+            <div class="cfg-card-header">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#f0fdf4;">
+                        <i class="ti ti-tool" style="font-size:1.1rem;color:#059669;"></i>
+                    </div>
+                    <div>
+                        <div>Mantenimiento</div>
+                        <div style="font-size:0.72rem;color:#94a3b8;font-weight:500;margin-top:1px;">Estado y limpieza del sistema</div>
+                    </div>
+                </div>
+                <span class="cfg-badge" style="background:#f0fdf4;color:#059669;" id="bdg-estado-bd">
+                    <i class="ti ti-circle" style="font-size:0.55rem;margin-right:2px;"></i>Sin verificar
+                </span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;">
+
+                <!-- Verificar BD -->
+                <div style="background:#eff6ff;border-radius:12px;padding:14px;border:1px solid #bfdbfe;transition:all 0.2s;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <div>
+                            <p style="margin:0;font-size:0.85rem;font-weight:800;color:#1e3a8a;">Base de Datos</p>
+                            <p style="margin:2px 0 0;font-size:0.73rem;color:#3b82f6;" id="txt-bd-sub">Verificar conexión y estado</p>
+                        </div>
+                        <div style="width:36px;height:36px;background:rgba(59,130,246,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                            <i class="ti ti-database" style="font-size:1.3rem;color:#2563eb;"></i>
+                        </div>
+                    </div>
+                    <button type="button" onclick="verificarBD(this)"
+                        style="width:100%;padding:9px;border:none;border-radius:9px;background:white;color:#2563eb;font-size:0.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;font-family:inherit;box-shadow:0 2px 6px rgba(59,130,246,0.1);"
+                        onmouseover="this.style.background='#dbeafe';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='white';this.style.transform='none'">
+                        <i class="ti ti-plug-connected"></i> <span id="txt-btn-bd">Verificar Conexión</span>
+                    </button>
+                </div>
+
+                <!-- Limpiar sesiones -->
+                <div style="background:#fff1f2;border-radius:12px;padding:14px;border:1px solid #fecdd3;transition:all 0.2s;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <div>
+                            <p style="margin:0;font-size:0.85rem;font-weight:800;color:#881337;">Sesiones Expiradas</p>
+                            <p style="margin:2px 0 0;font-size:0.73rem;color:#f43f5e;">Limpiar tokens de sesión vencidos</p>
+                        </div>
+                        <div style="width:36px;height:36px;background:rgba(244,63,94,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                            <i class="ti ti-eraser" style="font-size:1.3rem;color:#e11d48;"></i>
+                        </div>
+                    </div>
+                    <button type="button" onclick="limpiarSesiones(this)"
+                        style="width:100%;padding:9px;border:none;border-radius:9px;background:white;color:#e11d48;font-size:0.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;font-family:inherit;box-shadow:0 2px 6px rgba(244,63,94,0.1);"
+                        onmouseover="this.style.background='#ffe4e6';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='white';this.style.transform='none'">
+                        <i class="ti ti-trash-x"></i> <span>Limpiar Sesiones</span>
+                    </button>
+                </div>
+
+                <!-- Reloj Personalizado: Ventana de Asistencia -->
+                <style>
+                /* ── Dígitos del reloj (green) ──────────────────── */
+                .mfc-digit {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: clamp(24px, 2.8vw, 36px);
+                    height: clamp(36px, 4vw, 54px);
+                    background: #4c1d95;
+                    border-radius: 8px;
+                    box-shadow: 0 3px 10px rgba(124,58,237,0.3);
+                    flex-shrink: 1;
+                    transition: transform 0.08s ease;
+                }
+                .mfc-digit::before {
+                    content: attr(data-v);
+                    font-family: 'Courier New', Courier, monospace !important;
+                    font-size: clamp(1.2rem, 2.2vw, 2rem);
+                    font-weight: 900;
+                    color: #ede9fe;
+                    line-height: 1;
+                }
+                .mfc-digit.flip { transform: scaleY(0.82); }
+                .mfc-sep-char {
+                    font-size: clamp(1.1rem, 2vw, 1.8rem);
+                    font-weight: 900;
+                    color: #4c1d95;
+                    line-height: 1;
+                    padding: 0 1px;
+                    align-self: center;
+                    margin-top: 0;
+                }
+                .mfc-label {
+                    font-size: clamp(0.55rem, 0.8vw, 0.65rem);
+                    font-weight: 800;
+                    color: #7c3aed;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    margin-top: 5px;
+                    text-align: center;
+                }
+                #mfc-wrap {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: clamp(2px, 0.7vw, 6px);
+                    margin: 8px 0 14px;
+                    flex-wrap: nowrap;
+                    width: 100%;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                    overflow: hidden;
+                }
+                @keyframes mfcPulse{0%,100%{box-shadow:0 2px 8px rgba(220,38,38,0.2);}50%{box-shadow:0 2px 18px rgba(220,38,38,0.55);}}
+                /* ── Mobile ─────────────────────────────────────── */
+                @media (max-width: 480px) {
+                    .mfc-digit { width: 22px; height: 34px; border-radius: 6px; }
+                    .mfc-digit::before { font-size: 1.15rem; }
+                    .mfc-sep-char { font-size: 1.1rem; }
+                    .mfc-period-badge { font-size: 0.6rem; padding: 2px 4px; }
+                }
+                </style>
+
+                <div style="background:#f5f3ff;border-radius:12px;padding:16px;border:1px solid #ddd6fe;">
+                    <!-- Encabezado -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <?php
+                            $mesesEs = ['1'=>'Ene','2'=>'Feb','3'=>'Mar','4'=>'Abr','5'=>'May','6'=>'Jun','7'=>'Jul','8'=>'Ago','9'=>'Sep','10'=>'Oct','11'=>'Nov','12'=>'Dic'];
+                            $fechaFormateada = date('d') . ' ' . $mesesEs[date('n')] . ' ' . date('Y');
+                        ?>
+                        <div>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <p style="margin:0;font-size:0.85rem;font-weight:800;color:#4c1d95;">Ventana de Asistencia</p>
+                                <span style="background:#ddd6fe;color:#5b21b6;padding:2px 8px;border-radius:12px;font-size:0.65rem;font-weight:700;display:inline-flex;align-items:center;gap:3px;" title="Fecha del servidor">
+                                    <i class="ti ti-calendar-event"></i> <?= $fechaFormateada ?>
+                                </span>
+                            </div>
+                            <p id="mfc-subtitle" style="margin:4px 0 0;font-size:0.72rem;color:#8b5cf6;">Tiempo restante hoy — cierre a las 00:00</p>
+                        </div>
+                        <button onclick="mostrarLeyendaReloj()"
+                            title="Ver cómo funciona este módulo"
+                            style="width:34px;height:34px;background:rgba(139,92,246,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;transition:all .2s;flex-shrink:0;"
+                            onmouseover="this.style.background='rgba(139,92,246,0.28)'"
+                            onmouseout="this.style.background='rgba(139,92,246,0.15)'">
+                            <i class="ti ti-info-circle" style="font-size:1.25rem;color:#7c3aed;"></i>
+                        </button>
+                    </div>
+
+                    <!-- Estado fin de semana (oculto por defecto, JS lo muestra si aplica) -->
+                    <div id="mfc-weekend" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px 10px;margin:8px 0 14px;background:#f8fafc;border-radius:12px;border:1px dashed #cbd5e1;">
+                        <i class="ti ti-calendar-off" style="font-size:2rem;color:#94a3b8;"></i>
+                        <span id="mfc-weekend-label" style="font-size:0.82rem;font-weight:700;color:#64748b;text-align:center;">Fin de semana — sin asistencia</span>
+                        <span style="font-size:0.72rem;color:#94a3b8;text-align:center;">El sistema retoma el lunes</span>
+                    </div>
+
+                    <!-- Dígitos del reloj -->
+                    <div id="mfc-wrap" style="display:flex;align-items:flex-end;justify-content:center;gap:5px;margin:8px 0 14px;flex-wrap:nowrap;overflow:hidden;">
+                        <!-- Horas -->
+                        <div style="display:flex;flex-direction:column;align-items:center;">
+                            <div style="display:flex;gap:3px;">
+                                <span class="mfc-digit" id="mfc-h1" data-v="0"></span>
+                                <span class="mfc-digit" id="mfc-h2" data-v="0"></span>
+                            </div>
+                            <span class="mfc-label">Horas</span>
+                        </div>
+                        <span class="mfc-sep-char">:</span>
+                        <!-- Minutos -->
+                        <div style="display:flex;flex-direction:column;align-items:center;">
+                            <div style="display:flex;gap:3px;">
+                                <span class="mfc-digit" id="mfc-m1" data-v="0"></span>
+                                <span class="mfc-digit" id="mfc-m2" data-v="0"></span>
+                            </div>
+                            <span class="mfc-label">Min</span>
+                        </div>
+                        <span class="mfc-sep-char">:</span>
+                        <!-- Segundos -->
+                        <div style="display:flex;flex-direction:column;align-items:center;">
+                            <div style="display:flex;gap:3px;">
+                                <span class="mfc-digit" id="mfc-s1" data-v="0"></span>
+                                <span class="mfc-digit" id="mfc-s2" data-v="0"></span>
+                            </div>
+                            <span class="mfc-label">Seg</span>
+                        </div>
+                    </div>
+
+                    <!-- Barra de progreso del día -->
+                    <div id="mfc-bar-wrap" style="width:100%;margin-bottom:10px;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                            <span style="font-size:0.65rem;font-weight:700;color:#8b5cf6;">Día transcurrido</span>
+                            <span id="mfc-pct-label" style="font-size:0.65rem;font-weight:700;color:#8b5cf6;">0%</span>
+                        </div>
+                        <div style="width:100%;background:#ede9fe;border-radius:50rem;height:6px;overflow:hidden;">
+                            <div id="mfc-daybar" style="height:100%;border-radius:50rem;background:linear-gradient(90deg,#16a34a,#22c55e);transition:width 1s linear,background .8s ease;width:0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Badge sin marcar -->
+                    <div id="mfc-sinmarcar-box" style="width:100%;padding:8px 12px;border-radius:9px;background:white;box-shadow:0 2px 8px rgba(139,92,246,0.14);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <span id="mfc-badge-label" style="display:flex;align-items:center;gap:5px;font-size:0.75rem;font-weight:700;color:#6d28d9;">
+                            <i class="ti ti-users" style="font-size:1rem;"></i>
+                            Pasantes sin marcar hoy
+                        </span>
+                        <span style="display:flex;align-items:center;gap:4px;">
+                            <span id="mfc-count" style="font-size:1.1rem;font-weight:900;color:#7c3aed;"><?= (int)($data['statsDB']['sin_marcar_hoy'] ?? 0) ?></span>
+                            <i id="mfc-count-icon" class="ti ti-circle-check" style="font-size:1rem;color:#10b981;"></i>
+                        </span>
+                    </div>
+
+                    <!-- Link bitácora -->
+                    <a href="<?= URLROOT ?>/bitacora"
+                        style="width:100%;padding:7px;border-radius:9px;background:white;color:#7c3aed;font-size:0.8rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;box-shadow:0 2px 6px rgba(139,92,246,0.1);transition:all .2s;"
+                        onmouseover="this.style.background='#ede9fe';this.style.transform='translateY(-1px)'"
+                        onmouseout="this.style.background='white';this.style.transform='none'">
+                        <i class="ti ti-clipboard-list"></i> Ver Bitácora del Sistema
+                    </a>
+                </div>
+
+                <script>
+                (function(){
+                    // ── Detectar fin de semana (0=Dom, 6=Sáb) ──────────
+                    var hoyDow = new Date().getDay();
+                    var esFinDeSemana = (hoyDow === 0 || hoyDow === 6);
+
+                    if (esFinDeSemana) {
+                        var nombreDia = hoyDow === 6 ? 'Sábado' : 'Domingo';
+                        document.getElementById('mfc-weekend-label').textContent = nombreDia + ' — sin asistencia';
+                        document.getElementById('mfc-weekend').style.display  = 'flex';
+                        document.getElementById('mfc-wrap').style.display     = 'none';
+                        document.getElementById('mfc-bar-wrap').style.display = 'none';
+                        document.getElementById('mfc-sinmarcar-box').style.display = 'none';
+                        document.getElementById('mfc-subtitle').textContent   = 'Día no hábil — el sistema retoma el lunes';
+                        document.getElementById('mfc-subtitle').style.color   = '#94a3b8';
+                        return; // No iniciar el reloj
+                    }
+
+                    function setDigit(id, val) {
+                        var el = document.getElementById(id);
+                        if (!el) return;
+                        var v = String(val);
+                        if (el.dataset.v === v) return;
+                        el.dataset.v = v;
+                        el.classList.add('flip');
+                        setTimeout(function(){ el.classList.remove('flip'); }, 80);
+                    }
+
+                    var _mfcTimer;
+                    function updateClock() {
+                        // Si el elemento raíz ya no existe (navegación PJAX), detener el intervalo
+                        if (!document.getElementById('mfc-count')) {
+                            clearInterval(_mfcTimer); return;
+                        }
+                        var now = new Date(), mid = new Date(now);
+                        mid.setHours(24, 0, 0, 0);
+                        var rem = Math.max(0, Math.floor((mid - now) / 1000));
+
+                        var h24  = Math.floor(rem / 3600);
+                        var mins = Math.floor((rem % 3600) / 60);
+                        var secs = rem % 60;
+
+                        setDigit('mfc-h1', Math.floor(h24 / 10));
+                        setDigit('mfc-h2', h24 % 10);
+                        setDigit('mfc-m1', Math.floor(mins / 10));
+                        setDigit('mfc-m2', mins % 10);
+                        setDigit('mfc-s1', Math.floor(secs / 10));
+                        setDigit('mfc-s2', secs % 10);
+
+                        /* Progress bar */
+                        var pct    = Math.round((86400 - rem) / 864);
+                        var bar    = document.getElementById('mfc-daybar');
+                        var pctLbl = document.getElementById('mfc-pct-label');
+                        if (bar)    bar.style.width = pct + '%';
+                        if (pctLbl) pctLbl.textContent = pct + '%';
+
+                        /* Urgency — solo la barra cambia de color; reloj permanece morado */
+                        var barColor, barTextColor;
+                        if (rem > 14400) {
+                            barColor = 'linear-gradient(90deg,#16a34a,#22c55e)'; barTextColor = '#16a34a'; // Verde
+                        } else if (rem > 3600) {
+                            barColor = 'linear-gradient(90deg,#d97706,#f59e0b)'; barTextColor = '#d97706'; // Amarillo
+                        } else {
+                            barColor = 'linear-gradient(90deg,#dc2626,#ef4444)'; barTextColor = '#dc2626'; // Rojo
+                        }
+                        if (pctLbl) pctLbl.style.color = barTextColor;
+                        if (bar)    bar.style.background = barColor;
+
+                        /* Auto-fill al cruzar medianoche */
+                        if (rem === 0 && !window._mfcAutoFillFired) {
+                            window._mfcAutoFillFired = true;
+                            var csrf = document.querySelector('meta[name="csrf-token"]');
+                            if (csrf) {
+                                var fd = new FormData();
+                                fd.append('csrf_token', csrf.content);
+                                fetch(URLROOT + '/daemon/autoFill', { method:'POST', body:fd })
+                                    .then(function(r){ return r.json(); })
+                                    .then(function(d){
+                                        if (d.success) {
+                                            var n = d.stats ? d.stats.dias_rellenos : 0;
+                                            if (n > 0 && typeof Swal !== 'undefined') {
+                                                Swal.fire({ icon:'info', title:'Cierre del día', text: n + ' registros de ausencia generados automáticamente.', confirmButtonColor:'#4c1d95', timer:5000, timerProgressBar:true });
+                                            }
+                                        }
+                                    })
+                                    .catch(function(){});
+                            }
+                        }
+
+                        /* Badge sin marcar */
+                        var sinMarcar = parseInt(document.getElementById('mfc-count').textContent) || 0;
+                        var box = document.getElementById('mfc-sinmarcar-box');
+                        var lbl = document.getElementById('mfc-badge-label');
+                        var ico = document.getElementById('mfc-count-icon');
+                        if (sinMarcar > 0 && rem < 7200) {
+                            if (box) { box.style.animation = 'mfcPulse 1.4s ease-in-out infinite'; box.style.border = '1px solid rgba(220,38,38,0.25)'; }
+                            if (lbl) lbl.style.color = '#dc2626';
+                            if (ico) { ico.className = 'ti ti-alert-triangle'; ico.style.color = '#dc2626'; }
+                        } else if (sinMarcar > 0) {
+                            if (box) { box.style.animation = ''; box.style.border = 'none'; }
+                            if (lbl) lbl.style.color = '#d97706';
+                            if (ico) { ico.className = 'ti ti-alert-circle'; ico.style.color = '#d97706'; }
+                        } else {
+                            if (box) { box.style.animation = ''; box.style.border = 'none'; }
+                            if (lbl) lbl.style.color = '#059669';
+                            if (ico) { ico.className = 'ti ti-circle-check'; ico.style.color = '#10b981'; }
+                        }
+                    }
+
+                    updateClock();
+                    _mfcTimer = setInterval(updateClock, 1000);
+                })();
+
+                function mostrarLeyendaReloj(){
+                    Swal.fire({
+                        title: 'Ventana de Asistencia',
+                        icon: 'info',
+                        html: '<div style="text-align:left;font-size:0.82rem;line-height:1.55;max-height:55vh;overflow-y:auto;padding-right:4px;">'
+                            + '<p style="margin:0 0 8px;color:#475569;">Muestra el <b style="color:#1e293b;">tiempo restante del día</b> hasta las 00:00 en formato 12h. Al llegar a cero, los pasantes sin asistencia quedan como <b style="color:#1e293b;">Ausentes</b> automáticamente.</p>'
+                            + '<hr style="border:none;border-top:1px solid #f1f5f9;margin:8px 0;">'
+                            + '<p style="font-weight:800;color:#1e293b;margin:0 0 6px;font-size:0.78rem;text-transform:uppercase;letter-spacing:.4px;">Urgencia — Barra de Progreso</p>'
+                            + '<p style="margin:0 0 8px;font-size:0.76rem;color:#64748b;">El reloj permanece morado. Solo la barra cambia de color según el tiempo restante.</p>'
+                            + '<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">'
+                            +   '<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:#f0fdf4;border-radius:7px;border-left:3px solid #16a34a;">'
+                            +     '<span style="width:8px;height:8px;border-radius:50%;background:#16a34a;flex-shrink:0;"></span>'
+                            +     '<span><b style="color:#16a34a;">Verde</b> &mdash; Más de 4 horas (tiempo suficiente)</span>'
+                            +   '</div>'
+                            +   '<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:#fffbeb;border-radius:7px;border-left:3px solid #d97706;">'
+                            +     '<span style="width:8px;height:8px;border-radius:50%;background:#d97706;flex-shrink:0;"></span>'
+                            +     '<span><b style="color:#d97706;">Amarillo</b> &mdash; Entre 1 y 4 horas (poco tiempo)</span>'
+                            +   '</div>'
+                            +   '<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:#fef2f2;border-radius:7px;border-left:3px solid #dc2626;">'
+                            +     '<span style="width:8px;height:8px;border-radius:50%;background:#dc2626;flex-shrink:0;"></span>'
+                            +     '<span><b style="color:#dc2626;">Rojo</b> &mdash; Menos de 1 hora (urgente)</span>'
+                            +   '</div>'
+                            + '</div>'
+                            + '<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 10px;background:#fffbeb;border-radius:7px;border:1px solid #fde68a;">'
+                            +   '<i class="ti ti-calendar-off" style="color:#b45309;font-size:1rem;flex-shrink:0;margin-top:1px;"></i>'
+                            +   '<span style="color:#92400e;font-size:0.78rem;"><b>Solo días hábiles.</b> Sábados, domingos y feriados registrados no generan asistencia automática.</span>'
+                            + '</div>'
+                            + '</div>',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#7c3aed',
+                        width: 400
+                    });
+                }
+                </script>
+
+            </div>
+        </div>
+
+    </div><!-- /Fila 4 -->
+
+    <!-- ===== FILA 5: Sistema Inteligente de Notificaciones (Fase 4) ===== -->
+    <div class="cfg-grid">
+        <div class="cfg-card cg-12" style="border-top:4px solid #3b82f6;">
+            <?php
+            $notifStats = $data['notifAnalytics'] ?? [];
+            $notifActivo = !empty($notifStats['global_activo']);
+            $totalEnviadas = $notifStats['total_enviadas'] ?? 0;
+            $tasaLectura = $notifStats['tasa_lectura'] ?? 0;
+            $tasaClicks = $notifStats['tasa_clicks'] ?? 0;
+            $totalLeidas = $notifStats['total_leidas'] ?? 0;
+            $totalClicks = $notifStats['total_clickeadas'] ?? 0;
+            $notifUsers = $data['notifUsuarios'] ?? [];
+            $ultimasNotifs = $notifStats['ultimas'] ?? [];
+            ?>
+            <div class="cfg-card-header" style="flex-wrap:wrap;gap:14px;border-bottom:1px solid #f1f5f9;padding-bottom:18px;">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#eff6ff;">
+                        <i class="ti ti-bell-ringing" style="font-size:1.25rem;color:#2563eb;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.1rem;font-weight:800;color:#1e293b;">Sistema Inteligente de Notificaciones</div>
+                        <div style="font-size:0.76rem;color:#64748b;font-weight:500;margin-top:2px;">
+                            Control administrativo global, preferencias por usuario y métricas de lectura y clics
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controles y Toggle Global -->
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:10px;background:#f8fafc;padding:6px 14px;border-radius:12px;border:1px solid #e2e8f0;">
+                        <span style="font-size:0.8rem;font-weight:700;color:#334155;">Switch Global:</span>
+                        <label class="cfg-toggle-wrap" style="margin:0;">
+                            <input type="checkbox" id="notifGlobalToggle" <?= $notifActivo ? 'checked' : '' ?>>
+                            <span class="cfg-toggle-track"></span>
+                            <span class="cfg-toggle-dot"></span>
+                        </label>
+                        <span id="notifGlobalBadge" class="cfg-badge" style="background:<?= $notifActivo ? '#dcfce7' : '#fee2e2' ?>;color:<?= $notifActivo ? '#16a34a' : '#dc2626' ?>;font-weight:700;">
+                            <?= $notifActivo ? 'Activas' : 'Pausadas' ?>
+                        </span>
+                    </div>
+
+                    <div style="font-size:0.78rem;color:#64748b;font-weight:600;">
+                        Control en tiempo real de alertas automáticas, historial de envíos y receptores activos.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bento Sub-Grid KPIs (Interactivas) -->
+            <div class="cfg-kpis-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(min(100%, 200px), 1fr));gap:14px;margin-top:20px;">
+                <div id="kpi-todas" onclick="filtrarNotifsPorEstado('todas')" style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s, box-shadow .2s;" class="cfg-kpi-subcard" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" title="Clic para ver todas las notificaciones">
+                    <div style="width:44px;height:44px;border-radius:12px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                        <i class="ti ti-send"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.4rem;font-weight:800;color:#1e293b;" class="cfg-kpi-val"><?= number_format($totalEnviadas) ?></div>
+                        <div style="font-size:0.74rem;color:#64748b;font-weight:600;text-transform:uppercase;">Total Enviadas <span style="font-size:0.68rem;color:#3b82f6;">(Ver todas)</span></div>
+                    </div>
+                </div>
+
+                <div id="kpi-leidas" onclick="filtrarNotifsPorEstado('leidas')" style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s, box-shadow .2s;" class="cfg-kpi-subcard" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" title="Clic para filtrar por notificaciones leídas">
+                    <div style="width:44px;height:44px;border-radius:12px;background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                        <i class="ti ti-eye-check"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.4rem;font-weight:800;color:#16a34a;"><?= $tasaLectura ?>%</div>
+                        <div style="font-size:0.74rem;color:#64748b;font-weight:600;text-transform:uppercase;">Lectura (<?= number_format($totalLeidas) ?> leídas) <span style="font-size:0.68rem;color:#16a34a;">(Filtrar)</span></div>
+                    </div>
+                </div>
+
+                <div id="kpi-clics" onclick="filtrarNotifsPorEstado('clics')" style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s, box-shadow .2s;" class="cfg-kpi-subcard" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" title="Clic para filtrar por notificaciones con interacción">
+                    <div style="width:44px;height:44px;border-radius:12px;background:#faf5ff;color:#9333ea;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                        <i class="ti ti-pointer"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.4rem;font-weight:800;color:#9333ea;"><?= $tasaClicks ?>%</div>
+                        <div style="font-size:0.74rem;color:#64748b;font-weight:600;text-transform:uppercase;">Clics / Interacción (<?= number_format($totalClicks) ?> clics) <span style="font-size:0.68rem;color:#9333ea;">(Filtrar)</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bento Secciones: Historial/Próximas + Audiencia por Usuario -->
+            <?php
+            // Calcular próximas alertas automáticas a partir de feriados futuros
+            $hoyNotif = date('Y-m-d');
+            $proximasAlertas = [];
+            if (!empty($feriados)) {
+                foreach ($feriados as $f) {
+                    $fObj = is_array($f) ? (object)$f : $f;
+                    if ($fObj->fecha > $hoyNotif) {
+                        $diffDias = (int)round((strtotime($fObj->fecha) - strtotime($hoyNotif)) / 86400);
+                        $proximasAlertas[] = [
+                            'tipo' => 'feriado',
+                            'titulo' => 'Feriado: ' . $fObj->nombre,
+                            'fecha' => $fObj->fecha,
+                            'dias_restantes' => $diffDias,
+                            'detalle' => 'Alerta automática para todos los usuarios (' . ($fObj->tipo ?? 'Nacional') . ')'
+                        ];
+                    }
+                }
+            }
+            usort($proximasAlertas, fn($a, $b) => strcmp($a['fecha'], $b['fecha']));
+            $proximasAlertas = array_slice($proximasAlertas, 0, 10);
+            ?>
+            <div class="notif-bento-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr));gap:18px;margin-top:20px;">
+                
+                <!-- Panel 1: Historial de Envíos y Próximas Notificaciones -->
+                <div class="notif-box-panel" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;display:flex;flex-direction:column;min-width:0;">
+                    <div class="notif-header-flex" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+                        <div style="display:flex;gap:6px;background:#f1f5f9;padding:3px;border-radius:10px;" class="notif-tab-pills">
+                            <button type="button" id="tabBtnHistorialNotif" onclick="cambiarTabNotif('historial')" style="background:#ffffff;color:#1e293b;border:none;padding:5px 12px;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08);transition:all .2s;">
+                                <i class="ti ti-history"></i> Historial (<?= count($ultimasNotifs) ?>)
+                            </button>
+                            <button type="button" id="tabBtnProximasNotif" onclick="cambiarTabNotif('proximas')" style="background:transparent;color:#64748b;border:none;padding:5px 12px;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;">
+                                <i class="ti ti-calendar-time"></i> Próximas (<?= count($proximasAlertas) ?>)
+                            </button>
+                        </div>
+                        
+                        <div class="notif-search-wrap" style="position:relative;flex:1;max-width:220px;min-width:140px;">
+                            <input type="text" id="filtroHistorialInput" placeholder="Buscar alerta..." oninput="filtrarHistorialNotif(this.value)" style="width:100%;padding:6px 10px 6px 28px;border-radius:8px;border:1px solid #cbd5e1;font-size:0.76rem;background:#f8fafc;" class="cfg-input">
+                            <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.85rem;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Contenido Tab 1: Historial Reciente -->
+                    <div id="panelHistorialNotif" style="display:block;max-height:360px;overflow-y:auto;padding-right:4px;">
+                        <?php if (empty($ultimasNotifs)): ?>
+                            <div style="text-align:center;padding:36px 16px;color:#94a3b8;">
+                                <i class="ti ti-bell-off" style="font-size:2.2rem;opacity:0.4;display:block;margin-bottom:8px;"></i>
+                                <span style="font-size:0.84rem;font-weight:600;">No hay registro de notificaciones enviadas aún.</span>
+                            </div>
+                        <?php else: ?>
+                            <div style="display:flex;flex-direction:column;gap:8px;">
+                                <?php foreach ($ultimasNotifs as $n): 
+                                    $esLeida = ((int)($n['leida'] ?? 0) === 1);
+                                    $esClic = !empty($n['clickeado_at']);
+                                    $tipoN = $n['tipo'] ?? 'info';
+                                    $rolN = $n['rol_nombre'] ?? 'Usuario';
+                                    $destinatario = !empty(trim($n['usuario_nombre'] ?? '')) ? trim($n['usuario_nombre']) : ($n['correo'] ?? 'Usuario');
+                                ?>
+                                <div class="notif-history-item" data-leida="<?= $esLeida ? '1' : '0' ?>" data-clic="<?= $esClic ? '1' : '0' ?>" data-search="<?= strtolower(htmlspecialchars(($n['titulo'] ?? '') . ' ' . $destinatario . ' ' . $tipoN)) ?>" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;display:flex;gap:12px;align-items:flex-start;transition:background .2s;">
+                                    <div style="width:34px;height:34px;border-radius:9px;background:<?= $esLeida ? '#eff6ff' : '#fef3c7' ?>;color:<?= $esLeida ? '#2563eb' : '#d97706' ?>;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">
+                                        <i class="ti <?= $tipoN === 'feriado_hoy' ? 'ti-calendar-event' : 'ti-bell' ?>"></i>
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px;">
+                                            <span style="font-size:0.84rem;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" class="cfg-hist-title"><?= htmlspecialchars($n['titulo'] ?? 'Alerta') ?></span>
+                                            <span style="font-size:0.7rem;color:#94a3b8;white-space:nowrap;"><?= date('d/m/Y H:i', strtotime($n['created_at'])) ?></span>
+                                        </div>
+                                        <div style="font-size:0.75rem;color:#64748b;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                                            <span>Para: <strong style="color:#334155;"><?= htmlspecialchars($destinatario) ?></strong></span>
+                                            <span style="font-size:0.65rem;font-weight:700;padding:1px 6px;border-radius:6px;background:#e2e8f0;color:#475569;"><?= htmlspecialchars($rolN) ?></span>
+                                        </div>
+                                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:0.7rem;">
+                                            <span style="padding:2px 7px;border-radius:6px;font-weight:700;background:<?= $esLeida ? '#dcfce7' : '#fee2e2' ?>;color:<?= $esLeida ? '#16a34a' : '#dc2626' ?>;">
+                                                <i class="ti <?= $esLeida ? 'ti-check' : 'ti-clock' ?>"></i> <?= $esLeida ? 'Leída ' . ($n['leido_at'] ? date('H:i', strtotime($n['leido_at'])) : '') : 'No leída' ?>
+                                            </span>
+                                            <?php if ($esClic): ?>
+                                                <span style="padding:2px 7px;border-radius:6px;font-weight:700;background:#f3e8ff;color:#9333ea;">
+                                                    <i class="ti ti-pointer"></i> Interacción <?= date('H:i', strtotime($n['clickeado_at'])) ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Contenido Tab 2: Próximas Alertas Programadas -->
+                    <div id="panelProximasNotif" style="display:none;max-height:360px;overflow-y:auto;padding-right:4px;">
+                        <?php if (empty($proximasAlertas)): ?>
+                            <div style="text-align:center;padding:36px 16px;color:#94a3b8;">
+                                <i class="ti ti-calendar-off" style="font-size:2.2rem;opacity:0.4;display:block;margin-bottom:8px;"></i>
+                                <span style="font-size:0.84rem;font-weight:600;">No hay alertas programadas para los próximos días.</span>
+                            </div>
+                        <?php else: ?>
+                            <div style="display:flex;flex-direction:column;gap:8px;">
+                                <?php foreach ($proximasAlertas as $pa): 
+                                    $badgeTiempo = $pa['dias_restantes'] === 0 ? '¡Hoy!' : ($pa['dias_restantes'] === 1 ? 'Mañana' : "En {$pa['dias_restantes']} días");
+                                    $bgTiempo = $pa['dias_restantes'] === 0 ? '#fee2e2' : ($pa['dias_restantes'] <= 3 ? '#fef3c7' : '#eff6ff');
+                                    $colorTiempo = $pa['dias_restantes'] === 0 ? '#dc2626' : ($pa['dias_restantes'] <= 3 ? '#d97706' : '#2563eb');
+                                ?>
+                                <div class="notif-proxima-item" data-search="<?= strtolower(htmlspecialchars($pa['titulo'] . ' ' . $pa['detalle'])) ?>" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;display:flex;gap:12px;align-items:center;transition:background .2s;">
+                                    <div style="width:38px;height:38px;border-radius:10px;background:#f5f3ff;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+                                        <i class="ti ti-calendar-event"></i>
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px;">
+                                            <span style="font-size:0.84rem;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" class="cfg-hist-title"><?= htmlspecialchars($pa['titulo']) ?></span>
+                                            <span style="font-size:0.72rem;font-weight:800;padding:2px 8px;border-radius:8px;background:<?= $bgTiempo ?>;color:<?= $colorTiempo ?>;white-space:nowrap;"><?= $badgeTiempo ?></span>
+                                        </div>
+                                        <div style="font-size:0.74rem;color:#64748b;"><?= htmlspecialchars($pa['detalle']) ?></div>
+                                        <div style="font-size:0.7rem;color:#94a3b8;margin-top:2px;"><i class="ti ti-calendar"></i> Fecha: <?= date('d/m/Y', strtotime($pa['fecha'])) ?></div>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Audiencia y Control de Usuarios Receptores -->
+                <div class="notif-box-panel" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;display:flex;flex-direction:column;min-width:0;">
+                    <div class="notif-header-flex" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+                        <div>
+                            <div style="font-size:0.92rem;font-weight:800;color:#1e293b;" class="cfg-hist-title">Receptores de Alertas</div>
+                            <div style="font-size:0.72rem;color:#64748b;font-weight:500;">Permisos de entrega por usuario activo (<?= count($notifUsers) ?> registrados)</div>
+                        </div>
+                        <div class="notif-search-wrap" style="position:relative;flex:1;max-width:200px;min-width:140px;">
+                            <input type="text" id="filtroUsuariosInput" placeholder="Buscar usuario..." oninput="filtrarUsuariosNotif(this.value)" style="width:100%;padding:6px 10px 6px 28px;border-radius:8px;border:1px solid #cbd5e1;font-size:0.76rem;background:#f8fafc;" class="cfg-input">
+                            <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.85rem;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Lista Visible de Usuarios con Switch Granular -->
+                    <div style="max-height:360px;overflow-y:auto;padding-right:4px;">
+                        <?php if (empty($notifUsers)): ?>
+                            <div style="text-align:center;padding:36px 16px;color:#94a3b8;">
+                                <i class="ti ti-users-minus" style="font-size:2.2rem;opacity:0.4;display:block;margin-bottom:8px;"></i>
+                                <span style="font-size:0.84rem;font-weight:600;">No hay usuarios activos registrados.</span>
+                            </div>
+                        <?php else: ?>
+                            <div style="display:flex;flex-direction:column;gap:8px;">
+                                <?php foreach ($notifUsers as $u): 
+                                    $uId = (int)$u['id'];
+                                    $uHab = ((int)($u['notificaciones_habilitadas'] ?? 1) === 1);
+                                    $uNombre = !empty(trim($u['nombre_completo'] ?? '')) ? trim($u['nombre_completo']) : 'Usuario #' . $uId;
+                                    $uRol = $u['rol_nombre'] ?? 'Usuario';
+                                    $uInicial = strtoupper(substr($uNombre, 0, 1));
+                                    $rolColor = ($u['rol_id'] == 1 || $u['rol_id'] == 0) ? '#2563eb' : ($u['rol_id'] == 2 ? '#059669' : '#7c3aed');
+                                    $rolBg = ($u['rol_id'] == 1 || $u['rol_id'] == 0) ? '#eff6ff' : ($u['rol_id'] == 2 ? '#f0fdf4' : '#f5f3ff');
+                                ?>
+                                <div class="notif-user-card" data-search="<?= strtolower(htmlspecialchars($uNombre . ' ' . ($u['correo'] ?? '') . ' ' . $uRol)) ?>" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:background .2s;">
+                                    <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+                                        <div style="width:36px;height:36px;border-radius:50%;background:<?= $rolBg ?>;color:<?= $rolColor ?>;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;flex-shrink:0;">
+                                            <?= $uInicial ?>
+                                        </div>
+                                        <div style="min-width:0;flex:1;">
+                                            <div style="display:flex;align-items:center;gap:6px;">
+                                                <span style="font-size:0.84rem;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" class="cfg-hist-title"><?= htmlspecialchars($uNombre) ?></span>
+                                                <span style="font-size:0.65rem;font-weight:700;padding:1px 6px;border-radius:6px;background:<?= $rolBg ?>;color:<?= $rolColor ?>;white-space:nowrap;"><?= htmlspecialchars($uRol) ?></span>
+                                            </div>
+                                            <div style="font-size:0.73rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($u['correo'] ?? '') ?></div>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                                        <label class="cfg-toggle-wrap" style="margin:0;" title="<?= $uHab ? 'Notificaciones activas para este usuario' : 'Notificaciones silenciadas' ?>">
+                                            <input type="checkbox" onchange="toggleUserNotif(<?= $uId ?>, this)" <?= $uHab ? 'checked' : '' ?>>
+                                            <span class="cfg-toggle-track"></span>
+                                            <span class="cfg-toggle-dot"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div><!-- /Fila 5 -->
+
+    <!-- ===== FILA 6: Personalización Institucional y Branding (Fase 5) ===== -->
+    <div class="cfg-grid">
+
+        <!-- CARD: Paleta de Colores y Modo Visual -->
+        <div class="cfg-card cg-6" style="border-top:4px solid var(--color-primary, #162660);">
+            <div class="cfg-card-header" style="flex-wrap:wrap;gap:12px;">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:var(--color-input-bg, #f1f5f9);">
+                        <i class="ti ti-palette" style="font-size:1.2rem;color:var(--color-primary, #162660);"></i>
+                    </div>
+                    <div>
+                        <div class="cfg-card-heading" style="font-weight:800;font-size:1.05rem;color:#1e293b;">Paleta de Colores y Tema</div>
+                        <div class="cfg-card-subheading" style="font-size:0.75rem;color:#64748b;font-weight:500;margin-top:2px;">
+                            Personaliza la identidad visual y modo de contraste del sistema
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <button type="button" id="cfgBtnToggleTheme" onclick="alternarTemaVisual()"
+                        style="background:#f8fafc;border:1px solid #cbd5e1;padding:6px 12px;border-radius:10px;font-size:0.78rem;font-weight:700;color:#334155;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;">
+                        <i class="ti ti-moon" id="cfgThemeIcon"></i>
+                        <span id="cfgThemeLabel">Modo Oscuro</span>
+                    </button>
+                </div>
+            </div>
+
+            <form method="POST" action="<?= URLROOT ?>/configuracion" id="formBrandingTema" style="margin-top:14px;">
+                <input type="hidden" name="accion" value="guardar_tema">
+                <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+
+                <!-- Selectores de color -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+                    <!-- Color Primario -->
+                    <div class="cfg-color-panel" style="background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;">
+                        <label class="cfg-field-label" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span class="cfg-card-subheading">Color Primario (Barras / Headers)</span>
+                            <span id="hexPrimarioDisplay" style="font-family:monospace;font-weight:700;color:var(--color-accent-brand, #2563eb);"><?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?></span>
+                        </label>
+                        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+                            <input type="color" id="pickerPrimario" value="<?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>"
+                                oninput="sincronizarColor('primario', this.value)"
+                                style="width:44px;height:40px;padding:2px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;background:white;">
+                            <input type="text" name="color_primario" id="inputPrimario" value="<?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>"
+                                maxlength="7" class="cfg-input" style="flex:1;font-family:monospace;font-weight:700;"
+                                oninput="sincronizarColor('primario', this.value)">
+                        </div>
+                    </div>
+
+                    <!-- Color de Acento -->
+                    <div class="cfg-color-panel" style="background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;">
+                        <label class="cfg-field-label" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span class="cfg-card-subheading">Color de Acento (Botones / KPIs)</span>
+                            <span id="hexAcentoDisplay" style="font-family:monospace;font-weight:700;color:var(--color-accent-brand, #2563eb);"><?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?></span>
+                        </label>
+                        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+                            <input type="color" id="pickerAcento" value="<?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>"
+                                oninput="sincronizarColor('acento', this.value)"
+                                style="width:44px;height:40px;padding:2px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;background:white;">
+                            <input type="text" name="color_acento" id="inputAcento" value="<?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>"
+                                maxlength="7" class="cfg-input" style="flex:1;font-family:monospace;font-weight:700;"
+                                oninput="sincronizarColor('acento', this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Presets Rápidos -->
+                <div style="margin-bottom:18px;">
+                    <div class="cfg-card-subheading" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;margin-bottom:8px;letter-spacing:0.5px;">
+                        Paletas Predefinidas Recomendadas
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button type="button" onclick="aplicarPresetColor('#162660', '#2563eb', this)" class="preset-theme-btn"
+                            style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#162660;"></span>
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#2563eb;margin-left:-4px;"></span>
+                            Azul ISP Institucional
+                        </button>
+                        <button type="button" onclick="aplicarPresetColor('#065f46', '#059669', this)" class="preset-theme-btn"
+                            style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#065f46;"></span>
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#059669;margin-left:-4px;"></span>
+                            Salud Pública Esmeralda
+                        </button>
+                        <button type="button" onclick="aplicarPresetColor('#4c1d95', '#7c3aed', this)" class="preset-theme-btn"
+                            style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#4c1d95;"></span>
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#7c3aed;margin-left:-4px;"></span>
+                            Morado / Violeta Eléctrico
+                        </button>
+                        <button type="button" onclick="aplicarPresetColor('#0f172a', '#0284c7', this)" class="preset-theme-btn"
+                            style="background:#f8fafc;border:1.5px solid #e2e8f0;padding:6px 12px;border-radius:9px;font-size:0.76rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#0f172a;"></span>
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#0284c7;margin-left:-4px;"></span>
+                            Pizarra / Zafiro
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Previsualizador Dinámico de Muestra y Switch de Live Preview -->
+                <div id="previewCardBrand"
+                    style="background:linear-gradient(135deg, <?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>, <?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>);padding:14px 18px;border-radius:12px;color:white;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,0.12);transition:all .2s;flex-wrap:wrap;gap:12px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div style="width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;">
+                            <i class="ti ti-sparkles" style="font-size:1.1rem;color:white;"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight:800;font-size:0.88rem;">Muestra de la Paleta</div>
+                            <div style="font-size:0.72rem;opacity:0.88;">Degradado institucional y contraste calculado</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <!-- Switch Live Preview -->
+                        <label for="switchLivePreview" style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,0.25);backdrop-filter:blur(6px);padding:6px 14px;border-radius:50px;cursor:pointer;border:1px solid rgba(255,255,255,0.2);user-select:none;transition:all .2s;">
+                            <input type="checkbox" id="switchLivePreview" onchange="alternarLivePreview(this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#10b981;">
+                            <span style="font-size:0.78rem;font-weight:700;color:white;" id="labelLivePreview">
+                                <i class="ti ti-eye"></i> Proyectar en la interfaz
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Banner aviso si hay cambios pendientes -->
+                <div id="avisoCambiosPaleta" style="display:none;align-items:center;justify-content:space-between;padding:10px 14px;background:#fffbeb;border:1px solid #fef3c7;border-left:4px solid #f59e0b;border-radius:10px;margin-bottom:14px;font-size:0.8rem;color:#92400e;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <i class="ti ti-alert-triangle" style="font-size:1.1rem;color:#f59e0b;"></i>
+                        <span>Tienes cambios en la paleta sin guardar. Haz clic en <strong>Guardar Paleta</strong> para conservarlos.</span>
+                    </div>
+                </div>
+
+                <!-- Acciones -->
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <button type="submit" class="cfg-btn-primary"
+                        style="padding:10px 18px;display:flex;align-items:center;gap:7px;background:linear-gradient(135deg, #1e3a8a, #2563eb);">
+                        <i class="ti ti-device-floppy"></i> Guardar Paleta
+                    </button>
+                    <button type="button" onclick="confirmarRestablecerTema()" class="cfg-btn-reset-theme"
+                        style="padding:10px 16px;border:1.5px solid #e2e8f0;background:white;color:#64748b;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;">
+                        <i class="ti ti-rotate"></i> Restablecer Valores
+                    </button>
+                </div>
+            </form>
+
+            <!-- Form oculto para restablecer -->
+            <form id="formRestablecerTema" method="POST" action="<?= URLROOT ?>/configuracion" style="display:none;">
+                <input type="hidden" name="accion" value="restablecer_tema">
+                <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+            </form>
+        </div>
+
+        <!-- CARD: Logos y Emblemas Institucionales -->
+        <div class="cfg-card cg-6" style="border-top:4px solid var(--color-accent-brand, #2563eb);">
+            <div class="cfg-card-header" style="flex-wrap:wrap;gap:12px;">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:var(--color-input-bg, #eff6ff);">
+                        <i class="ti ti-photo-star" style="font-size:1.2rem;color:var(--color-accent-brand, #2563eb);"></i>
+                    </div>
+                    <div>
+                        <div class="cfg-card-heading" style="font-weight:800;font-size:1.05rem;color:#1e293b;">Logos y Emblemas Institucionales</div>
+                        <div class="cfg-card-subheading" style="font-size:0.75rem;color:#64748b;font-weight:500;margin-top:2px;">
+                            Actualiza los logos del sistema y cintillos de reportes PDF sin editar código
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Armónico 2x2 de Emblemas -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));gap:12px;margin-top:14px;">
+
+                <!-- 1. Logo Principal -->
+                <div class="cfg-emblem-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;transition:all .15s;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="cfg-emblem-thumb" style="width:60px;height:48px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                            <img src="<?= URLROOT ?>/img/logo.png?v=<?= time() ?>" alt="Logo Principal" style="max-width:100%;max-height:100%;object-fit:contain;">
+                        </div>
+                        <div style="min-width:0;flex:1;">
+                            <div class="cfg-emblem-title" style="font-weight:800;font-size:0.86rem;color:#1e293b;line-height:1.2;">Logo SGP / ISP</div>
+                            <div class="cfg-emblem-file" style="font-size:0.68rem;color:#64748b;margin-top:4px;">Archivo: <code>logo.png</code></div>
+                        </div>
+                    </div>
+                    <div class="cfg-emblem-desc" style="font-size:0.72rem;color:#64748b;line-height:1.35;">Cabecera, barra lateral y pantalla de acceso.</div>
+                    <button type="button" onclick="abrirModalLogo('logo_principal')" class="cfg-emblem-btn"
+                        style="width:100%;padding:7px 12px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:8px;font-size:0.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;">
+                        <i class="ti ti-upload"></i> Cambiar
+                    </button>
+                </div>
+
+                <!-- 2. Cintillo Oficial PDF -->
+                <div class="cfg-emblem-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;transition:all .15s;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="cfg-emblem-thumb" style="width:60px;height:48px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                            <img src="<?= URLROOT ?>/img/cintillo-salud.png?v=<?= time() ?>" alt="Cintillo Reportes" style="max-width:100%;max-height:100%;object-fit:contain;">
+                        </div>
+                        <div style="min-width:0;flex:1;">
+                            <div class="cfg-emblem-title" style="font-weight:800;font-size:0.86rem;color:#1e293b;line-height:1.2;">Cintillo PDF</div>
+                            <div class="cfg-emblem-file" style="font-size:0.68rem;color:#64748b;margin-top:4px;">Archivo: <code>cintillo-salud.png</code></div>
+                        </div>
+                    </div>
+                    <div class="cfg-emblem-desc" style="font-size:0.72rem;color:#64748b;line-height:1.35;">Cabecera en constancias y planillas PDF.</div>
+                    <button type="button" onclick="abrirModalLogo('cintillo')" class="cfg-emblem-btn"
+                        style="width:100%;padding:7px 12px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:8px;font-size:0.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;">
+                        <i class="ti ti-upload"></i> Cambiar
+                    </button>
+                </div>
+
+                <!-- 3. Cintillo Oficial del Sistema -->
+                <div class="cfg-emblem-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;transition:all .15s;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="cfg-emblem-thumb" style="width:60px;height:48px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                            <img src="<?= URLROOT ?>/img/cintillo.png?v=<?= time() ?>" alt="Cintillo Sistema" style="max-width:100%;max-height:100%;object-fit:contain;">
+                        </div>
+                        <div style="min-width:0;flex:1;">
+                            <div class="cfg-emblem-title" style="font-weight:800;font-size:0.86rem;color:#1e293b;line-height:1.2;">Cintillo Ministerial</div>
+                            <div class="cfg-emblem-file" style="font-size:0.68rem;color:#64748b;margin-top:4px;">Archivo: <code>cintillo.png</code></div>
+                        </div>
+                    </div>
+                    <div class="cfg-emblem-desc" style="font-size:0.72rem;color:#64748b;line-height:1.35;">Login institucional y portada del sistema.</div>
+                    <button type="button" onclick="abrirModalLogo('cintillo_sistema')" class="cfg-emblem-btn"
+                        style="width:100%;padding:7px 12px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:8px;font-size:0.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;">
+                        <i class="ti ti-upload"></i> Cambiar
+                    </button>
+                </div>
+
+                <!-- 4. Logo Gobernación -->
+                <div class="cfg-emblem-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;transition:all .15s;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="cfg-emblem-thumb" style="width:60px;height:48px;background:white;border:1px solid #cbd5e1;border-radius:8px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                            <img src="<?= URLROOT ?>/img/gobe.png?v=<?= time() ?>" alt="Gobernación" style="max-width:100%;max-height:100%;object-fit:contain;">
+                        </div>
+                        <div style="min-width:0;flex:1;">
+                            <div class="cfg-emblem-title" style="font-weight:800;font-size:0.86rem;color:#1e293b;line-height:1.2;">Gobernación Bolívar</div>
+                            <div class="cfg-emblem-file" style="font-size:0.68rem;color:#64748b;margin-top:4px;">Archivo: <code>gobe.png</code></div>
+                        </div>
+                    </div>
+                    <div class="cfg-emblem-desc" style="font-size:0.72rem;color:#64748b;line-height:1.35;">Emblema gubernamental del estado.</div>
+                    <button type="button" onclick="abrirModalLogo('gobernacion')" class="cfg-emblem-btn"
+                        style="width:100%;padding:7px 12px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:8px;font-size:0.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;">
+                        <i class="ti ti-upload"></i> Cambiar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </div><!-- /Fila 6 -->
+
+    <!-- ===== FILA 7: Servidor de Correo Electrónico Institucional (SMTP) & Biometría ===== -->
+    <div class="cfg-grid" id="correo">
+
+        <!-- CARD: Servidor SMTP de Correo Institucional -->
+        <div class="cfg-card cg-8" style="border-top:4px solid #2563eb;">
+            <div class="cfg-card-header" style="flex-wrap:wrap;gap:12px;">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#eff6ff;color:#2563eb;">
+                        <i class="ti ti-mail" style="font-size:1.25rem;"></i>
+                    </div>
+                    <div>
+                        <div class="cfg-card-heading" style="font-weight:800;font-size:1.05rem;color:#1e293b;">
+                            Servidor de Correo Institucional (SMTP)
+                        </div>
+                        <div class="cfg-card-subheading" style="font-size:0.75rem;color:#64748b;font-weight:500;margin-top:2px;">
+                            Despacho de alertas biométricas, evaluaciones y notificaciones oficiales
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <?php if (!empty($data['smtp']['activo'])): ?>
+                        <span class="cfg-badge" style="background:#dcfce7;color:#15803d;padding:5px 12px;font-weight:800;">
+                            <i class="ti ti-circle-check me-1"></i> SMTP Habilitado
+                        </span>
+                    <?php else: ?>
+                        <span class="cfg-badge" style="background:#fef3c7;color:#b45309;padding:5px 12px;font-weight:800;">
+                            <i class="ti ti-info-circle me-1"></i> Modo Simulación (Logs)
+                        </span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <form method="POST" action="<?= URLROOT ?>/configuracion" id="formSmtpConfig" style="margin-top:14px;">
+                <input type="hidden" name="accion" value="guardar_smtp">
+                <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+
+                <!-- Switch Habilitar SMTP -->
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                    <div>
+                        <div style="font-weight:700;font-size:0.9rem;color:#1e293b;display:flex;align-items:center;gap:6px;">
+                            <i class="ti ti-send" style="color:#2563eb;"></i> Habilitar Transmisión Real SMTP
+                        </div>
+                        <div style="font-size:0.75rem;color:#64748b;margin-top:2px;">
+                            Si está desactivado, las alertas y correos se registran en los logs del servidor para auditoría sin consumir cuota de envío.
+                        </div>
+                    </div>
+                    <label class="cfg-toggle-wrap" style="margin:0;" title="Activar o desactivar servicio SMTP">
+                        <input type="checkbox" name="smtp_activo" value="1" <?= !empty($data['smtp']['activo']) ? 'checked' : '' ?>>
+                        <span class="cfg-toggle-track"></span>
+                        <span class="cfg-toggle-dot"></span>
+                    </label>
+                </div>
+
+                <!-- Grid de Parámetros SMTP -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:14px;">
+                    <!-- Host -->
+                    <div>
+                        <label class="cfg-field-label">Servidor / Host SMTP *</label>
+                        <input type="text" name="smtp_host" value="<?= htmlspecialchars($data['smtp']['host'] ?? 'smtp-relay.brevo.com') ?>" required class="cfg-input" placeholder="smtp-relay.brevo.com">
+                    </div>
+
+                    <!-- Puerto -->
+                    <div>
+                        <label class="cfg-field-label">Puerto SMTP *</label>
+                        <input type="number" name="smtp_port" value="<?= (int)($data['smtp']['port'] ?? 587) ?>" required class="cfg-input" placeholder="587">
+                    </div>
+
+                    <!-- Cifrado -->
+                    <div>
+                        <label class="cfg-field-label">Protocolo de Seguridad *</label>
+                        <select name="smtp_secure" class="cfg-input" style="cursor:pointer;">
+                            <option value="tls" <?= strtolower($data['smtp']['secure'] ?? '') === 'tls' ? 'selected' : '' ?>>TLS (STARTTLS - Puerto 587)</option>
+                            <option value="ssl" <?= strtolower($data['smtp']['secure'] ?? '') === 'ssl' ? 'selected' : '' ?>>SSL (SMTPS - Puerto 465)</option>
+                        </select>
+                    </div>
+
+                    <!-- Usuario -->
+                    <div>
+                        <label class="cfg-field-label">Usuario / Correo Autenticado *</label>
+                        <input type="text" name="smtp_user" value="<?= htmlspecialchars($data['smtp']['user'] ?? '') ?>" class="cfg-input" placeholder="ej: usuario@proveedor.com">
+                    </div>
+
+                    <!-- Contraseña / API Key -->
+                    <div>
+                        <label class="cfg-field-label">Contraseña / Clave de Aplicación *</label>
+                        <div style="position:relative;">
+                            <input type="password" name="smtp_pass" id="cfg_smtp_pass" value="<?= htmlspecialchars($data['smtp']['pass'] ?? '') ?>" class="cfg-input" placeholder="Clave de aplicación o API Key" style="padding-right:40px;">
+                            <i class="ti ti-eye" id="toggleSmtpPassIcon" onclick="toggleInputPass('cfg_smtp_pass', 'toggleSmtpPassIcon')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#94a3b8;font-size:1.1rem;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Nombre Remitente -->
+                    <div>
+                        <label class="cfg-field-label">Nombre del Remitente Oficial *</label>
+                        <input type="text" name="mail_from_name" value="<?= htmlspecialchars($data['smtp']['from_name'] ?? 'SGP - Instituto de Salud Pública') ?>" class="cfg-input" placeholder="SGP - Instituto de Salud Pública">
+                    </div>
+
+                    <!-- Correo Remitente -->
+                    <div style="grid-column: 1 / -1;">
+                        <label class="cfg-field-label">Correo Electrónico Remitente *</label>
+                        <input type="email" name="mail_from_email" value="<?= htmlspecialchars($data['smtp']['from_email'] ?? 'no-reply@ispeb.gob.ve') ?>" class="cfg-input" placeholder="no-reply@ispeb.gob.ve">
+                    </div>
+                </div>
+
+                <!-- Botones y Test en Vivo -->
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding-top:14px;border-top:1.5px solid #e2e8f0;">
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:260px;">
+                        <input type="email" id="emailPruebaSmtp" placeholder="Ingresa correo para prueba..." class="cfg-input" style="flex:1;padding:9px 12px;" value="<?= htmlspecialchars(Session::get('user_email') ?? '') ?>">
+                        <button type="button" onclick="ejecutarPruebaSmtp()" id="btnProbarSmtp" style="padding:9px 16px;background:#f8fafc;border:1.5px solid #cbd5e1;color:#1e293b;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all .2s;">
+                            <i class="ti ti-send" style="color:#2563eb;"></i> Enviar Correo de Prueba
+                        </button>
+                    </div>
+
+                    <button type="submit" class="cfg-btn-primary" style="width:auto;padding:10px 24px;">
+                        <i class="ti ti-device-floppy"></i> Guardar Configuración SMTP
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- CARD: Seguridad Biométrica y Acceso Rápido -->
+        <div class="cfg-card cg-4" style="border-top:4px solid #16a34a;">
+            <div class="cfg-card-header">
+                <div class="cfg-card-title">
+                    <div class="cfg-icon-box" style="background:#f0fdf4;color:#16a34a;">
+                        <i class="ti ti-fingerprint" style="font-size:1.25rem;"></i>
+                    </div>
+                    <div>
+                        <div class="cfg-card-heading" style="font-weight:800;font-size:1.05rem;color:#1e293b;">
+                            Seguridad Biométrica
+                        </div>
+                        <div class="cfg-card-subheading" style="font-size:0.75rem;color:#64748b;font-weight:500;margin-top:2px;">
+                            Acceso móvil sin contraseña
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Métricas Bento Biometría -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;margin-bottom:16px;">
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;text-align:center;">
+                    <div style="font-size:1.4rem;font-weight:900;color:#16a34a;">
+                        <?= (int)($data['biometriaStats']['total_dispositivos'] ?? 0) ?>
+                    </div>
+                    <div style="font-size:0.7rem;color:#64748b;font-weight:700;text-transform:uppercase;margin-top:2px;">Dispositivos Registrados</div>
+                </div>
+
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;text-align:center;">
+                    <div style="font-size:1.4rem;font-weight:900;color:#2563eb;">
+                        <?= (int)($data['biometriaStats']['usuarios_con_huella'] ?? 0) ?>
+                    </div>
+                    <div style="font-size:0.7rem;color:#64748b;font-weight:700;text-transform:uppercase;margin-top:2px;">Usuarios con Huella</div>
+                </div>
+            </div>
+
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px;margin-bottom:16px;">
+                <div style="display:flex;align-items:center;gap:6px;font-weight:700;font-size:0.82rem;color:#1e3a8a;margin-bottom:4px;">
+                    <i class="ti ti-shield-lock" style="color:#2563eb;font-size:1.1rem;"></i> Protocolo WebAuthn / FIDO2
+                </div>
+                <div style="font-size:0.75rem;color:#334155;line-height:1.45;">
+                    Permite a pasantes, tutores y directivos autenticarse tocando el lector de huellas o Face ID en su smartphone de forma instantánea.
+                </div>
+            </div>
+
+            <!-- Acceso Directo al Perfil -->
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:auto;">
+                <a href="<?= URLROOT ?>/perfil/ver" style="padding:10px 14px;background:linear-gradient(135deg, #16a34a 0%, #059669 100%);color:white;border-radius:10px;text-decoration:none;font-weight:700;font-size:0.84rem;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(22,163,74,0.25);">
+                    <i class="ti ti-fingerprint"></i> Configurar Mi Huella en Mi Perfil
+                </a>
+            </div>
+        </div>
+
+    </div><!-- /Fila 7 -->
+
+</div><!-- /container -->
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Nuevo Feriado (SGP Premium)
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalFeriado"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.55);backdrop-filter:blur(5px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:22px;width:100%;max-width:480px;margin:16px;box-shadow:0 28px 70px rgba(0,0,0,.22);overflow:hidden;animation:feriadoSlideIn .25s cubic-bezier(.34,1.56,.64,1);">
+
+        <!-- Header: azul institucional -->
+        <div style="background:linear-gradient(135deg,#172554 0%,#1e3a8a 55%,#2563eb 100%);padding:22px 26px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-30px;right:-30px;width:130px;height:130px;background:rgba(255,255,255,.05);border-radius:50%;pointer-events:none;"></div>
+            <div style="display:flex;align-items:center;gap:13px;z-index:1;">
+                <div style="width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="ti ti-calendar-plus" style="color:white;font-size:1.2rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white;font-weight:800;font-size:1.02rem;letter-spacing:-.2px;">Registrar Día Feriado</div>
+                    <div style="color:rgba(255,255,255,.65);font-size:0.76rem;margin-top:2px;"><i class="ti ti-shield-check" style="font-size:.7rem;"></i> Excluido del auto-fill de asistencias</div>
+                </div>
+            </div>
+            <button onclick="cerrarModalFeriado()" type="button"
+                style="z-index:1;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;width:32px;height:32px;cursor:pointer;color:white;font-size:.95rem;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;"
+                onmouseover="this.style.background='rgba(255,255,255,.22)'"
+                onmouseout="this.style.background='rgba(255,255,255,.12)'">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <!-- Preview de fecha (aparece dinámicamente) -->
+        <div id="feriadoPreview" style="display:none;background:#f5f3ff;border-bottom:1px solid #ddd6fe;padding:11px 26px;align-items:center;gap:12px;">
+            <div id="fpDateBlock" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);border-radius:9px;width:42px;text-align:center;padding:6px 0;flex-shrink:0;box-shadow:0 3px 8px rgba(124,58,237,.25);">
+                <div id="fpDia"  style="font-size:1rem;font-weight:900;color:white;line-height:1;">—</div>
+                <div id="fpMes"  style="font-size:.55rem;font-weight:700;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.5px;">—</div>
+            </div>
+            <div>
+                <div id="fpNombre" style="font-size:.83rem;font-weight:700;color:#1e293b;">Selecciona una fecha…</div>
+                <div id="fpDiaNom" style="font-size:.7rem;color:#94a3b8;margin-top:2px;"></div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <form method="POST" action="<?= URLROOT ?>/configuracion" style="padding:22px 26px;">
+            <input type="hidden" name="accion" value="agregar_feriado">
+            <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+
+            <!-- Fecha + Tipo -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+                <div>
+                    <label class="cfg-field-label">Fecha *</label>
+                    <input type="date" name="fecha" id="inputFeriadoFecha" class="cfg-input" required style="width:100%;" oninput="actualizarPreviewFeriado()">
+                </div>
+                <div>
+                    <label class="cfg-field-label">Tipo *</label>
+                    <select name="tipo" id="inputFeriadoTipo" class="cfg-input" style="width:100%;cursor:pointer;" onchange="actualizarPreviewFeriado()">
+                        <option value="Nacional">🟣 Nacional</option>
+                        <option value="Regional">🟢 Regional</option>
+                        <option value="Institucional">🔵 Institucional</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Nombre -->
+            <div style="margin-bottom:18px;">
+                <label class="cfg-field-label">Nombre del feriado *</label>
+                <input type="text" name="nombre" id="inputFeriadoNombre" class="cfg-input" placeholder="Ej: Día de la Independencia" required style="width:100%;" oninput="actualizarPreviewFeriado()">
+            </div>
+
+            <!-- Nota informativa -->
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 13px;display:flex;align-items:flex-start;gap:9px;margin-bottom:20px;">
+                <i class="ti ti-info-circle" style="color:#2563eb;font-size:1rem;flex-shrink:0;margin-top:2px;"></i>
+                <span style="font-size:0.76rem;color:#1e40af;font-weight:500;line-height:1.5;">
+                    El sistema no generará ausencias automáticas en días feriados. Los feriados pasados no se pueden eliminar una vez registrados.
+                </span>
+            </div>
+
+            <!-- Acciones -->
+            <div style="display:flex;gap:10px;">
+                <button type="button" onclick="cerrarModalFeriado()"
+                    style="flex:1;padding:11px;border:1.5px solid #e2e8f0;border-radius:11px;background:white;color:#64748b;font-weight:600;cursor:pointer;font-size:.88rem;font-family:inherit;transition:all .15s;"
+                    onmouseover="this.style.background='#f8fafc';this.style.borderColor='#cbd5e1'"
+                    onmouseout="this.style.background='white';this.style.borderColor='#e2e8f0'">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    style="flex:2;padding:11px;background:linear-gradient(135deg,#172554,#2563eb);border:none;border-radius:11px;color:white;font-weight:700;cursor:pointer;font-size:.88rem;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 14px rgba(37,99,235,.3);font-family:inherit;transition:all .15s;"
+                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 18px rgba(37,99,235,.4)'"
+                    onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(37,99,235,.3)'">
+                    <i class="ti ti-circle-check"></i> Registrar Feriado
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+@keyframes feriadoSlideIn {
+    from { opacity:0; transform:translateY(24px) scale(.97); }
+    to   { opacity:1; transform:translateY(0)    scale(1);   }
+}
+</style>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Editar Feriado (nombre y tipo — fecha bloqueada)
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalEditarFeriado"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.55);backdrop-filter:blur(5px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:22px;width:100%;max-width:440px;margin:16px;box-shadow:0 28px 70px rgba(0,0,0,.22);overflow:hidden;animation:feriadoSlideIn .25s cubic-bezier(.34,1.56,.64,1);">
+
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#172554 0%,#1e3a8a 55%,#2563eb 100%);padding:22px 26px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-30px;right:-30px;width:130px;height:130px;background:rgba(255,255,255,.05);border-radius:50%;pointer-events:none;"></div>
+            <div style="display:flex;align-items:center;gap:13px;z-index:1;">
+                <div style="width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="ti ti-pencil" style="color:white;font-size:1.2rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white;font-weight:800;font-size:1.02rem;">Editar Feriado</div>
+                    <div style="color:rgba(255,255,255,.65);font-size:0.76rem;margin-top:2px;"><i class="ti ti-lock" style="font-size:.7rem;"></i> La fecha no puede modificarse</div>
+                </div>
+            </div>
+            <button onclick="cerrarEditarFeriado()" type="button"
+                style="z-index:1;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;width:32px;height:32px;cursor:pointer;color:white;font-size:.95rem;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;"
+                onmouseover="this.style.background='rgba(255,255,255,.22)'"
+                onmouseout="this.style.background='rgba(255,255,255,.12)'">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="<?= URLROOT ?>/configuracion" style="padding:22px 26px;">
+            <input type="hidden" name="accion" value="editar_feriado">
+            <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+            <input type="hidden" name="id" id="editFeriadoId">
+
+            <!-- Fecha (solo lectura — visual) -->
+            <div style="margin-bottom:16px;">
+                <label class="cfg-field-label">Fecha <span style="color:#94a3b8;font-size:.68rem;font-weight:500;text-transform:none;letter-spacing:0;">(no editable)</span></label>
+                <div id="editFeriadoFechaDisplay"
+                    style="display:flex;align-items:center;gap:10px;padding:9px 13px;background:#f8fafc;border:2px solid #f1f5f9;border-radius:10px;">
+                    <div id="editFeriadoDateBlock"
+                        style="background:#e2e8f0;border-radius:8px;width:38px;text-align:center;padding:5px 0;flex-shrink:0;">
+                        <div id="editFDia" style="font-size:.95rem;font-weight:900;color:#94a3b8;line-height:1;">—</div>
+                        <div id="editFMes" style="font-size:.5rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">—</div>
+                    </div>
+                    <div>
+                        <div id="editFNomFecha" style="font-size:.83rem;font-weight:600;color:#64748b;">—</div>
+                        <div style="display:flex;align-items:center;gap:4px;margin-top:2px;">
+                            <i class="ti ti-lock" style="font-size:.68rem;color:#cbd5e1;"></i>
+                            <span style="font-size:.68rem;color:#cbd5e1;">Fecha bloqueada</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nombre -->
+            <div style="margin-bottom:16px;">
+                <label class="cfg-field-label">Nombre del feriado *</label>
+                <input type="text" name="nombre" id="editFeriadoNombre" class="cfg-input" required style="width:100%;" placeholder="Ej: Día de la Independencia">
+            </div>
+
+            <!-- Tipo -->
+            <div style="margin-bottom:20px;">
+                <label class="cfg-field-label">Tipo *</label>
+                <select name="tipo" id="editFeriadoTipo" class="cfg-input" style="width:100%;cursor:pointer;">
+                    <option value="Nacional">🟣 Nacional</option>
+                    <option value="Regional">🟢 Regional</option>
+                    <option value="Institucional">🔵 Institucional</option>
+                </select>
+            </div>
+
+            <!-- Acciones -->
+            <div style="display:flex;gap:10px;">
+                <button type="button" onclick="cerrarEditarFeriado()"
+                    style="flex:1;padding:11px;border:1.5px solid #e2e8f0;border-radius:11px;background:white;color:#64748b;font-weight:600;cursor:pointer;font-size:.88rem;font-family:inherit;transition:all .15s;"
+                    onmouseover="this.style.background='#f8fafc';this.style.borderColor='#cbd5e1'"
+                    onmouseout="this.style.background='white';this.style.borderColor='#e2e8f0'">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    style="flex:2;padding:11px;background:linear-gradient(135deg,#172554,#2563eb);border:none;border-radius:11px;color:white;font-weight:700;cursor:pointer;font-size:.88rem;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 14px rgba(37,99,235,.3);font-family:inherit;transition:all .15s;"
+                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 18px rgba(37,99,235,.4)'"
+                    onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(37,99,235,.3)'">
+                    <i class="ti ti-device-floppy"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ── Modal Feriado ──────────────────────────────────────
+    // [SGP-FIX-PJAX-REDECL] var: PJAX re-inyecta este script sin reload completo.
+    var _mesesEs  = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    var _diasEs   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    var _tipoPal  = {
+        'Nacional':      { gradient:'linear-gradient(135deg,#7c3aed,#a78bfa)', bg:'#f5f3ff' },
+        'Regional':      { gradient:'linear-gradient(135deg,#16a34a,#22c55e)', bg:'#f0fdf4' },
+        'Institucional': { gradient:'linear-gradient(135deg,#1e3a8a,#2563eb)', bg:'#eff6ff' },
+    };
+
+    function abrirModalFeriado() {
+        const m = document.getElementById('modalFeriado');
+        // Reset form
+        m.querySelector('input[name="fecha"]').value  = '';
+        m.querySelector('input[name="nombre"]').value = '';
+        m.querySelector('select[name="tipo"]').value  = 'Nacional';
+        document.getElementById('feriadoPreview').style.display = 'none';
+        m.style.display = 'flex';
+        setTimeout(() => m.querySelector('input[name="fecha"]').focus(), 100);
+    }
+    function cerrarModalFeriado() {
+        document.getElementById('modalFeriado').style.display = 'none';
+    }
+    document.getElementById('modalFeriado').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModalFeriado();
+    });
+
+    function actualizarPreviewFeriado() {
+        const fechaVal  = document.getElementById('inputFeriadoFecha').value;
+        const nombreVal = document.getElementById('inputFeriadoNombre').value.trim();
+        const tipoVal   = document.getElementById('inputFeriadoTipo').value;
+        const preview   = document.getElementById('feriadoPreview');
+        if (!fechaVal) { preview.style.display = 'none'; return; }
+
+        const d    = new Date(fechaVal + 'T00:00:00');
+        const pal  = _tipoPal[tipoVal] || _tipoPal['Nacional'];
+        const dia  = String(d.getDate()).padStart(2,'0');
+        const mes  = _mesesEs[d.getMonth() + 1];
+        const diaN = _diasEs[d.getDay()];
+
+        document.getElementById('fpDia').textContent    = dia;
+        document.getElementById('fpMes').textContent    = mes.slice(0,3).toUpperCase();
+        document.getElementById('fpDateBlock').style.background = pal.gradient;
+        document.getElementById('fpNombre').textContent = nombreVal || 'Sin nombre aún…';
+        document.getElementById('fpDiaNom').textContent = diaN + ' · ' + dia + ' de ' + mes + ' ' + d.getFullYear();
+        preview.style.background = pal.bg;
+        preview.style.borderBottomColor = tipoVal === 'Nacional' ? '#ddd6fe' : tipoVal === 'Regional' ? '#bbf7d0' : '#bfdbfe';
+        preview.style.display    = 'flex';
+    }
+
+    // ── Modal Editar Feriado ───────────────────────────────
+    function abrirEditarFeriado(id, nombre, tipo, fecha) {
+        document.getElementById('editFeriadoId').value     = id;
+        document.getElementById('editFeriadoNombre').value = nombre;
+        document.getElementById('editFeriadoTipo').value   = tipo;
+
+        // Construir display de fecha (bloqueada)
+        const d    = new Date(fecha + 'T00:00:00');
+        const mes  = _mesesEs[d.getMonth() + 1];
+        const diaN = _diasEs[d.getDay()];
+        const diaNum = String(d.getDate()).padStart(2,'0');
+
+        document.getElementById('editFDia').textContent     = diaNum;
+        document.getElementById('editFMes').textContent     = mes.slice(0,3).toUpperCase();
+        document.getElementById('editFNomFecha').textContent = diaN + ' ' + diaNum + ' de ' + mes + ' ' + d.getFullYear();
+
+        document.getElementById('modalEditarFeriado').style.display = 'flex';
+        setTimeout(() => document.getElementById('editFeriadoNombre').select(), 100);
+    }
+    function cerrarEditarFeriado() {
+        document.getElementById('modalEditarFeriado').style.display = 'none';
+    }
+    document.getElementById('modalEditarFeriado').addEventListener('click', function(e) {
+        if (e.target === this) cerrarEditarFeriado();
+    });
+
+    // ── Confirmar eliminar feriado ─────────────────────────
+    function confirmarEliminarFeriado(btn, nombre) {
+        Swal.fire({
+            icon: 'warning',
+            title: '¿Eliminar feriado?',
+            html: '<strong>' + nombre + '</strong><br><small style="color:#64748b;">Esta acción no se puede deshacer.</small>',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="ti ti-trash" style="margin-right:4px;"></i>Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(function(result) {
+            if (result.isConfirmed) { btn.closest('form').submit(); }
+        });
+    }
+
+    // ── Verificar conexión BD ─────────────────────────────
+    function verificarBD(btn) {
+        const span = btn.querySelector('#txt-btn-bd');
+        const badge = document.getElementById('bdg-estado-bd');
+        const sub = document.getElementById('txt-bd-sub');
+        span.textContent = 'Verificando…';
+        btn.disabled = true;
+
+        fetch('<?= URLROOT ?>/configuracion/verificarConexionBD', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                badge.innerHTML = '<i class="ti ti-circle-filled" style="font-size:.55rem;margin-right:2px;color:#22c55e;"></i>Online';
+                badge.style.background = '#dcfce7'; badge.style.color = '#16a34a';
+                sub.textContent = 'MySQL ' + (data.version || '') + ' · ' + (data.latencia_ms || 0) + ' ms';
+                NotificationService.success('Conexión exitosa · ' + (data.latencia_ms || 0) + ' ms');
+            } else {
+                badge.innerHTML = '<i class="ti ti-circle-filled" style="font-size:.55rem;margin-right:2px;color:#ef4444;"></i>Error';
+                badge.style.background = '#fee2e2'; badge.style.color = '#dc2626';
+                NotificationService.error('Error de conexión a la base de datos');
+            }
+        })
+        .catch(() => { NotificationService.error('No se pudo contactar el servidor'); })
+        .finally(() => { span.textContent = 'Verificar Conexión'; btn.disabled = false; });
+    }
+
+    // ── Sincronizar Feriados vía API Nager.Date ────────────
+    function sincronizarFeriados(anioParam) {
+        const anio = anioParam || <?= date('Y') ?>;
+        const btn  = document.getElementById('btnSyncFeriados');
+        const icon = document.getElementById('iconSyncFeriados');
+
+        // Estado: cargando
+        btn.disabled = true;
+        icon.className = 'ti ti-loader-2';
+        icon.style.animation = 'spin 1s linear infinite';
+
+        fetch('<?= URLROOT ?>/configuracion/sincronizarFeriados', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: 'anio=' + encodeURIComponent(anio)
+                + '&csrf_token=<?= Session::generateCsrfToken() ?>'
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const insertados = data.insertados ?? 0;
+                const yaExistian = data.ya_existian ?? 0;
+                const totalApi   = data.total_api   ?? 0;
+
+                let html = '<div style="text-align:left;font-size:0.88rem;line-height:1.8;">';
+                html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;">'
+                      + '<span style="color:#64748b;">Consultados en la API</span>'
+                      + '<strong>' + totalApi + '</strong></div>';
+                html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;">'
+                      + '<span style="color:#059669;">✅ Nuevos insertados</span>'
+                      + '<strong style="color:#059669;">' + insertados + '</strong></div>';
+                html += '<div style="display:flex;justify-content:space-between;padding:6px 0;">'
+                      + '<span style="color:#94a3b8;">⏭ Ya existían (omitidos)</span>'
+                      + '<strong style="color:#94a3b8;">' + yaExistian + '</strong></div>';
+                html += '</div>';
+                if (data.nota) {
+                    html += '<div style="margin-top:10px;font-size:0.78rem;background:#fef9c3;border-radius:8px;padding:8px 12px;color:#854d0e;text-align:left;">'
+                          + '⚠️ ' + data.nota + '</div>';
+                }
+
+                Swal.fire({
+                    icon: insertados > 0 ? 'success' : 'info',
+                    title: insertados > 0 ? '¡Feriados Sincronizados!' : 'Todo al día',
+                    html: html,
+                    confirmButtonColor: '#7c3aed',
+                    confirmButtonText: insertados > 0 ? 'Ver cambios' : 'Entendido'
+                }).then(r => { if (r.isConfirmed && insertados > 0) location.reload(); });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Sincronización',
+                    text: data.message || 'No se pudo conectar con la API de feriados.',
+                    footer: '<small>Verifica que el equipo tenga conexión a internet.</small>',
+                    confirmButtonColor: '#dc2626'
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Sin conexión',
+                text: 'No se pudo contactar la API. Verifica la conexión a internet.',
+                confirmButtonColor: '#dc2626'
+            });
+        })
+        .finally(() => {
+            btn.disabled = false;
+            icon.className = 'ti ti-refresh';
+            icon.style.animation = '';
+        });
+    }
+
+    // ── Limpiar sesiones expiradas ─────────────────────────
+    function limpiarSesiones(btn) {
+        Swal.fire({
+            icon: 'question',
+            title: 'Limpiar sesiones',
+            text: '¿Eliminar todos los tokens de sesión expirados del sistema?',
+            showCancelButton: true,
+            confirmButtonColor: '#059669',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, limpiar',
+            cancelButtonText: 'Cancelar'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i> Limpiando…';
+
+            fetch('<?= URLROOT ?>/configuracion/limpiarSesiones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: 'csrf_token=<?= $_SESSION["csrf_token"] ?? "" ?>'
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    NotificationService.success(data.message || 'Sesiones limpiadas correctamente');
+                } else {
+                    NotificationService.error(data.message || 'Error al limpiar sesiones');
+                }
+            })
+            .catch(() => { NotificationService.error('Error de conexión'); })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ti ti-trash-x"></i> <span>Limpiar Sesiones</span>';
+            });
+        });
+    }
+
+    // ── Purgar bitácora ────────────────────────────────────
+    function purgarBitacora(btn) {
+        const meses = document.getElementById('sel-purga-meses').value;
+        Swal.fire({
+            icon: 'warning',
+            title: '¿Purgar bitácora?',
+            html: `<strong>Se eliminarán logs de más de ${meses} meses.</strong><br><small style="color:#64748b;">Esta acción es irreversible.</small>`,
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="ti ti-flame" style="margin-right:4px;"></i>Purgar',
+            cancelButtonText: 'Cancelar'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i>';
+
+            fetch('<?= URLROOT ?>/configuracion/purgarBitacora', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: 'meses=' + meses + '&csrf_token=<?= $_SESSION["csrf_token"] ?? "" ?>'
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    NotificationService.success(data.message || 'Bitácora purgada correctamente');
+                } else {
+                    NotificationService.error(data.message || 'Error al purgar bitácora');
+                }
+            })
+            .catch(() => { NotificationService.error('Error de conexión'); })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ti ti-flame"></i> Purgar';
+            });
+        });
+    }
+
+    // ── Spin animation (encapsulado para PJAX) ─────────────
+    (function() {
+        if (!document.getElementById('sgp-spin-style')) {
+            var s = document.createElement('style');
+            s.id = 'sgp-spin-style';
+            s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+            document.head.appendChild(s);
+        }
+    })();
+</script>
+
+<script src="<?= URLROOT ?>/js/qrcode.min.js"></script>
+<script>
+    // ── Flash messages ──────────────────────────────────────────
+    <?php if ($flashSuccess): ?>
+        NotificationService.success('<?= addslashes($flashSuccess) ?>');
+    <?php endif; ?>
+    <?php if ($flashError): ?>
+        Swal.fire({
+            icon: 'warning',
+            title: 'Aviso',
+            text: '<?= addslashes($flashError) ?>',
+            confirmButtonColor: '#162660',
+            confirmButtonText: 'Entendido'
+        });
+    <?php endif; ?>
+
+    // ── Confirmar eliminación ───────────────────────────────────
+    function confirmarEliminar(btn, tipo, nombre) {
+        Swal.fire({
+            icon: 'warning',
+            title: '¿Eliminar ' + tipo + '?',
+            html: '<strong>' + nombre + '</strong><br><small style="color:#64748b;">Esta acción no se puede deshacer fácilmente.</small>',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="ti ti-trash" style="margin-right:4px;"></i>Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(function (result) {
+            if (result.isConfirmed) { btn.closest('form').submit(); }
+        });
+    }
+
+    // ── Kiosco toggle ───────────────────────────────────────────
+    (function () {
+        const toggle = document.getElementById('kioscoToggle');
+        const badge = document.getElementById('kioscoStatusBadge');
+        const icon = document.getElementById('kioscoStatusIcon');
+        const text = document.getElementById('kioscoStatusText');
+        const sub = document.getElementById('kioscoStatusSub');
+        const kpiLbl = document.getElementById('kpi-kiosco-label');
+        const kpiCard = document.getElementById('kpi-kiosco-card');
+        const kpiIcon = document.getElementById('kpi-kiosco-icon-box');
+
+        function applyState(active) {
+            if (active) {
+                badge.style.background = '#d1fae5';
+                icon.className = 'ti ti-circle-check';
+                icon.style.color = '#059669';
+                text.style.color = '#065f46';
+                text.textContent = 'Kiosco activo y operativo';
+                sub.textContent = 'Los pasantes pueden registrar asistencia';
+                if (kpiLbl) { kpiLbl.textContent = 'Activo'; kpiLbl.style.color = '#16a34a'; }
+                if (kpiCard) { kpiCard.style.borderLeftColor = '#22c55e'; }
+                if (kpiIcon) { kpiIcon.style.background = '#dcfce7'; kpiIcon.style.color = '#16a34a'; }
+            } else {
+                badge.style.background = '#fee2e2';
+                icon.className = 'ti ti-circle-x';
+                icon.style.color = '#dc2626';
+                text.style.color = '#7f1d1d';
+                text.textContent = 'Kiosco deshabilitado';
+                sub.textContent = 'El acceso de pasantes está bloqueado';
+                if (kpiLbl) { kpiLbl.textContent = 'Inactivo'; kpiLbl.style.color = '#dc2626'; }
+                if (kpiCard) { kpiCard.style.borderLeftColor = '#dc2626'; }
+                if (kpiIcon) { kpiIcon.style.background = '#fee2e2'; kpiIcon.style.color = '#dc2626'; }
+            }
+        }
+
+        if (toggle) {
+            toggle.addEventListener('change', function () {
+                const nuevoEstado = this.checked ? 1 : 0;
+
+                fetch('<?= URLROOT ?>/configuracion/toggleKiosco', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: 'activo=' + nuevoEstado
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            applyState(nuevoEstado === 1);
+                            NotificationService.success(data.message);
+                        } else {
+                            // Revertir el toggle si falló
+                            toggle.checked = !toggle.checked;
+                            NotificationService.error(data.message || 'Error al cambiar estado del kiosco');
+                        }
+                    })
+                    .catch(() => {
+                        toggle.checked = !toggle.checked;
+                        NotificationService.error('Error de conexión. Intenta de nuevo.');
+                    });
+            });
+
+            applyState(toggle.checked); // estado inicial visual
+        }
+    })();
+
+    // ── Geocerca GPS toggle (Modo Pruebas) ───────────────────────
+    (function () {
+        const toggle = document.getElementById('geocercaToggle');
+        const badge = document.getElementById('geocercaStatusBadge');
+        const icon = document.getElementById('geocercaStatusIcon');
+        const text = document.getElementById('geocercaStatusText');
+        const sub = document.getElementById('geocercaStatusSub');
+
+        function applyGeoState(active) {
+            if (!badge || !icon || !text || !sub) return;
+            if (active) {
+                badge.style.background = '#e0f2fe';
+                icon.className = 'ti ti-shield-check';
+                icon.style.color = '#0284c7';
+                text.style.color = '#0369a1';
+                text.textContent = 'Restricción GPS activa';
+                sub.style.color = '#075985';
+                sub.textContent = 'Solo se permite marcar dentro del radio de 200m de la institución';
+            } else {
+                badge.style.background = '#fef3c7';
+                icon.className = 'ti ti-shield-off';
+                icon.style.color = '#d97706';
+                text.style.color = '#92400e';
+                text.textContent = 'Modo Pruebas (GPS Desactivado)';
+                sub.style.color = '#78350f';
+                sub.textContent = 'Permite marcar asistencia desde cualquier ubicación (ideal para pruebas)';
+            }
+        }
+
+        if (toggle) {
+            toggle.addEventListener('change', function () {
+                const nuevoEstado = this.checked ? 1 : 0;
+
+                fetch('<?= URLROOT ?>/configuracion/toggleGeocerca', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: 'activo=' + nuevoEstado
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        applyGeoState(nuevoEstado === 1);
+                        NotificationService.success(data.message);
+                    } else {
+                        toggle.checked = !toggle.checked;
+                        NotificationService.error(data.message || 'Error al cambiar geocerca');
+                    }
+                })
+                .catch(() => {
+                    toggle.checked = !toggle.checked;
+                    NotificationService.error('Error de conexión al cambiar geocerca.');
+                });
+            });
+
+            applyGeoState(toggle.checked);
+        }
+    })();
+
+    // ── Regenerar Token QR del Kiosco (Fase 5) ───────────────────
+    function regenerarTokenQr(btn) {
+        Swal.fire({
+            icon: 'warning',
+            title: '¿Regenerar Cartel QR?',
+            html: 'Al generar un nuevo código, el cartel QR actual en la oficina <strong>dejará de funcionar de inmediato</strong>.<br><br><small style="color:#64748b;">Deberás imprimir el nuevo cartel y colocarlo en la sede del ISPEB.</small>',
+            showCancelButton: true,
+            confirmButtonColor: '#1e3a8a',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="ti ti-refresh"></i> Sí, regenerar token',
+            cancelButtonText: 'Cancelar'
+        }).then((res) => {
+            if (!res.isConfirmed) return;
+
+            btn.disabled = true;
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ti ti-loader spinner"></i>';
+
+            const formData = new FormData();
+            formData.append('_csrf', '<?= CsrfHelper::generate() ?>');
+
+            fetch('<?= URLROOT ?>/configuracion/regenerarQrToken', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(d => {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+
+                if (d.success) {
+                    const dispEl = document.getElementById('displayQrToken');
+                    if (dispEl) dispEl.textContent = d.nuevo_token;
+                    const badgeEl = document.getElementById('tokenBadgeHeader');
+                    if (badgeEl) badgeEl.textContent = d.nuevo_token;
+
+                    renderMiniQr(d.nuevo_token);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Token Regenerado!',
+                        html: `Nuevo Token: <code>${d.nuevo_token}</code><br><br>${d.message}`,
+                        confirmButtonText: '<i class="ti ti-printer"></i> Ver Cartel para Imprimir',
+                        showCancelButton: true,
+                        cancelButtonText: 'Cerrar',
+                        confirmButtonColor: '#10b981',
+                        cancelButtonColor: '#64748b'
+                    }).then((r2) => {
+                        if (r2.isConfirmed) {
+                            window.open('<?= URLROOT ?>/configuracion/cartelQr', '_blank');
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: d.message || 'No se pudo regenerar el token.',
+                        confirmButtonColor: '#1e3a8a'
+                    });
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de red',
+                    text: 'No se pudo comunicar con el servidor.',
+                    confirmButtonColor: '#1e3a8a'
+                });
+            });
+        });
+    }
+
+    // ── Gestión de URL Pública / Túnel para Cartel QR ───────────
+    let cfgCurrentBaseUrl = "<?= !empty($data['urlPublica']) ? htmlspecialchars($data['urlPublica']) : rtrim(URLROOT, '/') ?>";
+
+    function guardarUrlPublica(btn) {
+        const input = document.getElementById('cfgUrlPublicaInput');
+        const urlVal = input ? input.value.trim() : '';
+
+        btn.disabled = true;
+        const origHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="ti ti-loader spinner"></i>';
+
+        const formData = new FormData();
+        formData.append('_csrf', '<?= CsrfHelper::generate() ?>');
+        formData.append('url_publica', urlVal);
+
+        fetch('<?= URLROOT ?>/configuracion/guardarUrlPublica', {
+            method: 'POST',
+            body: formData
+        })
+        .then(r => r.json())
+        .then(d => {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+
+            if (d.success) {
+                cfgCurrentBaseUrl = d.url_efectiva;
+                const lbl = document.getElementById('cfgEffectiveUrlLabel');
+                if (lbl) lbl.textContent = cfgCurrentBaseUrl;
+
+                const tokenVal = document.getElementById('tokenBadgeHeader')?.textContent.trim() || '<?= htmlspecialchars($data['kioscoQrToken'] ?? 'ISPEB-ASIST-2026-HQ') ?>';
+                renderMiniQr(tokenVal);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'URL de Red Configurada',
+                    text: d.message,
+                    confirmButtonColor: '#1e3a8a',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: d.message || 'No se pudo guardar la URL.',
+                    confirmButtonColor: '#1e3a8a'
+                });
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo comunicar con el servidor.',
+                confirmButtonColor: '#1e3a8a'
+            });
+        });
+    }
+
+    function restablecerUrlLocal() {
+        const input = document.getElementById('cfgUrlPublicaInput');
+        if (input) input.value = '';
+        guardarUrlPublica(document.querySelector('button[onclick="guardarUrlPublica(this)"]'));
+    }
+
+    // ── Mini QR Code en la cabecera de Configuración ─────────────
+    let miniQrObj = null;
+    function renderMiniQr(token) {
+        const el = document.getElementById("cfgMiniQr");
+        if (!el || typeof QRCode === 'undefined') return;
+        el.innerHTML = '';
+        let targetBase = cfgCurrentBaseUrl.replace(/\/+$/, '');
+        if (!targetBase.toLowerCase().endsWith('/sgp')) {
+            targetBase += '/SGP';
+        }
+        miniQrObj = new QRCode(el, {
+            text: targetBase + "/auth/login?token=" + encodeURIComponent(token),
+            width: 124,
+            height: 124,
+            colorDark: "#0f172a",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMiniQr("<?= htmlspecialchars($data['kioscoQrToken'] ?? 'ISPEB-ASIST-2026-HQ') ?>");
+        });
+    } else {
+        renderMiniQr("<?= htmlspecialchars($data['kioscoQrToken'] ?? 'ISPEB-ASIST-2026-HQ') ?>");
+    }
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Editar Institución (ISP)
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalISP"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div
+        style="background:#fff;border-radius:20px;width:100%;max-width:540px;margin:16px;box-shadow:0 24px 60px rgba(0,0,0,.18);overflow:hidden;">
+
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#d97706,#b45309);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:42px;height:42px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                    <i class="ti ti-building-hospital" style="font-size:1.4rem;"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0;color:#fff;font-size:1.15rem;font-weight:700;">Datos de la Institución</h3>
+                    <span style="color:rgba(255,255,255,.8);font-size:0.8rem;font-weight:500;">Editar información general</span>
+                </div>
+            </div>
+            <button onclick="cerrarModalISP()" style="background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;opacity:.7;transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:24px;">
+            <form action="<?= URLROOT ?>/configuracion" method="POST" id="formISP">
+                <input type="hidden" name="accion" value="guardar_isp">
+                <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+
+                <div class="cfg-form-group">
+                    <label class="cfg-label">Nombre de la Institución <span style="color:#ef4444">*</span></label>
+                    <input type="text" name="isp_nombre" class="cfg-input" value="<?= htmlspecialchars($isp['nombre'] ?? '') ?>" required>
+                </div>
+                <div class="cfg-form-group">
+                    <label class="cfg-label">RIF <span style="color:#ef4444">*</span></label>
+                    <input type="text" name="isp_rif" class="cfg-input" value="<?= htmlspecialchars($isp['rif'] ?? '') ?>" required>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="cfg-form-group">
+                        <label class="cfg-label">Estado <span style="color:#ef4444">*</span></label>
+                        <input type="text" name="isp_estado" class="cfg-input" value="<?= htmlspecialchars($isp['estado'] ?? '') ?>" required>
+                    </div>
+                    <div class="cfg-form-group">
+                        <label class="cfg-label">Ciudad <span style="color:#ef4444">*</span></label>
+                        <input type="text" name="isp_ciudad" class="cfg-input" value="<?= htmlspecialchars($isp['ciudad'] ?? '') ?>" required>
+                    </div>
+                </div>
+                <div class="cfg-form-group">
+                    <label class="cfg-label">Dirección <span style="color:#ef4444">*</span></label>
+                    <textarea name="isp_direccion" class="cfg-input" rows="2" required><?= htmlspecialchars($isp['direccion'] ?? '') ?></textarea>
+                </div>
+
+                <div style="margin-top:24px;display:flex;justify-content:flex-end;gap:12px;">
+                    <button type="button" onclick="cerrarModalISP()" style="padding:10px 20px;border-radius:12px;font-weight:600;font-size:0.9rem;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;cursor:pointer;transition:all .2s;">Cancelar</button>
+                    <button type="submit" style="padding:10px 20px;border-radius:12px;font-weight:600;font-size:0.9rem;border:none;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;cursor:pointer;box-shadow:0 4px 12px rgba(217,119,6,.25);transition:all .2s;">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function abrirModalISP() {
+        const modal = document.getElementById('modalISP');
+        modal.style.display = 'flex';
+        // Animación sencilla
+        const dialog = modal.querySelector('div');
+        dialog.style.opacity = '0';
+        dialog.style.transform = 'translateY(15px)';
+        requestAnimationFrame(() => {
+            dialog.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            dialog.style.opacity = '1';
+            dialog.style.transform = 'translateY(0)';
+        });
+    }
+
+    function cerrarModalISP() {
+        const modal = document.getElementById('modalISP');
+        const dialog = modal.querySelector('div');
+        dialog.style.opacity = '0';
+        dialog.style.transform = 'translateY(15px)';
+        setTimeout(() => { modal.style.display = 'none'; }, 200);
+    }
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Nueva Institución
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalInstitucion"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div
+        style="background:#fff;border-radius:20px;width:100%;max-width:540px;margin:16px;box-shadow:0 24px 60px rgba(0,0,0,.18);overflow:hidden;">
+
+        <!-- Header -->
+        <div
+            style="background:linear-gradient(135deg,#1e3a8a,#3b82f6);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div
+                    style="width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                    <i class="ti ti-school" style="color:white;font-size:1.2rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white;font-weight:700;font-size:1rem;">Nueva Institución</div>
+                    <div style="color:rgba(255,255,255,.7);font-size:0.78rem;">Escuela técnica aliada</div>
+                </div>
+            </div>
+            <button onclick="cerrarModalInstitucion()"
+                style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:white;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:background .2s;"
+                onmouseover="this.style.background='rgba(255,255,255,.25)'"
+                onmouseout="this.style.background='rgba(255,255,255,.15)'">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <form method="POST" action="<?= URLROOT ?>/configuracion" style="padding:24px;">
+            <input type="hidden" name="accion" value="agregar_institucion">
+            <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+
+            <!-- Institución -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Nombre
+                        *</label>
+                    <input type="text" name="nombre" class="cfg-input" placeholder="Ej: E.T.C Juan Bautista" required
+                        style="width:100%;">
+                </div>
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Dirección
+                        / Ciudad *</label>
+                    <input type="text" name="direccion" class="cfg-input" placeholder="Ciudad Bolivar" required
+                        style="width:100%;">
+                </div>
+            </div>
+
+            <!-- Divisor representante -->
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+                <span
+                    style="font-size:0.73rem;font-weight:700;color:#0369a1;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+                    <i class="ti ti-user-check"></i> Representante de la Institución
+                </span>
+                <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Nombre</label>
+                    <input type="text" name="representante_nombre" class="cfg-input"
+                        placeholder="Nombre del representante" style="width:100%;">
+                </div>
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Cargo</label>
+                    <input type="text" name="representante_cargo" class="cfg-input"
+                        placeholder="Coordinador de Pasantias" style="width:100%;">
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;">
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Correo</label>
+                    <input type="email" name="representante_correo" class="cfg-input"
+                        placeholder="correo@institucion.edu" style="width:100%;">
+                </div>
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Teléfono</label>
+                    <input type="text" name="representante_telefono" class="cfg-input" placeholder="0412-0000000"
+                        style="width:100%;">
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div style="display:flex;gap:10px;">
+                <button type="button" onclick="cerrarModalInstitucion()"
+                    style="flex:1;padding:11px;border:1.5px solid #e2e8f0;border-radius:10px;background:white;color:#64748b;font-weight:600;cursor:pointer;font-size:0.9rem;transition:background .2s;"
+                    onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    style="flex:2;padding:11px;background:linear-gradient(135deg,#1e40af,#3b82f6);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 14px rgba(59,130,246,.3);">
+                    <i class="ti ti-circle-check"></i> Registrar Institución
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Nuevo Departamento
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalDepto"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div
+        style="background:#fff;border-radius:20px;width:100%;max-width:460px;margin:16px;box-shadow:0 24px 60px rgba(0,0,0,.18);overflow:hidden;">
+        <div
+            style="background:linear-gradient(135deg,#172554,#1e3a8a);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div
+                    style="width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                    <i class="ti ti-building-community" style="color:white;font-size:1.2rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white;font-weight:700;font-size:1rem;">Nuevo Departamento</div>
+                    <div style="color:rgba(255,255,255,.7);font-size:0.78rem;">Área interna del ISP</div>
+                </div>
+            </div>
+            <button onclick="cerrarModalDepto()"
+                style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:white;font-size:1rem;display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <form method="POST" action="<?= URLROOT ?>/configuracion" style="padding:24px;">
+            <input type="hidden" name="accion" value="agregar_departamento">
+            <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;">
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Nombre
+                        *</label>
+                    <input type="text" name="nombre" class="cfg-input" placeholder="Ej: Informatica" required
+                        style="width:100%;">
+                </div>
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Descripción</label>
+                    <input type="text" name="descripcion" class="cfg-input" placeholder="Opcional" style="width:100%;">
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="button" onclick="cerrarModalDepto()"
+                    style="flex:1;padding:11px;border:1.5px solid #e2e8f0;border-radius:10px;background:white;color:#64748b;font-weight:600;cursor:pointer;font-size:0.9rem;">Cancelar</button>
+                <button type="submit"
+                    style="flex:2;padding:11px;background:linear-gradient(135deg,#172554,#1e3a8a);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 14px rgba(30,58,138,.3);">
+                    <i class="ti ti-circle-check"></i> Crear Departamento
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Editar Departamento
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalEditarDepto"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div
+        style="background:#fff;border-radius:20px;width:100%;max-width:460px;margin:16px;box-shadow:0 24px 60px rgba(0,0,0,.18);overflow:hidden;">
+        <div
+            style="background:linear-gradient(135deg,#172554,#1e3a8a);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div
+                    style="width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                    <i class="ti ti-pencil" style="color:white;font-size:1.2rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white;font-weight:700;font-size:1rem;">Editar Departamento</div>
+                    <div style="color:rgba(255,255,255,.7);font-size:0.78rem;">Modifica el nombre o descripción</div>
+                </div>
+            </div>
+            <button onclick="cerrarModalEditarDepto()"
+                style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:white;font-size:1rem;display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <form method="POST" action="<?= URLROOT ?>/configuracion" style="padding:24px;">
+            <input type="hidden" name="accion" value="editar_departamento">
+            <input type="hidden" name="id" id="editDeptoId">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;">
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Nombre
+                        *</label>
+                    <input type="text" name="nombre" id="editDeptoNombre" class="cfg-input" required
+                        style="width:100%;">
+                </div>
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Descripción</label>
+                    <input type="text" name="descripcion" id="editDeptoDesc" class="cfg-input" style="width:100%;">
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="button" onclick="cerrarModalEditarDepto()"
+                    style="flex:1;padding:11px;border:1.5px solid #e2e8f0;border-radius:10px;background:white;color:#64748b;font-weight:600;cursor:pointer;font-size:0.9rem;">Cancelar</button>
+                <button type="submit"
+                    style="flex:2;padding:11px;background:linear-gradient(135deg,#172554,#1e3a8a);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 14px rgba(30,58,138,.3);">
+                    <i class="ti ti-device-floppy"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Editar Institución
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalEditarInstitucion"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div
+        style="background:#fff;border-radius:20px;width:100%;max-width:540px;margin:16px;box-shadow:0 24px 60px rgba(0,0,0,.18);overflow:hidden;">
+        <div
+            style="background:linear-gradient(135deg,#1e3a8a,#3b82f6);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div
+                    style="width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                    <i class="ti ti-pencil" style="color:white;font-size:1.2rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white;font-weight:700;font-size:1rem;">Editar Institución</div>
+                    <div style="color:rgba(255,255,255,.7);font-size:0.78rem;">Modifica datos y representante</div>
+                </div>
+            </div>
+            <button onclick="cerrarModalEditarInstitucion()"
+                style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:white;font-size:1rem;display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <form method="POST" action="<?= URLROOT ?>/configuracion" style="padding:24px;">
+            <input type="hidden" name="accion" value="editar_institucion">
+            <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+            <input type="hidden" name="id" id="editInstId">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Nombre
+                        *</label>
+                    <input type="text" name="nombre" id="editInstNombre" class="cfg-input" required style="width:100%;">
+                </div>
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Dirección
+                        / Ciudad *</label>
+                    <input type="text" name="direccion" id="editInstDireccion" class="cfg-input" required
+                        style="width:100%;">
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+                <span
+                    style="font-size:0.73rem;font-weight:700;color:#0369a1;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+                    <i class="ti ti-user-check"></i> Representante
+                </span>
+                <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Nombre</label>
+                    <input type="text" name="representante_nombre" id="editInstRepNombre" class="cfg-input"
+                        style="width:100%;">
+                </div>
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Cargo</label>
+                    <input type="text" name="representante_cargo" id="editInstRepCargo" class="cfg-input"
+                        style="width:100%;">
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;">
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Correo</label>
+                    <input type="email" name="representante_correo" id="editInstRepCorreo" class="cfg-input"
+                        style="width:100%;">
+                </div>
+                <div>
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;">Teléfono</label>
+                    <input type="text" name="representante_telefono" id="editInstRepTel" class="cfg-input"
+                        style="width:100%;">
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="button" onclick="cerrarModalEditarInstitucion()"
+                    style="flex:1;padding:11px;border:1.5px solid #e2e8f0;border-radius:10px;background:white;color:#64748b;font-weight:600;cursor:pointer;font-size:0.9rem;">Cancelar</button>
+                <button type="submit"
+                    style="flex:2;padding:11px;background:linear-gradient(135deg,#1e40af,#3b82f6);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 14px rgba(59,130,246,.3);">
+                    <i class="ti ti-device-floppy"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ── Modal Nueva Institución ───────────────────────────
+    function abrirModalInstitucion() {
+        const m = document.getElementById('modalInstitucion');
+        m.style.display = 'flex';
+        setTimeout(() => m.querySelector('input[name="nombre"]').focus(), 100);
+    }
+    function cerrarModalInstitucion() {
+        document.getElementById('modalInstitucion').style.display = 'none';
+    }
+
+    // ── Modal Nuevo Departamento ──────────────────────────
+    function abrirModalDepto() {
+        const m = document.getElementById('modalDepto');
+        m.style.display = 'flex';
+        setTimeout(() => m.querySelector('input[name="nombre"]').focus(), 100);
+    }
+    function cerrarModalDepto() {
+        document.getElementById('modalDepto').style.display = 'none';
+    }
+
+    // ── Modal Editar Departamento ─────────────────────────
+    function abrirEditarDepto(id, nombre, descripcion) {
+        document.getElementById('editDeptoId').value = id;
+        document.getElementById('editDeptoNombre').value = nombre;
+        document.getElementById('editDeptoDesc').value = descripcion;
+        const m = document.getElementById('modalEditarDepto');
+        m.style.display = 'flex';
+        setTimeout(() => document.getElementById('editDeptoNombre').focus(), 100);
+    }
+    function cerrarModalEditarDepto() {
+        document.getElementById('modalEditarDepto').style.display = 'none';
+    }
+
+    // ── Modal Editar Institución ──────────────────────────
+    function abrirEditarInstitucion(id, inst) {
+        document.getElementById('editInstId').value = id;
+        document.getElementById('editInstNombre').value = inst.nombre || '';
+        document.getElementById('editInstDireccion').value = inst.direccion || '';
+        document.getElementById('editInstRepNombre').value = inst.representante_nombre || '';
+        document.getElementById('editInstRepCargo').value = inst.representante_cargo || '';
+        document.getElementById('editInstRepCorreo').value = inst.representante_correo || '';
+        document.getElementById('editInstRepTel').value = inst.representante_telefono || '';
+        const m = document.getElementById('modalEditarInstitucion');
+        m.style.display = 'flex';
+        setTimeout(() => document.getElementById('editInstNombre').focus(), 100);
+    }
+    function cerrarModalEditarInstitucion() {
+        document.getElementById('modalEditarInstitucion').style.display = 'none';
+    }
+
+    // ── Cerrar cualquier modal con Escape o clic en fondo ─
+    ['modalInstitucion', 'modalDepto', 'modalEditarDepto', 'modalEditarInstitucion', 'modalNotifTrazabilidad', 'modalNotifUsuarios'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('click', e => { if (e.target === el) el.style.display = 'none'; });
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            ['modalInstitucion', 'modalDepto', 'modalEditarDepto', 'modalEditarInstitucion', 'modalNotifTrazabilidad', 'modalNotifUsuarios'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+        }
+    });
+
+    // ── Notificaciones: Switch Global ──────────────────────
+    (function () {
+        const toggle = document.getElementById('notifGlobalToggle');
+        const badge = document.getElementById('notifGlobalBadge');
+
+        if (toggle) {
+            toggle.addEventListener('change', function () {
+                const nuevoEstado = this.checked ? 1 : 0;
+                fetch('<?= URLROOT ?>/configuracion/toggleNotificaciones', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: 'activo=' + nuevoEstado
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        if (badge) {
+                            badge.textContent = nuevoEstado === 1 ? 'Activas' : 'Pausadas';
+                            badge.style.background = nuevoEstado === 1 ? '#dcfce7' : '#fee2e2';
+                            badge.style.color = nuevoEstado === 1 ? '#16a34a' : '#dc2626';
+                        }
+                        NotificationService.success(data.message);
+                    } else {
+                        toggle.checked = !toggle.checked;
+                        NotificationService.error(data.message || 'Error al cambiar estado');
+                    }
+                })
+                .catch(() => {
+                    toggle.checked = !toggle.checked;
+                    NotificationService.error('Error de red al actualizar estado global');
+                });
+            });
+        }
+    })();
+
+    // ── Notificaciones: Modales ────────────────────────────
+    function abrirModalNotifTrazabilidad() {
+        const m = document.getElementById('modalNotifTrazabilidad');
+        if (m) m.style.display = 'flex';
+    }
+    function cerrarModalNotifTrazabilidad() {
+        const m = document.getElementById('modalNotifTrazabilidad');
+        if (m) m.style.display = 'none';
+    }
+
+    function abrirModalNotifUsuarios() {
+        const m = document.getElementById('modalNotifUsuarios');
+        if (m) m.style.display = 'flex';
+    }
+    function cerrarModalNotifUsuarios() {
+        const m = document.getElementById('modalNotifUsuarios');
+        if (m) m.style.display = 'none';
+    }
+
+    // ── Notificaciones: Toggle por Usuario ─────────────────
+    function toggleUserNotif(userId, checkbox) {
+        const habilitado = checkbox.checked ? 1 : 0;
+        fetch('<?= URLROOT ?>/configuracion/toggleUsuarioNotificaciones', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+            body: 'usuario_id=' + userId + '&habilitado=' + habilitado
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                NotificationService.success(data.message);
+            } else {
+                checkbox.checked = !checkbox.checked;
+                NotificationService.error(data.message || 'Error al actualizar preferencia');
+            }
+        })
+        .catch(() => {
+            checkbox.checked = !checkbox.checked;
+            NotificationService.error('Error de conexión al servidor');
+        });
+    }
+
+    // ── Notificaciones: Tabs (Historial vs Próximas) ────────
+    function cambiarTabNotif(tab) {
+        const btnHist = document.getElementById('tabBtnHistorialNotif');
+        const btnProx = document.getElementById('tabBtnProximasNotif');
+        const panelHist = document.getElementById('panelHistorialNotif');
+        const panelProx = document.getElementById('panelProximasNotif');
+
+        if (tab === 'historial') {
+            if (btnHist) {
+                btnHist.style.background = '#ffffff';
+                btnHist.style.color = '#1e293b';
+                btnHist.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+            }
+            if (btnProx) {
+                btnProx.style.background = 'transparent';
+                btnProx.style.color = '#64748b';
+                btnProx.style.boxShadow = 'none';
+            }
+            if (panelHist) panelHist.style.display = 'block';
+            if (panelProx) panelProx.style.display = 'none';
+        } else {
+            if (btnProx) {
+                btnProx.style.background = '#ffffff';
+                btnProx.style.color = '#1e293b';
+                btnProx.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+            }
+            if (btnHist) {
+                btnHist.style.background = 'transparent';
+                btnHist.style.color = '#64748b';
+                btnHist.style.boxShadow = 'none';
+            }
+            if (panelHist) panelHist.style.display = 'none';
+            if (panelProx) panelProx.style.display = 'block';
+        }
+    }
+
+    // ── Filtro rápido de historial y próximas ───────────────
+    function filtrarHistorialNotif(val) {
+        const q = (val || '').toLowerCase().trim();
+        document.querySelectorAll('.notif-history-item, .notif-proxima-item').forEach(el => {
+            const searchData = el.getAttribute('data-search') || '';
+            el.style.display = searchData.includes(q) ? 'flex' : 'none';
+        });
+    }
+
+    // ── Filtrado interactivo por Tarjetas KPI (Todas / Leídas / Clics) ──
+    function filtrarNotifsPorEstado(filtro) {
+        cambiarTabNotif('historial');
+        document.querySelectorAll('.cfg-kpi-subcard').forEach(c => c.style.boxShadow = 'none');
+        const kpiActive = document.getElementById('kpi-' + filtro);
+        if (kpiActive) {
+            kpiActive.style.boxShadow = '0 0 0 2px #3b82f6, 0 6px 16px rgba(59,130,246,0.25)';
+        }
+
+        const inputBusqueda = document.getElementById('filtroHistorialInput');
+        if (inputBusqueda) inputBusqueda.value = '';
+
+        document.querySelectorAll('.notif-history-item').forEach(el => {
+            if (filtro === 'todas') {
+                el.style.display = 'flex';
+            } else if (filtro === 'leidas') {
+                el.style.display = (el.getAttribute('data-leida') === '1') ? 'flex' : 'none';
+            } else if (filtro === 'clics') {
+                el.style.display = (el.getAttribute('data-clic') === '1') ? 'flex' : 'none';
+            }
+        });
+    }
+
+    // ── Filtro rápido de usuarios receptores ────────────────
+    function filtrarUsuariosNotif(val) {
+        const q = (val || '').toLowerCase().trim();
+        document.querySelectorAll('.notif-user-card').forEach(el => {
+            const searchData = el.getAttribute('data-search') || '';
+            el.style.display = searchData.includes(q) ? 'flex' : 'none';
+        });
+    }
+
+    // ── Branding y Personalización de Tema (Fase 5) ──────────
+    var colorOriginalPrimario = '<?= htmlspecialchars($data['colorPrimario'] ?? '#162660') ?>';
+    var colorOriginalAcento   = '<?= htmlspecialchars($data['colorAcento'] ?? '#2563eb') ?>';
+    var hayCambiosSinGuardar = false;
+
+    function sincronizarColor(tipo, val) {
+        if (!val) return;
+        val = val.trim();
+        if (tipo === 'primario') {
+            const picker = document.getElementById('pickerPrimario');
+            const input = document.getElementById('inputPrimario');
+            const disp = document.getElementById('hexPrimarioDisplay');
+            if (picker && picker.value !== val) picker.value = val;
+            if (input && input.value !== val) input.value = val;
+            if (disp) disp.textContent = val;
+        } else if (tipo === 'acento') {
+            const picker = document.getElementById('pickerAcento');
+            const input = document.getElementById('inputAcento');
+            const disp = document.getElementById('hexAcentoDisplay');
+            if (picker && picker.value !== val) picker.value = val;
+            if (input && input.value !== val) input.value = val;
+            if (disp) disp.textContent = val;
+        }
+        actualizarPreviewTema();
+    }
+
+    function aplicarPresetColor(primario, acento, btnEl) {
+        sincronizarColor('primario', primario);
+        sincronizarColor('acento', acento);
+
+        // Visual feedback del preset activo
+        document.querySelectorAll('.preset-theme-btn').forEach(b => {
+            b.classList.remove('active');
+            b.style.boxShadow = 'none';
+        });
+        if (btnEl) {
+            btnEl.classList.add('active');
+            btnEl.style.boxShadow = '0 0 0 2px ' + acento;
+        }
+    }
+
+    function actualizarPreviewTema() {
+        const cp = (document.getElementById('inputPrimario')?.value || colorOriginalPrimario).trim();
+        const ca = (document.getElementById('inputAcento')?.value || colorOriginalAcento).trim();
+        
+        // 1. Siempre actualiza la tarjeta de muestra local
+        const prevCard = document.getElementById('previewCardBrand');
+        if (prevCard) {
+            prevCard.style.background = 'linear-gradient(135deg, ' + cp + ', ' + ca + ')';
+        }
+
+        // 2. Control de cambios sin guardar
+        const huboCambio = (cp.toLowerCase() !== colorOriginalPrimario.toLowerCase()) || 
+                           (ca.toLowerCase() !== colorOriginalAcento.toLowerCase());
+        hayCambiosSinGuardar = huboCambio;
+        
+        const aviso = document.getElementById('avisoCambiosPaleta');
+        if (aviso) {
+            aviso.style.display = huboCambio ? 'flex' : 'none';
+        }
+
+        // 3. Proyección en vivo solo si el switch está activado
+        const switchLive = document.getElementById('switchLivePreview');
+        if (switchLive && switchLive.checked) {
+            proyectarEnInterfaz(cp, ca);
+        }
+    }
+
+    function alternarLivePreview(activado) {
+        const cp = (document.getElementById('inputPrimario')?.value || colorOriginalPrimario).trim();
+        const ca = (document.getElementById('inputAcento')?.value || colorOriginalAcento).trim();
+        const label = document.getElementById('labelLivePreview');
+
+        if (activado) {
+            if (label) label.innerHTML = '<i class="ti ti-eye-check" style="color:#34d399;"></i> Proyectando en vivo';
+            proyectarEnInterfaz(cp, ca);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'Vista previa proyectada en la interfaz',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }
+        } else {
+            if (label) label.innerHTML = '<i class="ti ti-eye"></i> Proyectar en la interfaz';
+            proyectarEnInterfaz(colorOriginalPrimario, colorOriginalAcento, true);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Vista previa restaurada',
+                    showConfirmButton: false,
+                    timer: 1600
+                });
+            }
+        }
+    }
+
+    function proyectarEnInterfaz(cp, ca, restaurar = false) {
+        // Variables globales en :root
+        document.documentElement.style.setProperty('--color-primary', cp);
+        document.documentElement.style.setProperty('--color-accent-brand', ca);
+        document.documentElement.style.setProperty('--color-info', ca);
+        document.documentElement.style.setProperty('--icon-active', ca);
+        document.documentElement.style.setProperty('--text-active', ca);
+        document.documentElement.style.setProperty('--sidebar-accent', ca);
+        document.documentElement.style.setProperty('--gradient-start', ca);
+        document.documentElement.style.setProperty('--gradient-mid', cp);
+        document.documentElement.style.setProperty('--gradient-end', cp);
+
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || document.documentElement.classList.contains('dark');
+        const sidebar = document.querySelector('.main-sidebar');
+        if (sidebar) {
+            if (restaurar) {
+                sidebar.style.removeProperty('background');
+            } else if (!isDark) {
+                sidebar.style.setProperty('background', 'linear-gradient(180deg, ' + ca + ' 0%, ' + cp + ' 50%, ' + cp + ' 100%)', 'important');
+            } else {
+                sidebar.style.setProperty('background', 'linear-gradient(180deg, #090e1a 0%, ' + cp + '33 50%, #070b14 100%)', 'important');
+            }
+        }
+
+        // Proyectar en botón primario de configuración
+        document.querySelectorAll('.cfg-btn-primary').forEach(btn => {
+            if (restaurar) {
+                btn.style.removeProperty('background');
+            } else {
+                btn.style.setProperty('background', 'linear-gradient(135deg, ' + cp + ', ' + ca + ')', 'important');
+            }
+        });
+
+        // Sincronizar dock móvil (FAB central y acentos activos)
+        document.querySelectorAll('.dock-fab').forEach(fab => {
+            if (restaurar) {
+                fab.style.removeProperty('background');
+            } else {
+                fab.style.setProperty('background', 'linear-gradient(135deg, ' + cp + ' 0%, ' + cp + ' 45%, ' + ca + ' 100%)', 'important');
+            }
+        });
+
+        // Sincronizar acentos del menú lateral (indicador activo e íconos)
+        document.querySelectorAll('.main-sidebar .nav-item > a.active, .main-sidebar .nav-link.active').forEach(el => {
+            const icon = el.querySelector('i');
+            if (icon) {
+                if (restaurar) {
+                    icon.style.removeProperty('color');
+                } else {
+                    icon.style.setProperty('color', ca, 'important');
+                }
+            }
+        });
+    }
+
+    // Interceptar navegación cuando hay cambios sin guardar
+    document.addEventListener('DOMContentLoaded', () => {
+        // Al enviar el formulario de tema, no bloquear
+        document.getElementById('formBrandingTema')?.addEventListener('submit', () => {
+            hayCambiosSinGuardar = false;
+        });
+        document.getElementById('formRestablecerTema')?.addEventListener('submit', () => {
+            hayCambiosSinGuardar = false;
+        });
+
+        // Advertencia en enlaces
+        document.querySelectorAll('a[href]').forEach(a => {
+            a.addEventListener('click', (e) => {
+                const href = a.getAttribute('href');
+                if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+                if (hayCambiosSinGuardar) {
+                    e.preventDefault();
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: '¿Salir sin guardar cambios?',
+                            text: 'Has modificado la paleta de colores pero no has guardado los cambios. Si sales ahora, se descartarán.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Sí, salir sin guardar',
+                            cancelButtonText: 'Permanecer aquí',
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#64748b'
+                        }).then(r => {
+                            if (r.isConfirmed) {
+                                hayCambiosSinGuardar = false;
+                                window.location.href = href;
+                            }
+                        });
+                    } else {
+                        if (confirm('Has modificado la paleta de colores sin guardar. ¿Deseas salir y descartar los cambios?')) {
+                            hayCambiosSinGuardar = false;
+                            window.location.href = href;
+                        }
+                    }
+                }
+            });
+        });
+
+        // Advertencia al recargar o cerrar pestaña
+        window.addEventListener('beforeunload', (e) => {
+            if (hayCambiosSinGuardar) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    });
+
+    function alternarTemaVisual() {
+        if (typeof toggleDarkMode === 'function') {
+            toggleDarkMode();
+        } else {
+            const curr = document.documentElement.getAttribute('data-theme') || 'light';
+            const next = curr === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            if (next === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+            localStorage.setItem('sgp_theme', next);
+        }
+        sincronizarBotonTemaConfig();
+    }
+
+    function sincronizarBotonTemaConfig() {
+        const theme = localStorage.getItem('sgp_theme') || 'light';
+        const icon = document.getElementById('cfgThemeIcon');
+        const label = document.getElementById('cfgThemeLabel');
+        const btn = document.getElementById('cfgBtnToggleTheme');
+        if (theme === 'dark') {
+            if (icon) icon.className = 'ti ti-sun';
+            if (label) label.textContent = 'Modo Claro';
+            if (btn) { btn.style.background = '#1e293b'; btn.style.color = '#f8fafc'; btn.style.borderColor = '#334155'; }
+        } else {
+            if (icon) icon.className = 'ti ti-moon';
+            if (label) label.textContent = 'Modo Oscuro';
+            if (btn) { btn.style.background = '#f8fafc'; btn.style.color = '#334155'; btn.style.borderColor = '#cbd5e1'; }
+        }
+    }
+
+    function confirmarRestablecerTema() {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: '¿Restablecer tema?',
+                text: 'Se volverán a aplicar los colores institucionales originales del ISP (#162660 y #2563eb).',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, restablecer',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#162660'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    document.getElementById('formRestablecerTema')?.submit();
+                }
+            });
+        } else {
+            if (confirm('¿Restablecer los colores del tema por defecto?')) {
+                document.getElementById('formRestablecerTema')?.submit();
+            }
+        }
+    }
+
+    // ── Modal Subir Logo Institucional ─────────────────────
+    function abrirModalLogo(tipo) {
+        const m = document.getElementById('modalSubirLogo');
+        if (!m) return;
+        const sel = document.getElementById('selectTipoLogo');
+        if (sel && tipo) sel.value = tipo;
+        actualizarInfoLogoModal();
+        const prev = document.getElementById('previewImgLogo');
+        if (prev) { prev.style.display = 'none'; prev.src = ''; }
+        const fileInp = document.getElementById('archivoLogoInput');
+        if (fileInp) fileInp.value = '';
+        m.style.display = 'flex';
+    }
+
+    function cerrarModalLogo() {
+        const m = document.getElementById('modalSubirLogo');
+        if (m) m.style.display = 'none';
+    }
+
+    function actualizarInfoLogoModal() {
+        const sel = document.getElementById('selectTipoLogo');
+        const info = document.getElementById('infoLogoModal');
+        if (!sel || !info) return;
+        const val = sel.value;
+        if (val === 'logo_principal') {
+            info.innerHTML = '<strong>Logo Principal:</strong> Se recomienda imagen PNG con fondo transparente de al menos 400x120px.';
+        } else if (val === 'cintillo') {
+            info.innerHTML = '<strong>Cintillo Oficial para Reportes:</strong> Proporción panorámica (ej. 1200x180px) para reportes, constancias y planillas PDF.';
+        } else if (val === 'cintillo_sistema') {
+            info.innerHTML = '<strong>Cintillo Oficial del Sistema:</strong> Encabezado panorámico (cintillo.png) visible en la pantalla de inicio de sesión (Login) y cabeceras del sistema.';
+        } else if (val === 'gobernacion') {
+            info.innerHTML = '<strong>Logo de Gobernación:</strong> Emblema del estado en PNG transparente.';
+        }
+    }
+
+    function previewArchivoLogo(input) {
+        const file = input.files && input.files[0];
+        const preview = document.getElementById('previewImgLogo');
+        if (!file || !preview) return;
+
+        if (file.size > 3 * 1024 * 1024) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'warning', title: 'Archivo muy grande', text: 'El archivo no debe superar los 3 MB.' });
+            } else {
+                alert('El archivo no debe superar los 3 MB.');
+            }
+            input.value = '';
+            preview.style.display = 'none';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Sincronizar botón de tema al cargar
+    setTimeout(sincronizarBotonTemaConfig, 200);
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Trazabilidad de Clics e Interacciones (Fase 4)
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalNotifTrazabilidad"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:22px;width:100%;max-width:920px;max-height:88vh;margin:16px;box-shadow:0 24px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden;">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;">
+                    <i class="ti ti-chart-dots-3" style="font-size:1.25rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white;font-weight:800;font-size:1.05rem;">Trazabilidad de Clics y Lectura</div>
+                    <div style="color:rgba(255,255,255,.75);font-size:0.78rem;">Registro de interacciones de las últimas 50 alertas enviadas</div>
+                </div>
+            </div>
+            <button onclick="cerrarModalNotifTrazabilidad()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:white;font-size:1.1rem;display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <!-- Tabla -->
+        <div style="padding:20px;overflow-y:auto;flex:1;">
+            <?php if (empty($ultimasNotifs)): ?>
+                <div style="text-align:center;padding:40px;color:#94a3b8;">
+                    <i class="ti ti-bell-off" style="font-size:3rem;opacity:0.4;display:block;margin-bottom:10px;"></i>
+                    <p style="font-size:0.95rem;margin:0;">No hay notificaciones registradas para auditar.</p>
+                </div>
+            <?php else: ?>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.83rem;">
+                        <thead>
+                            <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;color:#64748b;text-align:left;">
+                                <th style="padding:10px 12px;font-weight:700;">Destinatario</th>
+                                <th style="padding:10px 12px;font-weight:700;">Alerta</th>
+                                <th style="padding:10px 12px;font-weight:700;">Envío</th>
+                                <th style="padding:10px 12px;font-weight:700;">Lectura</th>
+                                <th style="padding:10px 12px;font-weight:700;">Clic / Interacción</th>
+                                <th style="padding:10px 12px;font-weight:700;">Dispositivo & IP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($ultimasNotifs as $nt): ?>
+                                <tr style="border-bottom:1px solid #f1f5f9;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                                    <td style="padding:12px;">
+                                        <div style="font-weight:700;color:#1e293b;"><?= htmlspecialchars($nt['usuario_nombre'] ?: 'Usuario') ?></div>
+                                        <div style="font-size:0.73rem;color:#94a3b8;"><?= htmlspecialchars($nt['correo'] ?? '—') ?></div>
+                                    </td>
+                                    <td style="padding:12px;max-width:200px;">
+                                        <div style="font-weight:600;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= htmlspecialchars($nt['titulo']) ?>">
+                                            <?= htmlspecialchars($nt['titulo']) ?>
+                                        </div>
+                                        <span class="cfg-badge" style="font-size:0.68rem;padding:2px 6px;background:#eff6ff;color:#2563eb;">
+                                            <?= htmlspecialchars($nt['tipo']) ?>
+                                        </span>
+                                    </td>
+                                    <td style="padding:12px;color:#64748b;white-space:nowrap;">
+                                        <?= date('d/m/y H:i', strtotime($nt['created_at'])) ?>
+                                    </td>
+                                    <td style="padding:12px;white-space:nowrap;">
+                                        <?php if (!empty($nt['leido_at'])): ?>
+                                            <span style="color:#059669;font-weight:600;display:flex;align-items:center;gap:4px;">
+                                                <i class="ti ti-check" style="font-size:0.9rem;"></i> <?= date('d/m H:i', strtotime($nt['leido_at'])) ?>
+                                            </span>
+                                        <?php elseif (!empty($nt['leida'])): ?>
+                                            <span style="color:#059669;font-weight:600;">✅ Leída</span>
+                                        <?php else: ?>
+                                            <span style="color:#94a3b8;font-size:0.75rem;">Sin leer</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td style="padding:12px;white-space:nowrap;">
+                                        <?php if (!empty($nt['clickeado_at'])): ?>
+                                            <span style="color:#9333ea;font-weight:700;display:flex;align-items:center;gap:4px;">
+                                                <i class="ti ti-pointer" style="font-size:0.9rem;"></i> <?= date('d/m H:i', strtotime($nt['clickeado_at'])) ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span style="color:#cbd5e1;font-size:0.75rem;">—</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td style="padding:12px;">
+                                        <div style="color:#475569;font-weight:600;font-size:0.78rem;">
+                                            <?= htmlspecialchars($nt['dispositivo'] ?: 'Escritorio') ?>
+                                        </div>
+                                        <?php if (!empty($nt['ip_click'])): ?>
+                                            <code style="font-size:0.7rem;color:#64748b;background:#f1f5f9;padding:2px 5px;border-radius:4px;"><?= htmlspecialchars($nt['ip_click']) ?></code>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Gestión de Notificaciones por Usuario (Fase 4)
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalNotifUsuarios"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:22px;width:100%;max-width:740px;max-height:85vh;margin:16px;box-shadow:0 24px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden;">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#0f172a,#334155);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;">
+                    <i class="ti ti-users" style="font-size:1.25rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white;font-weight:800;font-size:1.05rem;">Preferencias de Notificaciones por Usuario</div>
+                    <div style="color:rgba(255,255,255,.7);font-size:0.78rem;">Activar o silenciar el envío de alertas para usuarios activos</div>
+                </div>
+            </div>
+            <button onclick="cerrarModalNotifUsuarios()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:white;font-size:1.1rem;display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <!-- Buscador -->
+        <div style="padding:14px 20px;background:#f8fafc;border-bottom:1px solid #e2e8f0;flex-shrink:0;">
+            <div style="position:relative;">
+                <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;"></i>
+                <input type="text" class="cfg-input" placeholder="Buscar por nombre, correo o rol..." style="width:100%;padding-left:36px;" oninput="filtrarUsuariosNotif(this)">
+            </div>
+        </div>
+
+        <!-- Lista -->
+        <div style="padding:16px 20px;overflow-y:auto;flex:1;">
+            <?php if (empty($notifUsers)): ?>
+                <div style="text-align:center;padding:30px;color:#94a3b8;">No se encontraron usuarios.</div>
+            <?php else: ?>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <?php foreach ($notifUsers as $u): ?>
+                        <div class="user-notif-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:white;border:1px solid #e2e8f0;border-radius:12px;transition:box-shadow .15s;">
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="width:36px;height:36px;border-radius:10px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;">
+                                    <?= strtoupper(substr($u['nombre_completo'] ?: $u['correo'], 0, 1)) ?>
+                                </div>
+                                <div>
+                                    <div style="font-weight:700;color:#1e293b;font-size:0.88rem;"><?= htmlspecialchars($u['nombre_completo'] ?: 'Sin nombre') ?></div>
+                                    <div style="font-size:0.75rem;color:#64748b;"><?= htmlspecialchars($u['correo']) ?></div>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:16px;">
+                                <span class="cfg-badge" style="background:#f1f5f9;color:#475569;font-size:0.72rem;">
+                                    <?= htmlspecialchars($u['rol_nombre'] ?? 'Usuario') ?>
+                                </span>
+                                <label class="cfg-toggle-wrap" style="margin:0;" title="Habilitar/Silenciar alertas">
+                                    <input type="checkbox" <?= (int)($u['notificaciones_habilitadas'] ?? 1) === 1 ? 'checked' : '' ?> onchange="toggleUserNotif(<?= (int)$u['id'] ?>, this)">
+                                    <span class="cfg-toggle-track"></span>
+                                    <span class="cfg-toggle-dot"></span>
+                                </label>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Subir Logo Institucional (Fase 5 - Branding)
+     ═══════════════════════════════════════════════════════ -->
+<div id="modalSubirLogo"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.55);backdrop-filter:blur(5px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:22px;width:100%;max-width:540px;margin:16px;box-shadow:0 28px 70px rgba(0,0,0,.22);overflow:hidden;">
+
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#172554 0%,#1e3a8a 55%,#2563eb 100%);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;">
+                    <i class="ti ti-upload" style="font-size:1.25rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white;font-weight:800;font-size:1.05rem;">Actualizar Emblema Institucional</div>
+                    <div style="color:rgba(255,255,255,.75);font-size:0.76rem;">Reemplazo seguro de archivo de imagen del sistema</div>
+                </div>
+            </div>
+            <button onclick="cerrarModalLogo()" type="button"
+                style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:white;font-size:1.1rem;display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <!-- Formulario -->
+        <form method="POST" action="<?= URLROOT ?>/configuracion" enctype="multipart/form-data" style="padding:22px 24px;">
+            <input type="hidden" name="accion" value="subir_logo">
+            <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
+
+            <!-- Tipo de Logo -->
+            <div style="margin-bottom:16px;">
+                <label class="cfg-field-label">Selecciona el Emblema a Actualizar *</label>
+                <select name="tipo_logo" id="selectTipoLogo" class="cfg-input" style="width:100%;cursor:pointer;" onchange="actualizarInfoLogoModal()">
+                    <option value="logo_principal">Logo Principal SGP / ISP (logo.png)</option>
+                    <option value="cintillo">Cintillo Oficial para Reportes (cintillo-salud.png)</option>
+                    <option value="cintillo_sistema">Cintillo Oficial del Sistema (cintillo.png - Login / Web)</option>
+                    <option value="gobernacion">Logo de Gobernación de Bolívar (gobe.png)</option>
+                </select>
+                <div id="infoLogoModal" style="font-size:0.74rem;color:#64748b;margin-top:6px;line-height:1.4;">
+                    <strong>Logo Principal:</strong> Se recomienda imagen PNG con fondo transparente de al menos 400x120px.
+                </div>
+            </div>
+
+            <!-- Zona de Subida / File Input -->
+            <div style="margin-bottom:18px;">
+                <label class="cfg-field-label">Seleccionar Archivo de Imagen *</label>
+                <div style="border:2px dashed #cbd5e1;border-radius:12px;padding:20px;text-align:center;background:#f8fafc;cursor:pointer;transition:all .2s;"
+                    onclick="document.getElementById('archivoLogoInput').click()"
+                    onmouseover="this.style.borderColor='#3b82f6';this.style.background='#eff6ff';"
+                    onmouseout="this.style.borderColor='#cbd5e1';this.style.background='#f8fafc';">
+                    <i class="ti ti-cloud-upload" style="font-size:2.2rem;color:#3b82f6;display:block;margin-bottom:6px;"></i>
+                    <div style="font-weight:700;font-size:0.88rem;color:#1e293b;">Haz clic para buscar o arrastra la imagen aquí</div>
+                    <div style="font-size:0.75rem;color:#94a3b8;margin-top:4px;">Formatos soportados: PNG, JPG, JPEG (máximo 3 MB)</div>
+                    <input type="file" name="archivo_logo" id="archivoLogoInput" accept="image/png,image/jpeg" style="display:none;" required onchange="previewArchivoLogo(this)">
+                </div>
+
+                <!-- Preview antes de subir -->
+                <div style="text-align:center;margin-top:12px;">
+                    <img id="previewImgLogo" src="" alt="Vista Previa"
+                        style="display:none;max-height:110px;max-width:100%;margin:0 auto;border:1px solid #e2e8f0;border-radius:8px;padding:4px;background:white;box-shadow:0 4px 10px rgba(0,0,0,0.06);">
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button type="button" onclick="cerrarModalLogo()"
+                    style="padding:10px 18px;border:1.5px solid #e2e8f0;border-radius:10px;background:white;color:#64748b;font-weight:600;font-size:0.85rem;cursor:pointer;">
+                    Cancelar
+                </button>
+                <button type="submit" class="cfg-btn-primary"
+                    style="padding:10px 20px;background:linear-gradient(135deg,#1e3a8a,#2563eb);border:none;border-radius:10px;color:white;font-weight:700;font-size:0.85rem;display:flex;align-items:center;gap:6px;">
+                    <i class="ti ti-upload"></i> Subir y Guardar Emblema
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- Scripts de Diagnóstico SMTP y Biometría -->
+<script>
+function toggleInputPass(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'ti ti-eye-off';
+    } else {
+        input.type = 'password';
+        icon.className = 'ti ti-eye';
+    }
+}
+
+async function ejecutarPruebaSmtp() {
+    const emailInput = document.getElementById('emailPruebaSmtp');
+    const email = emailInput ? emailInput.value.trim() : '';
+
+    if (!email) {
+        if (window.Swal) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Correo Requerido',
+                text: 'Por favor, ingresa una dirección de correo para recibir el mensaje de prueba.',
+                confirmButtonColor: '#2563eb'
+            });
+        } else {
+            alert('Por favor, ingresa una dirección de correo para recibir el mensaje de prueba.');
+        }
+        return;
+    }
+
+    const btn = document.getElementById('btnProbarSmtp');
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader-2 ti-spin me-1"></i> Transmitiendo prueba...';
+
+    const fd = new FormData();
+    fd.append('email_destino', email);
+    fd.append('_csrf', '<?= Session::getCsrfToken() ?>');
+
+    try {
+        const resp = await fetch('<?= URLROOT ?>/configuracion/probarSmtp', {
+            method: 'POST',
+            body: fd
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+            if (window.Swal) {
+                Swal.fire({
+                    icon: res.simulated ? 'info' : 'success',
+                    title: res.simulated ? 'Modo Simulación (Logs)' : '¡Conexión Exitosa!',
+                    text: res.message,
+                    confirmButtonColor: '#16a34a'
+                });
+            } else {
+                alert(res.message);
+            }
+        } else {
+            throw new Error(res.message || 'Error transmitiendo mensaje');
+        }
+    } catch (err) {
+        if (window.Swal) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Fallo de Envío SMTP',
+                text: err.message,
+                confirmButtonColor: '#2563eb'
+            });
+        } else {
+            alert(err.message);
+        }
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+}
+</script>

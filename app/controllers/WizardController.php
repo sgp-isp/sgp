@@ -47,11 +47,15 @@ class WizardController extends Controller
                    u.pin_asistencia, u.departamento_id,
                    r.nombre AS rol_nombre,
                    dp.nombres, dp.apellidos, dp.telefono, dp.genero, dp.fecha_nacimiento, dp.cargo,
-                   dpa.institucion_procedencia
+                   dpa.institucion_id,
+                   dpa.institucion_procedencia,
+                   inst.nombre AS institucion_nombre,
+                   inst.direccion AS institucion_direccion
             FROM usuarios u
             LEFT JOIN roles r ON u.rol_id = r.id
             LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
             LEFT JOIN datos_pasante dpa ON dpa.usuario_id = u.id
+            LEFT JOIN instituciones inst ON (inst.id = dpa.institucion_id OR (dpa.institucion_id IS NULL AND dpa.institucion_procedencia REGEXP '^[0-9]+$' AND inst.id = dpa.institucion_procedencia))
             WHERE u.id = :uid
         ");
         $this->db->bind(':uid', $userId);
@@ -264,6 +268,24 @@ class WizardController extends Controller
                 $pinTieneExistente= (int)($_POST['pin_tiene_existente'] ?? 0) === 1;
                 $institucionId    = (int)($_POST['institucion_id']    ?? 0);
 
+                // Verificar si ya existe institución asignada previamente
+                $this->db->query("
+                    SELECT institucion_id, institucion_procedencia
+                    FROM datos_pasante
+                    WHERE usuario_id = :uid
+                ");
+                $this->db->bind(':uid', $userId);
+                $dpaPrevio = $this->db->single();
+                $instPreviaId = (int)($dpaPrevio->institucion_id ?? 0);
+                if (!$instPreviaId && !empty($dpaPrevio->institucion_procedencia) && is_numeric($dpaPrevio->institucion_procedencia)) {
+                    $instPreviaId = (int)$dpaPrevio->institucion_procedencia;
+                }
+
+                // Si ya estaba pre-registrada, respetar siempre la pre-registrada (evita sobreescritura accidental)
+                if ($instPreviaId > 0) {
+                    $institucionId = $instPreviaId;
+                }
+
                 // PIN obligatorio para usuarios nuevos; opcional si ya tiene uno configurado
                 if (!$pinTieneExistente && !preg_match('/^[0-9]{4}$/', $pinAsistencia)) {
                     Session::setFlash('error', 'El PIN debe tener exactamente 4 dígitos numéricos.');
@@ -276,7 +298,7 @@ class WizardController extends Controller
                     $this->redirect('/wizard/index');
                     return;
                 }
-                if ($institucionId <= 0) {
+                if ($institucionId <= 0 && empty($dpaPrevio->institucion_procedencia)) {
                     Session::setFlash('error', 'Debes seleccionar tu institución de procedencia.');
                     $this->redirect('/wizard/index');
                     return;
@@ -430,17 +452,32 @@ class WizardController extends Controller
                     $periodoId = null;
                 }
 
+                // Obtener nombre de la institución para mantener ambas columnas (institucion_id e institucion_procedencia) sincronizadas
+                $instNombre = '';
+                if ($institucionId > 0) {
+                    $this->db->query("SELECT nombre FROM instituciones WHERE id = :iid LIMIT 1");
+                    $this->db->bind(':iid', $institucionId);
+                    $instRow = $this->db->single();
+                    if ($instRow) {
+                        $instNombre = $instRow->nombre;
+                    }
+                } elseif (!empty($dpaPrevio->institucion_procedencia) && !is_numeric($dpaPrevio->institucion_procedencia)) {
+                    $instNombre = $dpaPrevio->institucion_procedencia;
+                }
+
                 $this->db->query("
-                    INSERT INTO datos_pasante (usuario_id, tipo_pasantia, estado_pasantia, horas_meta, horas_acumuladas, periodo_id, institucion_procedencia)
-                    VALUES (:uid, 'Regular', 'Sin Asignar', :horas_meta, 0, :periodo_id, :inst_txt)
+                    INSERT INTO datos_pasante (usuario_id, tipo_pasantia, estado_pasantia, horas_meta, horas_acumuladas, periodo_id, institucion_id, institucion_procedencia)
+                    VALUES (:uid, 'Regular', 'Sin Asignar', :horas_meta, 0, :periodo_id, :inst_id, :inst_txt)
                     ON DUPLICATE KEY UPDATE
                         tipo_pasantia           = 'Regular',
-                        institucion_procedencia = VALUES(institucion_procedencia)
+                        institucion_id          = COALESCE(NULLIF(VALUES(institucion_id), 0), datos_pasante.institucion_id),
+                        institucion_procedencia = COALESCE(NULLIF(VALUES(institucion_procedencia), ''), datos_pasante.institucion_procedencia)
                 ");
                 $this->db->bind(':uid',       $userId);
                 $this->db->bind(':horas_meta', $horasMeta);
                 $this->db->bind(':periodo_id', $periodoId);
-                $this->db->bind(':inst_txt',  $institucionId);
+                $this->db->bind(':inst_id',   $institucionId > 0 ? $institucionId : null);
+                $this->db->bind(':inst_txt',  $instNombre ?: ($institucionId ?: null));
 
                 if (!$this->db->execute()) {
                     throw new Exception('Error al crear registro de pasantía.');
