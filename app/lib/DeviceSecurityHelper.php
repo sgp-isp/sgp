@@ -51,6 +51,13 @@ class DeviceSecurityHelper
             return ['success' => false, 'message' => 'Usuario no encontrado o sin correo institucional registrado'];
         }
 
+        if (preg_match('/@(sgp\.local|\.test|example\.com)$/i', (string)$user->correo)) {
+            return [
+                'success' => false,
+                'message' => 'Tu cuenta tiene registrado un correo ficticio (' . htmlspecialchars($user->correo) . '). Por favor ingresa a tu Perfil y actualiza tu correo electrónico real para poder recibir los códigos de autorización.'
+            ];
+        }
+
         // Regla Antifraude: ¿Este dispositivo ya está vinculado a OTRO usuario activo?
         $db->query("
             SELECT d.usuario_id, u.cedula,
@@ -129,8 +136,14 @@ class DeviceSecurityHelper
             $ip
         );
 
-        // Ocultar parte del correo para feedback seguro: ej: l***9@gmail.com
         $correoMask = self::enmascararCorreo($user->correo);
+
+        if (!$enviado) {
+            return [
+                'success' => false,
+                'message' => 'No se pudo entregar el correo con el código de autorización a ' . $correoMask . '. Verifica tu buzón o la configuración SMTP.'
+            ];
+        }
 
         return [
             'success'     => true,
