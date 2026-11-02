@@ -2,6 +2,12 @@
 // Configuración global de Zona Horaria para Venezuela (-04:00)
 date_default_timezone_set('America/Caracas');
 
+// Configuración global de codificación UTF-8
+ini_set('default_charset', 'UTF-8');
+if (function_exists('mb_internal_encoding')) {
+    mb_internal_encoding('UTF-8');
+}
+
 // [FIX-P1] Silenciar display_errors para evitar que Notices/Warnings corrompan respuestas JSON
 ini_set('display_errors', '0');
 ini_set('display_startup_errors', '0');

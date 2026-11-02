@@ -81,6 +81,9 @@ class Database
             $this->dbh = new PDO($dsn, $this->user, $this->pass, $options);
             // Sincronizar timezone de la conexión MySQL con Venezuela (-04:00 / America/Caracas)
             $this->dbh->exec("SET time_zone = '-04:00'");
+            // Desactivar ONLY_FULL_GROUP_BY en la sesión para compatibilidad idéntica
+            // entre entornos de desarrollo local (XAMPP/MariaDB) y producción (Render, Railway, TiDB Cloud, MySQL 8)
+            $this->dbh->exec("SET SESSION sql_mode = (SELECT REPLACE(REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY,', ''), 'ONLY_FULL_GROUP_BY', ''))");
         } catch (PDOException $e) {
             // SGP-FIX-v2 [1.2] — Nunca exponer detalles de BD al usuario
             error_log('[SGP-DB-ERROR] ' . date('Y-m-d H:i:s') . ' | Conectando a ' . $this->host . ':' . $this->port . ' (' . $this->user . ') | ' . $e->getMessage());

@@ -1049,6 +1049,7 @@ window.filtrarPorEstado = function(estado) {
             document.body.appendChild(m);
         }
         m.style.display = 'flex';
+        m.classList.add('active');
         document.body.style.overflow = 'hidden';
 
         const inp = document.getElementById('calcFechaInicio');
@@ -1073,28 +1074,21 @@ window.filtrarPorEstado = function(estado) {
 
     window.cerrarCalculadoraHoras = function() {
         const m = document.getElementById('modalCalcHoras');
-        if (m) m.style.display = 'none';
+        if (m) {
+            m.style.display = 'none';
+            m.classList.remove('active');
+        }
         document.body.style.overflow = '';
     };
 
-    function asegurarModalEnBody() {
-        const m = document.getElementById('modalCalcHoras');
-        if (m && m.parentElement !== document.body) {
-            document.body.appendChild(m);
-        }
-    }
-
-    asegurarModalEnBody();
-
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => { 
-            asegurarModalEnBody();
-            document.getElementById('calcLoading').style.display='none'; 
+            const cl = document.getElementById('calcLoading');
+            if (cl) cl.style.display = 'none'; 
         });
     } else {
         const cl = document.getElementById('calcLoading');
         if (cl) cl.style.display = 'none';
-        asegurarModalEnBody();
     }
 })();
 </script>

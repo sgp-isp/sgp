@@ -369,36 +369,38 @@ class AnaliticasController extends Controller
 
         // NUEVO: En riesgo de no cumplir meta (pro-rata: tiempo transcurrido vs días registrados)
         $this->db->query("
-            SELECT
-                CONCAT(dp.nombres, ' ', dp.apellidos) AS nombre,
-                COALESCE(prog.horas_validas, 0) AS horas_acumuladas,
-                dpa.horas_meta,
-                (dpa.horas_meta - COALESCE(prog.horas_validas, 0)) AS horas_faltantes,
-                DATEDIFF(dpa.fecha_fin_estimada, CURDATE()) AS dias_restantes,
-                ROUND(LEAST(100, (COALESCE(prog.horas_validas, 0) / NULLIF(dpa.horas_meta, 0)) * 100), 1) AS progreso_pct,
-                ROUND(
-                    DATEDIFF(CURDATE(), dpa.fecha_inicio_pasantia) /
-                    NULLIF(DATEDIFF(dpa.fecha_fin_estimada, dpa.fecha_inicio_pasantia), 0) * 100
-                , 1) AS tiempo_pct,
-                d.nombre AS departamento
-            FROM datos_pasante dpa
-            JOIN datos_personales dp ON dp.usuario_id = dpa.usuario_id
-            LEFT JOIN departamentos d ON d.id = dpa.departamento_asignado_id
-            LEFT JOIN (
-                SELECT pasante_id,
-                       COALESCE(SUM(COALESCE(NULLIF(horas_calculadas,0),8)),0) AS horas_validas
-                FROM asistencias
-                WHERE estado IN ('Presente', 'Justificado', 'Ausente')
-                GROUP BY pasante_id
-            ) AS prog ON prog.pasante_id = dpa.usuario_id
-            WHERE dpa.estado_pasantia = 'Activo'
-              AND dpa.horas_meta > 0
-              AND dpa.fecha_fin_estimada IS NOT NULL
-              AND dpa.fecha_inicio_pasantia IS NOT NULL
-              AND DATEDIFF(dpa.fecha_fin_estimada, CURDATE()) > 0
-              {$tutorWhere}
-            HAVING (tiempo_pct - progreso_pct) > 20
-            ORDER BY (tiempo_pct - progreso_pct) DESC
+            SELECT * FROM (
+                SELECT
+                    CONCAT(dp.nombres, ' ', dp.apellidos) AS nombre,
+                    COALESCE(prog.horas_validas, 0) AS horas_acumuladas,
+                    dpa.horas_meta,
+                    (dpa.horas_meta - COALESCE(prog.horas_validas, 0)) AS horas_faltantes,
+                    DATEDIFF(dpa.fecha_fin_estimada, CURDATE()) AS dias_restantes,
+                    ROUND(LEAST(100, (COALESCE(prog.horas_validas, 0) / NULLIF(dpa.horas_meta, 0)) * 100), 1) AS progreso_pct,
+                    ROUND(
+                        DATEDIFF(CURDATE(), dpa.fecha_inicio_pasantia) /
+                        NULLIF(DATEDIFF(dpa.fecha_fin_estimada, dpa.fecha_inicio_pasantia), 0) * 100
+                    , 1) AS tiempo_pct,
+                    d.nombre AS departamento
+                FROM datos_pasante dpa
+                JOIN datos_personales dp ON dp.usuario_id = dpa.usuario_id
+                LEFT JOIN departamentos d ON d.id = dpa.departamento_asignado_id
+                LEFT JOIN (
+                    SELECT pasante_id,
+                           COALESCE(SUM(COALESCE(NULLIF(horas_calculadas,0),8)),0) AS horas_validas
+                    FROM asistencias
+                    WHERE estado IN ('Presente', 'Justificado', 'Ausente')
+                    GROUP BY pasante_id
+                ) AS prog ON prog.pasante_id = dpa.usuario_id
+                WHERE dpa.estado_pasantia = 'Activo'
+                  AND dpa.horas_meta > 0
+                  AND dpa.fecha_fin_estimada IS NOT NULL
+                  AND dpa.fecha_inicio_pasantia IS NOT NULL
+                  AND DATEDIFF(dpa.fecha_fin_estimada, CURDATE()) > 0
+                  {$tutorWhere}
+            ) AS _riesgo
+            WHERE (_riesgo.tiempo_pct - _riesgo.progreso_pct) > 20
+            ORDER BY (_riesgo.tiempo_pct - _riesgo.progreso_pct) DESC
         ");
         $enRiesgo = $this->db->resultSet();
 

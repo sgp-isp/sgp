@@ -262,6 +262,38 @@
     // ─── Núcleo: Navegar con PJAX ──────────────────────────────────────────────
 
     /**
+     * [SGP-FIX-MODALS-PJAX] Sanitiza el DOM del body eliminando modales huérfanos,
+     * backdrops o elementos flotantes que fueron movidos fuera de #sgp-content
+     * por vistas anteriores, y restaura el scroll.
+     */
+    function cleanupOrphanedModals() {
+        try {
+            // 1. Restaurar scroll en el body
+            document.body.style.overflow = '';
+            document.body.classList.remove('modal-open');
+
+            // 2. Remover backdrops y popups temporales huérfanos
+            document.querySelectorAll('.modal-backdrop, .flatpickr-calendar.open').forEach(function (el) {
+                el.remove();
+            });
+
+            // 3. Remover modales que quedaron como hijos directos de document.body fuera de #sgp-content
+            var bodyModals = document.querySelectorAll(
+                'body > .hc-overlay, body > #modalCalcHoras, body > .modal-overlay, ' +
+                'body > .sgp-modal-overlay, body > .ta-modal-overlay, body > .pin-modal-backdrop, ' +
+                'body > .act-modal-overlay, body > .inst-modal-overlay, body > #modalAsignacion, ' +
+                'body > #modalReporteAsist, body > #modalFeriadoUnico123, body > #modalResponderTicket, ' +
+                'body > #searchModal, body > #createModal, body > #batchModal, body > #editModal'
+            );
+            bodyModals.forEach(function (m) {
+                m.remove();
+            });
+        } catch (e) {
+            console.warn('[SGP-PJAX] Error limpiando modales huérfanos:', e);
+        }
+    }
+
+    /**
      * Navega a una URL usando PJAX.
      * @param {string} url - URL destino
      * @param {boolean} pushState - Si añadir al historial del navegador
@@ -269,6 +301,8 @@
     function navigate(url, pushState) {
         if (isNavigating) return;
         isNavigating = true;
+
+        cleanupOrphanedModals();
 
         const content = getContent();
         if (!content) {
@@ -304,6 +338,8 @@
                 return response.text();
             })
             .then(function (html) {
+                cleanupOrphanedModals();
+
                 // SGP-FIX DATATABLES TIMING — destruir ANTES de mutar el DOM
                 // Si se destruye despues de innerHTML, los nodos ya son referencias muertas
                 if (typeof $ !== 'undefined' &&
@@ -345,6 +381,7 @@
             })
             .finally(function () {
                 clearTimeout(navigationTimeout); // SGP-FIX-v2 [3.1] cancelar safety timeout
+                cleanupOrphanedModals();
                 isNavigating = false;
                 hideSpinner();
                 content.style.opacity = '1';

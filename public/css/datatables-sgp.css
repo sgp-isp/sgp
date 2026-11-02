@@ -1110,4 +1110,53 @@ table.dataTable tbody td .btn-action i,
     .topbar-subtitle {
         display: none !important;
     }
+}
+
+/* ─────────────────────────────────────────────────────
+   16. [SGP-FIX-MODALS-PJAX] Blindaje Global contra Modales Huérfanos
+   Garantiza que ningún modal, overlay o drawer se muestre en pantalla
+   a menos que tenga explícitamente su clase activa (.active o .open).
+   ───────────────────────────────────────────────────── */
+.modal-overlay,
+.sgp-modal-overlay,
+.hc-overlay,
+.inst-modal-overlay,
+.ta-modal-overlay,
+.act-modal-overlay,
+.pin-modal-backdrop,
+.p-modal-overlay,
+#modalCalcHoras,
+#searchModal,
+#modalManual,
+#modalConsulta,
+#modalAsignacion,
+#createModal,
+#editModal,
+#batchModal,
+#modalReporteAsist,
+#modalFeriadoUnico123,
+#modalResponderTicket {
+    display: none !important;
+}
+
+/* Solo se muestran con su clase activa respectiva */
+.modal-overlay.active,
+.sgp-modal-overlay.active,
+.hc-overlay.active,
+.inst-modal-overlay.active,
+.ta-modal-overlay.open,
+.act-modal-overlay.active,
+.pin-modal-backdrop.active,
+.p-modal-overlay.active,
+.modal.active,
+.modal.show,
+#modalCalcHoras.active,
+#searchModal.active,
+#modalManual.open,
+#modalConsulta.open,
+#modalAsignacion.active,
+#createModal.active,
+#editModal.active,
+#batchModal.active {
+    display: flex !important;
 }
