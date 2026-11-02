@@ -31,6 +31,18 @@
     padding: 24px !important;
 }
 
+/* OCULTO POR DEFECTO: Si no está activo o abierto, NUNCA debe mostrarse */
+.modal-overlay:not(.active),
+.modal:not(.active):not(.show),
+.hc-overlay:not(.active),
+.asig-modal-overlay:not(.active),
+.sgp-modal-overlay:not(.active) {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
 .sgp-modal-overlay {
     display: flex;
     opacity: 0;
@@ -44,6 +56,7 @@
     opacity: 1 !important;
     visibility: visible !important;
     display: flex !important;
+    pointer-events: auto !important;
 }
 
 .sgp-modal-overlay[style*="display: none"],
@@ -51,14 +64,20 @@
     opacity: 0 !important;
     visibility: hidden !important;
     display: none !important;
+    pointer-events: none !important;
 }
 
 .modal.active,
+.modal.show,
 .modal-overlay.active,
 .hc-overlay.active,
+.asig-modal-overlay.active,
 .hc-overlay[style*="display: flex"],
 .hc-overlay[style*="display:flex"] {
     display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
 }
 
 /* Fix for SweetAlert2 & Flatpickr over SGP Modals (z-index superior a 99999999) */

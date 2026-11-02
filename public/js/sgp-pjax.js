@@ -277,16 +277,25 @@
                 el.remove();
             });
 
-            // 3. Remover modales que quedaron como hijos directos de document.body fuera de #sgp-content
-            var bodyModals = document.querySelectorAll(
-                'body > .hc-overlay, body > #modalCalcHoras, body > .modal-overlay, ' +
-                'body > .sgp-modal-overlay, body > .ta-modal-overlay, body > .pin-modal-backdrop, ' +
-                'body > .act-modal-overlay, body > .inst-modal-overlay, body > #modalAsignacion, ' +
-                'body > #modalReporteAsist, body > #modalFeriadoUnico123, body > #modalResponderTicket, ' +
-                'body > #searchModal, body > #createModal, body > #batchModal, body > #editModal'
-            );
-            bodyModals.forEach(function (m) {
-                m.remove();
+            // 3. Cerrar modales globales fijos
+            ['sgpModalBuscar', 'sgpModalVer'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) {
+                    el.classList.remove('active');
+                    el.style.display = 'none';
+                }
+            });
+
+            // 4. Remover CUALQUIER modal u overlay huérfano que haya quedado en document.body (fuera de #sgp-content)
+            document.querySelectorAll(
+                'body > .modal-overlay, body > .hc-overlay, body > .asig-modal-overlay, ' +
+                'body > .ta-modal-overlay, body > .pin-modal-backdrop, body > .act-modal-overlay, ' +
+                'body > .inst-modal-overlay, body > .sgp-modal-overlay:not(#sgpModalBuscar):not(#sgpModalVer), ' +
+                'body > [id^="modal"], body > [id*="modal"], body > [id*="Modal"]'
+            ).forEach(function (m) {
+                if (m.id !== 'sgpModalBuscar' && m.id !== 'sgpModalVer' && !m.classList.contains('wrapper')) {
+                    m.remove();
+                }
             });
         } catch (e) {
             console.warn('[SGP-PJAX] Error limpiando modales huérfanos:', e);

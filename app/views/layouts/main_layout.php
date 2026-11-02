@@ -282,7 +282,7 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     <link rel="stylesheet" href="<?= URLROOT ?>/css/base.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/animations.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/notifications.css">
-    <link rel="stylesheet" href="<?= URLROOT ?>/css/datatables-sgp.css?v=2">
+    <link rel="stylesheet" href="<?= URLROOT ?>/css/datatables-sgp.css?v=<?= @filemtime(APPROOT . '/../public/css/datatables-sgp.css') ?: time() ?>">
     <link rel="stylesheet" href="<?= URLROOT ?>/assets/libs/flatpickr/flatpickr.min.css">
     <link rel="stylesheet" href="<?= URLROOT ?>/css/flatpickr-sgp.css?v=<?= @filemtime(APPROOT . '/../public/css/flatpickr-sgp.css') ?: time() ?>">
     <link rel="stylesheet" href="<?= URLROOT ?>/assets/libs/choices/choices.min.css">
@@ -568,7 +568,7 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     <script src="<?= URLROOT ?>/js/choices-init.js"></script>
     <script src="<?= URLROOT ?>/js/qrcode.min.js"></script>
     <!-- SGP-PJAX: Navegación fluida sin recarga de página -->
-    <script src="<?= URLROOT ?>/js/sgp-pjax.js?v=4"></script>
+    <script src="<?= URLROOT ?>/js/sgp-pjax.js?v=<?= @filemtime(APPROOT . '/../public/js/sgp-pjax.js') ?: time() ?>"></script>
     <!-- Rol del usuario autenticado (usado por scripts de notificaciones) -->
     <script>window.SGP_ROLE = <?= (int)Session::get('role_id') ?>;</script>
     <!-- Notificaciones de escritorio -->
