@@ -6,6 +6,7 @@ FROM php:8.2-apache
 
 # Actualizar repositorios e instalar dependencias del sistema y fuentes TTF para CAPTCHA
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    default-mysql-client \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \

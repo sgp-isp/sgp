@@ -181,4 +181,10 @@ class Database
     {
         return $this->dbh->rollBack();
     }
+
+    /** Obtiene la instancia nativa de PDO */
+    public function getPdo(): PDO
+    {
+        return $this->dbh;
+    }
 }

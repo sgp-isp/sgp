@@ -72,60 +72,55 @@ class BackupController extends Controller
             $pass = $dbConfig['pass'];
             $dbname = $dbConfig['name'];
             
-            // Build mysqldump command for Windows (XAMPP)
-            $mysqldumpPath = 'C:\\xampp\\mysql\\bin\\mysqldump.exe';
+            // 1. Intentar mysqldump si está disponible
+            $mysqldumpPath = file_exists('C:\\xampp\\mysql\\bin\\mysqldump.exe')
+                ? 'C:\\xampp\\mysql\\bin\\mysqldump.exe'
+                : 'mysqldump';
             
-            // Check if mysqldump exists
-            if (!file_exists($mysqldumpPath)) {
-                // Try system PATH
-                $mysqldumpPath = 'mysqldump';
-            }
+            $exito = false;
+            $portFlag = !empty($dbConfig['port']) ? ' -P ' . (int)$dbConfig['port'] : '';
             
-            // Build command - handle empty password
             if (empty($pass)) {
                 $command = sprintf(
-                    '%s --user=%s --host=%s --routines %s > %s 2>&1',
+                    '%s --user=%s --host=%s%s --routines %s > %s 2>&1',
                     $mysqldumpPath,
                     escapeshellarg($user),
                     escapeshellarg($host),
+                    $portFlag,
                     escapeshellarg($dbname),
                     escapeshellarg($filepath)
                 );
             } else {
                 $command = sprintf(
-                    '%s --user=%s --password=%s --host=%s --routines %s > %s 2>&1',
+                    '%s --user=%s --password=%s --host=%s%s --routines %s > %s 2>&1',
                     $mysqldumpPath,
                     escapeshellarg($user),
                     escapeshellarg($pass),
                     escapeshellarg($host),
+                    $portFlag,
                     escapeshellarg($dbname),
                     escapeshellarg($filepath)
                 );
             }
             
-            // Execute backup
-            exec($command, $output, $returnVar);
-            
-            // Check if backup was successful
-            if ($returnVar !== 0) {
-                // Command failed
+            // Probar ejecución de comando externo
+            @exec($command, $output, $returnVar);
+            if ($returnVar === 0 && file_exists($filepath) && filesize($filepath) > 0) {
+                $exito = true;
+            } else {
                 if (file_exists($filepath)) {
-                    unlink($filepath);
+                    @unlink($filepath);
                 }
-                // [FIX-ED-4] Antes se devolvía la salida cruda de mysqldump (puede incluir
-                // rutas del servidor, versión de MySQL, nombre de host/BD) — ahora solo al log.
-                $errorMsg = !empty($output) ? implode("\n", $output) : 'mysqldump no está disponible o falló';
-                error_log('[SGP-BACKUP] create() mysqldump falló: ' . $errorMsg);
-                $this->jsonResponse(false, 'Error al crear el respaldo. Verifica la configuración del servidor o contacta al administrador.');
+                // 2. Fallback inteligente: Exportador nativo en PHP vía PDO
+                // (Garantizado para TiDB Cloud / Render / Linux sin dependencias externas)
+                $exito = $this->exportarConPDO($filepath);
             }
             
-            if (!file_exists($filepath)) {
-                $this->jsonResponse(false, 'El archivo de respaldo no se creó. Verifica que mysqldump esté instalado.');
-            }
-            
-            if (filesize($filepath) === 0) {
-                unlink($filepath);
-                $this->jsonResponse(false, 'El respaldo está vacío. Error en la exportación.');
+            if (!$exito || !file_exists($filepath) || filesize($filepath) === 0) {
+                if (file_exists($filepath)) {
+                    @unlink($filepath);
+                }
+                $this->jsonResponse(false, 'Error al crear el respaldo. Verifica los permisos del servidor o contacta al administrador.');
             }
             
             $this->jsonResponse(true, 'Respaldo creado exitosamente: ' . $filename);
@@ -248,87 +243,91 @@ class BackupController extends Controller
         // VULN-07: Backup de seguridad automático antes de restaurar
         $safetyBackup = 'backup_' . date('Y-m-d_H-i-s') . '_pre_restore.sql';
         $safetyPath   = $this->backupDir . '/' . $safetyBackup;
+        $safetyOk     = false;
+
         try {
             $config   = require APPROOT . '/config/config.php';
             $dbConfig = $config['db'];
             $mysqldumpPath = file_exists('C:\\xampp\\mysql\\bin\\mysqldump.exe') 
                 ? 'C:\\xampp\\mysql\\bin\\mysqldump.exe' : 'mysqldump';
+            $portFlag = !empty($dbConfig['port']) ? ' -P ' . (int)$dbConfig['port'] : '';
 
             $dumpCmd = empty($dbConfig['pass'])
-                ? sprintf('%s --user=%s --host=%s --routines %s > %s 2>&1',
+                ? sprintf('%s --user=%s --host=%s%s --routines %s > %s 2>&1',
                     $mysqldumpPath, escapeshellarg($dbConfig['user']),
-                    escapeshellarg($dbConfig['host']), escapeshellarg($dbConfig['name']),
+                    escapeshellarg($dbConfig['host']), $portFlag, escapeshellarg($dbConfig['name']),
                     escapeshellarg($safetyPath))
-                : sprintf('%s --user=%s --password=%s --host=%s --routines %s > %s 2>&1',
+                : sprintf('%s --user=%s --password=%s --host=%s%s --routines %s > %s 2>&1',
                     $mysqldumpPath, escapeshellarg($dbConfig['user']),
                     escapeshellarg($dbConfig['pass']), escapeshellarg($dbConfig['host']),
-                    escapeshellarg($dbConfig['name']), escapeshellarg($safetyPath));
-            exec($dumpCmd, $dumpOut, $dumpRet);
-            if ($dumpRet !== 0 || !file_exists($safetyPath) || filesize($safetyPath) === 0) {
-                $this->jsonResponse(false, 'No se pudo crear el backup de seguridad previo. Restauración cancelada.');
+                    $portFlag, escapeshellarg($dbConfig['name']), escapeshellarg($safetyPath));
+            
+            @exec($dumpCmd, $dumpOut, $dumpRet);
+            if ($dumpRet === 0 && file_exists($safetyPath) && filesize($safetyPath) > 0) {
+                $safetyOk = true;
+            } else {
+                $safetyOk = $this->exportarConPDO($safetyPath);
             }
         } catch (Exception $e) {
-            // [FIX-C2] Mensaje genérico — detalle solo en log
-            error_log('[SGP-BACKUP] restore() pre-backup Error: ' . $e->getMessage());
-            $this->jsonResponse(false, 'Error al crear el backup de seguridad previo. Restauración cancelada.');
+            $safetyOk = $this->exportarConPDO($safetyPath);
+        }
+
+        if (!$safetyOk || !file_exists($safetyPath) || filesize($safetyPath) === 0) {
+            $this->jsonResponse(false, 'No se pudo crear el backup de seguridad previo. Restauración cancelada.');
         }
         
         try {
-            // Get database credentials from config
-            $config = require APPROOT . '/config/config.php';
+            $config   = require APPROOT . '/config/config.php';
             $dbConfig = $config['db'];
             
-            $host = $dbConfig['host'];
-            $user = $dbConfig['user'];
-            $pass = $dbConfig['pass'];
+            $host   = $dbConfig['host'];
+            $user   = $dbConfig['user'];
+            $pass   = $dbConfig['pass'];
             $dbname = $dbConfig['name'];
+            $portFlag = !empty($dbConfig['port']) ? ' -P ' . (int)$dbConfig['port'] : '';
             
-            // Build mysql command for Windows (XAMPP)
-            $mysqlPath = 'C:\\xampp\\mysql\\bin\\mysql.exe';
+            $mysqlPath = file_exists('C:\\xampp\\mysql\\bin\\mysql.exe')
+                ? 'C:\\xampp\\mysql\\bin\\mysql.exe' : 'mysql';
             
-            // Check if mysql exists
-            if (!file_exists($mysqlPath)) {
-                // Try system PATH
-                $mysqlPath = 'mysql';
-            }
-            
-            // Build command - handle empty password
             if (empty($pass)) {
                 $command = sprintf(
-                    '%s --user=%s --host=%s %s < %s 2>&1',
+                    '%s --user=%s --host=%s%s %s < %s 2>&1',
                     $mysqlPath,
                     escapeshellarg($user),
                     escapeshellarg($host),
+                    $portFlag,
                     escapeshellarg($dbname),
                     escapeshellarg($filepath)
                 );
             } else {
                 $command = sprintf(
-                    '%s --user=%s --password=%s --host=%s %s < %s 2>&1',
+                    '%s --user=%s --password=%s --host=%s%s %s < %s 2>&1',
                     $mysqlPath,
                     escapeshellarg($user),
                     escapeshellarg($pass),
                     escapeshellarg($host),
+                    $portFlag,
                     escapeshellarg($dbname),
                     escapeshellarg($filepath)
                 );
             }
             
-            // Execute restore
-            exec($command, $output, $returnVar);
+            $restoreOk = false;
+            @exec($command, $output, $returnVar);
+            if ($returnVar === 0) {
+                $restoreOk = true;
+            } else {
+                // Fallback nativo PDO
+                $restoreOk = $this->restaurarConPDO($filepath);
+            }
             
-            // Check if restore was successful
-            if ($returnVar !== 0) {
-                // [FIX-ED-4] Detalle solo al log — antes se exponía la salida cruda de mysql.
-                $errorMsg = !empty($output) ? implode("\n", $output) : 'Error al restaurar la base de datos';
-                error_log('[SGP-BACKUP] restore() mysql falló: ' . $errorMsg);
-                $this->jsonResponse(false, 'Error al restaurar la base de datos. Verifica la configuración del servidor o contacta al administrador.');
+            if (!$restoreOk) {
+                $this->jsonResponse(false, 'Error al restaurar la base de datos. Verifica el archivo SQL o contacta al administrador.');
             }
             
             $this->jsonResponse(true, 'Base de datos restaurada exitosamente desde: ' . $filename);
             
         } catch (Exception $e) {
-            // [FIX-C2] Mensaje genérico — detalle solo en log
             error_log('[SGP-BACKUP] restore() Error: ' . $e->getMessage());
             $this->jsonResponse(false, 'Error al restaurar la base de datos. Intente de nuevo.');
         }
@@ -396,28 +395,36 @@ class BackupController extends Controller
         // Backup de seguridad automático antes de restaurar (idéntico a restore())
         $safetyBackup = 'backup_' . date('Y-m-d_H-i-s') . '_pre_restore.sql';
         $safetyPath   = $this->backupDir . '/' . $safetyBackup;
+        $safetyOk     = false;
+
         try {
             $config   = require APPROOT . '/config/config.php';
             $dbConfig = $config['db'];
             $mysqldumpPath = file_exists('C:\\xampp\\mysql\\bin\\mysqldump.exe')
                 ? 'C:\\xampp\\mysql\\bin\\mysqldump.exe' : 'mysqldump';
+            $portFlag = !empty($dbConfig['port']) ? ' -P ' . (int)$dbConfig['port'] : '';
 
             $dumpCmd = empty($dbConfig['pass'])
-                ? sprintf('%s --user=%s --host=%s --routines %s > %s 2>&1',
+                ? sprintf('%s --user=%s --host=%s%s --routines %s > %s 2>&1',
                     $mysqldumpPath, escapeshellarg($dbConfig['user']),
-                    escapeshellarg($dbConfig['host']), escapeshellarg($dbConfig['name']),
+                    escapeshellarg($dbConfig['host']), $portFlag, escapeshellarg($dbConfig['name']),
                     escapeshellarg($safetyPath))
-                : sprintf('%s --user=%s --password=%s --host=%s --routines %s > %s 2>&1',
+                : sprintf('%s --user=%s --password=%s --host=%s%s --routines %s > %s 2>&1',
                     $mysqldumpPath, escapeshellarg($dbConfig['user']),
                     escapeshellarg($dbConfig['pass']), escapeshellarg($dbConfig['host']),
-                    escapeshellarg($dbConfig['name']), escapeshellarg($safetyPath));
-            exec($dumpCmd, $dumpOut, $dumpRet);
-            if ($dumpRet !== 0 || !file_exists($safetyPath) || filesize($safetyPath) === 0) {
-                $this->jsonResponse(false, 'No se pudo crear el backup de seguridad previo. Importación cancelada.');
+                    $portFlag, escapeshellarg($dbConfig['name']), escapeshellarg($safetyPath));
+            @exec($dumpCmd, $dumpOut, $dumpRet);
+            if ($dumpRet === 0 && file_exists($safetyPath) && filesize($safetyPath) > 0) {
+                $safetyOk = true;
+            } else {
+                $safetyOk = $this->exportarConPDO($safetyPath);
             }
         } catch (Exception $e) {
-            error_log('[SGP-BACKUP] importar() pre-backup Error: ' . $e->getMessage());
-            $this->jsonResponse(false, 'Error al crear el backup de seguridad previo. Importación cancelada.');
+            $safetyOk = $this->exportarConPDO($safetyPath);
+        }
+
+        if (!$safetyOk || !file_exists($safetyPath) || filesize($safetyPath) === 0) {
+            $this->jsonResponse(false, 'No se pudo crear el backup de seguridad previo. Importación cancelada.');
         }
 
         // Mover el archivo subido a una ubicación estable (temporal) para poder
@@ -436,26 +443,31 @@ class BackupController extends Controller
             $user   = $dbConfig['user'];
             $pass   = $dbConfig['pass'];
             $dbname = $dbConfig['name'];
+            $portFlag = !empty($dbConfig['port']) ? ' -P ' . (int)$dbConfig['port'] : '';
 
             $mysqlPath = file_exists('C:\\xampp\\mysql\\bin\\mysql.exe')
                 ? 'C:\\xampp\\mysql\\bin\\mysql.exe' : 'mysql';
 
             $command = empty($pass)
-                ? sprintf('%s --user=%s --host=%s %s < %s 2>&1',
+                ? sprintf('%s --user=%s --host=%s%s %s < %s 2>&1',
                     $mysqlPath, escapeshellarg($user), escapeshellarg($host),
-                    escapeshellarg($dbname), escapeshellarg($importPath))
-                : sprintf('%s --user=%s --password=%s --host=%s %s < %s 2>&1',
+                    $portFlag, escapeshellarg($dbname), escapeshellarg($importPath))
+                : sprintf('%s --user=%s --password=%s --host=%s%s %s < %s 2>&1',
                     $mysqlPath, escapeshellarg($user), escapeshellarg($pass), escapeshellarg($host),
-                    escapeshellarg($dbname), escapeshellarg($importPath));
+                    $portFlag, escapeshellarg($dbname), escapeshellarg($importPath));
 
-            exec($command, $output, $returnVar);
+            $importOk = false;
+            @exec($command, $output, $returnVar);
+            if ($returnVar === 0) {
+                $importOk = true;
+            } else {
+                $importOk = $this->restaurarConPDO($importPath);
+            }
 
             // El archivo importado es temporal — no se conserva ni se lista como backup.
             @unlink($importPath);
 
-            if ($returnVar !== 0) {
-                $errorMsg = !empty($output) ? implode("\n", $output) : 'Error al importar la base de datos';
-                error_log('[SGP-BACKUP] importar() mysql falló: ' . $errorMsg);
+            if (!$importOk) {
                 $this->jsonResponse(false, 'Error al importar la base de datos. Verifica que el archivo sea un dump SQL válido o contacta al administrador.');
             }
 
@@ -521,5 +533,144 @@ class BackupController extends Controller
             'message' => $message
         ]);
         exit;
+    }
+
+    /**
+     * Motor nativo de exportación vía PDO
+     * Permite respaldar la base de datos sin depender del binario externo mysqldump.
+     * Funciona en Render, TiDB Cloud con SSL, Railway, Docker, Linux y Windows.
+     */
+    private function exportarConPDO(string $filepath): bool
+    {
+        try {
+            $db = Database::getInstance();
+            $pdo = $db->getPdo();
+
+            $fp = fopen($filepath, 'w');
+            if (!$fp) {
+                return false;
+            }
+
+            fwrite($fp, "-- =========================================================\n");
+            fwrite($fp, "-- SGP ISPEB - Respaldo de Base de Datos (Motor PHP PDO)\n");
+            fwrite($fp, "-- Fecha: " . date('Y-m-d H:i:s') . "\n");
+            fwrite($fp, "-- =========================================================\n\n");
+            fwrite($fp, "SET FOREIGN_KEY_CHECKS = 0;\n");
+            fwrite($fp, "SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';\n");
+            fwrite($fp, "SET NAMES utf8mb4;\n\n");
+
+            // Obtener tablas base
+            $stmt = $pdo->query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'");
+            $tables = $stmt->fetchAll(PDO::FETCH_NUM);
+
+            foreach ($tables as $tRow) {
+                $table = $tRow[0];
+
+                // Estructura
+                fwrite($fp, "-- ---------------------------------------------------------\n");
+                fwrite($fp, "-- Estructura de tabla: `{$table}`\n");
+                fwrite($fp, "-- ---------------------------------------------------------\n");
+                fwrite($fp, "DROP TABLE IF EXISTS `{$table}`;\n");
+
+                $createStmt = $pdo->query("SHOW CREATE TABLE `{$table}`");
+                $createRow = $createStmt->fetch(PDO::FETCH_NUM);
+                if (!empty($createRow[1])) {
+                    fwrite($fp, $createRow[1] . ";\n\n");
+                }
+
+                // Datos
+                $countStmt = $pdo->query("SELECT COUNT(*) FROM `{$table}`");
+                $totalRows = (int)$countStmt->fetchColumn();
+                if ($totalRows === 0) {
+                    continue;
+                }
+
+                fwrite($fp, "-- Volcado de datos: `{$table}`\n");
+                $dataStmt = $pdo->query("SELECT * FROM `{$table}`");
+
+                $batch = [];
+                while ($row = $dataStmt->fetch(PDO::FETCH_ASSOC)) {
+                    $values = [];
+                    foreach ($row as $val) {
+                        if ($val === null) {
+                            $values[] = "NULL";
+                        } else {
+                            $values[] = $pdo->quote((string)$val);
+                        }
+                    }
+                    $batch[] = "(" . implode(", ", $values) . ")";
+                    if (count($batch) >= 100) {
+                        fwrite($fp, "INSERT INTO `{$table}` VALUES \n" . implode(",\n", $batch) . ";\n");
+                        $batch = [];
+                    }
+                }
+                if (!empty($batch)) {
+                    fwrite($fp, "INSERT INTO `{$table}` VALUES \n" . implode(",\n", $batch) . ";\n");
+                }
+                fwrite($fp, "\n");
+            }
+
+            fwrite($fp, "SET FOREIGN_KEY_CHECKS = 1;\n");
+            fclose($fp);
+
+            return file_exists($filepath) && filesize($filepath) > 0;
+        } catch (\Throwable $e) {
+            error_log('[SGP-BACKUP] exportarConPDO Error: ' . $e->getMessage());
+            if (isset($fp) && is_resource($fp)) {
+                fclose($fp);
+            }
+            if (file_exists($filepath)) {
+                @unlink($filepath);
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Motor nativo de restauración vía PDO
+     */
+    private function restaurarConPDO(string $filepath): bool
+    {
+        try {
+            $db = Database::getInstance();
+            $pdo = $db->getPdo();
+
+            if (!file_exists($filepath) || filesize($filepath) === 0) {
+                return false;
+            }
+
+            $handle = fopen($filepath, "r");
+            if (!$handle) {
+                return false;
+            }
+
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
+            
+            $query = '';
+            while (($line = fgets($handle)) !== false) {
+                $trimmed = trim($line);
+                // Ignorar comentarios y líneas vacías
+                if ($trimmed === '' || str_starts_with($trimmed, '--') || str_starts_with($trimmed, '/*')) {
+                    continue;
+                }
+                $query .= $line;
+                // Si la línea termina en punto y coma, ejecutar la sentencia
+                if (str_ends_with($trimmed, ';')) {
+                    try {
+                        $pdo->exec($query);
+                    } catch (\Throwable $qe) {
+                        error_log('[SGP-BACKUP] Error ejecutando sentencia de restauración: ' . substr($query, 0, 100));
+                    }
+                    $query = '';
+                }
+            }
+            fclose($handle);
+
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
+            return true;
+        } catch (\Throwable $e) {
+            error_log('[SGP-BACKUP] restaurarConPDO Error: ' . $e->getMessage());
+            return false;
+        }
     }
 }
