@@ -196,11 +196,40 @@ var EvalApp = { // [SGP-FIX-PJAX-REDECL] var: ahora execInlineScripts() sí re-e
     },
 
     // ── Transición: volver al dashboard ──────────────────────────────────
-    volver() {
+    async volver() {
         const inputs  = Array.from(document.querySelectorAll('#formEvaluacion .star-input'));
         const hasData = inputs.some(i => parseInt(i.value) > 0);
-        if (hasData && !confirm('¿Deseas volver? Los criterios calificados se perderán.')) return;
-        document.getElementById('evalSlider').style.transform = 'translateX(0)';
+
+        if (hasData) {
+            const result = await Swal.fire({
+                title: '¿Deseas volver?',
+                html: '<p style="color:#64748b;font-size:0.92rem;margin:0;line-height:1.5;">Los criterios calificados en esta evaluación se perderán si sales sin guardar.</p>',
+                icon: 'warning',
+                iconColor: '#f59e0b',
+                showCancelButton: true,
+                confirmButtonColor: '#162660',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: '<i class="ti ti-arrow-left"></i> Sí, volver',
+                cancelButtonText: 'Continuar calificando',
+                reverseButtons: true,
+                customClass: {
+                    popup:         'swal-eval-popup',
+                    confirmButton: 'swal-eval-btn-confirm',
+                    cancelButton:  'swal-eval-btn-cancel',
+                }
+            });
+
+            if (!result.isConfirmed) return;
+        }
+
+        const slider = document.getElementById('evalSlider');
+        if (slider) slider.style.transform = 'translateX(0)';
+        const vistaEval = document.getElementById('vistaEvaluacion');
+        if (vistaEval) vistaEval.classList.remove('ev-panel-visible');
+        const saveBar = document.querySelector('.ev-save-bar');
+        if (saveBar) saveBar.classList.remove('ev-save-active');
+        document.body.style.overflow = '';
+        this._restaurarPanelA();
     },
 
     // ── Star Ratings ──────────────────────────────────────────────────────

@@ -2301,7 +2301,7 @@ window.filtrarPorEstado = function(estado) {
         document.getElementById('searchModal').classList.remove('active');
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    function _sgpInitVentoSearch() {
         // ==========================================
         // LÓGICA DEL BUSCADOR "CONSULTA RÁPIDA" Y PILLS
         // ==========================================
@@ -2404,8 +2404,13 @@ window.filtrarPorEstado = function(estado) {
                     });
                 });
             }
-        }, 500);
-    });
+        }, 300);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', _sgpInitVentoSearch);
+    } else {
+        _sgpInitVentoSearch();
+    }
 
 // ── Eliminación permanente de usuario ──────────────────────────
 function _ejecutarEliminarUsuario(encryptedId) {
