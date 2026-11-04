@@ -4520,6 +4520,8 @@ function cerrarModalConsulta() {
         if (btnPdf) btnPdf.style.display = 'none';
     }, 350);
 }
+window.abrirModalConsulta = abrirModalConsulta;
+window.cerrarModalConsulta = cerrarModalConsulta;
 /* ── Datos de pasantes (para el select del modal "Nuevo" registro) ── */
 var pasantesActivos = <?= json_encode(array_map(fn($p) => [
     'id'     => $p->id,
@@ -4594,6 +4596,9 @@ function cerrarModal() {
         inputVisible.style.background = '#fff';
     }
 }
+window.abrirModalManual = abrirModalManual;
+window.abrirModalManualNuevo = abrirModalManualNuevo;
+window.cerrarModal = cerrarModal;
 
 /* ── Toggle campo motivo + evidencia ─────────────────────────────── */
 function toggleMotivo(estado) {
@@ -4832,6 +4837,7 @@ function verDetalle(id, info) {
 function cerrarModalDetalle() {
     document.getElementById('modal-detalle').classList.remove('active');
 }
+window.cerrarModalDetalle = cerrarModalDetalle;
 
 /* ── Exportar CSV ─────────────────────────────────────────────────── */
 function exportarCSV() {

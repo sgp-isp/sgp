@@ -444,6 +444,14 @@
             }
         },
         verUsuario: verUsuario,
+        crearPasante: function() {
+            const url = (typeof URLROOT !== 'undefined' ? URLROOT : '') + '/users?crear=1';
+            if (window.SGPPjax && typeof window.SGPPjax.navigate === 'function') {
+                window.SGPPjax.navigate(url, true);
+            } else {
+                window.location.href = url;
+            }
+        },
         resetPin: resetPin,
         cerrar: function (tipo) {
             const id = tipo === 'buscar' ? 'sgpModalBuscar' : 'sgpModalVer';

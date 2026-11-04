@@ -1396,8 +1396,16 @@
     window.SGP_HAS_ACTIVE_PERIOD = <?= !empty($periodoActivo) ? 'true' : 'false' ?>;
 
     function openCreateModal() {
-        document.getElementById('createModal').classList.add('active');
+        const m = document.getElementById('createModal');
+        if (m) m.classList.add('active');
     }
+    window.openCreateModal = openCreateModal;
+    window.closeCreateModal = closeCreateModal;
+    try {
+        if (new URLSearchParams(window.location.search).get('crear') === '1') {
+            setTimeout(openCreateModal, 250);
+        }
+    } catch(e) {}
     
     function closeCreateModal() {
         document.getElementById('createModal').classList.remove('active');

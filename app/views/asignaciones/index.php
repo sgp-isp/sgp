@@ -1092,3 +1092,7 @@ window.filtrarPorEstado = function(estado) {
     }
 })();
 </script>
+
+
+<!-- Modal: Nueva Asignacion -->
+<?php require_once (defined('APPROOT') ? APPROOT . '/views/inc/modal_asignacion.php' : __DIR__ . '/../inc/modal_asignacion.php'); ?>

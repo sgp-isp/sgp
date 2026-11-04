@@ -390,7 +390,8 @@
             })
             .finally(function () {
                 clearTimeout(navigationTimeout); // SGP-FIX-v2 [3.1] cancelar safety timeout
-                cleanupOrphanedModals();
+                document.body.style.overflow = '';
+                document.body.classList.remove('modal-open');
                 isNavigating = false;
                 hideSpinner();
                 content.style.opacity = '1';
