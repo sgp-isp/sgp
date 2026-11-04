@@ -32,11 +32,11 @@
 }
 
 /* OCULTO POR DEFECTO: Si no está activo o abierto, NUNCA debe mostrarse */
-.modal-overlay:not(.active),
-.modal:not(.active):not(.show),
-.hc-overlay:not(.active),
-.asig-modal-overlay:not(.active),
-.sgp-modal-overlay:not(.active) {
+.modal-overlay:not(.active):not([style*="display: flex"]):not([style*="display:flex"]):not([style*="display: block"]):not([style*="display:block"]),
+.modal:not(.active):not(.show):not([style*="display: flex"]):not([style*="display:flex"]):not([style*="display: block"]):not([style*="display:block"]),
+.hc-overlay:not(.active):not([style*="display: flex"]):not([style*="display:flex"]),
+.asig-modal-overlay:not(.active):not([style*="display: flex"]):not([style*="display:flex"]),
+.sgp-modal-overlay:not(.active):not([style*="display: flex"]):not([style*="display:flex"]) {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
@@ -69,9 +69,19 @@
 
 .modal.active,
 .modal.show,
+.modal[style*="display: flex"],
+.modal[style*="display:flex"],
+.modal[style*="display: block"],
+.modal[style*="display:block"],
 .modal-overlay.active,
+.modal-overlay[style*="display: flex"],
+.modal-overlay[style*="display:flex"],
+.modal-overlay[style*="display: block"],
+.modal-overlay[style*="display:block"],
 .hc-overlay.active,
 .asig-modal-overlay.active,
+.asig-modal-overlay[style*="display: flex"],
+.asig-modal-overlay[style*="display:flex"],
 .hc-overlay[style*="display: flex"],
 .hc-overlay[style*="display:flex"] {
     display: flex !important;

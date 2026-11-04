@@ -3828,7 +3828,7 @@ window.menMarcarMasivoConConfirmacion = async function(estado) {
 </style>
 
 <!-- ===== MODAL REGISTRO MANUAL ===== -->
-<div id="modal-manual" class="modal-overlay" style="display: none;">
+<div id="modal-manual" class="modal-overlay" style="display: none;" onclick="if(event.target===this)cerrarModal()">
     <div class="modal-box">
         <div class="modal-head">
             <div>
@@ -4549,12 +4549,15 @@ function abrirModalManual(pasanteId, nombre) {
     }
 
     const modal = document.getElementById('modal-manual');
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+    }
 }
 
 /* ── Abrir modal vacío (botón "Registro Manual" del banner) ─────── */
 function abrirModalManualNuevo() {
-    if (pasantesActivos.length === 0) {
+    if (typeof pasantesActivos === 'undefined' || !pasantesActivos || pasantesActivos.length === 0) {
         Swal.fire({ icon: 'info', title: 'Sin pasantes activos', text: 'No hay pasantes con pasantía activa para registrar.', confirmButtonColor: '#162660' });
         return;
     }
@@ -4578,12 +4581,19 @@ function abrirModalManualNuevo() {
     }
 
     const modal = document.getElementById('modal-manual');
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+    }
 }
 
 /* ── Cerrar modal ─────────────────────────────────────────── */
 function cerrarModal() {
-    document.getElementById('modal-manual').style.display = 'none';
+    const modal = document.getElementById('modal-manual');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+    }
     document.getElementById('form-manual').reset();
     document.getElementById('div-motivo').style.display = 'none';
     document.getElementById('div-evidencia').style.display = 'none';
@@ -4876,11 +4886,14 @@ function exportarCSV() {
 }
 
 /* ── Cerrar modal si clic fuera ───────────────────────────────────── */
-document.getElementById('modal-manual').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModal();
-});
+const mmEl = document.getElementById('modal-manual');
+if (mmEl) {
+    mmEl.addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+    });
+}
 /* ── Lógica del Combo-Box de Pasantes (Buscador en Tiempo Real) ── */
-document.addEventListener('DOMContentLoaded', () => {
+function _sgpInitBuscadorPasanteManual() {
     const inputBuscador = document.getElementById('buscadorPasante');
     const inputOculto = document.getElementById('manual-pasante-id');
     const resultadosDiv = document.getElementById('resultadosPasante');
@@ -4964,7 +4977,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _sgpInitBuscadorPasanteManual);
+} else {
+    _sgpInitBuscadorPasanteManual();
+}
 </script>
 
 <!-- ===== DEPENDENCIAS DATATABLES Y ESTILO PREMIUM VENTO BOX ===== -->
