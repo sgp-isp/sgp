@@ -88,24 +88,27 @@
         </div>
     </div>
 
-    <!-- ── SECCIÓN: CONFIGURACIÓN DEL SERVIDOR SMTP (EXCLUSIVO SUPER ADMIN) ── -->
-    <?php $isSuperAdmin = ((int)Session::get('role_id') === 0); ?>
-    <div id="smtp_card" style="background:#ffffff;border-radius:16px;border:1.5px solid <?= $isSuperAdmin ? '#2563eb' : '#e2e8f0' ?>;box-shadow:0 10px 30px rgba(0,0,0,0.04);margin-bottom:30px;overflow:hidden;">
+    <!-- ── SECCIÓN: CONFIGURACIÓN DEL SERVIDOR SMTP / API REST ── -->
+    <?php 
+    $userRoleId = (int)Session::get('role_id');
+    $canConfigureSmtp = in_array($userRoleId, [0, 1], true); 
+    ?>
+    <div id="smtp_card" style="background:#ffffff;border-radius:16px;border:1.5px solid <?= $canConfigureSmtp ? '#2563eb' : '#e2e8f0' ?>;box-shadow:0 10px 30px rgba(0,0,0,0.04);margin-bottom:30px;overflow:hidden;">
         
         <!-- Cabecera de la Tarjeta SMTP -->
-        <div style="background:<?= $isSuperAdmin ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' : '#f8fafc' ?>;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border-bottom:1px solid #e2e8f0;">
+        <div style="background:<?= $canConfigureSmtp ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' : '#f8fafc' ?>;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border-bottom:1px solid #e2e8f0;">
             <div style="display:flex;align-items:center;gap:14px;">
-                <div style="width:44px;height:44px;border-radius:12px;background:<?= $isSuperAdmin ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : '#e2e8f0' ?>;display:flex;align-items:center;justify-content:center;color:<?= $isSuperAdmin ? '#ffffff' : '#64748b' ?>;font-size:1.3rem;">
-                    <i class="ti <?= $isSuperAdmin ? 'ti-server-cog' : 'ti-lock' ?>"></i>
+                <div style="width:44px;height:44px;border-radius:12px;background:<?= $canConfigureSmtp ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : '#e2e8f0' ?>;display:flex;align-items:center;justify-content:center;color:<?= $canConfigureSmtp ? '#ffffff' : '#64748b' ?>;font-size:1.3rem;">
+                    <i class="ti <?= $canConfigureSmtp ? 'ti-server-cog' : 'ti-lock' ?>"></i>
                 </div>
                 <div>
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <h2 style="font-size:1.1rem;font-weight:800;color:<?= $isSuperAdmin ? '#ffffff' : '#0f172a' ?>;margin:0;">
-                            Servidor de Correo Institucional (SMTP Relay)
+                        <h2 style="font-size:1.1rem;font-weight:800;color:<?= $canConfigureSmtp ? '#ffffff' : '#0f172a' ?>;margin:0;">
+                            Servidor de Correo Institucional (SMTP / API REST)
                         </h2>
-                        <?php if ($isSuperAdmin): ?>
+                        <?php if ($canConfigureSmtp): ?>
                             <span style="background:rgba(59,130,246,0.2);color:#93c5fd;border:1px solid rgba(59,130,246,0.4);padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;">
-                                <i class="ti ti-shield-check me-1"></i> Control Super Administrador
+                                <i class="ti ti-shield-check me-1"></i> Control de Administración
                             </span>
                         <?php else: ?>
                             <span style="background:#fef3c7;color:#b45309;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;">
@@ -113,8 +116,8 @@
                             </span>
                         <?php endif; ?>
                     </div>
-                    <p style="font-size:0.80rem;color:<?= $isSuperAdmin ? '#94a3b8' : '#64748b' ?>;margin:3px 0 0;">
-                        <?= $isSuperAdmin ? 'Configura las credenciales de salida de Gmail / Servidor institucional y valida el envío de plantillas' : 'Visualización restringida. Solo la cuenta de Super Administrador puede editar credenciales de salida.' ?>
+                    <p style="font-size:0.80rem;color:<?= $canConfigureSmtp ? '#94a3b8' : '#64748b' ?>;margin:3px 0 0;">
+                        <?= $canConfigureSmtp ? 'Configura las credenciales de salida (Gmail, Brevo API, SMTP institucional) y valida el envío de plantillas' : 'Visualización restringida. Solo administradores pueden editar credenciales de salida.' ?>
                     </p>
                 </div>
             </div>
@@ -122,7 +125,7 @@
             <div style="display:flex;align-items:center;gap:10px;">
                 <?php if (!empty($smtpConfig['activo'])): ?>
                     <span style="background:#dcfce7;color:#15803d;padding:6px 14px;border-radius:30px;font-size:0.78rem;font-weight:800;display:inline-flex;align-items:center;gap:6px;">
-                        <i class="ti ti-circle-check"></i> SMTP Habilitado y en Línea
+                        <i class="ti ti-circle-check"></i> Servicio Habilitado y en Línea
                     </span>
                 <?php else: ?>
                     <span style="background:#fef3c7;color:#b45309;padding:6px 14px;border-radius:30px;font-size:0.78rem;font-weight:800;display:inline-flex;align-items:center;gap:6px;">
@@ -132,19 +135,30 @@
             </div>
         </div>
 
-        <?php if ($isSuperAdmin): ?>
-            <!-- Formulario Exclusivo para Super Administrador -->
+        <?php if ($canConfigureSmtp): ?>
+            <!-- Formulario para Administradores y Super Administradores -->
             <form method="POST" action="<?= URLROOT ?>/notificaciones/guardarSmtp" id="formSmtpModulo" style="padding:24px;">
                 <input type="hidden" name="_csrf" value="<?= class_exists('CsrfHelper') ? CsrfHelper::generate() : '' ?>">
+
+                <!-- Banner Informativo: Compatibilidad con Render Free y la Nube -->
+                <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px;">
+                    <i class="ti ti-cloud-lock" style="color:#2563eb;font-size:1.45rem;flex-shrink:0;margin-top:2px;"></i>
+                    <div style="font-size:0.83rem;color:#1e3a8a;line-height:1.55;">
+                        <strong>🚀 ¿Despliegue en Render.com (Plan Gratuito) o Servidor en la Nube?</strong><br>
+                        Render en su plan gratuito bloquea los puertos SMTP salientes (25, 465 y 587) por políticas de red. Para enviar correos en Render sin restricciones ni costos, el sistema cuenta con <strong>despacho directo vía HTTPS (Puerto 443)</strong>:
+                        <br>&bull; Ingresa tu <strong>Clave de API de Brevo</strong> (inicia con <code style="background:#dbeafe;padding:1px 5px;border-radius:4px;font-weight:700;">xkeysib-...</code>) en el campo <em>Contraseña / API Key</em>.
+                        <br>&bull; El sistema detectará la clave automáticamente y transmitirá mediante la API REST de Brevo sobre HTTPS, garantizando un 100% de entrega inmediata.
+                    </div>
+                </div>
 
                 <!-- Toggle Habilitar Transmisión -->
                 <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
                     <div>
                         <div style="font-weight:700;font-size:0.92rem;color:#0f172a;display:flex;align-items:center;gap:8px;">
-                            <i class="ti ti-send" style="color:#2563eb;"></i> Habilitar Transmisión Real SMTP
+                            <i class="ti ti-send" style="color:#2563eb;"></i> Habilitar Transmisión Real de Correos
                         </div>
                         <div style="font-size:0.78rem;color:#64748b;margin-top:2px;">
-                            Si está activo, el sistema enviará correos reales a través de <strong><?= htmlspecialchars($smtpConfig['user'] ?? 'smtp.gmail.com') ?></strong>. Si se pausa, se guardarán en auditoría para pruebas sin consumir cuota.
+                            Si está activo, el sistema enviará correos reales a través de <strong><?= htmlspecialchars($smtpConfig['user'] ?: 'Servidor Configurado') ?></strong>. Si se pausa, se guardarán en auditoría para pruebas sin consumir cuota.
                         </div>
                     </div>
                     <label class="cfg-toggle-wrap" style="position:relative;display:inline-block;width:48px;height:26px;cursor:pointer;margin:0;">
@@ -157,7 +171,7 @@
                     <!-- Host -->
                     <div>
                         <label style="display:block;font-size:0.78rem;font-weight:700;color:#334155;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Servidor / Host SMTP *</label>
-                        <input type="text" name="smtp_host" value="<?= htmlspecialchars($smtpConfig['host'] ?? 'smtp.gmail.com') ?>" required class="form-control" style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:0.88rem;" placeholder="smtp.gmail.com">
+                        <input type="text" name="smtp_host" value="<?= htmlspecialchars($smtpConfig['host'] ?? 'smtp-relay.brevo.com') ?>" required class="form-control" style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:0.88rem;" placeholder="smtp-relay.brevo.com o smtp.gmail.com">
                     </div>
 
                     <!-- Puerto -->
@@ -178,14 +192,14 @@
                     <!-- Usuario -->
                     <div>
                         <label style="display:block;font-size:0.78rem;font-weight:700;color:#334155;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Usuario / Correo Autenticado *</label>
-                        <input type="text" name="smtp_user" value="<?= htmlspecialchars($smtpConfig['user'] ?? '') ?>" class="form-control" style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:0.88rem;" placeholder="sgp.ispeb@gmail.com">
+                        <input type="text" name="smtp_user" value="<?= htmlspecialchars($smtpConfig['user'] ?? '') ?>" class="form-control" style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:0.88rem;" placeholder="ej: luisgabrielyanez9@gmail.com">
                     </div>
 
-                    <!-- Contraseña -->
+                    <!-- Contraseña / API Key -->
                     <div>
-                        <label style="display:block;font-size:0.78rem;font-weight:700;color:#334155;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Contraseña / Contraseña de Aplicación *</label>
+                        <label style="display:block;font-size:0.78rem;font-weight:700;color:#334155;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Contraseña / Clave de API Brevo (xkeysib-...) *</label>
                         <div style="position:relative;">
-                            <input type="password" name="smtp_pass" id="modulo_smtp_pass" value="<?= htmlspecialchars($smtpConfig['pass'] ?? '') ?>" class="form-control" style="width:100%;padding:10px 42px 10px 14px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:0.88rem;" placeholder="Clave de aplicación de Gmail">
+                            <input type="password" name="smtp_pass" id="modulo_smtp_pass" value="<?= htmlspecialchars($smtpConfig['pass'] ?? '') ?>" class="form-control" style="width:100%;padding:10px 42px 10px 14px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:0.88rem;" placeholder="Clave SMTP o Brevo API Key (xkeysib-...)">
                             <i class="ti ti-eye" id="toggleModuloPassIcon" onclick="toggleSmtpPass('modulo_smtp_pass', 'toggleModuloPassIcon')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:#94a3b8;font-size:1.15rem;"></i>
                         </div>
                     </div>
@@ -198,7 +212,7 @@
 
                     <!-- Correo Remitente -->
                     <div style="grid-column:1 / -1;">
-                        <label style="display:block;font-size:0.78rem;font-weight:700;color:#334155;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Correo Electrónico Remitente *</label>
+                        <label style="display:block;font-size:0.78rem;font-weight:700;color:#334155;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Correo Electrónico Remitente Oficial *</label>
                         <input type="email" name="mail_from_email" value="<?= htmlspecialchars($smtpConfig['from_email'] ?? 'sgp.ispeb@gmail.com') ?>" class="form-control" style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:0.88rem;" placeholder="sgp.ispeb@gmail.com">
                     </div>
                 </div>
@@ -213,7 +227,7 @@
                     </div>
 
                     <button type="submit" style="padding:11px 26px;background:linear-gradient(135deg, #1e3a8a, #2563eb);color:#ffffff;border:none;border-radius:10px;font-size:0.88rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(37,99,235,0.3);transition:all .2s;">
-                        <i class="ti ti-device-floppy"></i> Guardar Parámetros SMTP
+                        <i class="ti ti-device-floppy"></i> Guardar Parámetros de Correo
                     </button>
                 </div>
             </form>

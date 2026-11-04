@@ -393,13 +393,13 @@ class NotificacionesController extends Controller
     }
 
     /**
-     * POST: Guardar Configuración Servidor SMTP (Exclusivo Super Administrador)
+     * POST: Guardar Configuración Servidor SMTP / API REST (Administradores y Super Administrador)
      */
     public function guardarSmtp(): void
     {
         $currentRole = (int)Session::get('role_id');
-        if ($currentRole !== 0) {
-            Session::setFlash('error', '⛔ Acceso denegado: Solo el Super Administrador tiene autorización para configurar las credenciales del servidor SMTP institucional.');
+        if (!in_array($currentRole, [0, 1], true)) {
+            Session::setFlash('error', '⛔ Acceso denegado: Se requieren permisos administrativos para configurar el servidor de correo institucional.');
             header('Location: ' . URLROOT . '/notificaciones/correos');
             exit;
         }
@@ -436,7 +436,12 @@ class NotificacionesController extends Controller
         ];
 
         if ($smtpPass !== '') {
-            $campos['smtp_pass'] = [$smtpPass, 'Contraseña de autenticación SMTP'];
+            $campos['smtp_pass'] = [$smtpPass, 'Contraseña de autenticación SMTP / API Key'];
+            if (strpos($smtpPass, 'xkeysib-') === 0) {
+                $campos['brevo_api_key'] = [$smtpPass, 'Brevo REST API Key (HTTPS :443)'];
+            } elseif (strpos($smtpPass, 're_') === 0) {
+                $campos['resend_api_key'] = [$smtpPass, 'Resend REST API Key (HTTPS :443)'];
+            }
         }
 
         try {

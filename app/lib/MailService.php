@@ -23,12 +23,14 @@ class MailService
             'pass'          => '',
             'secure'        => 'tls',
             'from_name'     => 'SGP - Instituto de Salud Pública',
-            'from_email'    => 'no-reply@ispeb.gob.ve'
+            'from_email'    => 'no-reply@ispeb.gob.ve',
+            'brevo_api_key' => '',
+            'resend_api_key'=> ''
         ];
 
         try {
             $db = Database::getInstance();
-            $db->query("SELECT clave, valor FROM configuracion WHERE clave LIKE 'smtp_%' OR clave LIKE 'mail_%'");
+            $db->query("SELECT clave, valor FROM configuracion WHERE clave LIKE 'smtp_%' OR clave LIKE 'mail_%' OR clave LIKE '%api_key%'");
             $rows = $db->resultSet() ?: [];
             foreach ($rows as $r) {
                 if ($r->clave === 'smtp_activo')        $cfg['activo'] = (int)$r->valor;
@@ -39,9 +41,46 @@ class MailService
                 if ($r->clave === 'smtp_secure')        $cfg['secure'] = trim($r->valor);
                 if ($r->clave === 'mail_from_name')     $cfg['from_name'] = trim($r->valor);
                 if ($r->clave === 'mail_from_email')    $cfg['from_email'] = trim($r->valor);
+                if ($r->clave === 'brevo_api_key')      $cfg['brevo_api_key'] = trim($r->valor);
+                if ($r->clave === 'resend_api_key')     $cfg['resend_api_key'] = trim($r->valor);
             }
         } catch (\Throwable $e) {
             error_log('[SGP-MAIL] getConfig error: ' . $e->getMessage());
+        }
+
+        // Soporte de variables de entorno para Render / Docker / Cloud PaaS
+        $envMap = [
+            'SMTP_HOST'       => 'host',
+            'SMTP_PORT'       => 'port',
+            'SMTP_USER'       => 'user',
+            'SMTP_PASS'       => 'pass',
+            'SMTP_SECURE'     => 'secure',
+            'SMTP_ACTIVO'     => 'activo',
+            'MAIL_FROM_NAME'  => 'from_name',
+            'MAIL_FROM_EMAIL' => 'from_email',
+            'BREVO_API_KEY'   => 'brevo_api_key',
+            'RESEND_API_KEY'  => 'resend_api_key',
+        ];
+        foreach ($envMap as $envKey => $cfgKey) {
+            $val = getenv($envKey);
+            if ($val === false || $val === '') {
+                $val = $_ENV[$envKey] ?? null;
+            }
+            if ($val !== null && $val !== '') {
+                if ($cfgKey === 'port' || $cfgKey === 'activo') {
+                    $cfg[$cfgKey] = (int)$val;
+                } else {
+                    $cfg[$cfgKey] = trim((string)$val);
+                }
+            }
+        }
+
+        // Si se especificó una clave de API (Brevo o Resend), activar automáticamente
+        if (!empty($cfg['brevo_api_key']) || !empty($cfg['resend_api_key'])) {
+            $cfg['activo'] = 1;
+            if (empty($cfg['pass'])) {
+                $cfg['pass'] = $cfg['brevo_api_key'] ?: $cfg['resend_api_key'];
+            }
         }
 
         return $cfg;
@@ -127,6 +166,164 @@ class MailService
     }
 
     /**
+     * Enviar correo mediante la API REST de Brevo (v3) a través de HTTPS (Puerto 443)
+     * Resuelve de forma definitiva el bloqueo de puertos SMTP (25, 465, 587) en Render Free.
+     */
+    public static function sendViaBrevoApi(string $apiKey, string $toEmail, string $toName, string $subject, string $htmlBody, string $textBody, array $cfg, string $eventCode = 'MANUAL', ?int $userId = null, array $attachments = []): array
+    {
+        $senderEmail = !empty($cfg['from_email']) ? $cfg['from_email'] : (!empty($cfg['user']) ? $cfg['user'] : 'sgp.ispeb@gmail.com');
+        $senderName  = !empty($cfg['from_name']) ? $cfg['from_name'] : 'SGP - Instituto de Salud Pública';
+
+        // Reemplazar cid:logo_sgp por la URL pública oficial del logo para compatibilidad con API REST
+        $publicLogoUrl = (defined('URLROOT') && strpos(URLROOT, 'http') === 0)
+            ? (URLROOT . '/img/apple-touch-icon.png')
+            : 'https://sgp-aqgw.onrender.com/img/apple-touch-icon.png';
+        $preparedHtml = str_replace('cid:logo_sgp', $publicLogoUrl, $htmlBody);
+
+        $payload = [
+            'sender'      => ['name' => $senderName, 'email' => $senderEmail],
+            'to'          => [['email' => $toEmail, 'name' => $toName ?: $toEmail]],
+            'subject'     => $subject,
+            'htmlContent' => $preparedHtml,
+            'textContent' => $textBody ?: strip_tags($htmlBody)
+        ];
+
+        // Adjuntos físicos
+        if (!empty($attachments)) {
+            $payload['attachment'] = [];
+            foreach ($attachments as $att) {
+                $attPath = $att['path'] ?? '';
+                $attName = $att['name'] ?? basename($attPath);
+                if (file_exists($attPath)) {
+                    $payload['attachment'][] = [
+                        'name'    => $attName,
+                        'content' => base64_encode(file_get_contents($attPath))
+                    ];
+                }
+            }
+        }
+
+        $jsonPayload = json_encode($payload);
+        $response = false;
+        $httpCode = 0;
+        $errMsg   = '';
+
+        if (function_exists('curl_init')) {
+            $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+            curl_setopt_array($ch, [
+                CURLOPT_POST           => true,
+                CURLOPT_POSTFIELDS     => $jsonPayload,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER     => [
+                    'accept: application/json',
+                    'api-key: ' . $apiKey,
+                    'content-type: application/json'
+                ],
+                CURLOPT_TIMEOUT        => 15,
+                CURLOPT_SSL_VERIFYPEER => true
+            ]);
+            $response = curl_exec($ch);
+            $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $errMsg   = curl_error($ch);
+            curl_close($ch);
+        } else {
+            $ctx = stream_context_create([
+                'http' => [
+                    'method'        => 'POST',
+                    'header'        => "accept: application/json\r\napi-key: {$apiKey}\r\ncontent-type: application/json\r\n",
+                    'content'       => $jsonPayload,
+                    'timeout'       => 15,
+                    'ignore_errors' => true
+                ]
+            ]);
+            $response = @file_get_contents('https://api.brevo.com/v3/smtp/email', false, $ctx);
+            if (isset($http_response_header) && preg_match('#HTTP/\S+\s+(\d+)#', $http_response_header[0], $m)) {
+                $httpCode = (int)$m[1];
+            }
+        }
+
+        $resData = json_decode((string)$response, true);
+
+        if ($httpCode >= 200 && $httpCode < 300) {
+            $msgId = $resData['messageId'] ?? 'OK';
+            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'enviado', "Despachado exitosamente vía Brevo REST API (HTTPS :443) [ID: {$msgId}]");
+            return ['success' => true, 'message' => 'Correo enviado exitosamente vía Brevo API (HTTPS)'];
+        }
+
+        $apiError = $resData['message'] ?? ($errMsg ?: "Respuesta HTTP {$httpCode} de Brevo API");
+        error_log("[SGP-MAIL] Error Brevo API ({$httpCode}): {$apiError}");
+        self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', "Brevo API ({$httpCode}): {$apiError}");
+        return ['success' => false, 'message' => "Error Brevo API ({$httpCode}): {$apiError}"];
+    }
+
+    /**
+     * Enviar correo mediante la API REST de Resend a través de HTTPS (Puerto 443)
+     */
+    public static function sendViaResendApi(string $apiKey, string $toEmail, string $toName, string $subject, string $htmlBody, string $textBody, array $cfg, string $eventCode = 'MANUAL', ?int $userId = null, array $attachments = []): array
+    {
+        $senderEmail = !empty($cfg['from_email']) ? $cfg['from_email'] : 'onboarding@resend.dev';
+        $senderName  = !empty($cfg['from_name']) ? $cfg['from_name'] : 'SGP';
+        $from = "{$senderName} <{$senderEmail}>";
+
+        $publicLogoUrl = (defined('URLROOT') && strpos(URLROOT, 'http') === 0)
+            ? (URLROOT . '/img/apple-touch-icon.png')
+            : 'https://sgp-aqgw.onrender.com/img/apple-touch-icon.png';
+        $preparedHtml = str_replace('cid:logo_sgp', $publicLogoUrl, $htmlBody);
+
+        $payload = [
+            'from'    => $from,
+            'to'      => [$toEmail],
+            'subject' => $subject,
+            'html'    => $preparedHtml,
+            'text'    => $textBody ?: strip_tags($htmlBody)
+        ];
+
+        if (!empty($attachments)) {
+            $payload['attachments'] = [];
+            foreach ($attachments as $att) {
+                $attPath = $att['path'] ?? '';
+                $attName = $att['name'] ?? basename($attPath);
+                if (file_exists($attPath)) {
+                    $payload['attachments'][] = [
+                        'filename' => $attName,
+                        'content'  => base64_encode(file_get_contents($attPath))
+                    ];
+                }
+            }
+        }
+
+        $jsonPayload = json_encode($payload);
+
+        $ch = curl_init('https://api.resend.com/emails');
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $jsonPayload,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => [
+                'Authorization: Bearer ' . $apiKey,
+                'Content-Type: application/json'
+            ],
+            CURLOPT_TIMEOUT        => 15
+        ]);
+        $response = curl_exec($ch);
+        $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $errMsg   = curl_error($ch);
+        curl_close($ch);
+
+        $resData = json_decode((string)$response, true);
+
+        if ($httpCode >= 200 && $httpCode < 300) {
+            $msgId = $resData['id'] ?? 'OK';
+            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'enviado', "Despachado exitosamente vía Resend API (HTTPS) [ID: {$msgId}]");
+            return ['success' => true, 'message' => 'Correo enviado exitosamente vía Resend API'];
+        }
+
+        $apiError = $resData['message'] ?? ($errMsg ?: "Respuesta HTTP {$httpCode} de Resend");
+        self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', "Resend API ({$httpCode}): {$apiError}");
+        return ['success' => false, 'message' => "Error Resend API ({$httpCode}): {$apiError}"];
+    }
+
+    /**
      * Envío directo garantizado (ignora exclusiones para pruebas o envíos obligatorios)
      */
     public static function sendDirect(string $toEmail, string $toName, string $subject, string $htmlBody, string $eventCode = 'MANUAL', ?int $userId = null): array
@@ -135,7 +332,7 @@ class MailService
     }
 
     /**
-     * Envía un correo electrónico mediante SMTP autenticado
+     * Envía un correo electrónico mediante SMTP autenticado o API REST en la nube
      */
     public static function send(string $toEmail, string $toName, string $subject, string $htmlBody, string $textBody = '', string $eventCode = 'MANUAL', ?int $userId = null, bool $ignoreRules = false, array $attachments = []): array
     {
@@ -153,6 +350,21 @@ class MailService
         }
 
         $cfg = self::getConfig();
+
+        // 2. Detección Inteligente de API REST (Bypass de puertos SMTP 25, 465, 587 bloqueados en Render Free)
+        $brevoApiKey = !empty($cfg['brevo_api_key']) 
+            ? $cfg['brevo_api_key'] 
+            : ((strpos($cfg['pass'], 'xkeysib-') === 0) ? $cfg['pass'] : '');
+        if (!empty($brevoApiKey)) {
+            return self::sendViaBrevoApi($brevoApiKey, $toEmail, $toName, $subject, $htmlBody, $textBody, $cfg, $eventCode, $userId, $attachments);
+        }
+
+        $resendApiKey = !empty($cfg['resend_api_key']) 
+            ? $cfg['resend_api_key'] 
+            : ((strpos($cfg['pass'], 're_') === 0) ? $cfg['pass'] : '');
+        if (!empty($resendApiKey)) {
+            return self::sendViaResendApi($resendApiKey, $toEmail, $toName, $subject, $htmlBody, $textBody, $cfg, $eventCode, $userId, $attachments);
+        }
 
         // Modo Simulación si SMTP no está activo
         if (empty($cfg['activo']) || empty($cfg['user']) || empty($cfg['pass'])) {
@@ -200,9 +412,14 @@ class MailService
         }
 
         if (!$socket) {
+            $isCloudTimeout = ($errno === 110 || stripos($errstr, 'timed out') !== false);
+            $msg = "No se pudo conectar al servidor SMTP: {$errstr} ({$errno}).";
+            if ($isCloudTimeout) {
+                $msg .= " ⚠️ Aviso: Los entornos gratuitos en la nube (como Render Free) bloquean los puertos SMTP salientes (25, 465 y 587) por políticas de red. Para enviar correos desde Render gratis y sin bloqueos, utiliza una clave de API de Brevo (inicia con 'xkeysib-') en la Contraseña o configura la variable de entorno BREVO_API_KEY para despachar vía HTTPS (puerto 443).";
+            }
             error_log("[SGP-MAIL] Error de conexión socket: {$errstr} ({$errno}) hacia {$target}");
             self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', "Socket error {$errno}: {$errstr}");
-            return ['success' => false, 'message' => "No se pudo conectar al servidor SMTP: {$errstr} ({$errno})"];
+            return ['success' => false, 'message' => $msg];
         }
 
         stream_set_timeout($socket, $timeout);
