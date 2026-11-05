@@ -1014,9 +1014,11 @@ class SuperAdminController extends Controller
         }
 
         $db = Database::getInstance();
-        $db->query("SELECT t.*, u.correo, CONCAT(COALESCE(dp.nombres,''), ' ', COALESCE(dp.apellidos,'')) AS nombre_usuario 
+        $db->query("SELECT t.*, 
+                           COALESCE(u.correo, t.correo) AS correo_destino, 
+                           COALESCE(NULLIF(TRIM(CONCAT(COALESCE(dp.nombres,''), ' ', COALESCE(dp.apellidos,''))), ''), t.nombre, 'Usuario SGP') AS nombre_destino 
                     FROM soporte_tickets t
-                    INNER JOIN usuarios u ON u.id = t.usuario_id
+                    LEFT JOIN usuarios u ON u.id = t.usuario_id
                     LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
                     WHERE t.id = :id");
         $db->bind(':id', $ticketId);
@@ -1028,7 +1030,13 @@ class SuperAdminController extends Controller
         }
 
         $adminId = (int)Session::get('user_id');
-        $db->query("UPDATE soporte_tickets SET estado = :estado, respuesta_tecnica = :resp, responded_by = :resp_by, updated_at = NOW() WHERE id = :id");
+        $db->query("UPDATE soporte_tickets 
+                    SET estado = :estado, 
+                        respuesta_soporte = :resp, 
+                        respondido_por = :resp_by, 
+                        respondido_at = NOW(), 
+                        updated_at = NOW() 
+                    WHERE id = :id");
         $db->bind(':estado', $estado);
         $db->bind(':resp', $respuesta);
         $db->bind(':resp_by', $adminId);
@@ -1037,23 +1045,27 @@ class SuperAdminController extends Controller
 
         try {
             require_once APPROOT . '/lib/MailService.php';
-            $htmlMsg = "
-                <div style='font-family:sans-serif;max-width:600px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;'>
-                    <div style='background:#162660;padding:20px;text-align:center;color:#fff;'>
-                        <h2 style='margin:0;'>Soporte Técnico SGP - ISPEB</h2>
-                        <p style='margin:4px 0 0;font-size:13px;opacity:0.9;'>Actualización del Ticket #{$ticket->codigo}</p>
-                    </div>
-                    <div style='padding:24px;color:#1e293b;line-height:1.6;'>
-                        <p>Estimado/a <strong>" . htmlspecialchars($ticket->nombre_usuario ?: $ticket->correo) . "</strong>,</p>
-                        <p>Su solicitud de soporte con código <strong>#{$ticket->codigo}</strong> ha sido actualizada al estado: <span style='background:#eff6ff;color:#1d4ed8;padding:3px 8px;border-radius:6px;font-weight:bold;'>{$estado}</span>.</p>
-                        <div style='background:#f8fafc;border-left:4px solid #162660;padding:14px;margin:16px 0;border-radius:0 8px 8px 0;'>
-                            <strong style='display:block;margin-bottom:6px;color:#0f172a;'>Respuesta del Equipo Técnico:</strong>
-                            " . nl2br(htmlspecialchars($respuesta)) . "
+            $destCorreo = $ticket->correo_destino ?: $ticket->correo;
+            $destNombre = $ticket->nombre_destino ?: $ticket->nombre;
+            if (!empty($destCorreo)) {
+                $htmlMsg = "
+                    <div style='font-family:sans-serif;max-width:600px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;'>
+                        <div style='background:#162660;padding:20px;text-align:center;color:#fff;'>
+                            <h2 style='margin:0;'>Soporte Técnico SGP - ISPEB</h2>
+                            <p style='margin:4px 0 0;font-size:13px;opacity:0.9;'>Actualización del Ticket #{$ticket->codigo}</p>
                         </div>
-                        <p style='font-size:12px;color:#64748b;'>Instituto de Salud Pública del Estado Bolívar &mdash; Sistema de Gestión de Pasantes</p>
-                    </div>
-                </div>";
-            MailService::send($ticket->correo, $ticket->nombre_usuario ?: 'Usuario SGP', "Respuesta a Ticket #{$ticket->codigo}: {$ticket->asunto}", $htmlMsg, '', 'MANUAL', $ticket->usuario_id, true);
+                        <div style='padding:24px;color:#1e293b;line-height:1.6;'>
+                            <p>Estimado/a <strong>" . htmlspecialchars($destNombre) . "</strong>,</p>
+                            <p>Su solicitud de soporte con código <strong>#{$ticket->codigo}</strong> ha sido actualizada al estado: <span style='background:#eff6ff;color:#1d4ed8;padding:3px 8px;border-radius:6px;font-weight:bold;'>{$estado}</span>.</p>
+                            <div style='background:#f8fafc;border-left:4px solid #162660;padding:14px;margin:16px 0;border-radius:0 8px 8px 0;'>
+                                <strong style='display:block;margin-bottom:6px;color:#0f172a;'>Respuesta del Equipo Técnico:</strong>
+                                " . nl2br(htmlspecialchars($respuesta)) . "
+                            </div>
+                            <p style='font-size:12px;color:#64748b;'>Instituto de Salud Pública del Estado Bolívar &mdash; Sistema de Gestión de Pasantes</p>
+                        </div>
+                    </div>";
+                MailService::send($destCorreo, $destNombre, "Respuesta a Ticket #{$ticket->codigo}: {$ticket->asunto}", $htmlMsg, '', 'MANUAL', $ticket->usuario_id, true);
+            }
         } catch (\Throwable $e) {
             error_log("[SOPORTE-MAIL-ERR] " . $e->getMessage());
         }

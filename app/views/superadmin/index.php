@@ -665,9 +665,7 @@ input:checked + .switch-slider:before {
                             No hay tickets de soporte pendientes en la bandeja.
                         </div>
                     <?php else: ?>
-                        <?php foreach ($data['tickets_soporte'] as $tck): 
-                            $safeTckJson = htmlspecialchars(json_encode($tck), ENT_QUOTES, 'UTF-8');
-                        ?>
+                        <?php foreach ($data['tickets_soporte'] as $tck): ?>
                         <div style="padding:12px 14px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;gap:10px;transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
                             <div style="min-width:0;flex:1;">
                                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
@@ -679,10 +677,10 @@ input:checked + .switch-slider:before {
                                     <?= htmlspecialchars($tck->asunto) ?>
                                 </div>
                                 <div style="font-size:0.72rem;color:#64748b;">
-                                    Hace <?= $tck->horas_transcurridas ?>h &bull; <?= htmlspecialchars(substr($tck->descripcion, 0, 70)) ?>...
+                                    Hace <?= $tck->horas_transcurridas ?>h &bull; <?= htmlspecialchars(substr($tck->mensaje ?? $tck->descripcion ?? '', 0, 70)) ?>...
                                 </div>
                             </div>
-                            <button type="button" onclick='abrirModalResponderTicket(<?= $safeTckJson ?>)' style="padding:6px 12px;border:1.5px solid #cbd5e1;background:#fff;border-radius:8px;font-size:0.75rem;font-weight:700;color:#1e293b;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;" onmouseover="this.style.background='#eff6ff';this.style.borderColor='#2563eb';this.style.color='#2563eb';" onmouseout="this.style.background='#fff';this.style.borderColor='#cbd5e1';this.style.color='#1e293b';">
+                            <button type="button" onclick="abrirModalResponderTicket(<?= (int)$tck->id ?>)" style="padding:6px 12px;border:1.5px solid #cbd5e1;background:#fff;border-radius:8px;font-size:0.75rem;font-weight:700;color:#1e293b;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;" onmouseover="this.style.background='#eff6ff';this.style.borderColor='#2563eb';this.style.color='#2563eb';" onmouseout="this.style.background='#fff';this.style.borderColor='#cbd5e1';this.style.color='#1e293b';">
                                 <i class="ti ti-edit"></i> Atender
                             </button>
                         </div>
@@ -1381,17 +1379,58 @@ window.guardarAjustesMantenimiento = function() {
 };
 
 // ── Modal Responder Ticket ─────────────────────────────────────
-window.abrirModalResponderTicket = function(ticket) {
-    if (!ticket) return;
-    document.getElementById('respTicketId').value = ticket.id;
-    document.getElementById('respTicketCodigo').textContent = '#' + ticket.codigo;
-    document.getElementById('respTicketAsunto').textContent = ticket.asunto;
-    document.getElementById('respTicketPrioridad').textContent = ticket.prioridad;
-    document.getElementById('respTicketDescripcion').textContent = ticket.descripcion;
-    document.getElementById('respTicketEstado').value = ticket.estado || 'En Proceso';
-    document.getElementById('respTicketRespuesta').value = ticket.respuesta_tecnica || '';
-    
+window.SGP_TICKETS = <?= json_encode($data['tickets_soporte'] ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?>;
+
+window.abrirModalResponderTicket = function(ticketOrId) {
+    var ticket = null;
+    if (typeof ticketOrId === 'object' && ticketOrId !== null) {
+        ticket = ticketOrId;
+    } else {
+        var id = parseInt(ticketOrId, 10);
+        ticket = (window.SGP_TICKETS || []).find(function(t) { return parseInt(t.id, 10) === id; });
+    }
+
+    if (!ticket) {
+        console.warn('[MESA-AYUDA] Ticket no encontrado con ID/Objeto:', ticketOrId);
+        return;
+    }
+
+    var idEl = document.getElementById('respTicketId');
+    if (idEl) idEl.value = ticket.id;
+
+    var codEl = document.getElementById('respTicketCodigo');
+    if (codEl) codEl.textContent = '#' + (ticket.codigo || '');
+
+    var asuEl = document.getElementById('respTicketAsunto');
+    if (asuEl) asuEl.textContent = ticket.asunto || '';
+
+    var prioEl = document.getElementById('respTicketPrioridad');
+    if (prioEl) {
+        prioEl.textContent = ticket.prioridad || 'Media';
+        prioEl.className = 'ticket-prio-badge ticket-prio-' + (ticket.prioridad || 'Media');
+    }
+
+    var descEl = document.getElementById('respTicketDescripcion');
+    if (descEl) {
+        descEl.textContent = ticket.mensaje || ticket.descripcion || '(Sin descripción reportada)';
+    }
+
+    var estEl = document.getElementById('respTicketEstado');
+    if (estEl) {
+        estEl.value = ticket.estado || 'En Proceso';
+    }
+
+    var respEl = document.getElementById('respTicketRespuesta');
+    if (respEl) {
+        respEl.value = ticket.respuesta_soporte || ticket.respuesta_tecnica || '';
+    }
+
     var modal = document.getElementById('modalResponderTicket');
+    if (!modal) {
+        console.error('[MESA-AYUDA] Modal #modalResponderTicket no encontrado en el DOM');
+        return;
+    }
+
     if (modal.parentElement !== document.body) {
         document.body.appendChild(modal);
     }
@@ -1420,7 +1459,7 @@ window.enviarRespuestaTicket = function(e) {
     btn.disabled = true;
     btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i> Guardando...';
 
-    fetch('<?= URLROOT ?>/superAdmin/responderTicket', {
+    fetch('<?= URLROOT ?>/superadmin/responderTicket', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         body: JSON.stringify({ ticket_id: ticketId, estado: estado, respuesta: respuesta })
