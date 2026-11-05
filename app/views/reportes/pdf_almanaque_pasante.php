@@ -236,7 +236,7 @@ $rows = array_chunk($mesesData, $cols);
         <?php
         $anioM  = $mesInfo['anio'];
         $mesM   = $mesInfo['mes'];
-        $diasEnMes = cal_days_in_month(CAL_GREGORIAN, $mesM, $anioM);
+        $diasEnMes = (int)date('t', mktime(0, 0, 0, (int)$mesM, 1, (int)$anioM));
         // día de la semana del día 1 (1=Lun ... 7=Dom)
         $primerDia = (int)(new DateTime("$anioM-$mesM-01"))->format('N');
         ?>

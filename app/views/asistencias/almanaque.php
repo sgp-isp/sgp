@@ -1246,7 +1246,7 @@ if ($fi_global && !empty($statsDesglose)):
 
             if ($esMesActual && $tot > 0) {
                 // Mes en curso: denominar sobre el total de días laborables del mes completo
-                $diasEnMes = cal_days_in_month(CAL_GREGORIAN, $m, $yrBloque);
+                $diasEnMes = (int)date('t', mktime(0, 0, 0, (int)$m, 1, (int)$yrBloque));
                 $laborablesMes = 0;
                 for ($d = 1; $d <= $diasEnMes; $d++) {
                     if ((int)date('N', mktime(0,0,0,$m,$d,$yrBloque)) < 6) $laborablesMes++;

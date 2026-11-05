@@ -265,7 +265,7 @@ $diasSemana = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
     <!-- Grid de Meses -->
     <div class="fer-grid">
         <?php for($m = 1; $m <= 12; $m++): 
-            $diasEnMes = cal_days_in_month(CAL_GREGORIAN, $m, $year);
+            $diasEnMes = (int)date('t', mktime(0, 0, 0, (int)$m, 1, (int)$year));
             $primerDia = date('N', strtotime("$year-$m-01")); // 1 (Lun) a 7 (Dom)
             
             // Contar feriados del mes

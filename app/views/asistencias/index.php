@@ -1416,7 +1416,7 @@ table.dataTable tbody tr:hover {
             $urlSig        = $data['urlSig']        ?? '#';
             $mesActual     = (int)($paramsUrl['mes']  ?? date('n'));
             $anioActual    = (int)($paramsUrl['anio'] ?? date('Y'));
-            $numDays       = cal_days_in_month(CAL_GREGORIAN, $mesActual, $anioActual);
+            $numDays       = (int)date('t', mktime(0, 0, 0, $mesActual, 1, $anioActual));
             $primerDow     = (int)(new DateTime(sprintf('%04d-%02d-01', $anioActual, $mesActual)))->format('N'); // 1=Lun
             $hoyDia        = (date('n') == $mesActual && date('Y') == $anioActual) ? (int)date('j') : -1;
             $deptosDisp    = array_keys($calPorDia); // incluye 'Todos'

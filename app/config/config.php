@@ -1,4 +1,14 @@
 <?php
+// Polyfill global para entornos sin la extensión ext-calendar (ej. contenedores Docker / Render)
+if (!defined('CAL_GREGORIAN')) {
+    define('CAL_GREGORIAN', 0);
+}
+if (!function_exists('cal_days_in_month')) {
+    function cal_days_in_month($calendar, $month, $year): int {
+        return (int)date('t', mktime(0, 0, 0, (int)$month, 1, (int)$year));
+    }
+}
+
 // SGP-FIX-v2 [1] aplicado — Timeout de sesión por inactividad
 if (!defined('SESSION_TIMEOUT_SECONDS')) {
     define('SESSION_TIMEOUT_SECONDS', 1500); // 25 minutos
