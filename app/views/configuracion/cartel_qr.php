@@ -147,7 +147,7 @@
             user-select: none;
         }
 
-        /* ── 1. CINTILLO SUPERIOR: 3 LOGOS OFICIALES ── */
+        /* ── 1. CINTILLO SUPERIOR: 3 LOGOS OFICIALES EQUILIBRADOS ── */
         .cartel-top-strip {
             position: relative;
             z-index: 2;
@@ -155,56 +155,55 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            padding-bottom: 16px;
+            gap: 18px;
+            padding-bottom: 14px;
         }
 
         .strip-col-left {
-            flex: 1;
+            flex: 0 0 auto;
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            min-width: 0;
         }
 
         .strip-col-center {
-            flex: 2;
+            flex: 1 1 auto;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 0 8px;
             min-width: 0;
         }
 
         .strip-col-right {
-            flex: 1;
+            flex: 0 0 auto;
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            min-width: 0;
         }
 
         .logo-top-sgp {
-            height: 56px;
+            height: 42px;
             width: auto;
-            max-width: 110px;
+            max-width: 95px;
             object-fit: contain;
-            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.1));
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.08));
         }
 
         .logo-top-salud {
-            height: 58px;
+            height: 38px;
             width: auto;
-            max-width: 275px;
+            max-width: 205px;
             object-fit: contain;
-            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.08));
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.06));
         }
 
         .logo-top-gobe {
-            height: 56px;
+            height: 40px;
             width: auto;
-            max-width: 175px;
+            max-width: 125px;
             object-fit: contain;
-            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.08));
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.06));
         }
 
         /* ── 2. ENCABEZADO INSTITUCIONAL TIPOGRÁFICO DE ALTO IMPACTO ── */
@@ -482,10 +481,10 @@
             }
 
             .cartel-sheet::before { inset: 4px !important; }
-            .cartel-top-strip { gap: 6px !important; padding-bottom: 8px !important; }
-            .logo-top-sgp { height: 28px !important; }
-            .logo-top-salud { height: 30px !important; }
-            .logo-top-gobe { height: 28px !important; }
+            .cartel-top-strip { gap: 8px !important; padding-bottom: 8px !important; }
+            .logo-top-sgp { height: 26px !important; max-width: 60px !important; }
+            .logo-top-salud { height: 24px !important; max-width: 140px !important; }
+            .logo-top-gobe { height: 26px !important; max-width: 85px !important; }
 
             .inst-full-name { font-size: 0.94rem !important; }
             .cartel-main-heading { font-size: 1.35rem !important; }
@@ -585,22 +584,22 @@
             .cartel-top-strip {
                 padding-bottom: 1.5mm !important;
                 margin-bottom: 1mm !important;
-                gap: 10px !important;
+                gap: 12px !important;
             }
 
             .logo-top-sgp {
-                height: 28px !important;
-                max-width: 70px !important;
+                height: 25px !important;
+                max-width: 65px !important;
             }
 
             .logo-top-salud {
-                height: 30px !important;
-                max-width: 160px !important;
+                height: 24px !important;
+                max-width: 145px !important;
             }
 
             .logo-top-gobe {
-                height: 28px !important;
-                max-width: 110px !important;
+                height: 25px !important;
+                max-width: 90px !important;
             }
 
             .inst-full-name {
