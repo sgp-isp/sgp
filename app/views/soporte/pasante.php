@@ -142,8 +142,8 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
             </div>
         </div>
 
-        <!-- ── COLUMNA DERECHA: CHAT CON SOPORTE ── -->
-        <div class="ps-chat-col" id="chatDetailPasanteSection">
+        <!-- ── COLUMNA DERECHA: CHAT CON SOPORTE (STEAM / MESSENGER UI) ── -->
+        <div class="ps-chat-col steam-chat-panel" id="chatDetailPasanteSection">
             <?php if (!$selectedTicket): ?>
             <div class="ps-no-chat-state">
                 <div class="pncs-icon"><i class="ti ti-messages"></i></div>
@@ -159,64 +159,145 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
                     default      => '#2563eb'
                 };
             ?>
-            <!-- Botón Volver en móvil -->
-            <div class="mobile-back-bar" style="display:none;padding:10px 16px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;">
-                <button type="button" onclick="volverAListaPasante()" style="background:#ffffff;border:1.5px solid #cbd5e1;padding:7px 12px;border-radius:10px;font-size:0.8rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
-                    <i class="ti ti-arrow-left"></i> <span>Volver a mis reportes</span>
-                </button>
-            </div>
-
-            <!-- Encabezado del caso -->
-            <div class="ps-chat-header">
-                <div>
-                    <div class="pch-tags">
-                        <span class="pch-code"><?= htmlspecialchars($selectedTicket->codigo) ?></span>
-                        <span class="pch-badge" style="background: <?= $estadoColor ?>; color: #fff;"><?= htmlspecialchars($selectedTicket->estado) ?></span>
-                        <span class="pch-cat"><?= htmlspecialchars($selectedTicket->categoria) ?></span>
+            <!-- Encabezado del Chat estilo Steam / Messenger -->
+            <div class="messenger-header">
+                <div class="mh-left">
+                    <button type="button" class="btn-back-mobile" onclick="volverAListaPasante()" title="Volver a mis reportes">
+                        <i class="ti ti-arrow-left"></i>
+                    </button>
+                    <div class="mh-avatar-wrap">
+                        <div class="mh-avatar mh-avatar-tech">
+                            <i class="ti ti-headset"></i>
+                        </div>
+                        <span class="online-status-dot" title="Equipo de soporte en línea"></span>
                     </div>
-                    <h2 class="pch-title"><?= htmlspecialchars($selectedTicket->asunto) ?></h2>
+                    <div class="mh-info">
+                        <div class="mh-name-row">
+                            <h3 class="mh-name">Soporte Técnico &bull; División de Telemática</h3>
+                            <span class="mh-badge-code"><?= htmlspecialchars($selectedTicket->codigo) ?></span>
+                            <span class="mh-status-pill status-pill-<?= strtolower(str_replace(' ', '-', $selectedTicket->estado)) ?>" id="headerPasanteEstadoPill">
+                                <?= htmlspecialchars($selectedTicket->estado) ?>
+                            </span>
+                        </div>
+                        <div class="mh-meta-line">
+                            <span class="mh-cat-pill"><?= htmlspecialchars($selectedTicket->categoria) ?></span>
+                            <span class="mh-prio-pill prio-<?= strtolower($selectedTicket->prioridad) ?>">
+                                Prioridad: <?= htmlspecialchars($selectedTicket->prioridad) ?>
+                            </span>
+                            <span class="mh-dot">&bull;</span>
+                            <span>Atención oficial ISPEB</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="pch-date">
-                    <span>Creado: <?= date('d/m/Y H:i', strtotime($selectedTicket->created_at)) ?></span>
+
+                <div class="mh-right">
+                    <span class="badge-status-live" title="Chat sincronizado en vivo">
+                        <span class="pulse-dot"></span> En Vivo
+                    </span>
                 </div>
             </div>
 
-            <!-- Contenedor del chat -->
-            <div class="ps-chat-body" id="chatPasanteContainer">
+            <!-- Asunto del caso -->
+            <div class="chat-subject-bar">
+                <i class="ti ti-info-circle"></i>
+                <div class="csb-content">
+                    <span class="csb-label">Tu reporte:</span>
+                    <strong class="csb-subject"><?= htmlspecialchars($selectedTicket->asunto) ?></strong>
+                    <span class="csb-time">&bull; Creado <?= date('d/m/Y h:i A', strtotime($selectedTicket->created_at)) ?></span>
+                </div>
+            </div>
+
+            <!-- Contenedor del chat / Stream de Mensajes -->
+            <div class="chat-messages-container" id="chatPasanteContainer">
+                <div class="chat-date-separator">
+                    <span>Inicio de la conversación con Soporte</span>
+                </div>
+
                 <?php if (empty($mensajes)): ?>
-                    <div class="empty-chat-hint">
-                        <span>No hay mensajes registrados en este caso aún.</span>
+                    <div class="empty-chat-hint" id="emptyChatHint">
+                        <i class="ti ti-message-dots"></i>
+                        <span>No hay mensajes registrados en este caso aún. Escribe tu mensaje abajo.</span>
                     </div>
                 <?php else: ?>
-                    <?php foreach ($mensajes as $m): 
+                    <?php 
+                    $lastId = 0;
+                    foreach ($mensajes as $m): 
                         $isSoporte = ($m->remitente_tipo === 'soporte');
+                        $isMe = !$isSoporte; // Para el pasante, "usuario" es ME
+                        $lastId = (int)$m->id;
                     ?>
-                    <div class="chat-bubble-row <?= $isSoporte ? 'row-soporte' : 'row-usuario' ?>">
-                        <div class="chat-bubble <?= $isSoporte ? 'bubble-soporte' : 'bubble-usuario' ?>">
-                            <div class="bubble-header">
-                                <span class="bubble-author">
-                                    <i class="<?= $isSoporte ? 'ti ti-shield-check' : 'ti ti-user' ?>"></i>
-                                    <?= htmlspecialchars($m->remitente_nombre) ?>
-                                    <?php if ($isSoporte): ?>
-                                    <span class="tag-tecnico">Soporte Telemática</span>
-                                    <?php endif; ?>
-                                </span>
-                                <span class="bubble-time"><?= date('d/m H:i', strtotime($m->created_at)) ?></span>
-                            </div>
-                            <div class="bubble-body">
-                                <?= nl2br(htmlspecialchars($m->mensaje)) ?>
+                    <div class="chat-msg-row <?= $isMe ? 'msg-me' : 'msg-other' ?>" data-msg-id="<?= (int)$m->id ?>">
+                        <?php if (!$isMe): ?>
+                        <div class="msg-avatar-col" title="Soporte Técnico">
+                            <div class="msg-avatar msg-avatar-tech">
+                                <i class="ti ti-headset"></i>
                             </div>
                         </div>
+                        <?php endif; ?>
+
+                        <div class="msg-bubble-wrap">
+                            <div class="msg-meta-line">
+                                <span class="msg-author-name">
+                                    <?= htmlspecialchars($m->remitente_nombre) ?>
+                                    <?php if ($isSoporte): ?>
+                                    <span class="badge-role-tech"><i class="ti ti-shield-check"></i> Soporte Oficial</span>
+                                    <?php else: ?>
+                                    <span class="badge-role-user"><i class="ti ti-school"></i> Tú (Pasante)</span>
+                                    <?php endif; ?>
+                                </span>
+                                <span class="msg-time"><?= date('d/m H:i', strtotime($m->created_at)) ?></span>
+                            </div>
+                            <div class="msg-bubble <?= $isMe ? 'bubble-me' : 'bubble-other' ?>">
+                                <div class="msg-text"><?= nl2br(htmlspecialchars($m->mensaje)) ?></div>
+                                <div class="msg-check-status">
+                                    <span class="msg-clock"><?= date('h:i A', strtotime($m->created_at)) ?></span>
+                                    <?php if ($isMe): ?>
+                                    <i class="ti ti-checks msg-checks" title="Enviado"></i>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+
+                        <?php if ($isMe): ?>
+                        <div class="msg-avatar-col msg-avatar-right" title="Tú">
+                            <div class="msg-avatar msg-avatar-user">
+                                <?= strtoupper(substr(Session::get('user_name') ?? 'P', 0, 1)) ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
 
+            <!-- Respuestas Rápidas estilo Steam / Facebook -->
+            <div class="chat-quick-replies">
+                <span class="cqr-label"><i class="ti ti-sparkles"></i> Respuestas Rápidas:</span>
+                <div class="cqr-chips">
+                    <button type="button" class="cqr-btn" onclick="insertarPlantillaPasante('Ya verifiqué en el sistema y me funcionó correctamente, muchas gracias.')">
+                        👍 Ya verifiqué y funciona
+                    </button>
+                    <button type="button" class="cqr-btn" onclick="insertarPlantillaPasante('Intenté realizar la acción pero aún me sigue arrojando el mismo error.')">
+                        ⚠️ Aún persiste el problema
+                    </button>
+                    <button type="button" class="cqr-btn" onclick="insertarPlantillaPasante('Muchas gracias por la atención y por solventar el caso.')">
+                        🙏 Muchas gracias
+                    </button>
+                </div>
+            </div>
+
             <!-- Input del chat para el pasante -->
-            <form class="chat-input-bar" id="formChatPasante" onsubmit="enviarMensajePasante(event, <?= (int)$selectedTicket->id ?>)">
-                <textarea id="chatInputPasanteTexto" placeholder="Escribe tu mensaje o respuesta para el equipo de soporte..." rows="2" required onkeydown="handlePasanteChatKeyDown(event, <?= (int)$selectedTicket->id ?>)"></textarea>
+            <form class="chat-input-bar messenger-input-bar" id="formChatPasante" onsubmit="enviarMensajePasante(event, <?= (int)$selectedTicket->id ?>)">
+                <div class="cib-input-wrap">
+                    <textarea id="chatInputPasanteTexto" 
+                              placeholder="Escribe tu mensaje para el equipo de soporte... (Enter para enviar, Shift+Enter para salto de línea)" 
+                              rows="1" 
+                              required 
+                              onkeydown="handlePasanteChatKeyDown(event, <?= (int)$selectedTicket->id ?>)"
+                              oninput="autoExpandChatInputPasante(this)"></textarea>
+                </div>
                 <div class="cib-actions">
-                    <button type="submit" id="btnEnviarChatPasante" class="btn-send-chat">
+                    <button type="submit" id="btnEnviarChatPasante" class="btn-send-chat" title="Enviar mensaje">
                         <i class="ti ti-send"></i>
                         <span>Enviar</span>
                     </button>
@@ -480,7 +561,7 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
 }
 .pti-bottom span { display: inline-flex; align-items: center; gap: 4px; }
 
-/* Columna derecha: Chat */
+/* Columna derecha: Chat (Estilo Steam / Facebook Messenger) */
 .ps-chat-col {
     background: #ffffff;
     border-radius: 20px;
@@ -488,8 +569,9 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
     display: flex;
     flex-direction: column;
     box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-    height: 700px;
+    height: 720px;
     overflow: hidden;
+    position: relative;
 }
 .ps-no-chat-state {
     flex: 1;
@@ -513,37 +595,466 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
     justify-content: center;
     margin-bottom: 14px;
 }
-.ps-chat-header {
-    padding: 18px 24px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+
+/* ── Messenger / Steam Header ───────────────────────────────────── */
+.messenger-header {
+    padding: 14px 20px;
+    background: #ffffff;
+    border-bottom: 1.5px solid #f1f5f9;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
 }
-.pch-tags {
+.mh-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+.btn-back-mobile {
+    display: none;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    color: #1e293b;
+    font-size: 1.1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.mh-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+.mh-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #162660 0%, #2563eb 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    box-shadow: 0 4px 10px rgba(37,99,235,0.2);
+}
+.mh-avatar-tech {
+    background: linear-gradient(135deg, #162660, #2563eb);
+    font-size: 1.3rem;
+}
+.online-status-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #10b981;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 6px rgba(16,185,129,0.8);
+    animation: statusPulse 2s infinite ease-in-out;
+}
+@keyframes statusPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.85; }
+}
+.mh-info {
+    min-width: 0;
+}
+.mh-name-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 6px;
+    flex-wrap: wrap;
 }
-.pch-code { font-weight: 800; font-size: 0.95rem; color: #162660; }
-.pch-badge { font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 8px; }
-.pch-cat { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 8px; background: #e2e8f0; color: #334155; }
-.pch-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0; }
-.pch-date { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
+.mh-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.2;
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.mh-badge-code {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #2563eb;
+    background: #eff6ff;
+    padding: 2px 7px;
+    border-radius: 6px;
+    border: 1px solid #bfdbfe;
+}
+.mh-status-pill {
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+.status-pill-abierto     { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+.status-pill-en-proceso  { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+.status-pill-resuelto    { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.status-pill-cerrado     { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
-.ps-chat-body {
+.mh-meta-line {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 0.74rem;
+    color: #64748b;
+    margin-top: 3px;
+}
+.mh-cat-pill {
+    font-weight: 700;
+    color: #334155;
+    background: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 6px;
+}
+.mh-prio-pill {
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 6px;
+}
+.prio-urgente { background: #fee2e2; color: #b91c1c; }
+.prio-alta    { background: #ffedd5; color: #c2410c; }
+.prio-media   { background: #fef3c7; color: #b45309; }
+.prio-baja    { background: #f1f5f9; color: #475569; }
+.mh-dot { color: #cbd5e1; }
+
+.badge-status-live {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.74rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2563eb;
+    animation: livePulse 1.5s infinite;
+}
+@keyframes livePulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37,99,235,0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(37,99,235,0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+}
+
+/* Chat Subject Bar */
+.chat-subject-bar {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 9px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: #475569;
+    flex-shrink: 0;
+}
+.chat-subject-bar i {
+    color: #2563eb;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.csb-content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+}
+.csb-label { font-weight: 600; color: #64748b; }
+.csb-subject { color: #0f172a; font-weight: 700; }
+.csb-time { font-size: 0.72rem; color: #94a3b8; }
+
+/* ── Stream de Mensajes (Steam / Facebook Messenger) ──────────────── */
+.chat-messages-container {
     flex: 1;
     overflow-y: auto;
-    padding: 20px 24px;
+    padding: 20px 22px;
     background: #f8fafc;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
 }
-.ps-chat-body::-webkit-scrollbar { width: 6px; }
-.ps-chat-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+.chat-messages-container::-webkit-scrollbar { width: 6px; }
+.chat-messages-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+
+.chat-date-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 4px 0 10px;
+}
+.chat-date-separator span {
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.chat-msg-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    width: 100%;
+    animation: msgFadeIn 0.25s ease-out;
+}
+@keyframes msgFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.chat-msg-row.msg-me {
+    justify-content: flex-end;
+}
+.chat-msg-row.msg-other {
+    justify-content: flex-start;
+}
+
+.msg-avatar-col {
+    flex-shrink: 0;
+    margin-bottom: 2px;
+}
+.msg-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.msg-avatar-user {
+    background: linear-gradient(135deg, #162660, #2563eb);
+    color: #ffffff;
+}
+.msg-avatar-tech {
+    background: linear-gradient(135deg, #0f172a, #334155);
+    color: #ffffff;
+    font-size: 1rem;
+}
+
+.msg-bubble-wrap {
+    display: flex;
+    flex-direction: column;
+    max-width: 72%;
+}
+.msg-me .msg-bubble-wrap {
+    align-items: flex-end;
+}
+.msg-other .msg-bubble-wrap {
+    align-items: flex-start;
+}
+
+.msg-meta-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    font-size: 0.72rem;
+}
+.msg-author-name {
+    font-weight: 800;
+    color: #1e293b;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.badge-role-tech {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+}
+.badge-role-user {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+.msg-time {
+    color: #94a3b8;
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+
+/* Bubbles */
+.msg-bubble {
+    padding: 12px 16px;
+    word-break: break-word;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    position: relative;
+}
+/* Bubble Propia (Pasante = Azul Messenger) */
+.bubble-me {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    color: #ffffff;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.22);
+}
+.bubble-me .msg-text {
+    color: #ffffff;
+}
+/* Bubble Interlocutor (Soporte = Blanco nítido con borde) */
+.bubble-other {
+    background: #ffffff;
+    color: #1e293b;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 18px 18px 18px 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.msg-check-status {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    font-size: 0.68rem;
+    margin-top: 5px;
+}
+.bubble-me .msg-check-status {
+    color: rgba(255,255,255,0.85);
+}
+.bubble-other .msg-check-status {
+    color: #94a3b8;
+}
+.msg-checks {
+    font-size: 0.85rem;
+    color: #93c5fd;
+}
+
+/* ── Canned Quick Replies (Respuestas Rápidas Steam) ───────────────── */
+.chat-quick-replies {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    flex-shrink: 0;
+}
+.chat-quick-replies::-webkit-scrollbar { height: 4px; }
+.chat-quick-replies::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.cqr-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #64748b;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.cqr-chips {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.cqr-btn {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 4px 11px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.cqr-btn:hover {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+/* ── Barra de Input estilo Messenger / Steam ──────────────────────── */
+.messenger-input-bar {
+    padding: 12px 18px;
+    background: #ffffff;
+    border-top: 1.5px solid #f1f5f9;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+}
+.cib-input-wrap {
+    flex: 1;
+}
+.messenger-input-bar textarea {
+    width: 100%;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    outline: none;
+    color: #1e293b;
+    resize: none;
+    line-height: 1.4;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #f8fafc;
+    box-sizing: border-box;
+}
+.messenger-input-bar textarea:focus {
+    border-color: #2563eb;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+.btn-send-chat {
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #162660, #2563eb);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.88rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    height: 42px;
+}
+.btn-send-chat:hover {
+    transform: translateY(-1px);
+}
 
 /* ── Overrides Responsive Globales SGP ────────────────────────────── */
 @media (max-width: 1366px) and (min-width: 1025px) {
@@ -594,13 +1105,16 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
     }
     .ps-list-col {
         height: auto !important;
-        max-height: 460px;
+        max-height: 440px;
     }
     .ps-chat-col {
-        height: 580px !important;
+        height: 620px !important;
     }
-    .mobile-back-bar {
-        display: block !important;
+    .btn-back-mobile {
+        display: inline-flex !important;
+    }
+    .msg-bubble-wrap {
+        max-width: 88% !important;
     }
     .asist-kpi-card { padding: 16px 14px !important; border-radius: 16px !important; }
     .asist-kpi-val  { font-size: 1.8rem !important; }
@@ -614,29 +1128,62 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
     .asist-kpi-card { padding: 14px 12px !important; }
     .asist-kpi-val  { font-size: 1.6rem !important; }
     .banner-title { font-size: 1.2rem !important; }
-    .ps-chat-header {
+    .messenger-header {
         flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 10px !important;
     }
 }
 </style>
 
 <script>
-function scrollChatPasanteToBottom() {
-    const el = document.getElementById('chatPasanteContainer');
-    if (el) el.scrollTop = el.scrollHeight;
+// Estado del chat en cliente (Pasante)
+const PASANTE_TICKET_ID = <?= $selectedTicket ? (int)$selectedTicket->id : 0 ?>;
+let lastPasanteMsgId = <?= !empty($mensajes) ? (int)end($mensajes)->id : 0 ?>;
+let chatPasantePollingTimer = null;
 
-    if (window.innerWidth <= 900 && new URLSearchParams(window.location.search).has('id')) {
-        const chatSection = document.getElementById('chatDetailPasanteSection');
-        if (chatSection) {
-            setTimeout(() => {
-                chatSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 150);
+// Sonido sutil de notificación estilo Messenger/Steam (Web Audio API)
+function playChatChime() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.10); // A5
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.22);
+    } catch (e) {}
+}
+
+function autoExpandChatInputPasante(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 110) + 'px';
+}
+
+function insertarPlantillaPasante(texto) {
+    const txt = document.getElementById('chatInputPasanteTexto');
+    if (!txt) return;
+    txt.value = texto;
+    autoExpandChatInputPasante(txt);
+    txt.focus();
+}
+
+function scrollChatPasanteToBottom(smooth = false) {
+    const el = document.getElementById('chatPasanteContainer');
+    if (el) {
+        if (smooth) {
+            el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+        } else {
+            el.scrollTop = el.scrollHeight;
         }
     }
 }
-document.addEventListener('DOMContentLoaded', scrollChatPasanteToBottom);
 
 function volverAListaPasante() {
     const listEl = document.querySelector('.ps-list-col');
@@ -674,20 +1221,43 @@ async function enviarMensajePasante(e, ticketId) {
         const res = await resp.json();
         if (res.success) {
             txtEl.value = '';
+            txtEl.style.height = 'auto';
+
+            const hint = document.getElementById('emptyChatHint');
+            if (hint) hint.remove();
+
             const container = document.getElementById('chatPasanteContainer');
             const row = document.createElement('div');
-            row.className = 'chat-bubble-row row-usuario';
+            row.className = 'chat-msg-row msg-me';
+            if (res.msg_id) {
+                row.setAttribute('data-msg-id', res.msg_id);
+                lastPasanteMsgId = Math.max(lastPasanteMsgId, parseInt(res.msg_id, 10));
+            }
             row.innerHTML = `
-                <div class="chat-bubble bubble-usuario">
-                    <div class="bubble-header">
-                        <span class="bubble-author"><i class="ti ti-user"></i> Tú</span>
-                        <span class="bubble-time">${res.created_at || 'Ahora'}</span>
+                <div class="msg-bubble-wrap">
+                    <div class="msg-meta-line">
+                        <span class="msg-author-name">
+                            ${escapeHtml(res.remitente_nombre || 'Tú')}
+                            <span class="badge-role-user"><i class="ti ti-school"></i> Tú (Pasante)</span>
+                        </span>
+                        <span class="msg-time">${res.created_at || 'Ahora'}</span>
                     </div>
-                    <div class="bubble-body">${msg.replace(/\n/g, '<br>')}</div>
+                    <div class="msg-bubble bubble-me">
+                        <div class="msg-text">${escapeHtml(msg).replace(/\\n/g, '<br>')}</div>
+                        <div class="msg-check-status">
+                            <span class="msg-clock">${res.hora || 'Ahora'}</span>
+                            <i class="ti ti-checks msg-checks" title="Enviado"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="msg-avatar-col msg-avatar-right" title="Tú">
+                    <div class="msg-avatar msg-avatar-user">
+                        ${(res.remitente_nombre || 'P').charAt(0).toUpperCase()}
+                    </div>
                 </div>
             `;
             container.appendChild(row);
-            scrollChatPasanteToBottom();
+            scrollChatPasanteToBottom(true);
         } else {
             Swal.fire({ icon: 'error', title: 'Error', text: res.message });
         }
@@ -695,8 +1265,141 @@ async function enviarMensajePasante(e, ticketId) {
         Swal.fire({ icon: 'error', title: 'Error de Red', text: 'No se pudo enviar el mensaje.' });
     } finally {
         btn.disabled = false;
+        txtEl.focus();
     }
 }
+
+// Polling en tiempo real para el pasante (Escucha respuestas de soporte)
+function iniciarPollingChatPasante() {
+    if (!PASANTE_TICKET_ID) return;
+
+    chatPasantePollingTimer = setInterval(async () => {
+        try {
+            const resp = await fetch(URLROOT + '/soporte/mensajesNuevos?ticket_id=' + PASANTE_TICKET_ID + '&after_id=' + lastPasanteMsgId);
+            if (!resp.ok) return;
+            const data = await resp.json();
+            if (!data.success) return;
+
+            // Actualizar estado si el soporte lo cambió
+            if (data.estado) {
+                const headerPill = document.getElementById('headerPasanteEstadoPill');
+                if (headerPill && headerPill.textContent.trim() !== data.estado) {
+                    headerPill.textContent = data.estado;
+                    headerPill.className = 'mh-status-pill status-pill-' + data.estado.toLowerCase().replace(/\\s+/g, '-');
+                }
+            }
+
+            // Si hay mensajes nuevos
+            if (data.mensajes && data.mensajes.length > 0) {
+                const container = document.getElementById('chatPasanteContainer');
+                const hint = document.getElementById('emptyChatHint');
+                if (hint) hint.remove();
+
+                data.mensajes.forEach(m => {
+                    const msgId = parseInt(m.id, 10);
+                    if (msgId <= lastPasanteMsgId) return;
+                    lastPasanteMsgId = Math.max(lastPasanteMsgId, msgId);
+
+                    const isSoporte = (m.remitente_tipo === 'soporte');
+                    const isMe = !isSoporte;
+                    const row = document.createElement('div');
+                    row.className = 'chat-msg-row ' + (isMe ? 'msg-me' : 'msg-other');
+                    row.setAttribute('data-msg-id', msgId);
+
+                    if (!isMe) {
+                        row.innerHTML = `
+                            <div class="msg-avatar-col" title="Soporte Técnico">
+                                <div class="msg-avatar msg-avatar-tech">
+                                    <i class="ti ti-headset"></i>
+                                </div>
+                            </div>
+                            <div class="msg-bubble-wrap">
+                                <div class="msg-meta-line">
+                                    <span class="msg-author-name">
+                                        ${escapeHtml(m.remitente_nombre)}
+                                        <span class="badge-role-tech"><i class="ti ti-shield-check"></i> Soporte Oficial</span>
+                                    </span>
+                                    <span class="msg-time">${formatearFechaHora(m.created_at)}</span>
+                                </div>
+                                <div class="msg-bubble bubble-other">
+                                    <div class="msg-text">${escapeHtml(m.mensaje).replace(/\\n/g, '<br>')}</div>
+                                    <div class="msg-check-status">
+                                        <span class="msg-clock">${formatearHora(m.created_at)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        row.innerHTML = `
+                            <div class="msg-bubble-wrap">
+                                <div class="msg-meta-line">
+                                    <span class="msg-author-name">
+                                        ${escapeHtml(m.remitente_nombre)}
+                                        <span class="badge-role-user"><i class="ti ti-school"></i> Tú (Pasante)</span>
+                                    </span>
+                                    <span class="msg-time">${formatearFechaHora(m.created_at)}</span>
+                                </div>
+                                <div class="msg-bubble bubble-me">
+                                    <div class="msg-text">${escapeHtml(m.mensaje).replace(/\\n/g, '<br>')}</div>
+                                    <div class="msg-check-status">
+                                        <span class="msg-clock">${formatearHora(m.created_at)}</span>
+                                        <i class="ti ti-checks msg-checks" title="Enviado"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="msg-avatar-col msg-avatar-right" title="Tú">
+                                <div class="msg-avatar msg-avatar-user">
+                                    ${(m.remitente_nombre || 'P').charAt(0).toUpperCase()}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    container.appendChild(row);
+                });
+
+                playChatChime();
+                scrollChatPasanteToBottom(true);
+            }
+        } catch (e) {
+            // Error silencioso en polling
+        }
+    }, 3500);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+function formatearFechaHora(str) {
+    try {
+        const d = new Date(str);
+        return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth()+1)).slice(-2) + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    } catch(e) { return 'Reciente'; }
+}
+function formatearHora(str) {
+    try {
+        const d = new Date(str);
+        let h = d.getHours();
+        const m = ('0' + d.getMinutes()).slice(-2);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return h + ':' + m + ' ' + ampm;
+    } catch(e) { return ''; }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    scrollChatPasanteToBottom(false);
+    iniciarPollingChatPasante();
+
+    if (window.innerWidth <= 900 && new URLSearchParams(window.location.search).has('id')) {
+        const chatSection = document.getElementById('chatDetailPasanteSection');
+        if (chatSection) {
+            setTimeout(() => {
+                chatSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 180);
+        }
+    }
+});
 
 function abrirModalReportePasante() {
     document.getElementById('modalReportePasante').style.display = 'flex';

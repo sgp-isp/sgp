@@ -250,6 +250,30 @@ class SoporteModel
     }
 
     /**
+     * Obtener mensajes nuevos posteriores a un ID (para polling en tiempo real estilo Messenger/Steam)
+     */
+    public function getMensajesNuevos(int $ticketId, int $afterId): array
+    {
+        try {
+            $this->db->query("
+                SELECT 
+                    m.*,
+                    u.rol_id AS remitente_rol_id
+                FROM soporte_ticket_mensajes m
+                LEFT JOIN usuarios u ON u.id = m.usuario_id
+                WHERE m.ticket_id = :tid AND m.id > :after_id
+                ORDER BY m.created_at ASC, m.id ASC
+            ");
+            $this->db->bind(':tid', $ticketId);
+            $this->db->bind(':after_id', $afterId);
+            return $this->db->resultSet() ?: [];
+        } catch (\Throwable $e) {
+            error_log('[SGP-SOPORTE] getMensajesNuevos error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
      * Crear un nuevo ticket de soporte y registrar el primer mensaje
      */
     public function crearTicket(array $data): array

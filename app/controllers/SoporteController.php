@@ -312,10 +312,13 @@ class SoporteController extends Controller
         }
 
         echo json_encode([
-            'success'   => true,
-            'message'   => 'Mensaje enviado correctamente.',
-            'msg_id'    => $msgId,
-            'created_at'=> date('d/m/Y H:i')
+            'success'          => true,
+            'message'          => 'Mensaje enviado correctamente.',
+            'msg_id'           => $msgId,
+            'remitente_tipo'   => $remitenteTipo,
+            'remitente_nombre' => $nombre,
+            'created_at'       => date('d/m H:i'),
+            'hora'             => date('H:i')
         ]);
         exit;
     }
@@ -434,6 +437,48 @@ class SoporteController extends Controller
             'success'  => true,
             'ticket'   => $ticket,
             'mensajes' => $mensajes
+        ]);
+        exit;
+    }
+
+    /**
+     * Endpoint JSON para polling de mensajes en vivo estilo Steam / Messenger
+     */
+    public function mensajesNuevos(): void
+    {
+        Session::start();
+        AuthMiddleware::require();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $ticketId = (int)($_GET['ticket_id'] ?? 0);
+        $afterId  = (int)($_GET['after_id'] ?? 0);
+
+        if ($ticketId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Ticket inválido.']);
+            exit;
+        }
+
+        $ticket = $this->soporteModel->getTicketPorId($ticketId);
+        if (!$ticket) {
+            echo json_encode(['success' => false, 'message' => 'Ticket no encontrado.']);
+            exit;
+        }
+
+        $rolId     = (int)(Session::get('role_id') ?? 99);
+        $usuarioId = (int)(Session::get('user_id') ?? 0);
+
+        if ($rolId === 3 && (int)$ticket->usuario_id !== $usuarioId) {
+            echo json_encode(['success' => false, 'message' => 'Acceso no autorizado.']);
+            exit;
+        }
+
+        $nuevos = $this->soporteModel->getMensajesNuevos($ticketId, $afterId);
+
+        echo json_encode([
+            'success'   => true,
+            'estado'    => $ticket->estado,
+            'prioridad' => $ticket->prioridad,
+            'mensajes'  => $nuevos
         ]);
         exit;
     }
