@@ -41,7 +41,7 @@ if (typeof window.NotificationService === 'undefined') {
             }
         }
 
-        show(type, title, message, duration = 2800) {
+        show(type, title, message, duration = 3500, onClick = null) {
             this._ensureContainer();
             this._enforceStackLimit();
 
@@ -56,6 +56,9 @@ if (typeof window.NotificationService === 'undefined') {
 
             const toast = document.createElement('div');
             toast.className = `sgp-toast toast-${type}`;
+            if (typeof onClick === 'function') {
+                toast.style.cursor = 'pointer';
+            }
             // [UX-4] Cada toast es un elemento de alerta individual
             toast.setAttribute('role', 'alert');
 
@@ -94,6 +97,14 @@ if (typeof window.NotificationService === 'undefined') {
                 toast.classList.add('toast-hide');
                 setTimeout(() => toast.remove(), 400);
             };
+
+            if (typeof onClick === 'function') {
+                toast.addEventListener('click', (e) => {
+                    if (e.target.closest('.toast-close')) return;
+                    onClick();
+                    removeToast();
+                });
+            }
 
             const startTimer = (delay = duration) => {
                 clearTimeout(timeoutId);

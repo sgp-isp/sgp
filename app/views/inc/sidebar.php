@@ -492,6 +492,10 @@ if (!function_exists('isActive')) {
     <nav class="dock-sheet-nav" aria-label="Navegación adicional">
 
         <?php if ($role == 'SuperAdministrador'): ?>
+        <a href="<?= URLROOT ?>/soporte" class="dock-sheet-item" data-href="/soporte">
+            <span class="dock-sheet-icon" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;"><i class="ti ti-headset"></i></span>
+            <span class="dock-sheet-label">Mesa de Ayuda</span>
+        </a>
         <a href="<?= URLROOT ?>/pasantes" class="dock-sheet-item" data-href="/pasantes">
             <span class="dock-sheet-icon"><i class="ti ti-users-group"></i></span>
             <span class="dock-sheet-label">Pasantes</span>
@@ -509,6 +513,10 @@ if (!function_exists('isActive')) {
         <a href="<?= URLROOT ?>/evaluaciones" class="dock-sheet-item" data-href="/evaluaciones">
             <span class="dock-sheet-icon"><i class="ti ti-star"></i></span>
             <span class="dock-sheet-label">Evaluaciones</span>
+        </a>
+        <a href="<?= URLROOT ?>/evaluaciones/plantillas" class="dock-sheet-item" data-href="/evaluaciones/plantillas">
+            <span class="dock-sheet-icon"><i class="ti ti-template"></i></span>
+            <span class="dock-sheet-label">Plantillas PDF</span>
         </a>
         <a href="<?= URLROOT ?>/reportes" class="dock-sheet-item" data-href="/reportes">
             <span class="dock-sheet-icon"><i class="ti ti-file-analytics"></i></span>
@@ -529,6 +537,14 @@ if (!function_exists('isActive')) {
         <a href="<?= URLROOT ?>/configuracion" class="dock-sheet-item" data-href="/configuracion">
             <span class="dock-sheet-icon"><i class="ti ti-settings"></i></span>
             <span class="dock-sheet-label">Configuración</span>
+        </a>
+        <a href="<?= URLROOT ?>/configuracion/cartelQr" target="_blank" class="dock-sheet-item" data-href="/configuracion/cartelQr">
+            <span class="dock-sheet-icon"><i class="ti ti-qrcode"></i></span>
+            <span class="dock-sheet-label">Cartel QR</span>
+        </a>
+        <a href="<?= URLROOT ?>/notificaciones/correos" class="dock-sheet-item" data-href="/notificaciones/correos">
+            <span class="dock-sheet-icon"><i class="ti ti-mail-cog"></i></span>
+            <span class="dock-sheet-label">Alertas Correo</span>
         </a>
         <?php if (RoleMiddleware::hasAnyRole([0, 1])): ?>
         <a href="<?= URLROOT ?>/periodos" class="dock-sheet-item" data-href="/periodos">
@@ -559,6 +575,10 @@ if (!function_exists('isActive')) {
         <?php endif; ?>
 
         <?php if ($role == 'Administrador'): ?>
+        <a href="<?= URLROOT ?>/soporte" class="dock-sheet-item" data-href="/soporte">
+            <span class="dock-sheet-icon" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;"><i class="ti ti-headset"></i></span>
+            <span class="dock-sheet-label">Mesa de Ayuda</span>
+        </a>
         <a href="<?= URLROOT ?>/asignaciones" class="dock-sheet-item" data-href="/asignaciones">
             <span class="dock-sheet-icon"><i class="ti ti-user-cog"></i></span>
             <span class="dock-sheet-label">Asignaciones</span>
@@ -566,6 +586,10 @@ if (!function_exists('isActive')) {
         <a href="<?= URLROOT ?>/evaluaciones" class="dock-sheet-item" data-href="/evaluaciones">
             <span class="dock-sheet-icon"><i class="ti ti-star"></i></span>
             <span class="dock-sheet-label">Evaluaciones</span>
+        </a>
+        <a href="<?= URLROOT ?>/evaluaciones/plantillas" class="dock-sheet-item" data-href="/evaluaciones/plantillas">
+            <span class="dock-sheet-icon"><i class="ti ti-template"></i></span>
+            <span class="dock-sheet-label">Plantillas PDF</span>
         </a>
         <a href="<?= URLROOT ?>/reportes" class="dock-sheet-item" data-href="/reportes">
             <span class="dock-sheet-icon"><i class="ti ti-file-analytics"></i></span>
@@ -587,6 +611,14 @@ if (!function_exists('isActive')) {
             <span class="dock-sheet-icon"><i class="ti ti-settings"></i></span>
             <span class="dock-sheet-label">Configuración</span>
         </a>
+        <a href="<?= URLROOT ?>/configuracion/cartelQr" target="_blank" class="dock-sheet-item" data-href="/configuracion/cartelQr">
+            <span class="dock-sheet-icon"><i class="ti ti-qrcode"></i></span>
+            <span class="dock-sheet-label">Cartel QR</span>
+        </a>
+        <a href="<?= URLROOT ?>/notificaciones/correos" class="dock-sheet-item" data-href="/notificaciones/correos">
+            <span class="dock-sheet-icon"><i class="ti ti-mail-cog"></i></span>
+            <span class="dock-sheet-label">Alertas Correo</span>
+        </a>
         <?php if (RoleMiddleware::hasAnyRole([0, 1])): ?>
         <a href="<?= URLROOT ?>/periodos" class="dock-sheet-item" data-href="/periodos">
             <span class="dock-sheet-icon"><i class="ti ti-calendar-month"></i></span>
@@ -604,9 +636,17 @@ if (!function_exists('isActive')) {
         <?php endif; ?>
 
         <?php if ($role == 'Tutor'): ?>
+        <a href="<?= URLROOT ?>/soporte" class="dock-sheet-item" data-href="/soporte">
+            <span class="dock-sheet-icon" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;"><i class="ti ti-headset"></i></span>
+            <span class="dock-sheet-label">Mesa de Ayuda</span>
+        </a>
         <a href="<?= URLROOT ?>/tutor/puntualidad" class="dock-sheet-item" data-href="/tutor/puntualidad">
             <span class="dock-sheet-icon"><i class="ti ti-clock-exclamation"></i></span>
             <span class="dock-sheet-label">Puntualidad</span>
+        </a>
+        <a href="<?= URLROOT ?>/evaluaciones/plantillas" class="dock-sheet-item" data-href="/evaluaciones/plantillas">
+            <span class="dock-sheet-icon"><i class="ti ti-template"></i></span>
+            <span class="dock-sheet-label">Plantillas PDF</span>
         </a>
         <a href="<?= URLROOT ?>/reportes" class="dock-sheet-item" data-href="/reportes">
             <span class="dock-sheet-icon"><i class="ti ti-file-analytics"></i></span>
@@ -619,6 +659,10 @@ if (!function_exists('isActive')) {
         <?php endif; ?>
 
         <?php if ($role == 'Pasante'): ?>
+        <a href="<?= URLROOT ?>/soporte" class="dock-sheet-item" data-href="/soporte">
+            <span class="dock-sheet-icon" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;"><i class="ti ti-headset"></i></span>
+            <span class="dock-sheet-label">Mesa de Ayuda</span>
+        </a>
         <a href="<?= URLROOT ?>/pasante/analiticas" class="dock-sheet-item" data-href="/pasante/analiticas">
             <span class="dock-sheet-icon"><i class="ti ti-chart-dots"></i></span>
             <span class="dock-sheet-label">Mis Analíticas</span>

@@ -95,7 +95,7 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
     </div>
 
     <!-- ══ WORKSPACE: MIS TICKETS + CHAT DEL CASO ══ -->
-    <div class="ps-workspace">
+    <div class="ps-workspace <?= $selectedTicket ? 'has-selected-ticket' : 'no-selected-ticket' ?>" id="pasanteWorkspace">
         <!-- ── COLUMNA IZQUIERDA: LISTADO DE REPORTES ── -->
         <div class="ps-list-col">
             <div class="ps-list-header">
@@ -1062,13 +1062,33 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
         grid-template-columns: repeat(2, 1fr) !important;
     }
 }
-@media (max-width: 1024px) {
+@media (min-width: 769px) and (max-width: 1024px) {
+    /* TABLET: Mantener siempre dos columnas lado a lado sin colapsar */
     .soporte-kpis {
         grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+    .ps-workspace {
+        grid-template-columns: 310px 1fr !important;
         gap: 14px !important;
+    }
+    .ps-list-col {
+        height: 680px !important;
+        padding: 14px !important;
+    }
+    .ps-chat-col {
+        height: 680px !important;
+    }
+    .banner-title {
+        font-size: 1.4rem !important;
     }
 }
 @media (max-width: 768px) {
+    .pasante-soporte-wrap {
+        padding: 0 10px 24px !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
     .soporte-banner {
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -1089,7 +1109,7 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
         border-radius: 12px !important;
     }
     .banner-title {
-        font-size: 1.35rem !important;
+        font-size: 1.3rem !important;
         line-height: 1.25 !important;
     }
     .banner-subtitle {
@@ -1103,34 +1123,78 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
         width: 100% !important;
         justify-content: center !important;
     }
-    .ps-list-col {
+
+    /* MÓVIL: Modo WhatsApp / Steam Chat — Transición fluida lista vs chat */
+    .ps-workspace {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 0 !important;
+    }
+    .ps-workspace.no-selected-ticket .ps-list-col {
+        display: flex !important;
+        width: 100% !important;
+        max-height: none !important;
         height: auto !important;
-        max-height: 440px;
+        min-height: 480px;
+        padding: 14px 12px !important;
+        box-sizing: border-box !important;
     }
-    .ps-chat-col {
-        height: 620px !important;
+    .ps-workspace.no-selected-ticket .ps-chat-col {
+        display: none !important;
     }
+
+    .ps-workspace.has-selected-ticket .ps-list-col {
+        display: none !important;
+    }
+    .ps-workspace.has-selected-ticket .ps-chat-col {
+        display: flex !important;
+        width: 100% !important;
+        height: calc(100vh - 180px) !important;
+        min-height: 520px !important;
+    }
+
+    .ps-ticket-item {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin: 0 0 10px 0 !important;
+    }
+
     .btn-back-mobile {
         display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
     }
     .msg-bubble-wrap {
         max-width: 88% !important;
     }
-    .asist-kpi-card { padding: 16px 14px !important; border-radius: 16px !important; }
-    .asist-kpi-val  { font-size: 1.8rem !important; }
+    .soporte-kpis {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    .asist-kpi-card {
+        padding: 14px 12px !important;
+        border-radius: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .asist-kpi-val  { font-size: 1.7rem !important; }
     .asist-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
 }
 @media (max-width: 480px) {
     .soporte-kpis {
-        grid-template-columns: 1fr !important;
-        gap: 10px !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
     }
-    .asist-kpi-card { padding: 14px 12px !important; }
-    .asist-kpi-val  { font-size: 1.6rem !important; }
-    .banner-title { font-size: 1.2rem !important; }
+    .asist-kpi-card { padding: 12px 10px !important; }
+    .asist-kpi-val  { font-size: 1.5rem !important; }
+    .asist-kpi-label { font-size: 0.68rem !important; }
+    .asist-kpi-sub { display: none; }
+    .banner-title { font-size: 1.18rem !important; }
     .messenger-header {
         flex-direction: column !important;
         align-items: flex-start !important;
+        gap: 10px !important;
     }
 }
 </style>
@@ -1186,10 +1250,7 @@ function scrollChatPasanteToBottom(smooth = false) {
 }
 
 function volverAListaPasante() {
-    const listEl = document.querySelector('.ps-list-col');
-    if (listEl) {
-        listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    window.location.href = URLROOT + '/soporte';
 }
 
 function seleccionarTicketPasante(id) {

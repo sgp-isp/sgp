@@ -95,7 +95,7 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     </div>
 
     <!-- ══ MAIN WORKSPACE: LISTA DE TICKETS + PANEL DE CHAT ══ -->
-    <div class="soporte-workspace">
+    <div class="soporte-workspace <?= $selectedTicket ? 'has-selected-ticket' : 'no-selected-ticket' ?>" id="soporteWorkspace">
         <!-- ── COLUMNA IZQUIERDA: LISTADO Y FILTROS ── -->
         <div class="soporte-sidebar-list">
             <div class="list-search-box">
@@ -1243,16 +1243,33 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
         grid-template-columns: repeat(2, 1fr) !important;
     }
 }
-@media (max-width: 1024px) {
+@media (min-width: 769px) and (max-width: 1024px) {
+    /* TABLET: Mantener siempre dos columnas lado a lado sin colapsar */
     .soporte-kpis {
         grid-template-columns: repeat(2, 1fr) !important;
-        gap: 14px !important;
+        gap: 12px !important;
     }
     .soporte-workspace {
-        grid-template-columns: 1fr;
+        grid-template-columns: 310px 1fr !important;
+        gap: 14px !important;
+    }
+    .soporte-sidebar-list {
+        height: 680px !important;
+        padding: 14px !important;
+    }
+    .soporte-detail-chat {
+        height: 680px !important;
+    }
+    .banner-title {
+        font-size: 1.4rem !important;
     }
 }
 @media (max-width: 768px) {
+    .soporte-container {
+        padding: 0 10px 24px !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
     .soporte-banner {
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -1273,7 +1290,7 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
         border-radius: 12px !important;
     }
     .banner-title {
-        font-size: 1.35rem !important;
+        font-size: 1.3rem !important;
         line-height: 1.25 !important;
     }
     .banner-subtitle {
@@ -1287,15 +1304,47 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
         width: 100% !important;
         justify-content: center !important;
     }
-    .soporte-sidebar-list {
+
+    /* MÓVIL: Modo WhatsApp / Steam Chat — Transición fluida lista vs chat */
+    .soporte-workspace {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 0 !important;
+    }
+    .soporte-workspace.no-selected-ticket .soporte-sidebar-list {
+        display: flex !important;
+        width: 100% !important;
+        max-height: none !important;
         height: auto !important;
-        max-height: 440px;
+        min-height: 480px;
+        padding: 14px 12px !important;
+        box-sizing: border-box !important;
     }
-    .soporte-detail-chat {
-        height: 620px !important;
+    .soporte-workspace.no-selected-ticket .soporte-detail-chat {
+        display: none !important;
     }
+
+    .soporte-workspace.has-selected-ticket .soporte-sidebar-list {
+        display: none !important;
+    }
+    .soporte-workspace.has-selected-ticket .soporte-detail-chat {
+        display: flex !important;
+        width: 100% !important;
+        height: calc(100vh - 180px) !important;
+        min-height: 520px !important;
+    }
+
+    .ticket-item-card {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin: 0 0 10px 0 !important;
+    }
+
     .btn-back-mobile {
         display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
     }
     .msg-bubble-wrap {
         max-width: 88% !important;
@@ -1309,21 +1358,33 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     .sqs-btn {
         padding: 6px 8px;
     }
-    .asist-kpi-card { padding: 16px 14px !important; border-radius: 16px !important; }
-    .asist-kpi-val  { font-size: 1.8rem !important; }
+    .soporte-kpis {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    .asist-kpi-card {
+        padding: 14px 12px !important;
+        border-radius: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .asist-kpi-val  { font-size: 1.7rem !important; }
     .asist-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
 }
 @media (max-width: 480px) {
     .soporte-kpis {
-        grid-template-columns: 1fr !important;
-        gap: 10px !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
     }
-    .asist-kpi-card { padding: 14px 12px !important; }
-    .asist-kpi-val  { font-size: 1.6rem !important; }
-    .banner-title { font-size: 1.2rem !important; }
+    .asist-kpi-card { padding: 12px 10px !important; }
+    .asist-kpi-val  { font-size: 1.5rem !important; }
+    .asist-kpi-label { font-size: 0.68rem !important; }
+    .asist-kpi-sub { display: none; }
+    .banner-title { font-size: 1.18rem !important; }
     .messenger-header {
         flex-direction: column !important;
         align-items: flex-start !important;
+        gap: 10px !important;
     }
     .mh-right {
         width: 100% !important;
@@ -1394,10 +1455,10 @@ function scrollChatToBottom(smooth = false) {
 
 // Volver al listado en móvil
 function volverAListaAdmin() {
-    const listEl = document.querySelector('.soporte-sidebar-list');
-    if (listEl) {
-        listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    const params = new URLSearchParams(window.location.search);
+    params.delete('id');
+    const qs = params.toString();
+    window.location.href = URLROOT + '/soporte' + (qs ? '?' + qs : '');
 }
 
 // Seleccionar ticket en la lista

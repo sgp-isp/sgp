@@ -17,7 +17,7 @@
 
     // ==================== CONFIGURACIÓN ====================
     const CONFIG = {
-        REFRESH_INTERVAL: 20000, // 20 segundos — near real-time para exámenes
+        REFRESH_INTERVAL: 10000, // 10 segundos — tiempo real optimizado
         ENDPOINTS: {
             GET_UNREAD: URLROOT + '/notifications/getUnread',
             MARK_AS_READ: URLROOT + '/notifications/markAsRead/',
@@ -36,6 +36,8 @@
 
     // ==================== ICONOS POR TIPO ====================
     const NOTIFICATION_ICONS = {
+        'soporte': 'ti-headset',
+        'ticket': 'ti-headset',
         'usuario_creado': 'ti-user-plus',
         'perfil_actualizado': 'ti-user-check',
         'password_reset': 'ti-key',
@@ -195,7 +197,7 @@
                 }
 
                 if (data.success) {
-                    updateBadge(data.count);
+                    updateBadge(data.count, data.notifications);
                     renderNotifications(data.notifications);
                 } else {
                     showEmptyState();
@@ -229,7 +231,7 @@
     }
 
     // ==================== ACTUALIZAR BADGE ====================
-    function updateBadge(count) {
+    function updateBadge(count, notifications = null) {
         if (!elements.badge) return;
 
         // Detectar si llegó una notificación nueva
@@ -246,15 +248,44 @@
                 audio.play().catch(() => {});
             } catch(e) {}
 
+            const newest = (Array.isArray(notifications) && notifications.length > 0) ? notifications[0] : null;
+
+            // Toast interactivo directo en pantalla
+            if (newest && typeof window.NotificationService !== 'undefined') {
+                const isTicket = (newest.url && newest.url.indexOf('/soporte') !== -1) ||
+                                 (newest.tipo === 'soporte') ||
+                                 (newest.titulo && /ticket|caso|soporte/i.test(newest.titulo));
+                const toastType = isTicket ? 'info' : (newest.tipo || 'info');
+                const toastTitle = isTicket ? ('💬 ' + (newest.titulo || 'Mesa de Ayuda')) : (newest.titulo || 'Nueva Notificación');
+                const toastMsg = (newest.mensaje || '') + (newest.url ? ' — Toca para responder' : '');
+
+                window.NotificationService.show(
+                    toastType,
+                    toastTitle,
+                    toastMsg,
+                    7000,
+                    () => {
+                        if (newest.url && newest.url !== '#') {
+                            markNotificationAsRead(newest.id, newest.url);
+                        }
+                    }
+                );
+            }
+
             // Alerta nativa de escritorio en Windows si el permiso está concedido
             if ('Notification' in window && Notification.permission === 'granted') {
                 try {
-                    const n = new Notification('SGP — Nueva Notificación', {
-                        body: 'Tienes ' + count + ' notificación(es) nueva(s) en el sistema.',
+                    const notifTitle = newest ? (newest.titulo || 'SGP — Nueva Notificación') : 'SGP — Nueva Notificación';
+                    const notifBody = newest ? (newest.mensaje || '') : ('Tienes ' + count + ' notificación(es) nueva(s) en el sistema.');
+                    const n = new Notification(notifTitle, {
+                        body: notifBody,
                         icon: URLROOT + '/img/notif-icon.png'
                     });
                     n.onclick = function() {
                         window.focus();
+                        if (newest && newest.url && newest.url !== '#') {
+                            markNotificationAsRead(newest.id, newest.url);
+                        }
                         n.close();
                     };
                     setTimeout(() => n.close(), 7000);
