@@ -782,7 +782,17 @@ class ConfiguracionController extends Controller {
             $this->db->query("SELECT valor FROM configuracion WHERE clave = 'url_publica' LIMIT 1");
             $uRow = $this->db->single();
             if ($uRow && !empty($uRow->valor)) {
-                $urlPublica = $uRow->valor;
+                $savedUrl = trim($uRow->valor);
+                $isLocalIp = preg_match('#^https?://(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|localhost)#i', $savedUrl);
+                $isCurrentPublic = !preg_match('#^https?://(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|localhost)#i', URLROOT);
+                if ($isLocalIp && $isCurrentPublic) {
+                    $urlPublica = '';
+                } else {
+                    $urlPublica = $savedUrl;
+                }
+                if (strpos(URLROOT, '/SGP') === false && strpos(URLROOT, '/sgp') === false) {
+                    $urlPublica = preg_replace('#/sgp$#i', '', $urlPublica);
+                }
             }
         } catch (\Throwable $e) {}
 
@@ -1100,8 +1110,12 @@ class ConfiguracionController extends Controller {
         if (!empty($url)) {
             $url = rtrim($url, '/');
             if (!filter_var($url, FILTER_VALIDATE_URL)) {
-                echo json_encode(['success' => false, 'message' => 'Ingresa una URL válida (ejemplo: https://mi-tunel.trycloudflare.com/SGP).']);
+                echo json_encode(['success' => false, 'message' => 'Ingresa una URL válida (ejemplo: https://sgp-aqgw.onrender.com).']);
                 exit;
+            }
+            // Si el servidor corre en la raíz (URLROOT no tiene /SGP), limpiar /SGP si el usuario lo incluyó
+            if (strpos(URLROOT, '/SGP') === false && strpos(URLROOT, '/sgp') === false) {
+                $url = preg_replace('#/sgp$#i', '', $url);
             }
         }
 
@@ -1151,19 +1165,33 @@ class ConfiguracionController extends Controller {
             }
         } catch (\Throwable $e) {}
 
-        // Determinar URL base (priorizar url_publica configurada si existe)
+        // Determinar URL base (priorizar url_publica configurada si existe y es compatible)
         $urlBase = rtrim(URLROOT, '/');
         try {
             $this->db->query("SELECT valor FROM configuracion WHERE clave = 'url_publica' LIMIT 1");
             $cfgUrl = $this->db->single();
             if ($cfgUrl && !empty(trim($cfgUrl->valor))) {
-                $urlBase = rtrim(trim($cfgUrl->valor), '/');
+                $savedUrl = rtrim(trim($cfgUrl->valor), '/');
+                $isLocalIp = preg_match('#^https?://(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|localhost)#i', $savedUrl);
+                $isCurrentPublic = !preg_match('#^https?://(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|localhost)#i', URLROOT);
+
+                // Si la URL guardada era una IP local de intranet y ahora el sistema corre en la nube (Render), usar URLROOT
+                if ($isLocalIp && $isCurrentPublic) {
+                    $urlBase = rtrim(URLROOT, '/');
+                } else {
+                    $urlBase = $savedUrl;
+                }
             }
         } catch (\Throwable $e) {}
 
-        // Asegurar que urlBase contenga el subdirectorio /SGP si el proyecto corre bajo /SGP
-        if (!preg_match('#/SGP$#i', $urlBase) && strpos(URLROOT, '/SGP') !== false) {
-            $urlBase .= '/SGP';
+        // Si el servidor corre en la raíz (URLROOT no contiene /SGP), NUNCA añadir /SGP y limpiar si lo traía por error
+        if (strpos(URLROOT, '/SGP') === false && strpos(URLROOT, '/sgp') === false) {
+            $urlBase = preg_replace('#/sgp$#i', '', $urlBase);
+        } else {
+            // Servidor local con subcarpeta /SGP (ej. XAMPP)
+            if (!preg_match('#/SGP$#i', $urlBase)) {
+                $urlBase .= '/SGP';
+            }
         }
 
         $ispFile = APPROOT . '/config/isp_info.json';
