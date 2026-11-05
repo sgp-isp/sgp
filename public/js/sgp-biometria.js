@@ -70,19 +70,11 @@
         return bytes.buffer;
     }
 
-    // ── Verificación de compatibilidad con Hardware Móvil ────────────
+    // ── Verificación de compatibilidad con Hardware / Passkeys / Llaves Google ──
     async function isBiometricsAvailable() {
         if (!window.isSecureContext) return false;
         if (!window.PublicKeyCredential) return false;
-        if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return false;
-
-        try {
-            const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-            return !!available;
-        } catch (e) {
-            console.warn('[SGP-BIOMETRIA] Error comprobando soporte de hardware:', e);
-            return false;
-        }
+        return true;
     }
 
     // ── Verificar si este dispositivo ya fue registrado y vinculado por el usuario ──
@@ -159,7 +151,7 @@
         return { vinculado: false };
     }
 
-    // ── Renderizar Botón Biométrico en Login (Exclusivo Huella Dactilar) ──────
+    // ── Renderizar Botón Biométrico en Login (Huella Dactilar / Llave de Acceso Google / PIN) ──
     function renderBotonBiometrico(metodo, cedula, supported) {
         const container = document.getElementById('biometria-login-container');
         const btn = document.getElementById('btnBiometriaLogin');
@@ -169,7 +161,7 @@
         // Ocultar siempre enlace alternativo de patrón en login
         if (linkPatron) linkPatron.style.display = 'none';
 
-        // Solo mostrar botón si el dispositivo soporta sensor biométrico (Huella/FaceID)
+        // Mostrar botón si el navegador soporta el estándar WebAuthn (Passkeys / Google / Biometría)
         if (supported) {
             container.style.display = 'block';
             btn.style.display = 'inline-flex';
@@ -178,7 +170,7 @@
             btn.style.borderColor = '#cbd5e1';
             btn.style.color = '#0f172a';
             btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.03)';
-            btn.innerHTML = '<i class="ti ti-fingerprint"></i><span>Ingresar con Huella Dactilar</span>';
+            btn.innerHTML = '<i class="ti ti-fingerprint" style="font-size:1.25rem;color:#2563eb;"></i><i class="ti ti-key" style="font-size:1.15rem;color:#059669;margin-left:-2px;"></i><span>Ingresar con Huella o Llave de Acceso</span>';
             btn.onclick = onBiometricLoginClick;
         } else {
             container.style.display = 'none';
@@ -195,11 +187,10 @@
 
         const supported = await isBiometricsAvailable();
 
-        // 1. Comprobar si el dispositivo ya está vinculado
-        const estado = await checkDeviceVinculadoStatus();
-        if (estado && estado.vinculado) {
-            const metodo = estado.metodo || localStorage.getItem('sgp_auth_method') || 'huella';
-            renderBotonBiometrico(metodo, estado.cedula, supported);
+        // 1. Mostrar el botón en todos los navegadores/dispositivos compatibles
+        if (supported) {
+            const estado = await checkDeviceVinculadoStatus();
+            renderBotonBiometrico('huella', (estado && estado.cedula) || '', true);
         } else {
             if (container) container.style.display = 'none';
             if (btn) btn.style.display = 'none';
@@ -223,7 +214,6 @@
                             localStorage.setItem('sgp_biometria_enrolled', 'true');
                             localStorage.setItem('sgp_device_trusted', 'true');
                             localStorage.setItem('sgp_user_cedula', val);
-                            renderBotonBiometrico('huella', val, supported);
                         }
                     } catch (e) { /* silencioso */ }
                 }
@@ -342,12 +332,36 @@
         } catch (err) {
             console.warn('[SGP-BIOMETRIA] Error en login:', err);
             // Si el dispositivo no tiene llaves registradas aún o el usuario canceló
-            if (err.name === 'NotAllowedError') {
-                if (window.Swal && localStorage.getItem('sgp_biometria_enrolled') !== 'true') {
+            if (err.name === 'NotAllowedError' || err.name === 'NotSupportedError' || err.name === 'InvalidStateError') {
+                if (window.Swal) {
                     Swal.fire({
                         icon: 'info',
-                        title: 'Acceso Biométrico / PIN de Teléfono',
-                        html: '<p style="font-size:14px;color:#64748b;margin-bottom:12px;">Para ingresar con <strong>huella dactilar, Face ID o el PIN/patrón de tu teléfono</strong>, primero debes iniciar sesión una vez con tu correo y contraseña.</p><div style="background:#eff6ff;border-radius:10px;padding:12px;font-size:13px;color:#1e3a8a;text-align:left;"><i class="ti ti-shield-check me-2 text-primary"></i>Al iniciar sesión, podrás activar este dispositivo en un solo toque para acceder sin escribir contraseñas.</div>',
+                        title: 'Llave de Acceso y Biometría',
+                        html: `
+                            <div style="text-align: left; font-size: 0.88rem; color: #334155; line-height: 1.55;">
+                                <p style="margin-bottom: 12px;">
+                                    Para acceder con <strong>Huella, Face ID, PIN de pantalla o Llave de Google</strong>:
+                                </p>
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+                                    <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+                                        <span style="background: #2563eb; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;">1</span>
+                                        <span>Tu dispositivo debe tener configurado un <strong>bloqueo de pantalla (PIN, patrón o huella)</strong> o tu <strong>cuenta Google</strong> activa.</span>
+                                    </div>
+                                    <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+                                        <span style="background: #2563eb; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;">2</span>
+                                        <span>Si es tu <strong>primera vez en este equipo</strong>, inicia sesión con tu correo y contraseña habitual.</span>
+                                    </div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <span style="background: #2563eb; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;">3</span>
+                                        <span>En tu perfil pulsa <strong>"Vincular Huella o Llave de Acceso"</strong> para autorizar este navegador.</span>
+                                    </div>
+                                </div>
+                                <div style="background: #ecfdf5; border-radius: 10px; padding: 10px 12px; font-size: 0.80rem; color: #065f46; display: flex; align-items: center; gap: 8px;">
+                                    <i class="ti ti-shield-check" style="font-size: 1.3rem; color: #10b981; flex-shrink: 0;"></i>
+                                    <span>Tus credenciales están protegidas por el estándar oficial WebAuthn / Passkeys de Google y W3C.</span>
+                                </div>
+                            </div>
+                        `,
                         confirmButtonText: 'Entendido',
                         confirmButtonColor: '#2563eb'
                     });
@@ -379,7 +393,7 @@
                 Swal.fire({
                     icon: 'warning',
                     title: 'Dominio o Túnel requerido',
-                    html: '<p style="font-size:14px;color:#475569;">Los navegadores (Chrome y Safari) <b>prohíben por estándar W3C</b> el registro de huellas dactilares (Passkeys / WebAuthn) en direcciones IP numéricas directas (como <code>' + window.location.hostname + '</code>).</p><p style="font-size:13px;color:#1e3a8a;background:#eff6ff;padding:10px;border-radius:10px;margin-top:10px;">Para usar la huella dactilar, accede a través del <b>Túnel de Cloudflare</b> o un nombre de dominio oficial.</p>',
+                    html: '<p style="font-size:14px;color:#475569;">Los navegadores (Chrome y Safari) <b>prohíben por estándar W3C</b> el registro de llaves de acceso en direcciones IP numéricas directas (como <code>' + window.location.hostname + '</code>).</p><p style="font-size:13px;color:#1e3a8a;background:#eff6ff;padding:10px;border-radius:10px;margin-top:10px;">Para usar la huella o llave de Google, accede a través del <b>Túnel de Cloudflare</b> o tu dominio oficial.</p>',
                     confirmButtonColor: '#2563eb'
                 });
             }
@@ -391,8 +405,8 @@
             if (window.Swal) {
                 Swal.fire({
                     icon: 'info',
-                    title: 'Seguridad de pantalla requerida',
-                    text: 'Este navegador o dispositivo no detecta un método de desbloqueo configurado (Huella dactilar, Face ID, Patrón o PIN de pantalla). Configura un bloqueo de pantalla en los Ajustes de tu teléfono para continuar.',
+                    title: 'Seguridad del navegador requerida',
+                    text: 'Este navegador o dispositivo no tiene soporte para llaves de seguridad WebAuthn o no cuenta con bloqueo de pantalla activo.',
                     confirmButtonColor: '#2563eb'
                 });
             }
@@ -425,15 +439,15 @@
                 attestation: 'none'
             };
 
-            // 3. Solicitar registro de huella en el móvil
+            // 3. Solicitar registro de huella / Llave Google / PIN en el dispositivo
             const cred = await navigator.credentials.create({ publicKey: createOptions });
             if (!cred) throw new Error('No se generó la credencial en el dispositivo');
 
-            // Feedback visual instantáneo: Notificar al usuario que la huella fue leída exitosamente
+            // Feedback visual instantáneo
             if (window.Swal) {
                 Swal.fire({
-                    title: '¡Huella Detectada!',
-                    html: '<div style="margin:14px 0;"><i class="ti ti-fingerprint" style="font-size:48px;color:#2563eb;"></i></div><p style="font-size:14px;color:#64748b;margin:0;">Guardando credencial segura en el servidor...</p>',
+                    title: '¡Llave de Acceso Verificada!',
+                    html: '<div style="margin:14px 0;"><i class="ti ti-shield-check" style="font-size:48px;color:#2563eb;"></i></div><p style="font-size:14px;color:#64748b;margin:0;">Guardando credencial segura en el servidor...</p>',
                     allowOutsideClick: false,
                     showConfirmButton: false,
                     didOpen: () => { Swal.showLoading(); }
@@ -472,8 +486,8 @@
                 if (window.Swal) {
                     await Swal.fire({
                         icon: 'success',
-                        title: '¡Huella Dactilar Activada!',
-                        html: `<p style="font-size:14px;color:#1e3a8a;margin-bottom:8px;">${dataReg.message || 'Tu dispositivo ha sido registrado para acceso biométrico instantáneo.'}</p><div style="font-size:13px;color:#15803d;background:#dcfce7;border-radius:10px;padding:10px;"><i class="ti ti-mail me-2"></i>Se ha enviado un correo institucional confirmando la activación.</div>`,
+                        title: '¡Llave de Acceso Activada!',
+                        html: `<p style="font-size:14px;color:#1e3a8a;margin-bottom:8px;">${dataReg.message || 'Tu dispositivo o Llave de Google ha sido registrado para acceso seguro e instantáneo.'}</p><div style="font-size:13px;color:#15803d;background:#dcfce7;border-radius:10px;padding:10px;"><i class="ti ti-mail me-2"></i>Se ha enviado un correo institucional confirmando la activación.</div>`,
                         confirmButtonColor: '#16a34a',
                         confirmButtonText: 'Continuar'
                     });
@@ -488,12 +502,22 @@
 
         } catch (err) {
             console.warn('[SGP-BIOMETRIA] Error en enrolamiento:', err);
-            if (err.name !== 'NotAllowedError' && err.name !== 'AbortError') {
+            if (err.name === 'NotAllowedError') {
+                if (window.Swal) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Bloqueo o Llave de Seguridad Requerida',
+                        html: '<p style="font-size:14px;color:#475569;">Para registrar una Llave de Acceso, tu dispositivo o navegador necesita un <strong>bloqueo de pantalla (PIN, huella, patrón)</strong> o una <strong>cuenta de Google con Llaves de Acceso (Passkeys)</strong> configurada.<br><br>Ve a los Ajustes de seguridad de tu teléfono o PC y activa un bloqueo de pantalla o sincroniza tu cuenta Google para continuar.</p>',
+                        confirmButtonColor: '#2563eb',
+                        confirmButtonText: 'Entendido'
+                    });
+                }
+            } else if (err.name !== 'AbortError') {
                 if (window.Swal) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error de Registro',
-                        text: err.message || 'No se pudo registrar la huella en este dispositivo.',
+                        text: err.message || 'No se pudo registrar la llave en este dispositivo.',
                         confirmButtonColor: '#dc2626'
                     });
                 }

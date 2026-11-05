@@ -74,14 +74,10 @@
         return `${os} (${browser})`;
     }
 
-    // ── Verificar si el Navegador Soporta Biometría de Hardware ───────
+    // ── Verificar si el Navegador Soporta Biometría o Llaves de Acceso (WebAuthn / Passkeys) ──
     async function hasBiometricsHardware() {
         if (!window.PublicKeyCredential) return false;
-        try {
-            return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-        } catch (_) {
-            return false;
-        }
+        return true;
     }
 
     // ── Modal de Vinculación Bancaria (Paso 1: Patrón / Huella + Paso 2: OTP) ──
@@ -104,7 +100,7 @@
                     </p>
                     <div style="display:flex;gap:12px;justify-content:center;">
                         <button id="btnEligeHuella" class="swal2-confirm swal2-styled" style="background:#16a34a;padding:12px 18px;display:flex;align-items:center;gap:8px;">
-                            <i class="ti ti-fingerprint" style="font-size:20px;"></i> Huella Dactilar
+                            <i class="ti ti-fingerprint" style="font-size:20px;"></i> Huella o Llave Google
                         </button>
                         <button id="btnEligePatron" class="swal2-confirm swal2-styled" style="background:#2563eb;padding:12px 18px;display:flex;align-items:center;gap:8px;">
                             <i class="ti ti-grid-dots" style="font-size:20px;"></i> Patrón Gestual

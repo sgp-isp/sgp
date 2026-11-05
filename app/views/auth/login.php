@@ -277,24 +277,6 @@
             <span id="authErrorBannerText"></span>
         </div>
 
-        <?php if (!empty($_GET['token'])): ?>
-        <!-- Banner destacado cuando el usuario escanea el Cartel QR -->
-        <div style="background:linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);border:1.5px solid #10b981;border-radius:14px;padding:14px 16px;margin-bottom:20px;text-align:center;box-shadow:0 4px 14px rgba(16,185,129,0.18);">
-            <div style="font-weight:800;font-size:0.95rem;color:#065f46;display:flex;align-items:center;justify-content:center;gap:8px;">
-                <i class="ti ti-qrcode" style="font-size:1.35rem;color:#059669;"></i>
-                Cartel Oficial QR Escaneado
-            </div>
-            <p style="font-size:0.80rem;color:#047857;margin:5px 0 12px 0;line-height:1.4;">
-                Has escaneado el punto de control de asistencia de la sede. Pulsa el botón para registrar tu entrada o salida en el Kiosco:
-            </p>
-            <a href="<?= URLROOT ?>/kiosco?token=<?= urlencode(trim($_GET['token'])) ?>" 
-               style="display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px 18px;background:linear-gradient(135deg, #10b981, #059669);color:#ffffff;font-weight:800;font-size:0.92rem;border-radius:10px;text-decoration:none;box-shadow:0 4px 14px rgba(16,185,129,0.35);transition:all 0.2s;">
-                <i class="ti ti-clock-check" style="font-size:1.25rem;"></i>
-                Marcar Asistencia en el Kiosco
-            </a>
-        </div>
-        <?php endif; ?>
-
         <form action="<?= URLROOT ?>/auth/login" method="POST">
             <!-- Email con Floating Label e Icono -->
             <div class="form-group">

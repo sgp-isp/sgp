@@ -9,10 +9,16 @@ class App
     {
         $url = $this->parseUrl();
 
-        // Normalización de prefijo para despliegues en la raíz de dominio (Render, Docker, Producción)
-        // Si la URL contiene el prefijo heredado 'sgp' (ej. /SGP/auth/login o /SGP), descartarlo suavemente
-        if (!empty($url) && strtolower(trim($url[0])) === 'sgp') {
-            array_shift($url);
+        // Normalización y limpieza de prefijo para despliegues en la raíz de dominio (Render, Docker, Producción)
+        // Descarta suavemente 'sgp', 'public', 'index.php' o caracteres sobrantes como ':'
+        while (!empty($url)) {
+            $first = trim($url[0], " \t\n\r\0\x0B/:");
+            if ($first === '' || in_array(strtolower($first), ['sgp', 'public', 'index.php'], true)) {
+                array_shift($url);
+            } else {
+                $url[0] = $first;
+                break;
+            }
         }
 
         // Check controller first

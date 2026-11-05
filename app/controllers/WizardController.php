@@ -398,18 +398,23 @@ class WizardController extends Controller
                     throw new Exception('Error al actualizar registro del pasante.');
                 }
 
-                // B. datos_personales: biografía (UPSERT)
+                // B. datos_personales: biografía (UPSERT seguro para TiDB / MySQL strict mode)
+                $nomVal = !empty($dpRow->nombres) ? $dpRow->nombres : (!empty($user['nombre']) ? $user['nombre'] : 'Pasante');
+                $apeVal = !empty($dpRow->apellidos) ? $dpRow->apellidos : (!empty($user['apellido']) ? $user['apellido'] : 'ISPEB');
+
                 $this->db->query("
                     INSERT INTO datos_personales
-                        (usuario_id, telefono, fecha_nacimiento, genero)
+                        (usuario_id, nombres, apellidos, telefono, fecha_nacimiento, genero)
                     VALUES
-                        (:uid, :telefono, :fnac, :genero)
+                        (:uid, :nombres, :apellidos, :telefono, :fnac, :genero)
                     ON DUPLICATE KEY UPDATE
-                        telefono        = VALUES(telefono),
+                        telefono         = VALUES(telefono),
                         fecha_nacimiento = VALUES(fecha_nacimiento),
-                        genero          = VALUES(genero)
+                        genero           = VALUES(genero)
                 ");
                 $this->db->bind(':uid',       $userId);
+                $this->db->bind(':nombres',   $nomVal);
+                $this->db->bind(':apellidos', $apeVal);
                 $this->db->bind(':telefono',  $telefono);
                 $this->db->bind(':fnac',      $fechaNacimiento);
                 $this->db->bind(':genero',    $genero);
@@ -485,28 +490,36 @@ class WizardController extends Controller
 
             } else {
                 // ── ADMIN / TUTOR ─────────────────────────────────────────
-                // A. usuarios: credenciales + departamento
-                $this->db->query("
-                    UPDATE usuarios
-                    SET password              = :password,
-                        departamento_id       = :dept_id,
-                        requiere_cambio_clave = 0
-                    WHERE id = :user_id
-                ");
-                $this->db->bind(':password', $hashedPassword);
-                $this->db->bind(':dept_id',  $departamentoId);
-                $this->db->bind(':user_id',  $userId);
-
-                if (!$this->db->execute()) {
-                    throw new Exception('Error al actualizar credenciales.');
+                // A. usuarios: actualizar departamento y flag de cambio de clave
+                if ($departamentoId > 0) {
+                    $this->db->query("
+                        UPDATE usuarios
+                        SET departamento_id       = :dept_id,
+                            requiere_cambio_clave = 0
+                        WHERE id = :user_id
+                    ");
+                    $this->db->bind(':dept_id',  $departamentoId);
+                    $this->db->bind(':user_id',  $userId);
+                    $this->db->execute();
+                } else {
+                    $this->db->query("
+                        UPDATE usuarios
+                        SET requiere_cambio_clave = 0
+                        WHERE id = :user_id
+                    ");
+                    $this->db->bind(':user_id',  $userId);
+                    $this->db->execute();
                 }
 
-                // B. datos_personales: cargo, etc. (UPSERT)
+                // B. datos_personales: cargo, etc. (UPSERT seguro para TiDB / MySQL strict mode)
+                $nomVal = !empty($dpRow->nombres) ? $dpRow->nombres : (!empty($user['nombre']) ? $user['nombre'] : 'Tutor');
+                $apeVal = !empty($dpRow->apellidos) ? $dpRow->apellidos : (!empty($user['apellido']) ? $user['apellido'] : 'ISPEB');
+
                 $this->db->query("
                     INSERT INTO datos_personales
-                        (usuario_id, telefono, fecha_nacimiento, genero, cargo)
+                        (usuario_id, nombres, apellidos, telefono, fecha_nacimiento, genero, cargo)
                     VALUES
-                        (:uid, :telefono, :fnac, :genero, :cargo)
+                        (:uid, :nombres, :apellidos, :telefono, :fnac, :genero, :cargo)
                     ON DUPLICATE KEY UPDATE
                         telefono         = VALUES(telefono),
                         fecha_nacimiento = VALUES(fecha_nacimiento),
@@ -514,6 +527,8 @@ class WizardController extends Controller
                         cargo            = VALUES(cargo)
                 ");
                 $this->db->bind(':uid',       $userId);
+                $this->db->bind(':nombres',   $nomVal);
+                $this->db->bind(':apellidos', $apeVal);
                 $this->db->bind(':telefono',  $telefono);
                 $this->db->bind(':fnac',      $fechaNacimiento);
                 $this->db->bind(':genero',    $genero);
@@ -521,28 +536,6 @@ class WizardController extends Controller
 
                 if (!$this->db->execute()) {
                     throw new Exception('Error al guardar datos personales.');
-                }
-            }
-
-            // ── Preguntas de seguridad ────────────────────────────────
-            $this->db->query("DELETE FROM usuarios_respuestas WHERE usuario_id = :user_id");
-            $this->db->bind(':user_id', $userId);
-            $this->db->execute();
-
-            foreach ($securityQuestions as $sq) {
-                $normalizedAnswer = strtolower(trim($sq['answer']));
-                $hashedAnswer     = password_hash($normalizedAnswer, PASSWORD_BCRYPT);
-
-                $this->db->query("
-                    INSERT INTO usuarios_respuestas (usuario_id, pregunta_id, respuesta_hash)
-                    VALUES (:user_id, :question_id, :answer_hash)
-                ");
-                $this->db->bind(':user_id',     $userId);
-                $this->db->bind(':question_id', $sq['question_id']);
-                $this->db->bind(':answer_hash', $hashedAnswer);
-
-                if (!$this->db->execute()) {
-                    throw new Exception('Error al guardar las preguntas de seguridad.');
                 }
             }
 
@@ -564,9 +557,8 @@ class WizardController extends Controller
 
         } catch (Exception $e) {
             $this->db->rollback();
-            error_log('[SGP-WIZARD] [ERROR] ' . $e->getMessage());
-            // [FIX-C2] Mensaje genérico en flash — detalle solo en log
-            Session::setFlash('error', 'Error al procesar la configuración. Intente de nuevo.');
+            error_log('[SGP-WIZARD] [ERROR] ' . $e->getMessage() . ' en ' . $e->getFile() . ':' . $e->getLine());
+            Session::setFlash('error', 'Error al procesar la configuración: ' . $e->getMessage());
             $this->redirect('/wizard/index');
         }
     }

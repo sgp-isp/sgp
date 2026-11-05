@@ -75,7 +75,6 @@ class BiometriaController extends Controller
                     ['type' => 'public-key', 'alg' => -257]  // RS256
                 ],
                 'authenticatorSelection' => [
-                    'authenticatorAttachment' => 'platform',
                     'userVerification'        => 'preferred',
                     'residentKey'             => 'preferred'
                 ],
