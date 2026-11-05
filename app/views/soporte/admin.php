@@ -10,18 +10,24 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
 ?>
 
 <div class="soporte-container">
-    <!-- ══ HEADER BANNER (Bento Style) ══ -->
-    <div class="soporte-banner">
-        <div class="sb-info">
-            <div class="sb-icon">
+    <!-- ══ HEADER BANNER (Estandarizado SGP) ══ -->
+    <div class="admin-banner soporte-banner" style="position:relative;overflow:hidden;background:linear-gradient(135deg, #162660 0%, #1e3a8a 50%, #2563eb 100%);border-radius:20px;padding:26px 32px;color:#ffffff;box-shadow:0 10px 30px rgba(22, 38, 96, 0.2);margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;">
+        <div style="position:absolute;top:-30px;right:-30px;width:180px;height:180px;background:rgba(255,255,255,0.05);border-radius:50%;pointer-events:none;"></div>
+        <div class="banner-main-group" style="display:flex;align-items:center;gap:18px;z-index:1;min-width:0;">
+            <div class="banner-icon-badge" style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,0.16);display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#ffffff;flex-shrink:0;">
                 <i class="ti ti-headset"></i>
             </div>
-            <div>
-                <h1 class="sb-title">Mesa de Ayuda &bull; Soporte Técnico</h1>
-                <p class="sb-subtitle">Centro integral de atención de incidencias, solicitudes y requerimientos de usuarios del ISPEB</p>
+            <div class="banner-text-block" style="min-width:0;">
+                <h1 class="banner-title" style="font-size:1.6rem;font-weight:800;margin:0;letter-spacing:-0.3px;color:#ffffff;line-height:1.2;">Mesa de Ayuda &bull; Soporte Técnico</h1>
+                <p class="banner-subtitle" style="font-size:0.86rem;color:rgba(255,255,255,0.85);margin:5px 0 0;display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
+                    <span>Centro integral de incidencias, solicitudes y requerimientos del ISPEB</span>
+                    <span class="banner-chip-badge" style="display:inline-block;background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.25);border-radius:50px;padding:2px 12px;color:white;font-weight:700;font-size:0.78rem;white-space:nowrap;">
+                        <?= (int)$kpis->total_tickets ?> <?= (int)$kpis->total_tickets === 1 ? 'caso' : 'casos' ?>
+                    </span>
+                </p>
             </div>
         </div>
-        <div class="sb-actions">
+        <div class="admin-banner-actions" style="z-index:1;flex-shrink:0;">
             <button type="button" class="btn-nuevo-ticket" onclick="abrirModalCrearTicketAdmin()">
                 <i class="ti ti-plus"></i>
                 <span>Nuevo Caso</span>
@@ -29,45 +35,61 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
         </div>
     </div>
 
-    <!-- ══ KPI CARDS ══ -->
-    <div class="sgp-kpi-grid soporte-kpis">
-        <div class="kpi-card-bento <?= $filtros['estado'] === 'Todos' ? 'active-kpi' : '' ?>" onclick="filtrarPorEstado('Todos')">
-            <div class="kpi-icon-wrap" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">
-                <i class="ti ti-ticket"></i>
-            </div>
-            <div class="kpi-content">
-                <span class="kpi-num"><?= (int)$kpis->total_tickets ?></span>
-                <span class="kpi-lbl">Total Casos</span>
-            </div>
-        </div>
-
-        <div class="kpi-card-bento <?= $filtros['estado'] === 'Abierto' ? 'active-kpi' : '' ?>" onclick="filtrarPorEstado('Abierto')">
-            <div class="kpi-icon-wrap" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
-                <i class="ti ti-alert-circle"></i>
-            </div>
-            <div class="kpi-content">
-                <span class="kpi-num" style="color: #ef4444;"><?= (int)$kpis->abiertos ?></span>
-                <span class="kpi-lbl">Abiertos (Sin Atender)</span>
+    <!-- ══ KPI CARDS ESTANDARIZADAS (Estilo Asistencias/Inicio SGP) ══ -->
+    <div class="sgp-kpi-grid soporte-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px;">
+        <!-- Total Casos (Azul) -->
+        <div class="asist-kpi-card c-blue <?= $filtros['estado'] === 'Todos' ? 'active-kpi' : '' ?>" onclick="filtrarPorEstado('Todos')" style="cursor:pointer;" title="Ver todos los casos">
+            <div class="asist-kpi-top">
+                <div>
+                    <div class="asist-kpi-label">Total Casos</div>
+                    <div class="asist-kpi-val" style="color:#2563eb;"><?= (int)$kpis->total_tickets ?></div>
+                    <div class="asist-kpi-sub">registrados en la plataforma</div>
+                </div>
+                <div class="asist-kpi-icon" style="background:#eff6ff;">
+                    <i class="ti ti-ticket" style="color:#2563eb;"></i>
+                </div>
             </div>
         </div>
 
-        <div class="kpi-card-bento <?= $filtros['estado'] === 'En Proceso' ? 'active-kpi' : '' ?>" onclick="filtrarPorEstado('En Proceso')">
-            <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
-                <i class="ti ti-loader"></i>
-            </div>
-            <div class="kpi-content">
-                <span class="kpi-num" style="color: #f59e0b;"><?= (int)$kpis->en_proceso ?></span>
-                <span class="kpi-lbl">En Proceso</span>
+        <!-- Abiertos (Rojo) -->
+        <div class="asist-kpi-card c-red <?= $filtros['estado'] === 'Abierto' ? 'active-kpi' : '' ?>" onclick="filtrarPorEstado('Abierto')" style="cursor:pointer;" title="Casos pendientes por atender">
+            <div class="asist-kpi-top">
+                <div>
+                    <div class="asist-kpi-label">Abiertos (Sin Atender)</div>
+                    <div class="asist-kpi-val" style="color:#dc2626;"><?= (int)$kpis->abiertos ?></div>
+                    <div class="asist-kpi-sub">requieren atención técnica</div>
+                </div>
+                <div class="asist-kpi-icon" style="background:#fef2f2;">
+                    <i class="ti ti-alert-circle" style="color:#dc2626;"></i>
+                </div>
             </div>
         </div>
 
-        <div class="kpi-card-bento <?= $filtros['estado'] === 'Resuelto' ? 'active-kpi' : '' ?>" onclick="filtrarPorEstado('Resuelto')">
-            <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
-                <i class="ti ti-circle-check"></i>
+        <!-- En Proceso (Ámbar) -->
+        <div class="asist-kpi-card c-amber <?= $filtros['estado'] === 'En Proceso' ? 'active-kpi' : '' ?>" onclick="filtrarPorEstado('En Proceso')" style="cursor:pointer;" title="Casos en seguimiento">
+            <div class="asist-kpi-top">
+                <div>
+                    <div class="asist-kpi-label">En Proceso</div>
+                    <div class="asist-kpi-val" style="color:#d97706;"><?= (int)$kpis->en_proceso ?></div>
+                    <div class="asist-kpi-sub">en diálogo o evaluación</div>
+                </div>
+                <div class="asist-kpi-icon" style="background:#fffbeb;">
+                    <i class="ti ti-loader" style="color:#d97706;"></i>
+                </div>
             </div>
-            <div class="kpi-content">
-                <span class="kpi-num" style="color: #10b981;"><?= (int)$kpis->resueltos ?></span>
-                <span class="kpi-lbl">Resueltos</span>
+        </div>
+
+        <!-- Resueltos (Verde) -->
+        <div class="asist-kpi-card c-green <?= $filtros['estado'] === 'Resuelto' ? 'active-kpi' : '' ?>" onclick="filtrarPorEstado('Resuelto')" style="cursor:pointer;" title="Casos resueltos">
+            <div class="asist-kpi-top">
+                <div>
+                    <div class="asist-kpi-label">Resueltos</div>
+                    <div class="asist-kpi-val" style="color:#059669;"><?= (int)$kpis->resueltos ?></div>
+                    <div class="asist-kpi-sub">atención completada</div>
+                </div>
+                <div class="asist-kpi-icon" style="background:#ecfdf5;">
+                    <i class="ti ti-circle-check" style="color:#059669;"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -145,7 +167,7 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
         </div>
 
         <!-- ── COLUMNA DERECHA: DETALLE DEL TICKET & CHAT INTERACTIVO ── -->
-        <div class="soporte-detail-chat">
+        <div class="soporte-detail-chat" id="chatDetailSection">
             <?php if (!$selectedTicket): ?>
             <div class="no-selection-placeholder">
                 <div class="nsp-icon">
@@ -163,6 +185,13 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
                     default      => '#2563eb'
                 };
             ?>
+            <!-- Botón Volver en móvil -->
+            <div class="mobile-back-bar" style="display:none;padding:10px 16px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;">
+                <button type="button" onclick="volverAListaAdmin()" style="background:#ffffff;border:1.5px solid #cbd5e1;padding:7px 12px;border-radius:10px;font-size:0.8rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                    <i class="ti ti-arrow-left"></i> <span>Volver al listado de casos</span>
+                </button>
+            </div>
+
             <!-- Encabezado del caso seleccionado -->
             <div class="detail-header">
                 <div class="dh-main">
@@ -332,45 +361,16 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     justify-content: space-between;
     background: linear-gradient(135deg, #162660 0%, #1e3a8a 50%, #2563eb 100%);
     border-radius: 20px;
-    padding: 24px 30px;
+    padding: 26px 32px;
     color: #ffffff;
     box-shadow: 0 10px 30px rgba(22, 38, 96, 0.2);
     margin-bottom: 22px;
-}
-.sb-info {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-}
-.sb-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.16);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    color: #ffffff;
-    flex-shrink: 0;
-}
-.sb-title {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin: 0;
-    letter-spacing: -0.3px;
-    color: #ffffff;
-}
-.sb-subtitle {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.85);
-    margin: 4px 0 0;
 }
 .btn-nuevo-ticket {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 11px 20px;
+    padding: 11px 22px;
     border-radius: 12px;
     border: none;
     background: #ffffff;
@@ -386,56 +386,52 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     box-shadow: 0 6px 18px rgba(0,0,0,0.2);
 }
 
-/* ── KPIs Bento ─────────────────────────────────────────────────── */
+/* ── KPIs Estandarizadas (Estilo Asistencias/Inicio SGP) ─────────────── */
 .soporte-kpis {
     margin-bottom: 22px;
 }
-.kpi-card-bento {
+.asist-kpi-card {
     background: #ffffff;
-    border-radius: 16px;
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    border: 1.5px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 20px 22px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, .04);
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    transition: all .25s ease;
     cursor: pointer;
-    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
-.kpi-card-bento:hover {
+.asist-kpi-card::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    opacity: .07;
+    pointer-events: none;
+}
+.asist-kpi-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.asist-kpi-label { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; }
+.asist-kpi-val { font-size: 2.2rem; font-weight: 900; line-height: 1.1; margin-top: 4px; }
+.asist-kpi-sub { font-size: .74rem; color: #94a3b8; font-weight: 500; margin-top: 3px; }
+.asist-kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+
+.asist-kpi-card.c-blue   { border-top: 3.5px solid #2563eb; } .asist-kpi-card.c-blue::after   { background: #2563eb; }
+.asist-kpi-card.c-green  { border-top: 3.5px solid #059669; } .asist-kpi-card.c-green::after  { background: #059669; }
+.asist-kpi-card.c-amber  { border-top: 3.5px solid #d97706; } .asist-kpi-card.c-amber::after  { background: #d97706; }
+.asist-kpi-card.c-red    { border-top: 3.5px solid #dc2626; } .asist-kpi-card.c-red::after    { background: #dc2626; }
+
+.asist-kpi-card:hover {
     transform: translateY(-2px);
-    border-color: #cbd5e1;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .08);
 }
-.kpi-card-bento.active-kpi {
-    border-color: #2563eb;
-    background: #eff6ff;
-    box-shadow: 0 6px 18px rgba(37,99,235,0.12);
-}
-.kpi-icon-wrap {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.4rem;
-    flex-shrink: 0;
-}
-.kpi-content {
-    display: flex;
-    flex-direction: column;
-}
-.kpi-num {
-    font-size: 1.5rem;
-    font-weight: 800;
-    line-height: 1.1;
-    color: #1e293b;
-}
-.kpi-lbl {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #64748b;
-    margin-top: 2px;
+.asist-kpi-card.active-kpi {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(37,99,235,0.18) !important;
+    outline: 2px solid #2563eb;
+    background: #f8faff;
 }
 
 /* ── Workspace Split Screen ──────────────────────────────────────── */
@@ -921,15 +917,114 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
 .btn-send-chat:hover {
     transform: translateY(-1px);
 }
+
+/* ── Overrides Responsive Globales SGP ────────────────────────────── */
+@media (max-width: 1366px) and (min-width: 1025px) {
+    .soporte-kpis {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+@media (max-width: 1024px) {
+    .soporte-kpis {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 14px !important;
+    }
+    .soporte-workspace {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 768px) {
+    .soporte-banner {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 20px 18px !important;
+        gap: 16px !important;
+        border-radius: 16px !important;
+    }
+    .banner-main-group {
+        width: 100% !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 14px !important;
+    }
+    .banner-icon-badge {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 1.4rem !important;
+        border-radius: 12px !important;
+    }
+    .banner-title {
+        font-size: 1.35rem !important;
+        line-height: 1.25 !important;
+    }
+    .banner-subtitle {
+        font-size: 0.8rem !important;
+        line-height: 1.4 !important;
+    }
+    .admin-banner-actions {
+        width: 100% !important;
+    }
+    .admin-banner-actions button {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    .soporte-sidebar-list {
+        height: auto !important;
+        max-height: 460px;
+    }
+    .soporte-detail-chat {
+        height: 580px !important;
+    }
+    .mobile-back-bar {
+        display: block !important;
+    }
+    .asist-kpi-card { padding: 16px 14px !important; border-radius: 16px !important; }
+    .asist-kpi-val  { font-size: 1.8rem !important; }
+    .asist-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
+}
+@media (max-width: 480px) {
+    .soporte-kpis {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    .asist-kpi-card { padding: 14px 12px !important; }
+    .asist-kpi-val  { font-size: 1.6rem !important; }
+    .banner-title { font-size: 1.2rem !important; }
+    .detail-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+    .estado-selector-group {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+}
 </style>
 
 <script>
-// Scroll automático al fondo del chat
+// Scroll automático al fondo del chat y enfoque en móvil
 function scrollChatToBottom() {
     const el = document.getElementById('chatMessagesContainer');
     if (el) el.scrollTop = el.scrollHeight;
+
+    if (window.innerWidth <= 900 && new URLSearchParams(window.location.search).has('id')) {
+        const chatSection = document.getElementById('chatDetailSection');
+        if (chatSection) {
+            setTimeout(() => {
+                chatSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 150);
+        }
+    }
 }
 document.addEventListener('DOMContentLoaded', scrollChatToBottom);
+
+function volverAListaAdmin() {
+    const listEl = document.querySelector('.soporte-sidebar-list');
+    if (listEl) {
+        listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
 
 // Seleccionar ticket en la lista
 function seleccionarTicket(id) {

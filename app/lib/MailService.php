@@ -1973,6 +1973,11 @@ class MailService
     public static function notifyNewSupportTicket(int $ticketId): bool
     {
         try {
+            $cfg = self::getConfig();
+            if (empty($cfg['activo']) && empty($cfg['brevo_api_key']) && empty($cfg['resend_api_key'])) {
+                return false; // Salir inmediatamente si no hay servidor de correo activo
+            }
+
             $db = Database::getInstance();
             $db->query("
                 SELECT t.*, u.cedula, d.nombre AS departamento
@@ -2031,6 +2036,11 @@ class MailService
     public static function notifySupportReply(int $ticketId, string $mensaje, string $remitenteNombre): bool
     {
         try {
+            $cfg = self::getConfig();
+            if (empty($cfg['activo']) && empty($cfg['brevo_api_key']) && empty($cfg['resend_api_key'])) {
+                return false; // Salir inmediatamente si no hay servidor de correo activo
+            }
+
             $db = Database::getInstance();
             $db->query("SELECT * FROM soporte_tickets WHERE id = :id");
             $db->bind(':id', $ticketId);

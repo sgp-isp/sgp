@@ -5,25 +5,92 @@
 $tickets        = $data['tickets'] ?? [];
 $selectedTicket = $data['selectedTicket'] ?? null;
 $mensajes       = $data['mensajes'] ?? [];
+
+// KPIs del pasante
+$pasTotal     = count($tickets);
+$pasAbiertos  = count(array_filter($tickets, fn($t) => $t->estado === 'Abierto'));
+$pasEnProceso = count(array_filter($tickets, fn($t) => $t->estado === 'En Proceso'));
+$pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Resuelto', 'Cerrado'])));
 ?>
 
 <div class="pasante-soporte-wrap">
-    <!-- ══ HEADER BANNER (Bento Style) ══ -->
-    <div class="ps-banner">
-        <div class="ps-banner-info">
-            <div class="ps-icon">
+    <!-- ══ HEADER BANNER (Estandarizado SGP) ══ -->
+    <div class="pasantes-banner soporte-banner" style="position:relative;overflow:hidden;background:linear-gradient(135deg, #162660 0%, #1e3a8a 50%, #2563eb 100%);border-radius:20px;padding:26px 32px;color:#ffffff;box-shadow:0 10px 30px rgba(22, 38, 96, 0.2);margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;">
+        <div style="position:absolute;top:-30px;right:-30px;width:180px;height:180px;background:rgba(255,255,255,0.05);border-radius:50%;pointer-events:none;"></div>
+        <div class="banner-main-group" style="display:flex;align-items:center;gap:18px;z-index:1;min-width:0;">
+            <div class="banner-icon-badge" style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,0.16);display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#ffffff;flex-shrink:0;">
                 <i class="ti ti-headset"></i>
             </div>
-            <div>
-                <h1 class="ps-title">Mesa de Ayuda &bull; Mis Casos</h1>
-                <p class="ps-subtitle">Comunícate con la División de Soporte Técnico y Telemática del ISPEB para resolver incidencias o dudas</p>
+            <div class="banner-text-block" style="min-width:0;">
+                <h1 class="banner-title" style="font-size:1.6rem;font-weight:800;margin:0;letter-spacing:-0.3px;color:#ffffff;line-height:1.2;">Mesa de Ayuda &bull; Mis Casos</h1>
+                <p class="banner-subtitle" style="font-size:0.86rem;color:rgba(255,255,255,0.85);margin:5px 0 0;display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
+                    <span>Atención técnica y soporte directo con la Dirección de Telemática</span>
+                    <span class="banner-chip-badge" style="display:inline-block;background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.25);border-radius:50px;padding:2px 12px;color:white;font-weight:700;font-size:0.78rem;white-space:nowrap;">
+                        <?= $pasTotal ?> <?= $pasTotal === 1 ? 'reporte' : 'reportes' ?>
+                    </span>
+                </p>
             </div>
         </div>
-        <div class="ps-banner-actions">
+        <div class="pasantes-banner-actions" style="z-index:1;flex-shrink:0;">
             <button type="button" class="btn-nuevo-reporte" onclick="abrirModalReportePasante()">
                 <i class="ti ti-plus"></i>
                 <span>Crear Reporte</span>
             </button>
+        </div>
+    </div>
+
+    <!-- ══ KPI CARDS ESTANDARIZADAS ══ -->
+    <div class="sgp-kpi-grid soporte-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px;">
+        <div class="asist-kpi-card c-blue">
+            <div class="asist-kpi-top">
+                <div>
+                    <div class="asist-kpi-label">Mis Reportes</div>
+                    <div class="asist-kpi-val" style="color:#2563eb;"><?= $pasTotal ?></div>
+                    <div class="asist-kpi-sub">total de solicitudes enviadas</div>
+                </div>
+                <div class="asist-kpi-icon" style="background:#eff6ff;">
+                    <i class="ti ti-ticket" style="color:#2563eb;"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="asist-kpi-card c-red">
+            <div class="asist-kpi-top">
+                <div>
+                    <div class="asist-kpi-label">Abiertos</div>
+                    <div class="asist-kpi-val" style="color:#dc2626;"><?= $pasAbiertos ?></div>
+                    <div class="asist-kpi-sub">esperando atención técnica</div>
+                </div>
+                <div class="asist-kpi-icon" style="background:#fef2f2;">
+                    <i class="ti ti-clock" style="color:#dc2626;"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="asist-kpi-card c-amber">
+            <div class="asist-kpi-top">
+                <div>
+                    <div class="asist-kpi-label">En Atención</div>
+                    <div class="asist-kpi-val" style="color:#d97706;"><?= $pasEnProceso ?></div>
+                    <div class="asist-kpi-sub">en proceso de diagnóstico</div>
+                </div>
+                <div class="asist-kpi-icon" style="background:#fffbeb;">
+                    <i class="ti ti-loader" style="color:#d97706;"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="asist-kpi-card c-green">
+            <div class="asist-kpi-top">
+                <div>
+                    <div class="asist-kpi-label">Resueltos</div>
+                    <div class="asist-kpi-val" style="color:#059669;"><?= $pasResueltos ?></div>
+                    <div class="asist-kpi-sub">atendidos satisfactoriamente</div>
+                </div>
+                <div class="asist-kpi-icon" style="background:#ecfdf5;">
+                    <i class="ti ti-circle-check" style="color:#059669;"></i>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -76,7 +143,7 @@ $mensajes       = $data['mensajes'] ?? [];
         </div>
 
         <!-- ── COLUMNA DERECHA: CHAT CON SOPORTE ── -->
-        <div class="ps-chat-col">
+        <div class="ps-chat-col" id="chatDetailPasanteSection">
             <?php if (!$selectedTicket): ?>
             <div class="ps-no-chat-state">
                 <div class="pncs-icon"><i class="ti ti-messages"></i></div>
@@ -92,6 +159,13 @@ $mensajes       = $data['mensajes'] ?? [];
                     default      => '#2563eb'
                 };
             ?>
+            <!-- Botón Volver en móvil -->
+            <div class="mobile-back-bar" style="display:none;padding:10px 16px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;">
+                <button type="button" onclick="volverAListaPasante()" style="background:#ffffff;border:1.5px solid #cbd5e1;padding:7px 12px;border-radius:10px;font-size:0.8rem;font-weight:700;color:#1e293b;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                    <i class="ti ti-arrow-left"></i> <span>Volver a mis reportes</span>
+                </button>
+            </div>
+
             <!-- Encabezado del caso -->
             <div class="ps-chat-header">
                 <div>
@@ -216,51 +290,22 @@ $mensajes       = $data['mensajes'] ?? [];
     margin: 0 auto;
     padding: 0 4px 30px;
 }
-.ps-banner {
+.soporte-banner {
     display: flex;
     align-items: center;
     justify-content: space-between;
     background: linear-gradient(135deg, #162660 0%, #1e3a8a 50%, #2563eb 100%);
     border-radius: 20px;
-    padding: 24px 30px;
+    padding: 26px 32px;
     color: #ffffff;
     box-shadow: 0 10px 30px rgba(22, 38, 96, 0.2);
     margin-bottom: 22px;
-}
-.ps-banner-info {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-}
-.ps-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.16);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    color: #ffffff;
-    flex-shrink: 0;
-}
-.ps-title {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin: 0;
-    letter-spacing: -0.3px;
-    color: #ffffff;
-}
-.ps-subtitle {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.85);
-    margin: 4px 0 0;
 }
 .btn-nuevo-reporte {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 11px 20px;
+    padding: 11px 22px;
     border-radius: 12px;
     border: none;
     background: #ffffff;
@@ -269,9 +314,53 @@ $mensajes       = $data['mensajes'] ?? [];
     font-size: 0.88rem;
     cursor: pointer;
     box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-    transition: transform 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
-.btn-nuevo-reporte:hover { transform: translateY(-2px); }
+.btn-nuevo-reporte:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+}
+
+/* ── KPIs Estandarizadas (Estilo Asistencias/Inicio SGP) ─────────────── */
+.soporte-kpis {
+    margin-bottom: 22px;
+}
+.asist-kpi-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 20px 22px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, .04);
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    transition: all .25s ease;
+}
+.asist-kpi-card::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    opacity: .07;
+    pointer-events: none;
+}
+.asist-kpi-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.asist-kpi-label { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; }
+.asist-kpi-val { font-size: 2.2rem; font-weight: 900; line-height: 1.1; margin-top: 4px; }
+.asist-kpi-sub { font-size: .74rem; color: #94a3b8; font-weight: 500; margin-top: 3px; }
+.asist-kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+
+.asist-kpi-card.c-blue   { border-top: 3.5px solid #2563eb; } .asist-kpi-card.c-blue::after   { background: #2563eb; }
+.asist-kpi-card.c-green  { border-top: 3.5px solid #059669; } .asist-kpi-card.c-green::after  { background: #059669; }
+.asist-kpi-card.c-amber  { border-top: 3.5px solid #d97706; } .asist-kpi-card.c-amber::after  { background: #d97706; }
+.asist-kpi-card.c-red    { border-top: 3.5px solid #dc2626; } .asist-kpi-card.c-red::after    { background: #dc2626; }
+
+.asist-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .08);
+}
 
 /* Workspace */
 .ps-workspace {
@@ -455,14 +544,106 @@ $mensajes       = $data['mensajes'] ?? [];
 }
 .ps-chat-body::-webkit-scrollbar { width: 6px; }
 .ps-chat-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+
+/* ── Overrides Responsive Globales SGP ────────────────────────────── */
+@media (max-width: 1366px) and (min-width: 1025px) {
+    .soporte-kpis {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+@media (max-width: 1024px) {
+    .soporte-kpis {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 14px !important;
+    }
+}
+@media (max-width: 768px) {
+    .soporte-banner {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 20px 18px !important;
+        gap: 16px !important;
+        border-radius: 16px !important;
+    }
+    .banner-main-group {
+        width: 100% !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 14px !important;
+    }
+    .banner-icon-badge {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 1.4rem !important;
+        border-radius: 12px !important;
+    }
+    .banner-title {
+        font-size: 1.35rem !important;
+        line-height: 1.25 !important;
+    }
+    .banner-subtitle {
+        font-size: 0.8rem !important;
+        line-height: 1.4 !important;
+    }
+    .pasantes-banner-actions {
+        width: 100% !important;
+    }
+    .pasantes-banner-actions button {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    .ps-list-col {
+        height: auto !important;
+        max-height: 460px;
+    }
+    .ps-chat-col {
+        height: 580px !important;
+    }
+    .mobile-back-bar {
+        display: block !important;
+    }
+    .asist-kpi-card { padding: 16px 14px !important; border-radius: 16px !important; }
+    .asist-kpi-val  { font-size: 1.8rem !important; }
+    .asist-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
+}
+@media (max-width: 480px) {
+    .soporte-kpis {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    .asist-kpi-card { padding: 14px 12px !important; }
+    .asist-kpi-val  { font-size: 1.6rem !important; }
+    .banner-title { font-size: 1.2rem !important; }
+    .ps-chat-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+}
 </style>
 
 <script>
 function scrollChatPasanteToBottom() {
     const el = document.getElementById('chatPasanteContainer');
     if (el) el.scrollTop = el.scrollHeight;
+
+    if (window.innerWidth <= 900 && new URLSearchParams(window.location.search).has('id')) {
+        const chatSection = document.getElementById('chatDetailPasanteSection');
+        if (chatSection) {
+            setTimeout(() => {
+                chatSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 150);
+        }
+    }
 }
 document.addEventListener('DOMContentLoaded', scrollChatPasanteToBottom);
+
+function volverAListaPasante() {
+    const listEl = document.querySelector('.ps-list-col');
+    if (listEl) {
+        listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
 
 function seleccionarTicketPasante(id) {
     window.location.href = URLROOT + '/soporte?id=' + id;

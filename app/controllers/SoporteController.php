@@ -107,87 +107,122 @@ class SoporteController extends Controller
             exit;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        try {
+            $rawInput = file_get_contents('php://input');
+            $input = (!empty($rawInput) ? json_decode($rawInput, true) : null) ?? $_POST;
 
-        $asunto    = trim((string)($input['asunto'] ?? ''));
-        $categoria = trim((string)($input['categoria'] ?? 'Error del Sistema'));
-        $prioridad = trim((string)($input['prioridad'] ?? 'Media'));
-        $mensaje   = trim((string)($input['mensaje'] ?? $input['descripcion'] ?? ''));
+            $asunto    = trim((string)($input['asunto'] ?? ''));
+            $categoria = trim((string)($input['categoria'] ?? 'Error del Sistema'));
+            $prioridad = trim((string)($input['prioridad'] ?? 'Media'));
+            $mensaje   = trim((string)($input['mensaje'] ?? $input['descripcion'] ?? ''));
 
-        if (empty($asunto) || empty($mensaje)) {
-            echo json_encode(['success' => false, 'message' => 'Por favor indica el asunto y la descripción del caso.']);
+            if (empty($asunto) || empty($mensaje)) {
+                echo json_encode(['success' => false, 'message' => 'Por favor indica el asunto y la descripción del caso.']);
+                exit;
+            }
+
+            // Normalización estricta para ENUMs de base de datos
+            $categoriasValidas = ['Error del Sistema', 'Problema de Acceso', 'Duda Operativa', 'Sugerencia', 'Otro'];
+            if (!in_array($categoria, $categoriasValidas, true)) {
+                if (mb_stripos($categoria, 'Acceso') !== false || mb_stripos($categoria, 'PIN') !== false) {
+                    $categoria = 'Problema de Acceso';
+                } elseif (mb_stripos($categoria, 'Duda') !== false || mb_stripos($categoria, 'Operat') !== false) {
+                    $categoria = 'Duda Operativa';
+                } elseif (mb_stripos($categoria, 'Suger') !== false) {
+                    $categoria = 'Sugerencia';
+                } else {
+                    $categoria = 'Error del Sistema';
+                }
+            }
+
+            $prioridadesValidas = ['Baja', 'Media', 'Alta', 'Urgente'];
+            if (!in_array($prioridad, $prioridadesValidas, true)) {
+                $prioridad = 'Media';
+            }
+
+            $usuarioId = Session::get('user_id') ? (int)Session::get('user_id') : null;
+            $nombre    = Session::get('user_name') ?? Session::get('nombres') ?? ($input['nombre'] ?? 'Usuario');
+            $correo    = Session::get('user_email') ?? ($input['correo'] ?? 'sgp.ispeb@gmail.com');
+            $telefono  = null;
+
+            // Si tenemos usuario_id, enriquecer con datos_personales
+            if ($usuarioId) {
+                try {
+                    $this->db->query("
+                        SELECT u.email, CONCAT_WS(' ', dp.nombres, dp.apellidos) AS nombre_completo, dp.telefono
+                        FROM usuarios u
+                        LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
+                        WHERE u.id = :uid
+                    ");
+                    $this->db->bind(':uid', $usuarioId);
+                    $uRow = $this->db->single();
+                    if ($uRow) {
+                        if (!empty($uRow->email)) $correo = $uRow->email;
+                        if (!empty(trim((string)$uRow->nombre_completo))) $nombre = trim((string)$uRow->nombre_completo);
+                        $telefono = $uRow->telefono ?? null;
+                    }
+                } catch (\Throwable $ue) {
+                    error_log('[SGP-SOPORTE] Error consultando datos personales: ' . $ue->getMessage());
+                }
+            }
+
+            $nuevoTicket = $this->soporteModel->crearTicket([
+                'usuario_id' => $usuarioId,
+                'nombre'     => $nombre,
+                'correo'     => $correo,
+                'telefono'   => $telefono,
+                'categoria'  => $categoria,
+                'prioridad'  => $prioridad,
+                'asunto'     => $asunto,
+                'mensaje'    => $mensaje
+            ]);
+
+            $ticketId = $nuevoTicket['id'];
+            $codigo   = $nuevoTicket['codigo'];
+
+            // Notificaciones internas para Administradores
+            try {
+                require_once APPROOT . '/models/NotificationModel.php';
+                $notifModel = new NotificationModel($this->db);
+                $this->db->query("SELECT id FROM usuarios WHERE rol_id IN (0, 1) AND estado = 'activo'");
+                $admins = $this->db->resultSet() ?: [];
+                foreach ($admins as $adm) {
+                    $notifModel->create(
+                        (int)$adm->id,
+                        'warning',
+                        "Nuevo Ticket {$codigo}",
+                        "{$nombre} reportó: {$asunto}",
+                        URLROOT . "/soporte?id={$ticketId}"
+                    );
+                }
+            } catch (\Throwable $e) {
+                error_log('[SGP-SOPORTE] Error creando notificacion interna: ' . $e->getMessage());
+            }
+
+            // Notificación por correo electrónico (sin bloquear)
+            try {
+                require_once APPROOT . '/lib/MailService.php';
+                MailService::notifyNewSupportTicket($ticketId);
+            } catch (\Throwable $e) {
+                error_log('[SGP-SOPORTE] Error enviando correo: ' . $e->getMessage());
+            }
+
+            echo json_encode([
+                'success'   => true,
+                'message'   => "Ticket {$codigo} generado exitosamente. Nuestro equipo técnico responderá a la brevedad.",
+                'ticket_id' => $ticketId,
+                'codigo'    => $codigo
+            ]);
+            exit;
+
+        } catch (\Throwable $e) {
+            error_log('[SGP-SOPORTE-CREAR-FATAL] ' . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'message' => 'No se pudo registrar el ticket: ' . $e->getMessage()
+            ]);
             exit;
         }
-
-        $usuarioId = Session::get('user_id') ? (int)Session::get('user_id') : null;
-        $nombre    = Session::get('user_name') ?? Session::get('nombres') ?? ($input['nombre'] ?? 'Usuario');
-        $correo    = Session::get('user_email') ?? ($input['correo'] ?? 'sgp.ispeb@gmail.com');
-
-        // Si tenemos usuario_id, enriquecer con datos_personales
-        if ($usuarioId) {
-            $this->db->query("
-                SELECT u.email, CONCAT_WS(' ', dp.nombres, dp.apellidos) AS nombre_completo, dp.telefono
-                FROM usuarios u
-                LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
-                WHERE u.id = :uid
-            ");
-            $this->db->bind(':uid', $usuarioId);
-            $uRow = $this->db->single();
-            if ($uRow) {
-                if (!empty($uRow->email)) $correo = $uRow->email;
-                if (!empty(trim((string)$uRow->nombre_completo))) $nombre = trim((string)$uRow->nombre_completo);
-                $telefono = $uRow->telefono ?? null;
-            }
-        }
-
-        $nuevoTicket = $this->soporteModel->crearTicket([
-            'usuario_id' => $usuarioId,
-            'nombre'     => $nombre,
-            'correo'     => $correo,
-            'telefono'   => $telefono ?? null,
-            'categoria'  => $categoria,
-            'prioridad'  => $prioridad,
-            'asunto'     => $asunto,
-            'mensaje'    => $mensaje
-        ]);
-
-        $ticketId = $nuevoTicket['id'];
-        $codigo   = $nuevoTicket['codigo'];
-
-        // Notificaciones internas para Administradores
-        try {
-            require_once APPROOT . '/models/NotificationModel.php';
-            $notifModel = new NotificationModel($this->db);
-            $this->db->query("SELECT id FROM usuarios WHERE rol_id IN (0, 1) AND estado = 'activo'");
-            $admins = $this->db->resultSet() ?: [];
-            foreach ($admins as $adm) {
-                $notifModel->create(
-                    (int)$adm->id,
-                    'warning',
-                    "Nuevo Ticket {$codigo}",
-                    "{$nombre} reportó: {$asunto}",
-                    URLROOT . "/soporte?id={$ticketId}"
-                );
-            }
-        } catch (\Throwable $e) {
-            error_log('[SGP-SOPORTE] Error creando notificacion interna: ' . $e->getMessage());
-        }
-
-        // Notificación por correo electrónico
-        try {
-            require_once APPROOT . '/lib/MailService.php';
-            MailService::notifyNewSupportTicket($ticketId);
-        } catch (\Throwable $e) {
-            error_log('[SGP-SOPORTE] Error enviando correo: ' . $e->getMessage());
-        }
-
-        echo json_encode([
-            'success'   => true,
-            'message'   => "Ticket {$codigo} generado exitosamente. Nuestro equipo técnico responderá a la brevedad.",
-            'ticket_id' => $ticketId,
-            'codigo'    => $codigo
-        ]);
-        exit;
     }
 
     /**
