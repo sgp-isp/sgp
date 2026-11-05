@@ -1966,6 +1966,102 @@ class MailService
             return false;
         }
     }
+
+    /**
+     * Notificar a los administradores / telemática sobre un nuevo ticket de soporte
+     */
+    public static function notifyNewSupportTicket(int $ticketId): bool
+    {
+        try {
+            $db = Database::getInstance();
+            $db->query("
+                SELECT t.*, u.cedula, d.nombre AS departamento
+                FROM soporte_tickets t
+                LEFT JOIN usuarios u ON u.id = t.usuario_id
+                LEFT JOIN departamentos d ON d.id = u.departamento_id
+                WHERE t.id = :id
+            ");
+            $db->bind(':id', $ticketId);
+            $ticket = $db->single();
+            if (!$ticket) return false;
+
+            // Obtener administradores
+            $db->query("
+                SELECT u.id, u.email AS correo, COALESCE(dp.nombres, u.cedula) AS admin_nom
+                FROM usuarios u
+                LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
+                WHERE u.rol_id IN (0, 1) AND u.estado = 'activo' AND u.email IS NOT NULL AND u.email != ''
+            ");
+            $admins = $db->resultSet() ?: [];
+
+            $url = (defined('URLROOT') ? URLROOT : '') . '/soporte?id=' . $ticket->id;
+            $asuntoEmail = "🎧 [Soporte SGP] Nuevo Caso {$ticket->codigo}: " . htmlspecialchars($ticket->asunto);
+
+            foreach ($admins as $adm) {
+                $content = "
+                    <p>Hola <strong>" . htmlspecialchars((string)$adm->admin_nom) . "</strong>,</p>
+                    <p>Se ha generado una nueva incidencia en la <strong>Mesa de Ayuda y Soporte Técnico</strong>:</p>
+                    <div style='background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 18px 0;'>
+                        <div style='display:flex; justify-content:space-between; margin-bottom:8px;'>
+                            <strong style='color:#1e3a8a;'>Caso: " . htmlspecialchars($ticket->codigo) . "</strong>
+                            <span style='color:#dc2626; font-weight:700;'>Prioridad: " . htmlspecialchars($ticket->prioridad) . "</span>
+                        </div>
+                        <div style='font-size:14px; margin-bottom:6px;'><strong>Solicitante:</strong> " . htmlspecialchars($ticket->nombre) . " (" . htmlspecialchars($ticket->correo) . ")</div>
+                        <div style='font-size:14px; margin-bottom:10px;'><strong>Categoría:</strong> " . htmlspecialchars($ticket->categoria) . "</div>
+                        <div style='font-size:13px; color:#475569; background:#fff; padding:12px; border-radius:8px; border:1px solid #cbd5e1;'>
+                            " . nl2br(htmlspecialchars($ticket->mensaje)) . "
+                        </div>
+                    </div>
+                    <p>Puedes responder y atender este caso directamente en el panel de soporte.</p>
+                ";
+                $html = self::renderBentoTemplate('Mesa de Ayuda', '#2563eb', "Nuevo Ticket: {$ticket->codigo}", $content, 'Atender en SGP', $url, 'Dirección de Telemática — Instituto de Salud Pública de Bolívar.');
+                self::send($adm->correo, (string)$adm->admin_nom, $asuntoEmail, $html, '', 'SOPORTE_NUEVO_TICKET', (int)$adm->id);
+            }
+
+            return true;
+        } catch (\Throwable $e) {
+            error_log('[SGP-MAIL] notifyNewSupportTicket error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Notificar al usuario solicitante cuando soporte técnico responde a su ticket
+     */
+    public static function notifySupportReply(int $ticketId, string $mensaje, string $remitenteNombre): bool
+    {
+        try {
+            $db = Database::getInstance();
+            $db->query("SELECT * FROM soporte_tickets WHERE id = :id");
+            $db->bind(':id', $ticketId);
+            $ticket = $db->single();
+            if (!$ticket || empty($ticket->correo)) return false;
+
+            $url = (defined('URLROOT') ? URLROOT : '') . '/soporte';
+            $asuntoEmail = "💬 [Respuesta Soporte] Caso {$ticket->codigo}: " . htmlspecialchars($ticket->asunto);
+
+            $content = "
+                <p>Estimado(a) <strong>" . htmlspecialchars($ticket->nombre) . "</strong>,</p>
+                <p>Has recibido una nueva respuesta técnica en tu caso <strong>{$ticket->codigo}</strong>:</p>
+                <div style='background-color: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 18px; margin: 18px 0;'>
+                    <div style='font-size:13px; font-weight:700; color:#1e40af; margin-bottom:8px;'>
+                        Atendido por: " . htmlspecialchars($remitenteNombre) . " &bull; Estado actual: " . htmlspecialchars($ticket->estado) . "
+                    </div>
+                    <div style='font-size:14px; color:#1e293b; background:#fff; padding:14px; border-radius:8px; border:1px solid #93c5fd;'>
+                        " . nl2br(htmlspecialchars($mensaje)) . "
+                    </div>
+                </div>
+                <p>Puedes consultar el historial o responder directamente ingresando a la sección de Soporte en el portal.</p>
+            ";
+            $html = self::renderBentoTemplate('Respuesta de Soporte', '#16a34a', "Actualización de tu Caso {$ticket->codigo}", $content, 'Ver en el Portal', $url, 'División de Soporte Técnico — ISPEB.');
+            self::send($ticket->correo, $ticket->nombre, $asuntoEmail, $html, '', 'SOPORTE_RESPUESTA', $ticket->usuario_id ? (int)$ticket->usuario_id : null, true);
+
+            return true;
+        } catch (\Throwable $e) {
+            error_log('[SGP-MAIL] notifySupportReply error: ' . $e->getMessage());
+            return false;
+        }
+    }
 }
 
 

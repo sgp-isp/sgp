@@ -680,9 +680,9 @@ input:checked + .switch-slider:before {
                                     Hace <?= $tck->horas_transcurridas ?>h &bull; <?= htmlspecialchars(substr($tck->mensaje ?? $tck->descripcion ?? '', 0, 70)) ?>...
                                 </div>
                             </div>
-                            <button type="button" onclick="abrirModalResponderTicket(<?= (int)$tck->id ?>)" style="padding:6px 12px;border:1.5px solid #cbd5e1;background:#fff;border-radius:8px;font-size:0.75rem;font-weight:700;color:#1e293b;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;" onmouseover="this.style.background='#eff6ff';this.style.borderColor='#2563eb';this.style.color='#2563eb';" onmouseout="this.style.background='#fff';this.style.borderColor='#cbd5e1';this.style.color='#1e293b';">
-                                <i class="ti ti-edit"></i> Atender
-                            </button>
+                            <a href="<?= URLROOT ?>/soporte?id=<?= (int)$tck->id ?>" style="padding:6px 12px;border:1.5px solid #cbd5e1;background:#fff;border-radius:8px;font-size:0.75rem;font-weight:700;color:#1e293b;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;text-decoration:none;" onmouseover="this.style.background='#eff6ff';this.style.borderColor='#2563eb';this.style.color='#2563eb';" onmouseout="this.style.background='#fff';this.style.borderColor='#cbd5e1';this.style.color='#1e293b';">
+                                <i class="ti ti-headset"></i> Atender
+                            </a>
                         </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -691,8 +691,9 @@ input:checked + .switch-slider:before {
 
             <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #f1f5f9;">
                 <span style="font-size:0.74rem;color:#64748b;">Total registrados: <strong><?= (int)($data['kpis_tickets']->total_tickets ?? 0) ?></strong></span>
-                <button type="button" onclick="abrirModalSoporteGlobal()" style="border:none;background:none;color:#2563eb;font-weight:700;font-size:0.78rem;cursor:pointer;">
-                    + Crear ticket de soporte
+                <a href="<?= URLROOT ?>/soporte" style="color:#2563eb;font-weight:700;font-size:0.78rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                    Ver todos en Mesa de Ayuda &rarr;
+                </a>
                 </button>
             </div>
         </div>

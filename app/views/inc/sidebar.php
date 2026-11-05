@@ -250,6 +250,14 @@ if (!function_exists('isActive')) {
                     <span class="menu-text">Exámenes</span>
                 </a>
             </li>
+            <li>
+                <a href="<?= URLROOT ?>/soporte"
+                   class="nav-link <?= isActive('/soporte') ?>"
+                   data-tooltip="Mesa de Ayuda">
+                    <i class="ti ti-headset"></i>
+                    <span class="menu-text">Mesa de Ayuda</span>
+                </a>
+            </li>
             <li style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.08);">
                 <a href="<?= URLROOT ?>/ayuda"
                    class="nav-link <?= isActive('/ayuda') ?>"
@@ -361,6 +369,14 @@ if (!function_exists('isActive')) {
                     <span class="menu-text">Act. Extras</span>
                 </a>
             </li>
+            <li>
+                <a href="<?= URLROOT ?>/soporte"
+                   class="nav-link <?= isActive('/soporte') ?>"
+                   data-tooltip="Mesa de Ayuda">
+                    <i class="ti ti-headset"></i>
+                    <span class="menu-text">Mesa de Ayuda</span>
+                </a>
+            </li>
             <li style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.08);">
                 <a href="<?= URLROOT ?>/ayuda"
                    class="nav-link <?= isActive('/ayuda') ?>"
@@ -426,6 +442,14 @@ if (!function_exists('isActive')) {
                    data-tooltip="Configuración">
                     <i class="ti ti-settings"></i>
                     <span class="menu-text">Configuración</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= URLROOT ?>/soporte"
+                   class="nav-link <?= isActive('/soporte') ?>"
+                   data-tooltip="Mesa de Ayuda">
+                    <i class="ti ti-headset"></i>
+                    <span class="menu-text">Mesa de Ayuda</span>
                 </a>
             </li>
             <li style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.08);">

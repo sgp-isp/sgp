@@ -578,9 +578,9 @@ if (Session::get('requiere_cambio_clave') == 1) {
 
         <!-- Soporte Técnico / Mesa de Ayuda -->
         <li class="nav-item">
-            <button type="button" class="notif-btn" onclick="abrirModalSoporteGlobal()" title="Mesa de Ayuda / Soporte Técnico ISPEB" style="color: #64748b;">
+            <a href="<?= URLROOT ?>/soporte" class="notif-btn" title="Mesa de Ayuda / Soporte Técnico ISPEB" style="color: #64748b; text-decoration: none; display: flex; align-items: center; justify-content: center;">
                 <i class="ti ti-headset" style="font-size: 21px;"></i>
-            </button>
+            </a>
         </li>
 
         <!-- Perfil Usuario -->

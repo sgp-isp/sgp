@@ -435,6 +435,7 @@ class KioscoController extends Controller
 
         $pasanteId = (int)$pasante->id;
         $pasanteNombre = trim($pasante->nombres . ' ' . $pasante->apellidos);
+        $estadoDispositivoBitacora = 'NO_APLICA';
 
         // ── 2. Validar parámetros según método ────────────────────────
         if ($metodo === 'QR') {
@@ -597,6 +598,9 @@ class KioscoController extends Controller
                         exit;
                     }
 
+                    // Dispositivo verificado y coincide con el vinculado previamente
+                    $estadoDispositivoBitacora = 'DISPOSITIVO_VINCULADO_PREVIO';
+
                     // Actualizar último uso
                     $this->db->query("
                         UPDATE pasante_dispositivos
@@ -608,7 +612,9 @@ class KioscoController extends Controller
                     $this->db->execute();
 
                 } else {
-                    // Primer uso: Auto-vincular este dispositivo al pasante
+                    // Primer uso (o sin dispositivo previo): Auto-vincular este dispositivo al pasante
+                    $estadoDispositivoBitacora = 'NUEVO_DISPOSITIVO_VINCULADO';
+
                     $this->db->query("
                         INSERT INTO pasante_dispositivos
                             (usuario_id, device_uuid, nombre_dispositivo, user_agent, ip_registro, estado, creado_at, ultimo_uso_at)
@@ -646,6 +652,7 @@ class KioscoController extends Controller
             $metodoRegistro = 'Kiosco QR';
         } else {
             // Método PIN tradicional
+            $estadoDispositivoBitacora = 'SIN_DISPOSITIVO_PIN';
             if (!$pin || !preg_match('/^[0-9]{4}$/', $pin)) {
                 echo json_encode(['success' => false, 'message' => 'El PIN debe contener 4 dígitos numéricos.']);
                 exit;
@@ -912,11 +919,14 @@ class KioscoController extends Controller
                 $this->db->bind(':ip',            $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN');
                 $this->db->bind(':ua',            $_SERVER['HTTP_USER_AGENT'] ?? null);
                 $this->db->bind(':detalles', json_encode([
-                    'pasante' => trim($pasante->nombres . ' ' . $pasante->apellidos),
-                    'cedula'  => $cedula,
-                    'hora'    => $horaActual,
-                    'retardo' => (bool)$esRetardo,
-                    'metodo'  => $metodoRegistro,
+                    'pasante'            => trim($pasante->nombres . ' ' . $pasante->apellidos),
+                    'cedula'             => $cedula,
+                    'hora'               => $horaActual,
+                    'retardo'            => (bool)$esRetardo,
+                    'metodo'             => $metodoRegistro,
+                    'estado_dispositivo' => $estadoDispositivoBitacora,
+                    'nombre_dispositivo' => $deviceName ?: 'N/A',
+                    'device_uuid'        => $deviceUuid ?: 'N/A',
                 ], JSON_UNESCAPED_UNICODE));
                 $this->db->execute();
             } catch (\Throwable $e) {

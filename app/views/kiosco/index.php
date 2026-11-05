@@ -1394,20 +1394,13 @@
             if (ymBtns) ymBtns.style.display = 'none';
             document.getElementById('bentoAcciones').style.display = 'flex';
 
-            // Adaptar botón QR si el usuario ya trajo el token en la URL
+            // Botón QR siempre solicita escanear el cartel oficial por cámara
             const btnQr = document.querySelector('.btn-metodo-qr');
             if (btnQr) {
-                if (initialUrlToken) {
-                    btnQr.querySelector('.bm-title').textContent = 'Confirmar con QR de Oficina';
-                    btnQr.querySelector('.bm-sub').textContent   = 'Cartel oficial escaneado. Toca para marcar directamente.';
-                    btnQr.style.border     = '2px solid #10b981';
-                    btnQr.style.background = '#f0fdf4';
-                } else {
-                    btnQr.querySelector('.bm-title').textContent = 'Marcar con Código QR';
-                    btnQr.querySelector('.bm-sub').textContent   = 'Escanear el cartel oficial de la oficina';
-                    btnQr.style.border     = '';
-                    btnQr.style.background = '';
-                }
+                btnQr.querySelector('.bm-title').textContent = 'Marcar con Código QR';
+                btnQr.querySelector('.bm-sub').textContent   = 'Escanear el cartel oficial de la oficina';
+                btnQr.style.border     = '';
+                btnQr.style.background = '';
             }
         }
 
@@ -1432,14 +1425,10 @@
             document.getElementById('pinInput').value = '';
             document.getElementById('pinInput').focus();
         } else if (metodo === 'QR') {
-            if (initialUrlToken) {
-                // Token detectado en la URL: marcar directamente sin abrir cámara
-                enviarMarcajeQr(initialUrlToken);
-            } else {
-                document.getElementById('panelBento').style.display = 'none';
-                document.getElementById('panelQr').style.display = 'block';
-                iniciarLectorQr();
-            }
+            // Por seguridad física y trazabilidad: siempre exigir escanear el cartel con la cámara
+            document.getElementById('panelBento').style.display = 'none';
+            document.getElementById('panelQr').style.display = 'block';
+            iniciarLectorQr();
         }
     }
 

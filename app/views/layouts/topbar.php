@@ -94,6 +94,11 @@
                 </div>
             </div>
         </div>
+
+        <!-- ========== SOPORTE TÉCNICO (Mesa de Ayuda) ========== -->
+        <a href="<?= URLROOT ?>/soporte" class="topbar-support-btn" title="Mesa de Ayuda &bull; Soporte Técnico" aria-label="Soporte Técnico">
+            <i class="ti ti-headset"></i>
+        </a>
         
         <!-- ========== PERFIL ========== -->
         <div class="profile-dropdown" onclick="toggleProfileMenu()">
@@ -186,6 +191,27 @@
     flex-shrink: 0;
 }
 .topbar-periodo-sin .periodo-nombre { color: #fca5a5; }
+
+.topbar-support-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 1.25rem;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+    flex-shrink: 0;
+}
+.topbar-support-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+    color: #ffffff;
+}
 </style>
 
 
