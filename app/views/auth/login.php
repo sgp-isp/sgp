@@ -961,6 +961,11 @@
     </div>
 
     <style>
+    /* ── SweetAlert2 siempre por encima de cualquier modal ── */
+    .swal2-container {
+        z-index: 100000000 !important;
+    }
+
     /* ── Estilos Bento del Modal de Soporte Guest ── */
     .sgp-guest-modal-backdrop {
         position: fixed;
@@ -970,7 +975,7 @@
         height: 100vh;
         background: rgba(15, 23, 42, 0.75);
         backdrop-filter: blur(8px);
-        z-index: 99999;
+        z-index: 10000;
         display: flex;
         align-items: center;
         justify-content: center;

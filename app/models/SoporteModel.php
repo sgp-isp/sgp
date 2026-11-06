@@ -53,10 +53,17 @@ class SoporteModel
 
             // Migración suave si la columna guest_token aún no existe
             try {
-                $this->db->query("ALTER TABLE `soporte_tickets` ADD COLUMN `guest_token` varchar(64) DEFAULT NULL AFTER `ip`, ADD INDEX `idx_guest_token` (`guest_token`);");
+                $this->db->query("ALTER TABLE `soporte_tickets` ADD COLUMN `guest_token` varchar(64) DEFAULT NULL AFTER `ip`");
                 $this->db->execute();
             } catch (\Throwable $mEx) {
-                // Ya existe la columna o índice
+                // Ya existe la columna
+            }
+
+            try {
+                $this->db->query("ALTER TABLE `soporte_tickets` ADD INDEX `idx_guest_token` (`guest_token`)");
+                $this->db->execute();
+            } catch (\Throwable $mEx2) {
+                // Ya existe el índice
             }
 
             // Tabla de mensajes del chat
@@ -292,12 +299,36 @@ class SoporteModel
 
         $guestToken = !empty($data['guest_token']) ? (string)$data['guest_token'] : bin2hex(random_bytes(16));
 
-        $this->db->query("
-            INSERT INTO soporte_tickets 
-                (codigo, usuario_id, nombre, correo, telefono, categoria, prioridad, asunto, mensaje, estado, ip, guest_token, created_at)
-            VALUES 
-                (:codigo, :usuario_id, :nombre, :correo, :telefono, :categoria, :prioridad, :asunto, :mensaje, 'Abierto', :ip, :guest_token, NOW())
-        ");
+        // Asegurar que la columna guest_token exista
+        $colExiste = false;
+        try {
+            $this->db->query("SHOW COLUMNS FROM `soporte_tickets` LIKE 'guest_token'");
+            $colExiste = !empty($this->db->single());
+            if (!$colExiste) {
+                $this->db->query("ALTER TABLE `soporte_tickets` ADD COLUMN `guest_token` varchar(64) DEFAULT NULL AFTER `ip`");
+                $this->db->execute();
+                $colExiste = true;
+            }
+        } catch (\Throwable $e) {
+            // Error en introspección o DDL
+        }
+
+        if ($colExiste) {
+            $this->db->query("
+                INSERT INTO soporte_tickets 
+                    (codigo, usuario_id, nombre, correo, telefono, categoria, prioridad, asunto, mensaje, estado, ip, guest_token, created_at)
+                VALUES 
+                    (:codigo, :usuario_id, :nombre, :correo, :telefono, :categoria, :prioridad, :asunto, :mensaje, 'Abierto', :ip, :guest_token, NOW())
+            ");
+            $this->db->bind(':guest_token', $guestToken);
+        } else {
+            $this->db->query("
+                INSERT INTO soporte_tickets 
+                    (codigo, usuario_id, nombre, correo, telefono, categoria, prioridad, asunto, mensaje, estado, ip, created_at)
+                VALUES 
+                    (:codigo, :usuario_id, :nombre, :correo, :telefono, :categoria, :prioridad, :asunto, :mensaje, 'Abierto', :ip, NOW())
+            ");
+        }
 
         $this->db->bind(':codigo',       $codigo);
         $this->db->bind(':usuario_id',   !empty($data['usuario_id']) ? (int)$data['usuario_id'] : null);
@@ -309,7 +340,6 @@ class SoporteModel
         $this->db->bind(':asunto',       $data['asunto'] ?? 'Sin Asunto');
         $this->db->bind(':mensaje',      $data['mensaje'] ?? '');
         $this->db->bind(':ip',           $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
-        $this->db->bind(':guest_token',  $guestToken);
 
         $this->db->execute();
         $ticketId = (int)$this->db->lastInsertId();
