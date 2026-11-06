@@ -39,15 +39,25 @@ class SoporteModel
                     `respondido_por` int(11) DEFAULT NULL,
                     `respondido_at` datetime DEFAULT NULL,
                     `ip` varchar(45) DEFAULT NULL,
+                    `guest_token` varchar(64) DEFAULT NULL,
                     `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
                     `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
                     PRIMARY KEY (`id`),
                     UNIQUE KEY `codigo` (`codigo`),
                     KEY `idx_estado` (`estado`),
-                    KEY `idx_usuario` (`usuario_id`)
+                    KEY `idx_usuario` (`usuario_id`),
+                    KEY `idx_guest_token` (`guest_token`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             ");
             $this->db->execute();
+
+            // Migración suave si la columna guest_token aún no existe
+            try {
+                $this->db->query("ALTER TABLE `soporte_tickets` ADD COLUMN `guest_token` varchar(64) DEFAULT NULL AFTER `ip`, ADD INDEX `idx_guest_token` (`guest_token`);");
+                $this->db->execute();
+            } catch (\Throwable $mEx) {
+                // Ya existe la columna o índice
+            }
 
             // Tabla de mensajes del chat
             $this->db->query("
@@ -280,23 +290,26 @@ class SoporteModel
     {
         $codigo = '#TCK-' . date('ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
 
+        $guestToken = !empty($data['guest_token']) ? (string)$data['guest_token'] : bin2hex(random_bytes(16));
+
         $this->db->query("
             INSERT INTO soporte_tickets 
-                (codigo, usuario_id, nombre, correo, telefono, categoria, prioridad, asunto, mensaje, estado, ip, created_at)
+                (codigo, usuario_id, nombre, correo, telefono, categoria, prioridad, asunto, mensaje, estado, ip, guest_token, created_at)
             VALUES 
-                (:codigo, :usuario_id, :nombre, :correo, :telefono, :categoria, :prioridad, :asunto, :mensaje, 'Abierto', :ip, NOW())
+                (:codigo, :usuario_id, :nombre, :correo, :telefono, :categoria, :prioridad, :asunto, :mensaje, 'Abierto', :ip, :guest_token, NOW())
         ");
 
-        $this->db->bind(':codigo',     $codigo);
-        $this->db->bind(':usuario_id', !empty($data['usuario_id']) ? (int)$data['usuario_id'] : null);
-        $this->db->bind(':nombre',     $data['nombre'] ?? 'Usuario');
-        $this->db->bind(':correo',     $data['correo'] ?? '');
-        $this->db->bind(':telefono',   $data['telefono'] ?? null);
-        $this->db->bind(':categoria',  $data['categoria'] ?? 'Error del Sistema');
-        $this->db->bind(':prioridad',  $data['prioridad'] ?? 'Media');
-        $this->db->bind(':asunto',     $data['asunto'] ?? 'Sin Asunto');
-        $this->db->bind(':mensaje',    $data['mensaje'] ?? '');
-        $this->db->bind(':ip',         $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+        $this->db->bind(':codigo',       $codigo);
+        $this->db->bind(':usuario_id',   !empty($data['usuario_id']) ? (int)$data['usuario_id'] : null);
+        $this->db->bind(':nombre',       $data['nombre'] ?? 'Usuario');
+        $this->db->bind(':correo',       $data['correo'] ?? '');
+        $this->db->bind(':telefono',     $data['telefono'] ?? null);
+        $this->db->bind(':categoria',    $data['categoria'] ?? 'Error del Sistema');
+        $this->db->bind(':prioridad',    $data['prioridad'] ?? 'Media');
+        $this->db->bind(':asunto',       $data['asunto'] ?? 'Sin Asunto');
+        $this->db->bind(':mensaje',      $data['mensaje'] ?? '');
+        $this->db->bind(':ip',           $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+        $this->db->bind(':guest_token',  $guestToken);
 
         $this->db->execute();
         $ticketId = (int)$this->db->lastInsertId();
@@ -313,8 +326,9 @@ class SoporteModel
         }
 
         return [
-            'id'     => $ticketId,
-            'codigo' => $codigo
+            'id'          => $ticketId,
+            'codigo'      => $codigo,
+            'guest_token' => $guestToken
         ];
     }
 
@@ -417,6 +431,133 @@ class SoporteModel
         } catch (\Throwable $e) {
             error_log('[SGP-SOPORTE] actualizarEstado error: ' . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Buscar un usuario por Cédula o Correo para identificación de soporte guest
+     */
+    public function buscarUsuarioPorIdentificador(string $identificador): ?object
+    {
+        try {
+            $limpio = trim($identificador);
+            if (empty($limpio)) return null;
+
+            // Normalizar cédula si viene con prefijos o solo números
+            $cedulaPura = preg_replace('/[^0-9]/', '', $limpio);
+
+            $this->db->query("
+                SELECT 
+                    u.id,
+                    u.cedula,
+                    u.correo,
+                    u.rol_id,
+                    u.estado,
+                    COALESCE(dp.nombres, u.cedula) AS nombres,
+                    COALESCE(dp.apellidos, '') AS apellidos,
+                    dp.telefono,
+                    d.nombre AS departamento_nombre
+                FROM usuarios u
+                LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
+                LEFT JOIN departamentos d ON d.id = u.departamento_id
+                WHERE LOWER(u.correo) = LOWER(:ident)
+                   OR u.cedula = :ident
+                   OR (:cedulaPura != '' AND REPLACE(REPLACE(u.cedula, 'V-', ''), 'E-', '') = :cedulaPura)
+                LIMIT 1
+            ");
+            $this->db->bind(':ident', $limpio);
+            $this->db->bind(':cedulaPura', $cedulaPura);
+
+            $user = $this->db->single();
+            return $user ?: null;
+        } catch (\Throwable $e) {
+            error_log('[SGP-SOPORTE] buscarUsuarioPorIdentificador error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Obtener el ticket activo (Abierto o En Proceso) más reciente de un usuario
+     */
+    public function getTicketActivoPorUsuario(int $usuarioId): ?object
+    {
+        try {
+            $this->db->query("
+                SELECT 
+                    t.*,
+                    TIMESTAMPDIFF(HOUR, t.created_at, NOW()) AS horas_transcurridas,
+                    (SELECT COUNT(*) FROM soporte_ticket_mensajes m WHERE m.ticket_id = t.id) AS total_mensajes
+                FROM soporte_tickets t
+                WHERE t.usuario_id = :uid
+                  AND t.estado IN ('Abierto', 'En Proceso')
+                ORDER BY t.created_at DESC
+                LIMIT 1
+            ");
+            $this->db->bind(':uid', $usuarioId);
+            $res = $this->db->single();
+            return $res ?: null;
+        } catch (\Throwable $e) {
+            error_log('[SGP-SOPORTE] getTicketActivoPorUsuario error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Obtener ticket por ID y guest_token para sesiones no autenticadas
+     */
+    public function getTicketPorIdYToken(int $ticketId, string $token): ?object
+    {
+        try {
+            $token = trim($token);
+            if ($ticketId <= 0 || empty($token)) return null;
+
+            $this->db->query("
+                SELECT 
+                    t.*,
+                    COALESCE(dp.nombres, t.nombre) AS solicitante_nombres,
+                    COALESCE(dp.apellidos, '') AS solicitante_apellidos,
+                    u.cedula AS solicitante_cedula,
+                    TIMESTAMPDIFF(HOUR, t.created_at, NOW()) AS horas_transcurridas
+                FROM soporte_tickets t
+                LEFT JOIN usuarios u ON u.id = t.usuario_id
+                LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
+                WHERE t.id = :id AND t.guest_token = :token
+                LIMIT 1
+            ");
+            $this->db->bind(':id', $ticketId);
+            $this->db->bind(':token', $token);
+            $res = $this->db->single();
+            return $res ?: null;
+        } catch (\Throwable $e) {
+            error_log('[SGP-SOPORTE] getTicketPorIdYToken error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Asignar o regenerar guest_token a un ticket existente
+     */
+    public function asignarGuestToken(int $ticketId, ?string $token = null): string
+    {
+        try {
+            $newToken = $token ?: bin2hex(random_bytes(16));
+            $this->db->query("
+                UPDATE soporte_tickets
+                SET guest_token = :token
+                WHERE id = :id AND (guest_token IS NULL OR guest_token = '')
+            ");
+            $this->db->bind(':token', $newToken);
+            $this->db->bind(':id', $ticketId);
+            $this->db->execute();
+
+            // Si ya tenía un token, obtener el que tiene actualmente
+            $this->db->query("SELECT guest_token FROM soporte_tickets WHERE id = :id LIMIT 1");
+            $this->db->bind(':id', $ticketId);
+            $row = $this->db->single();
+            return !empty($row->guest_token) ? (string)$row->guest_token : $newToken;
+        } catch (\Throwable $e) {
+            error_log('[SGP-SOPORTE] asignarGuestToken error: ' . $e->getMessage());
+            return $token ?: bin2hex(random_bytes(16));
         }
     }
 }

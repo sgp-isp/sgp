@@ -4,25 +4,27 @@
 <script src="<?= URLROOT ?>/js/notification-service.js"></script>
 <script src="<?= URLROOT ?>/js/notifications.js"></script>
 
-<!-- Footer Institucional sobre fondo oscuro -->
+<!-- Footer Institucional sobre fondo oscuro con Botón de Ayuda Anclado en la esquina derecha -->
 <footer class="auth-institutional-footer">
-    <div class="auth-footer-legal">
-        <a href="<?= URLROOT ?>/legal/terminos" target="_blank" class="auth-footer-link">Términos de Servicio</a>
-        <span class="auth-footer-dot">•</span>
-        <a href="<?= URLROOT ?>/legal/privacidad" target="_blank" class="auth-footer-link">Política de Privacidad</a>
+    <div class="auth-footer-container">
+        <div class="auth-footer-center">
+            <div class="auth-footer-legal">
+                <a href="<?= URLROOT ?>/legal/terminos" target="_blank" class="auth-footer-link">Términos de Servicio</a>
+                <span class="auth-footer-dot">•</span>
+                <a href="<?= URLROOT ?>/legal/privacidad" target="_blank" class="auth-footer-link">Política de Privacidad</a>
+            </div>
+            <p class="auth-footer-copyleft">
+                Copyleft <?= date('Y') ?> Instituto de Salud Pública. Algunos derechos reservados.
+            </p>
+        </div>
+        <div class="auth-footer-right">
+            <button type="button" onclick="abrirAyudaLogin()" data-tooltip="Guía de uso del sistema" class="sgp-help-btn" aria-label="Abrir guía de ayuda del sistema">
+                <i class="ti ti-help-circle"></i>
+                <span>¿Necesitas ayuda?</span>
+            </button>
+        </div>
     </div>
-    <p class="auth-footer-copyleft">
-        Copyleft <?= date('Y') ?> Instituto de Salud Pública. Algunos derechos reservados.
-    </p>
 </footer>
-
-<!-- Botón Acoplado en la Esquina Inferior Derecha: ¿Necesitas ayuda? -->
-<div class="sgp-help-docked">
-    <button type="button" onclick="abrirAyudaLogin()" data-tooltip="Guía de uso del sistema" class="sgp-help-btn" aria-label="Abrir guía de ayuda del sistema">
-        <i class="ti ti-help-circle"></i>
-        <span>¿Necesitas ayuda?</span>
-    </button>
-</div>
 
 <!-- Banner Discreto de Consentimiento de Cookies (Ubicado en esquina izquierda para no interferir con ayuda) -->
 <div id="sgpCookieBanner" style="display: none; position: fixed; bottom: 20px; left: 20px; max-width: 380px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 14px 18px; color: #f8fafc; font-size: 0.82rem; box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 999999; animation: fadeInUp 0.4s ease-out;">

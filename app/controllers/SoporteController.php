@@ -485,5 +485,295 @@ class SoporteController extends Controller
         ]);
         exit;
     }
+
+    /**
+     * Endpoint público para identificar usuario por Cédula o Correo desde el Login
+     */
+    public function identificarGuest(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $identificador = trim((string)($input['identificador'] ?? ''));
+
+        if (empty($identificador)) {
+            echo json_encode(['success' => false, 'message' => 'Por favor ingresa tu cédula o correo institucional.']);
+            exit;
+        }
+
+        $usuario = $this->soporteModel->buscarUsuarioPorIdentificador($identificador);
+
+        if (!$usuario) {
+            echo json_encode([
+                'success'    => true,
+                'encontrado' => false,
+                'mensaje'    => 'No encontramos una cuenta registrada con esa identificación. Puedes ingresar tus datos para recibir asistencia técnica.'
+            ]);
+            exit;
+        }
+
+        $ticketActivo = $this->soporteModel->getTicketActivoPorUsuario((int)$usuario->id);
+        $token = null;
+        if ($ticketActivo) {
+            $token = $this->soporteModel->asignarGuestToken((int)$ticketActivo->id);
+        }
+
+        $nombreCompleto = trim($usuario->nombres . ' ' . $usuario->apellidos);
+
+        echo json_encode([
+            'success'    => true,
+            'encontrado' => true,
+            'usuario'    => [
+                'id'           => (int)$usuario->id,
+                'cedula'       => $usuario->cedula,
+                'nombre'       => $nombreCompleto ?: $usuario->cedula,
+                'correo'       => $usuario->correo,
+                'telefono'     => $usuario->telefono ?? '',
+                'departamento' => $usuario->departamento_nombre ?? 'General'
+            ],
+            'ticket_activo' => $ticketActivo ? [
+                'id'          => (int)$ticketActivo->id,
+                'codigo'      => $ticketActivo->codigo,
+                'asunto'      => $ticketActivo->asunto,
+                'estado'      => $ticketActivo->estado,
+                'guest_token' => $token,
+                'created_at'  => $ticketActivo->created_at
+            ] : null
+        ]);
+        exit;
+    }
+
+    /**
+     * Endpoint público para crear un caso de soporte desde el Login
+     */
+    public function crearGuest(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
+            exit;
+        }
+
+        try {
+            $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+
+            $asunto    = trim((string)($input['asunto'] ?? ''));
+            $categoria = trim((string)($input['categoria'] ?? 'Problema de Acceso'));
+            $prioridad = trim((string)($input['prioridad'] ?? 'Media'));
+            $mensaje   = trim((string)($input['mensaje'] ?? ''));
+            $nombre    = trim((string)($input['nombre'] ?? ''));
+            $correo    = trim((string)($input['correo'] ?? ''));
+            $telefono  = trim((string)($input['telefono'] ?? ''));
+            $usuarioId = !empty($input['usuario_id']) ? (int)$input['usuario_id'] : null;
+
+            if (empty($nombre) || empty($correo) || empty($asunto) || empty($mensaje)) {
+                echo json_encode(['success' => false, 'message' => 'Por favor completa todos los campos requeridos (nombre, correo, asunto y mensaje).']);
+                exit;
+            }
+
+            if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode(['success' => false, 'message' => 'El correo electrónico no tiene un formato válido.']);
+                exit;
+            }
+
+            // Normalización de categoría
+            $categoriasValidas = ['Error del Sistema', 'Problema de Acceso', 'Duda Operativa', 'Sugerencia', 'Otro'];
+            if (!in_array($categoria, $categoriasValidas, true)) {
+                $categoria = 'Problema de Acceso';
+            }
+
+            $guestToken = bin2hex(random_bytes(16));
+
+            $nuevoTicket = $this->soporteModel->crearTicket([
+                'usuario_id'  => $usuarioId,
+                'nombre'      => $nombre,
+                'correo'      => $correo,
+                'telefono'    => !empty($telefono) ? $telefono : null,
+                'categoria'   => $categoria,
+                'prioridad'   => $prioridad,
+                'asunto'      => $asunto,
+                'mensaje'     => $mensaje,
+                'guest_token' => $guestToken
+            ]);
+
+            $ticketId = $nuevoTicket['id'];
+            $codigo   = $nuevoTicket['codigo'];
+
+            // Notificación interna a administradores
+            try {
+                require_once APPROOT . '/models/NotificationModel.php';
+                $notifModel = new NotificationModel($this->db);
+                $this->db->query("SELECT id FROM usuarios WHERE rol_id IN (0, 1) AND estado = 'activo'");
+                $admins = $this->db->resultSet() ?: [];
+                foreach ($admins as $adm) {
+                    $notifModel->create(
+                        (int)$adm->id,
+                        'warning',
+                        "Nuevo Ticket Login {$codigo}",
+                        "{$nombre} reportó desde el login: {$asunto}",
+                        URLROOT . "/soporte?id={$ticketId}"
+                    );
+                }
+            } catch (\Throwable $ne) {
+                error_log('[SGP-SOPORTE-GUEST] Error notificacion interna: ' . $ne->getMessage());
+            }
+
+            // Notificación por correo a administradores
+            try {
+                require_once APPROOT . '/lib/MailService.php';
+                MailService::notifyNewSupportTicket($ticketId);
+            } catch (\Throwable $me) {
+                error_log('[SGP-SOPORTE-GUEST] Error enviando correo: ' . $me->getMessage());
+            }
+
+            echo json_encode([
+                'success'     => true,
+                'message'     => "Caso {$codigo} registrado exitosamente. Un técnico responderá en vivo en este chat.",
+                'ticket_id'   => $ticketId,
+                'codigo'      => $codigo,
+                'guest_token' => $guestToken
+            ]);
+            exit;
+
+        } catch (\Throwable $e) {
+            error_log('[SGP-SOPORTE-GUEST-FATAL] ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Ocurrió un error al procesar el caso: ' . $e->getMessage()]);
+            exit;
+        }
+    }
+
+    /**
+     * Endpoint público para cargar el historial de mensajes de un ticket con guest_token
+     */
+    public function mensajesGuest(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        $ticketId = (int)($_REQUEST['ticket_id'] ?? 0);
+        $token    = trim((string)($_REQUEST['token'] ?? ''));
+
+        if ($ticketId <= 0 || empty($token)) {
+            echo json_encode(['success' => false, 'message' => 'Parámetros inválidos.']);
+            exit;
+        }
+
+        $ticket = $this->soporteModel->getTicketPorIdYToken($ticketId, $token);
+        if (!$ticket) {
+            echo json_encode(['success' => false, 'message' => 'Sesión de soporte no válida o ticket no encontrado.']);
+            exit;
+        }
+
+        $mensajes = $this->soporteModel->getMensajes($ticketId);
+
+        echo json_encode([
+            'success'  => true,
+            'ticket'   => $ticket,
+            'mensajes' => $mensajes
+        ]);
+        exit;
+    }
+
+    /**
+     * Endpoint público para enviar mensaje desde el chat del Login usando guest_token
+     */
+    public function mensajeGuest(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
+            exit;
+        }
+
+        $input    = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $ticketId = (int)($input['ticket_id'] ?? 0);
+        $token    = trim((string)($input['token'] ?? ''));
+        $mensaje  = trim((string)($input['mensaje'] ?? ''));
+
+        if ($ticketId <= 0 || empty($token) || empty($mensaje)) {
+            echo json_encode(['success' => false, 'message' => 'El mensaje no puede estar vacío.']);
+            exit;
+        }
+
+        $ticket = $this->soporteModel->getTicketPorIdYToken($ticketId, $token);
+        if (!$ticket) {
+            echo json_encode(['success' => false, 'message' => 'Sesión no autorizada o ticket cerrado.']);
+            exit;
+        }
+
+        $msgId = $this->soporteModel->agregarMensaje(
+            $ticketId,
+            !empty($ticket->usuario_id) ? (int)$ticket->usuario_id : null,
+            'usuario',
+            $ticket->nombre,
+            $mensaje
+        );
+
+        // Notificaciones internas y correo a los administradores
+        try {
+            require_once APPROOT . '/models/NotificationModel.php';
+            $notifModel = new NotificationModel($this->db);
+            $this->db->query("SELECT id FROM usuarios WHERE rol_id IN (0, 1) AND estado = 'activo'");
+            $admins = $this->db->resultSet() ?: [];
+            foreach ($admins as $adm) {
+                $notifModel->create(
+                    (int)$adm->id,
+                    'info',
+                    "Mensaje en caso {$ticket->codigo}",
+                    "{$ticket->nombre}: " . mb_substr($mensaje, 0, 80) . "...",
+                    URLROOT . "/soporte?id={$ticketId}"
+                );
+            }
+            require_once APPROOT . '/lib/MailService.php';
+            MailService::notifySupportUserReply($ticketId, $mensaje, $ticket->nombre);
+        } catch (\Throwable $e) {
+            error_log('[SGP-SOPORTE-GUEST] Error notificacion mensaje: ' . $e->getMessage());
+        }
+
+        echo json_encode([
+            'success'    => true,
+            'message_id' => $msgId
+        ]);
+        exit;
+    }
+
+    /**
+     * Endpoint público para polling de mensajes en vivo en el chat del Login
+     */
+    public function nuevosMensajesGuest(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        $ticketId = (int)($_GET['ticket_id'] ?? 0);
+        $token    = trim((string)($_GET['token'] ?? ''));
+        $afterId  = (int)($_GET['after_id'] ?? 0);
+
+        if ($ticketId <= 0 || empty($token)) {
+            echo json_encode(['success' => false, 'message' => 'Parámetros inválidos.']);
+            exit;
+        }
+
+        $ticket = $this->soporteModel->getTicketPorIdYToken($ticketId, $token);
+        if (!$ticket) {
+            echo json_encode(['success' => false, 'message' => 'Sesión inválida.']);
+            exit;
+        }
+
+        $nuevos = $this->soporteModel->getMensajesNuevos($ticketId, $afterId);
+
+        echo json_encode([
+            'success'   => true,
+            'estado'    => $ticket->estado,
+            'prioridad' => $ticket->prioridad,
+            'mensajes'  => $nuevos
+        ]);
+        exit;
+    }
 }
 
