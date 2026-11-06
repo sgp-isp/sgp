@@ -26,8 +26,8 @@
     </div>
 </footer>
 
-<!-- Banner Discreto de Consentimiento de Cookies (Ubicado en esquina izquierda para no interferir con ayuda) -->
-<div id="sgpCookieBanner" style="display: none; position: fixed; bottom: 20px; left: 20px; max-width: 380px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 14px 18px; color: #f8fafc; font-size: 0.82rem; box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 999999; animation: fadeInUp 0.4s ease-out;">
+<!-- Banner Discreto de Consentimiento de Cookies (Ubicado en esquina izquierda para no interferir con ayuda ni soporte) -->
+<div id="sgpCookieBanner" style="display: none; position: fixed; bottom: 86px; left: 24px; max-width: 380px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 14px 18px; color: #f8fafc; font-size: 0.82rem; box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 999999; animation: fadeInUp 0.4s ease-out;">
     <div style="display: flex; align-items: flex-start; gap: 10px;">
         <span style="font-size: 1.3rem; line-height: 1;">🍪</span>
         <div style="flex: 1;">

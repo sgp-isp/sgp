@@ -86,14 +86,15 @@
     } catch (Exception $e) { /* asumir activo si no existe tabla */ }
     $urlTokenParam = !empty($_GET['token']) ? '?token=' . urlencode(trim($_GET['token'])) : '';
     ?>
-    <div class="kiosco-floating-actions">
-        <!-- Botón Mesa de Ayuda / Soporte Técnico con Auriculares -->
-        <button type="button" class="btn-soporte-login-pill" onclick="abrirSoporteGuestModal()" title="Mesa de Ayuda y Soporte Técnico (Chat en Vivo)">
+    <!-- Botón Flotante de Soporte Técnico en Esquina Inferior Izquierda (Solo Icono) -->
+    <div class="sgp-soporte-fab-dock">
+        <button type="button" class="sgp-soporte-fab-btn" onclick="abrirSoporteGuestModal()" title="Mesa de Ayuda y Soporte Técnico" aria-label="Abrir Soporte Técnico">
             <i class="ti ti-headset"></i>
-            <span>Soporte Técnico</span>
         </button>
+    </div>
 
-        <?php if ($kioscoHabilitado): ?>
+    <?php if ($kioscoHabilitado): ?>
+    <div class="kiosco-floating-actions">
         <a href="<?= URLROOT ?>/kiosco<?= $urlTokenParam ?>" class="kiosco-pill" target="_self" title="Acceso al Kiosco de Asistencia">
             <i class="ti ti-clock-check"></i>
             <span class="kiosco-text">
@@ -105,10 +106,54 @@
             <i class="ti ti-qrcode"></i>
             <span>Cartel QR</span>
         </a>
-        <?php endif; ?>
     </div>
+    <?php endif; ?>
 
     <style>
+    /* ── Botón Flotante Circular de Soporte Técnico (Esquina Inferior Izquierda) ── */
+    .sgp-soporte-fab-dock {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        z-index: 9100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .sgp-soporte-fab-btn {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: #ffffff !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.35);
+        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        backdrop-filter: blur(8px);
+        transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+        outline: none;
+    }
+    .sgp-soporte-fab-btn i {
+        font-size: 1.6rem;
+        color: #ffffff;
+        transition: transform 0.28s ease;
+    }
+    .sgp-soporte-fab-btn:hover {
+        background: linear-gradient(135deg, #172554 0%, #1d4ed8 100%);
+        transform: translateY(-3px) scale(1.08);
+        box-shadow: 0 12px 28px rgba(37, 99, 235, 0.6);
+        border-color: rgba(255, 255, 255, 0.6);
+    }
+    .sgp-soporte-fab-btn:hover i {
+        transform: rotate(-12deg) scale(1.1);
+    }
+    .sgp-soporte-fab-btn:active {
+        transform: translateY(0) scale(0.96);
+    }
+
     .kiosco-floating-actions {
         position: fixed;
         top: 380px;
@@ -118,38 +163,6 @@
         flex-direction: column;
         align-items: flex-end;
         gap: 10px;
-    }
-    .btn-soporte-login-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 9px;
-        padding: 10px 20px;
-        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-        color: #ffffff !important;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 10px;
-        font-weight: 700;
-        font-size: 0.92rem;
-        cursor: pointer;
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
-        backdrop-filter: blur(8px);
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        text-decoration: none;
-    }
-    .btn-soporte-login-pill i {
-        font-size: 1.3rem;
-        color: #93c5fd;
-        transition: transform 0.25s ease;
-    }
-    .btn-soporte-login-pill:hover {
-        background: linear-gradient(135deg, #172554 0%, #1d4ed8 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 22px rgba(37, 99, 235, 0.5);
-        border-color: rgba(255, 255, 255, 0.5);
-        color: #ffffff !important;
-    }
-    .btn-soporte-login-pill:hover i {
-        transform: scale(1.15) rotate(-8deg);
     }
     .kiosco-pill {
         display: flex;
@@ -211,6 +224,17 @@
         .kiosco-pill .kiosco-label-sub { display: block; }
     }
     @media (max-width: 768px) {
+        .sgp-soporte-fab-dock {
+            bottom: 16px;
+            left: 16px;
+        }
+        .sgp-soporte-fab-btn {
+            width: 46px;
+            height: 46px;
+        }
+        .sgp-soporte-fab-btn i {
+            font-size: 1.4rem;
+        }
         .kiosco-floating-actions {
             position: relative !important;
             top: auto !important;
@@ -225,12 +249,6 @@
             align-items: center;
             gap: 8px;
         }
-        .btn-soporte-login-pill {
-            padding: 9px 15px;
-            font-size: 0.85rem;
-            border-radius: 10px !important;
-        }
-        .btn-soporte-login-pill i { font-size: 1.15rem; }
         .kiosco-pill {
             padding: 10px 18px;
             font-size: 0.92rem;
