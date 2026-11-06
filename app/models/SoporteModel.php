@@ -204,7 +204,7 @@ class SoporteModel
                     COALESCE(dp.apellidos, '') AS solicitante_apellidos,
                     u.cedula AS solicitante_cedula,
                     u.rol_id AS solicitante_rol_id,
-                    u.email AS solicitante_email,
+                    COALESCE(u.correo, t.correo) AS solicitante_email,
                     d.nombre AS departamento_nombre,
                     COALESCE(admin_p.nombres, 'Equipo Soporte') AS respondido_por_nombre,
                     TIMESTAMPDIFF(HOUR, t.created_at, NOW()) AS horas_transcurridas

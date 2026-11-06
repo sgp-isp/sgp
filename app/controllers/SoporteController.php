@@ -149,7 +149,7 @@ class SoporteController extends Controller
             if ($usuarioId) {
                 try {
                     $this->db->query("
-                        SELECT u.email, CONCAT_WS(' ', dp.nombres, dp.apellidos) AS nombre_completo, dp.telefono
+                        SELECT u.correo, CONCAT_WS(' ', dp.nombres, dp.apellidos) AS nombre_completo, dp.telefono
                         FROM usuarios u
                         LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
                         WHERE u.id = :uid
@@ -157,7 +157,7 @@ class SoporteController extends Controller
                     $this->db->bind(':uid', $usuarioId);
                     $uRow = $this->db->single();
                     if ($uRow) {
-                        if (!empty($uRow->email)) $correo = $uRow->email;
+                        if (!empty($uRow->correo)) $correo = $uRow->correo;
                         if (!empty(trim((string)$uRow->nombre_completo))) $nombre = trim((string)$uRow->nombre_completo);
                         $telefono = $uRow->telefono ?? null;
                     }
@@ -294,7 +294,7 @@ class SoporteController extends Controller
                 require_once APPROOT . '/lib/MailService.php';
                 MailService::notifySupportReply($ticketId, $mensaje, $nombre);
             } else {
-                // Notificar a los administradores
+                // Notificar a los administradores en App
                 $this->db->query("SELECT id FROM usuarios WHERE rol_id IN (0, 1) AND estado = 'activo'");
                 $admins = $this->db->resultSet() ?: [];
                 foreach ($admins as $adm) {
@@ -306,6 +306,9 @@ class SoporteController extends Controller
                         URLROOT . "/soporte?id={$ticketId}"
                     );
                 }
+                // Correo a administradores
+                require_once APPROOT . '/lib/MailService.php';
+                MailService::notifySupportUserReply($ticketId, $mensaje, $nombre);
             }
         } catch (\Throwable $e) {
             error_log('[SGP-SOPORTE] Error en notificaciones de mensaje: ' . $e->getMessage());
@@ -372,7 +375,7 @@ class SoporteController extends Controller
             );
         }
 
-        // Notificar al usuario solicitante si el ticket fue resuelto o cerrado
+        // Notificar al usuario solicitante si el ticket fue actualizado
         if ($ok) {
             $ticket = $this->soporteModel->getTicketPorId($ticketId);
             if ($ticket && !empty($ticket->usuario_id)) {
@@ -387,11 +390,11 @@ class SoporteController extends Controller
                         URLROOT . "/soporte?id={$ticketId}"
                     );
 
-                    if (!empty($respuesta)) {
-                        require_once APPROOT . '/lib/MailService.php';
-                        MailService::notifySupportReply($ticketId, $respuesta, $adminNombre);
-                    }
-                } catch (\Throwable $e) {}
+                    require_once APPROOT . '/lib/MailService.php';
+                    MailService::notifySupportStatusChange($ticketId, $nuevoEstado, $adminNombre, $respuesta);
+                } catch (\Throwable $e) {
+                    error_log('[SGP-SOPORTE] Error notificando cambio de estado: ' . $e->getMessage());
+                }
             }
         }
 

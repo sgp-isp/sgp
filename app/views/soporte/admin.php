@@ -95,7 +95,7 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     </div>
 
     <!-- ══ MAIN WORKSPACE: LISTA DE TICKETS + PANEL DE CHAT ══ -->
-    <div class="soporte-workspace <?= $selectedTicket ? 'has-selected-ticket' : 'no-selected-ticket' ?>" id="soporteWorkspace">
+    <div class="soporte-workspace <?= (!empty($selectedTicket) && (isset($_GET['id']) || isset($_GET['ticket_id']))) ? 'has-selected-ticket' : 'no-selected-ticket' ?>" id="soporteWorkspace">
         <!-- ── COLUMNA IZQUIERDA: LISTADO Y FILTROS ── -->
         <div class="soporte-sidebar-list">
             <div class="list-search-box">
@@ -150,14 +150,16 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
                         <h4 class="tic-asunto"><?= htmlspecialchars($t->asunto) ?></h4>
                         <p class="tic-preview"><?= htmlspecialchars(mb_substr($t->mensaje, 0, 85)) ?>...</p>
                         
-                        <div class="tic-footer">
-                            <div class="tic-user">
+                        <div class="tic-footer" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                            <div class="tic-user" style="min-width:0;">
                                 <span class="avatar-mini"><?= strtoupper(substr($t->solicitante_nombres ?? 'U', 0, 1)) ?></span>
-                                <span class="tic-username"><?= htmlspecialchars($t->solicitante_nombres) ?></span>
+                                <span class="tic-username" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?= htmlspecialchars($t->solicitante_nombres) ?></span>
                             </div>
-                            <div class="tic-meta">
+                            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
                                 <span class="tic-prio" style="<?= $prioridadBg ?>"><?= htmlspecialchars($t->prioridad) ?></span>
-                                <span class="tic-time"><?= $t->horas_transcurridas ?>h</span>
+                                <button type="button" class="btn-atender-ticket-card" onclick="event.stopPropagation(); seleccionarTicket(<?= (int)$t->id ?>)" style="padding:5px 12px;background:#2563eb;color:#ffffff;border:none;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(37,99,235,0.25);">
+                                    <i class="ti ti-headset"></i> Atender
+                                </button>
                             </div>
                         </div>
                     </div>

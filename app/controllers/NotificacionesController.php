@@ -62,6 +62,33 @@ class NotificacionesController extends Controller
             }
         } catch (\Throwable $e) {}
 
+        // Asegurar reglas de soporte técnico
+        $soporteRules = [
+            ['SOPORTE_NUEVO_TICKET', 'Nuevo Ticket en Mesa de Ayuda', 'Notificación a administradores cuando un usuario o pasante reporta una nueva incidencia', 'sistema', 1, '0,1', 1],
+            ['SOPORTE_RESPUESTA', 'Respuesta en Chat de Soporte Técnico', 'Notificación enviada al solicitante o administradores al recibirse un nuevo mensaje en el chat', 'sistema', 1, '0,1,2,3', 1],
+            ['SOPORTE_ESTADO', 'Actualización de Estado / Resolución de Caso', 'Notificación enviada al solicitante cuando su ticket cambia de estado (Resuelto, En Proceso)', 'sistema', 1, '0,1,2,3', 1]
+        ];
+        foreach ($soporteRules as $sr) {
+            try {
+                $this->db->query("SELECT id FROM mail_reglas WHERE codigo_evento = :cod");
+                $this->db->bind(':cod', $sr[0]);
+                if (!$this->db->single()) {
+                    $this->db->query("
+                        INSERT INTO mail_reglas (codigo_evento, titulo, descripcion, categoria, activo, enviar_a_roles, exclusiones_activas)
+                        VALUES (:cod, :tit, :des, :cat, :act, :rol, :exc)
+                    ");
+                    $this->db->bind(':cod', $sr[0]);
+                    $this->db->bind(':tit', $sr[1]);
+                    $this->db->bind(':des', $sr[2]);
+                    $this->db->bind(':cat', $sr[3]);
+                    $this->db->bind(':act', $sr[4]);
+                    $this->db->bind(':rol', $sr[5]);
+                    $this->db->bind(':exc', $sr[6]);
+                    $this->db->execute();
+                }
+            } catch (\Throwable $e) {}
+        }
+
         // Obtener todas las reglas de eventos
         $this->db->query("SELECT * FROM mail_reglas ORDER BY FIELD(categoria, 'seguridad', 'asistencia', 'academico', 'sistema') ASC, id ASC");
         $reglas = $this->db->resultSet() ?: [];
@@ -610,6 +637,70 @@ class NotificacionesController extends Controller
                         <div style='font-size: 13px; color: #166534; margin-bottom: 5px;'>🔑 <strong>Método:</strong> Huella Dactilar / Biometría WebAuthn</div>
                         <div style='font-size: 13px; color: #166534; margin-bottom: 5px;'>🌐 <strong>Dirección IP:</strong> {$ip}</div>
                         <div style='font-size: 13px; color: #166534;'>📅 <strong>Fecha y Hora:</strong> " . date('d/m/Y h:i:s A') . "</div>
+                    </div>
+                ";
+                break;
+
+            case 'SOPORTE_NUEVO_TICKET':
+                $badge = 'Mesa de Ayuda';
+                $badgeColor = '#2563eb';
+                $subject = '🎧 [PRUEBA] Nuevo Caso #TCK-261106-A101: Error al marcar asistencia';
+                $content = "
+                    <p>Hola <strong>" . htmlspecialchars($nombre) . "</strong>,</p>
+                    <p>Se ha generado una nueva incidencia en la <strong>Mesa de Ayuda y Soporte Técnico</strong>:</p>
+                    <div style='background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 18px 0;'>
+                        <div style='display:flex; justify-content:space-between; margin-bottom:8px;'>
+                            <strong style='color:#1e3a8a;'>Caso: #TCK-261106-A101</strong>
+                            <span style='color:#dc2626; font-weight:700;'>Prioridad: Alta</span>
+                        </div>
+                        <div style='font-size:14px; margin-bottom:6px;'><strong>Solicitante:</strong> Carlos Rodríguez (carlos.pasante@gmail.com)</div>
+                        <div style='font-size:14px; margin-bottom:10px;'><strong>Categoría:</strong> Error del Sistema</div>
+                        <div style='font-size:13px; color:#475569; background:#fff; padding:12px; border-radius:8px; border:1px solid #cbd5e1;'>
+                            No me permite registrar la entrada en el quiosco desde mi teléfono móvil. Muestra alerta de dispositivo bloqueado.
+                        </div>
+                    </div>
+                    <p>Puedes responder y atender este caso directamente en el panel de soporte.</p>
+                ";
+                break;
+
+            case 'SOPORTE_RESPUESTA':
+                $badge = 'Respuesta de Soporte';
+                $badgeColor = '#16a34a';
+                $subject = '💬 [PRUEBA] Respuesta en Caso #TCK-261106-A101: Error al marcar asistencia';
+                $content = "
+                    <p>Estimado(a) <strong>" . htmlspecialchars($nombre) . "</strong>,</p>
+                    <p>Has recibido una nueva respuesta técnica en tu caso <strong>#TCK-261106-A101</strong>:</p>
+                    <div style='background-color: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 18px; margin: 18px 0;'>
+                        <div style='font-size:13px; font-weight:700; color:#1e40af; margin-bottom:8px;'>
+                            Atendido por: Soporte ISPEB &bull; Estado actual: En Proceso
+                        </div>
+                        <div style='font-size:14px; color:#1e293b; background:#fff; padding:14px; border-radius:8px; border:1px solid #93c5fd;'>
+                            Hemos verificado el registro de tu dispositivo en la base de datos y restablecido la vinculación biométrica. Por favor intenta escanear nuevamente.
+                        </div>
+                    </div>
+                    <p>Puedes dialogar con el equipo técnico directamente desde la sección de Soporte.</p>
+                ";
+                break;
+
+            case 'SOPORTE_ESTADO':
+                $badge = 'Estado de Soporte';
+                $badgeColor = '#059669';
+                $subject = '🔔 [PRUEBA] Caso #TCK-261106-A101 Actualizado: Resuelto';
+                $content = "
+                    <p>Estimado(a) <strong>" . htmlspecialchars($nombre) . "</strong>,</p>
+                    <p>Tu reporte de soporte técnico <strong>#TCK-261106-A101</strong> ha sido actualizado:</p>
+                    <div style='background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 18px 0;'>
+                        <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;'>
+                            <strong style='color:#1e3a8a;'>Caso: #TCK-261106-A101</strong>
+                            <span style='background:#059669; color:#fff; font-weight:800; font-size:12px; padding:3px 10px; border-radius:999px;'>
+                                Resuelto
+                            </span>
+                        </div>
+                        <div style='font-size:14px; margin-bottom:6px;'><strong>Asunto:</strong> Error al marcar asistencia</div>
+                        <div style='font-size:13px; color:#64748b; margin-bottom:10px;'>Actualizado por: División de Telemática</div>
+                        <div style='font-size:13px; color:#1e293b; background:#fff; padding:12px; border-radius:8px; border:1px solid #cbd5e1;'>
+                            <strong>Nota de resolución:</strong><br>El dispositivo fue reactivado y validado en la sede central con éxito. Caso cerrado.
+                        </div>
                     </div>
                 ";
                 break;

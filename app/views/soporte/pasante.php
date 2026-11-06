@@ -95,7 +95,7 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
     </div>
 
     <!-- ══ WORKSPACE: MIS TICKETS + CHAT DEL CASO ══ -->
-    <div class="ps-workspace <?= $selectedTicket ? 'has-selected-ticket' : 'no-selected-ticket' ?>" id="pasanteWorkspace">
+    <div class="ps-workspace <?= (!empty($selectedTicket) && (isset($_GET['id']) || isset($_GET['ticket_id']))) ? 'has-selected-ticket' : 'no-selected-ticket' ?>" id="pasanteWorkspace">
         <!-- ── COLUMNA IZQUIERDA: LISTADO DE REPORTES ── -->
         <div class="ps-list-col">
             <div class="ps-list-header">
@@ -132,9 +132,11 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
                             </span>
                         </div>
                         <h4 class="pti-subject"><?= htmlspecialchars($t->asunto) ?></h4>
-                        <div class="pti-bottom">
-                            <span class="pti-cat"><i class="ti ti-tag"></i> <?= htmlspecialchars($t->categoria) ?></span>
-                            <span class="pti-date"><i class="ti ti-clock"></i> Hace <?= $t->horas_transcurridas ?>h</span>
+                        <div class="pti-bottom" style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                            <span class="pti-cat" style="font-size:0.72rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><i class="ti ti-tag"></i> <?= htmlspecialchars($t->categoria) ?></span>
+                            <button type="button" class="btn-ver-chat-mini" onclick="event.stopPropagation(); seleccionarTicketPasante(<?= (int)$t->id ?>)" style="padding:4px 10px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:0.72rem;font-weight:700;display:inline-flex;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;">
+                                <i class="ti ti-messages"></i> Ver Chat
+                            </button>
                         </div>
                     </div>
                     <?php endforeach; ?>

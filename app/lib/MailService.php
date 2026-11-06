@@ -2350,10 +2350,10 @@ class MailService
 
             // Obtener administradores
             $db->query("
-                SELECT u.id, u.email AS correo, COALESCE(dp.nombres, u.cedula) AS admin_nom
+                SELECT u.id, u.correo, COALESCE(dp.nombres, u.cedula) AS admin_nom
                 FROM usuarios u
                 LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
-                WHERE u.rol_id IN (0, 1) AND u.estado = 'activo' AND u.email IS NOT NULL AND u.email != ''
+                WHERE u.rol_id IN (0, 1) AND u.estado = 'activo' AND u.correo IS NOT NULL AND u.correo != ''
             ");
             $admins = $db->resultSet() ?: [];
 
@@ -2405,7 +2405,7 @@ class MailService
             $ticket = $db->single();
             if (!$ticket || empty($ticket->correo)) return false;
 
-            $url = (defined('URLROOT') ? URLROOT : '') . '/soporte';
+            $url = (defined('URLROOT') ? URLROOT : '') . '/soporte?id=' . $ticket->id;
             $asuntoEmail = "💬 [Respuesta Soporte] Caso {$ticket->codigo}: " . htmlspecialchars($ticket->asunto);
 
             $content = "
@@ -2421,12 +2421,121 @@ class MailService
                 </div>
                 <p>Puedes consultar el historial o responder directamente ingresando a la sección de Soporte en el portal.</p>
             ";
-            $html = self::renderBentoTemplate('Respuesta de Soporte', '#16a34a', "Actualización de tu Caso {$ticket->codigo}", $content, 'Ver en el Portal', $url, 'División de Soporte Técnico — ISPEB.');
+            $html = self::renderBentoTemplate('Respuesta de Soporte', '#16a34a', "Actualización de tu Caso {$ticket->codigo}", $content, 'Ver Chat de Soporte', $url, 'División de Soporte Técnico — ISPEB.');
             self::send($ticket->correo, $ticket->nombre, $asuntoEmail, $html, '', 'SOPORTE_RESPUESTA', $ticket->usuario_id ? (int)$ticket->usuario_id : null, true);
 
             return true;
         } catch (\Throwable $e) {
             error_log('[SGP-MAIL] notifySupportReply error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Notificar a los administradores cuando un usuario o pasante responde en el chat de soporte
+     */
+    public static function notifySupportUserReply(int $ticketId, string $mensaje, string $usuarioNombre): bool
+    {
+        try {
+            $cfg = self::getConfig();
+            if (empty($cfg['activo']) && empty($cfg['brevo_api_key']) && empty($cfg['resend_api_key'])) {
+                return false;
+            }
+
+            $db = Database::getInstance();
+            $db->query("SELECT * FROM soporte_tickets WHERE id = :id");
+            $db->bind(':id', $ticketId);
+            $ticket = $db->single();
+            if (!$ticket) return false;
+
+            $db->query("
+                SELECT u.id, u.correo, COALESCE(dp.nombres, u.cedula) AS admin_nom
+                FROM usuarios u
+                LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
+                WHERE u.rol_id IN (0, 1) AND u.estado = 'activo' AND u.correo IS NOT NULL AND u.correo != ''
+            ");
+            $admins = $db->resultSet() ?: [];
+
+            $url = (defined('URLROOT') ? URLROOT : '') . '/soporte?id=' . $ticket->id;
+            $asuntoEmail = "💬 [Nuevo Mensaje] Caso {$ticket->codigo} de " . htmlspecialchars($usuarioNombre);
+
+            foreach ($admins as $adm) {
+                $content = "
+                    <p>Hola <strong>" . htmlspecialchars((string)$adm->admin_nom) . "</strong>,</p>
+                    <p>El usuario <strong>" . htmlspecialchars($usuarioNombre) . "</strong> ha enviado un nuevo mensaje en el caso <strong>{$ticket->codigo}</strong>:</p>
+                    <div style='background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 18px 0;'>
+                        <div style='font-size:13px; font-weight:700; color:#1e3a8a; margin-bottom:8px;'>
+                            Asunto: " . htmlspecialchars($ticket->asunto) . " &bull; Estado: " . htmlspecialchars($ticket->estado) . "
+                        </div>
+                        <div style='font-size:14px; color:#1e293b; background:#fff; padding:14px; border-radius:8px; border:1px solid #cbd5e1;'>
+                            " . nl2br(htmlspecialchars($mensaje)) . "
+                        </div>
+                    </div>
+                    <p>Haz clic en el botón para responderle directamente en el chat:</p>
+                ";
+                $html = self::renderBentoTemplate('Mesa de Ayuda', '#2563eb', "Mensaje en Caso: {$ticket->codigo}", $content, 'Responder Caso en SGP', $url, 'Dirección de Telemática — Instituto de Salud Pública de Bolívar.');
+                self::send($adm->correo, (string)$adm->admin_nom, $asuntoEmail, $html, '', 'SOPORTE_RESPUESTA', (int)$adm->id);
+            }
+
+            return true;
+        } catch (\Throwable $e) {
+            error_log('[SGP-MAIL] notifySupportUserReply error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Notificar al usuario cuando el estado de su caso cambia (ej. En Proceso, Resuelto, Cerrado)
+     */
+    public static function notifySupportStatusChange(int $ticketId, string $nuevoEstado, string $adminNombre, ?string $respuesta = null): bool
+    {
+        try {
+            $cfg = self::getConfig();
+            if (empty($cfg['activo']) && empty($cfg['brevo_api_key']) && empty($cfg['resend_api_key'])) {
+                return false;
+            }
+
+            $db = Database::getInstance();
+            $db->query("SELECT * FROM soporte_tickets WHERE id = :id");
+            $db->bind(':id', $ticketId);
+            $ticket = $db->single();
+            if (!$ticket || empty($ticket->correo)) return false;
+
+            $url = (defined('URLROOT') ? URLROOT : '') . '/soporte?id=' . $ticket->id;
+            $asuntoEmail = "🔔 [Estado Actualizado] Caso {$ticket->codigo} &bull; {$nuevoEstado}";
+
+            $estadoColor = match($nuevoEstado) {
+                'Resuelto'   => '#059669',
+                'En Proceso' => '#d97706',
+                'Cerrado'    => '#475569',
+                default      => '#2563eb'
+            };
+
+            $content = "
+                <p>Estimado(a) <strong>" . htmlspecialchars($ticket->nombre) . "</strong>,</p>
+                <p>Tu reporte de soporte técnico <strong>{$ticket->codigo}</strong> ha sido actualizado:</p>
+                <div style='background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 18px 0;'>
+                    <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;'>
+                        <strong style='color:#1e3a8a;'>Caso: " . htmlspecialchars($ticket->codigo) . "</strong>
+                        <span style='background:{$estadoColor}; color:#fff; font-weight:800; font-size:12px; padding:3px 10px; border-radius:999px;'>
+                            " . htmlspecialchars($nuevoEstado) . "
+                        </span>
+                    </div>
+                    <div style='font-size:14px; margin-bottom:6px;'><strong>Asunto:</strong> " . htmlspecialchars($ticket->asunto) . "</div>
+                    <div style='font-size:13px; color:#64748b; margin-bottom:10px;'>Actualizado por: " . htmlspecialchars($adminNombre) . "</div>
+                    " . (!empty($respuesta) ? "
+                    <div style='font-size:13px; color:#1e293b; background:#fff; padding:12px; border-radius:8px; border:1px solid #cbd5e1;'>
+                        <strong>Nota técnica:</strong><br>" . nl2br(htmlspecialchars($respuesta)) . "
+                    </div>" : "") . "
+                </div>
+                <p>Puedes acceder a la plataforma para verificar los detalles y dejar comentarios adicionales si lo requieres.</p>
+            ";
+            $html = self::renderBentoTemplate('Estado de Soporte', $estadoColor, "Actualización: {$ticket->codigo}", $content, 'Ver Caso en SGP', $url, 'División de Soporte Técnico — ISPEB.');
+            self::send($ticket->correo, $ticket->nombre, $asuntoEmail, $html, '', 'SOPORTE_ESTADO', $ticket->usuario_id ? (int)$ticket->usuario_id : null, true);
+
+            return true;
+        } catch (\Throwable $e) {
+            error_log('[SGP-MAIL] notifySupportStatusChange error: ' . $e->getMessage());
             return false;
         }
     }
