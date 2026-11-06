@@ -110,8 +110,19 @@ class MailService
                 return ['allowed' => false, 'reason' => 'La regla de notificación para este evento está pausada globalmente'];
             }
 
-            // Validar exclusiones específicas de usuarios
-            if ($userId !== null && !empty($regla->usuarios_excluidos)) {
+            // Validar exclusiones específicas de usuarios (si el sistema de exclusiones está activo)
+            $globalExclusionesActivas = true;
+            try {
+                $db->query("SELECT valor FROM configuracion WHERE clave = 'mail_exclusiones_activas' LIMIT 1");
+                $cfgExc = $db->single();
+                if ($cfgExc && (string)$cfgExc->valor === '0') {
+                    $globalExclusionesActivas = false;
+                }
+            } catch (\Throwable $e) {}
+
+            $reglaExclusionesActivas = isset($regla->exclusiones_activas) ? (int)$regla->exclusiones_activas : 1;
+
+            if ($globalExclusionesActivas && $reglaExclusionesActivas === 1 && $userId !== null && !empty($regla->usuarios_excluidos)) {
                 $excluidos = json_decode($regla->usuarios_excluidos, true) ?: [];
                 if (in_array($userId, $excluidos, true)) {
                     return ['allowed' => false, 'reason' => 'El usuario ha sido excluido de esta notificación por el administrador'];

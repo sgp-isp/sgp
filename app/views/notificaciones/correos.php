@@ -248,12 +248,42 @@
 
     </div>
 
+    <!-- ── CONTROL MAESTRO GLOBAL: SISTEMA DE EXCLUSIONES DE CORREO ── -->
+    <div style="background:#ffffff;border-radius:16px;border:1.5px solid <?= !empty($globalExclusiones) ? '#fecdd3' : '#e2e8f0' ?>;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:24px;box-shadow:0 3px 12px rgba(0,0,0,0.02);transition:all .2s;">
+        <div style="display:flex;align-items:center;gap:14px;">
+            <div style="width:42px;height:42px;border-radius:12px;background:<?= !empty($globalExclusiones) ? '#fff1f2' : '#f1f5f9' ?>;color:<?= !empty($globalExclusiones) ? '#e11d48' : '#64748b' ?>;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">
+                <i class="ti ti-user-x"></i>
+            </div>
+            <div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <h3 style="font-size:0.98rem;font-weight:800;color:#0f172a;margin:0;">Control Maestro de Correos Excluidos</h3>
+                    <span id="badge_global_status" style="font-size:0.70rem;font-weight:800;padding:2px 8px;border-radius:999px;background:<?= !empty($globalExclusiones) ? '#dcfce7' : '#fee2e2' ?>;color:<?= !empty($globalExclusiones) ? '#15803d' : '#b91c1c' ?>;">
+                        <?= !empty($globalExclusiones) ? 'ACTIVO' : 'PAUSADO (IGNORADO)' ?>
+                    </span>
+                </div>
+                <p style="font-size:0.77rem;color:#64748b;margin:3px 0 0;">
+                    Switch global: Activa o suspende el bloqueo hacia los usuarios marcados en listas de exclusión institucional.
+                </p>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <span id="label_global_exclusiones" style="font-size:0.80rem;font-weight:700;color:<?= !empty($globalExclusiones) ? '#059669' : '#dc2626' ?>;">
+                <?= !empty($globalExclusiones) ? 'Exclusiones Habilitadas' : 'Exclusiones Deshabilitadas (Enviar a todos)' ?>
+            </span>
+            <label class="cfg-toggle-wrap cfg-toggle-danger" style="margin:0;" title="Activar/Desactivar el sistema de exclusiones de correos a nivel global">
+                <input type="checkbox" id="toggle_global_exclusiones" <?= !empty($globalExclusiones) ? 'checked' : '' ?> onchange="cambiarEstadoExclusionesGlobal(this.checked)">
+                <span class="cfg-toggle-track"></span>
+                <span class="cfg-toggle-dot"></span>
+            </label>
+        </div>
+    </div>
+
     <!-- ── GRID DE REGLAS DE CORREO ───────────────────────────────────────── -->
     <div style="margin-bottom:34px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div>
                 <h2 style="font-size:1.15rem;font-weight:800;color:#0f172a;margin:0 0 2px;">Reglas de Notificación por Evento</h2>
-                <p style="font-size:0.80rem;color:#64748b;margin:0;">Personaliza qué eventos generan correos, a qué roles van dirigidos y excluye usuarios específicos para evitar saturación</p>
+                <p style="font-size:0.80rem;color:#64748b;margin:0;">Personaliza qué eventos generan correos, a qué roles van dirigidos y activa/pausa exclusiones puntuales</p>
             </div>
         </div>
 
@@ -278,6 +308,7 @@
 
                 $cantExcluidos = count($r->usuarios_excluidos_arr);
                 $cantIncluidos = count($r->usuarios_incluidos_arr);
+                $excActivas = isset($r->exclusiones_activas) ? (int)$r->exclusiones_activas : 1;
             ?>
             <div class="mail-rule-card" id="card_rule_<?= (int)$r->id ?>" style="background:#ffffff;border-radius:16px;border:1.5px solid #e2e8f0;padding:20px;box-shadow:0 3px 12px rgba(0,0,0,0.03);display:flex;flex-direction:column;justify-content:space-between;transition:all .2s;">
                 
@@ -298,7 +329,7 @@
                             </div>
                         </div>
 
-                        <!-- Toggle Switch -->
+                        <!-- Toggle Switch de la Regla General -->
                         <label class="cfg-toggle-wrap" style="margin:0;flex-shrink:0;" title="Activar/Pausar este tipo de correo">
                             <input type="checkbox" id="toggle_<?= (int)$r->id ?>" <?= !empty($r->activo) ? 'checked' : '' ?> onchange="cambiarEstadoRegla(<?= (int)$r->id ?>, this.checked)">
                             <span class="cfg-toggle-track"></span>
@@ -333,17 +364,31 @@
                         </div>
                     </div>
 
-                    <!-- Indicador de Exclusiones / Inclusiones -->
-                    <div style="display:flex;align-items:center;gap:12px;font-size:0.74rem;color:#64748b;margin-bottom:16px;">
-                        <?php if ($cantExcluidos > 0): ?>
-                            <span style="color:#b91c1c;font-weight:700;"><i class="ti ti-user-x me-1"></i><?= $cantExcluidos ?> usuario(s) excluido(s)</span>
-                        <?php else: ?>
-                            <span style="color:#64748b;"><i class="ti ti-check me-1"></i>Sin exclusiones</span>
-                        <?php endif; ?>
+                    <!-- Fila con Switch de Exclusiones de la Regla -->
+                    <div style="background:#f8fafc;border-radius:12px;padding:9px 12px;margin-bottom:14px;border:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                        <div style="display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap;">
+                            <i class="ti ti-user-x" style="color:<?= $excActivas === 1 ? '#e11d48' : '#94a3b8' ?>;font-size:0.95rem;"></i>
+                            <span style="font-size:0.75rem;font-weight:700;color:#334155;white-space:nowrap;">
+                                Excluidos (<?= $cantExcluidos ?>):
+                            </span>
+                            <span id="badge_exc_status_<?= (int)$r->id ?>" style="font-size:0.68rem;font-weight:800;padding:2px 7px;border-radius:6px;background:<?= $excActivas === 1 ? '#ffe4e6' : '#f1f5f9' ?>;color:<?= $excActivas === 1 ? '#be123c' : '#64748b' ?>;">
+                                <?= $excActivas === 1 ? 'Activo' : 'Pausado' ?>
+                            </span>
+                            <?php if ($cantIncluidos > 0): ?>
+                                <span style="font-size:0.68rem;font-weight:800;padding:2px 7px;border-radius:6px;background:#dcfce7;color:#15803d;" title="Inclusiones forzadas">
+                                    +<?= $cantIncluidos ?> forzados
+                                </span>
+                            <?php endif; ?>
+                        </div>
 
-                        <?php if ($cantIncluidos > 0): ?>
-                            <span style="color:#15803d;font-weight:700;"><i class="ti ti-user-plus me-1"></i><?= $cantIncluidos ?> forzado(s)</span>
-                        <?php endif; ?>
+                        <!-- Switch de Exclusión de la Regla -->
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <label class="cfg-toggle-wrap cfg-toggle-sm cfg-toggle-danger" style="margin:0;flex-shrink:0;" title="Activar o desactivar filtro de excluidos para este evento">
+                                <input type="checkbox" id="toggle_exc_<?= (int)$r->id ?>" <?= $excActivas === 1 ? 'checked' : '' ?> onchange="cambiarEstadoExclusionesRegla(<?= (int)$r->id ?>, this.checked)">
+                                <span class="cfg-toggle-track"></span>
+                                <span class="cfg-toggle-dot"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -498,25 +543,48 @@
             </div>
 
             <!-- 2. Lista de Exclusiones (Silenciar a usuarios puntuales) -->
-            <div style="margin-bottom:20px;background:#fff1f2;border:1.5px solid #fecdd3;border-radius:14px;padding:16px;">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-                    <i class="ti ti-user-x" style="color:#e11d48;font-size:1.15rem;"></i>
-                    <label style="font-size:0.85rem;font-weight:800;color:#9f1239;margin:0;">
-                        2. Lista de Exclusión (No enviar a estos usuarios):
-                    </label>
-                </div>
-                <p style="font-size:0.75rem;color:#be123c;margin:0 0 10px;line-height:1.4;">
-                    Si un administrador o tutor solicita NO recibir este tipo de correo para no saturar su bandeja, selecciónalo aquí:
-                </p>
-
-                <div style="max-height:140px;overflow-y:auto;background:#ffffff;border:1px solid #fecdd3;border-radius:9px;padding:8px;">
-                    <?php foreach ($usuarios as $u): ?>
-                    <label style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-bottom:1px solid #fff1f2;font-size:0.80rem;cursor:pointer;">
+            <div id="modal_box_exclusiones" style="margin-bottom:20px;background:#fff1f2;border:1.5px solid #fecdd3;border-radius:14px;padding:16px;transition:all 0.2s;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <i class="ti ti-user-x" style="color:#e11d48;font-size:1.15rem;"></i>
                         <div>
-                            <span style="font-weight:700;color:#1e293b;"><?= htmlspecialchars($u->nombre_completo ?: $u->correo) ?></span>
-                            <span style="font-size:0.72rem;color:#64748b;margin-left:6px;">(<?= htmlspecialchars($u->rol_nombre) ?>)</span>
+                            <label style="font-size:0.86rem;font-weight:800;color:#9f1239;margin:0;">
+                                2. Lista de Exclusión (No enviar a estos usuarios):
+                            </label>
+                            <div style="font-size:0.72rem;color:#be123c;">
+                                Silencia el despacho automático para los usuarios seleccionados
+                            </div>
                         </div>
-                        <input type="checkbox" class="user-excluido-chk" value="<?= (int)$u->id ?>">
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span id="lbl_modal_exc_switch" style="font-size:0.74rem;font-weight:800;color:#9f1239;">Activo</span>
+                        <label class="cfg-toggle-wrap cfg-toggle-sm cfg-toggle-danger" style="margin:0;" title="Activar/Desactivar el filtro de exclusiones para esta regla">
+                            <input type="checkbox" id="modal_exclusiones_activas" checked onchange="toggleModalExclusiones(this.checked)">
+                            <span class="cfg-toggle-track"></span>
+                            <span class="cfg-toggle-dot"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Buscador rápido dentro del modal -->
+                <div style="position:relative;margin-bottom:8px;">
+                    <i class="ti ti-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#f43f5e;font-size:0.85rem;"></i>
+                    <input type="text" id="busqueda_excluidos" oninput="filtrarUsuariosExcluidos(this.value)" placeholder="Buscar usuario para excluir..." style="width:100%;padding:6px 10px 6px 30px;border:1px solid #fecdd3;border-radius:8px;font-size:0.78rem;outline:none;background:#ffffff;">
+                </div>
+
+                <div id="contenedor_lista_excluidos" style="max-height:150px;overflow-y:auto;background:#ffffff;border:1px solid #fecdd3;border-radius:9px;padding:6px 8px;transition:all 0.2s;">
+                    <?php foreach ($usuarios as $u): ?>
+                    <label class="item-usuario-excluido" data-busqueda="<?= strtolower(htmlspecialchars($u->nombre_completo . ' ' . $u->correo . ' ' . $u->rol_nombre)) ?>" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-bottom:1px solid #fff1f2;font-size:0.80rem;cursor:pointer;border-radius:6px;transition:background .15s;">
+                        <div style="min-width:0;flex:1;padding-right:8px;">
+                            <span style="font-weight:700;color:#1e293b;"><?= htmlspecialchars($u->nombre_completo ?: $u->correo) ?></span>
+                            <span style="font-size:0.72rem;color:#64748b;margin-left:4px;">(<?= htmlspecialchars($u->rol_nombre) ?>)</span>
+                            <div style="font-size:0.70rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?= htmlspecialchars($u->correo) ?></div>
+                        </div>
+                        <label class="cfg-toggle-wrap cfg-toggle-sm cfg-toggle-danger" style="margin:0;flex-shrink:0;">
+                            <input type="checkbox" class="user-excluido-chk" value="<?= (int)$u->id ?>">
+                            <span class="cfg-toggle-track"></span>
+                            <span class="cfg-toggle-dot"></span>
+                        </label>
                     </label>
                     <?php endforeach; ?>
                 </div>
@@ -604,6 +672,26 @@
 .cfg-toggle-wrap input:checked ~ .cfg-toggle-dot {
     transform: translateX(20px);
 }
+
+/* Variante Switch Compacto */
+.cfg-toggle-sm {
+    width: 36px;
+    height: 20px;
+}
+.cfg-toggle-sm .cfg-toggle-dot {
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+}
+.cfg-toggle-sm input:checked ~ .cfg-toggle-dot {
+    transform: translateX(16px);
+}
+
+/* Variante Switch Danger / Exclusiones */
+.cfg-toggle-danger input:checked + .cfg-toggle-track {
+    background-color: #e11d48;
+}
 </style>
 
 <script>
@@ -649,11 +737,143 @@ async function cambiarEstadoRegla(id, activo) {
     }
 }
 
+// ── Switch Exclusiones por Regla (ON / OFF) ──────────────────────
+async function cambiarEstadoExclusionesRegla(id, activo) {
+    const fd = new FormData();
+    fd.append('id', id);
+    fd.append('activo', activo ? 1 : 0);
+
+    try {
+        const resp = await fetch('<?= URLROOT ?>/notificaciones/toggleExclusionesRegla', {
+            method: 'POST',
+            body: fd
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+            const badge = document.getElementById('badge_exc_status_' + id);
+            if (badge) {
+                badge.textContent = activo ? 'Activo' : 'Pausado';
+                badge.style.background = activo ? '#ffe4e6' : '#f1f5f9';
+                badge.style.color = activo ? '#be123c' : '#64748b';
+            }
+            if (window.Notyf) {
+                new Notyf().success(res.message);
+            } else if (window.Swal) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: res.message,
+                    showConfirmButton: false,
+                    timer: 2500
+                });
+            }
+        } else {
+            throw new Error(res.message || 'Error al actualizar filtro de exclusiones');
+        }
+    } catch (err) {
+        const chk = document.getElementById('toggle_exc_' + id);
+        if (chk) chk.checked = !activo;
+
+        if (window.Swal) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#2563eb' });
+        } else {
+            alert(err.message);
+        }
+    }
+}
+
+// ── Switch Maestro Global de Exclusiones (ON / OFF) ───────────────
+async function cambiarEstadoExclusionesGlobal(activo) {
+    const fd = new FormData();
+    fd.append('activo', activo ? 1 : 0);
+
+    try {
+        const resp = await fetch('<?= URLROOT ?>/notificaciones/toggleExclusionesGlobal', {
+            method: 'POST',
+            body: fd
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+            const lbl = document.getElementById('label_global_exclusiones');
+            const badge = document.getElementById('badge_global_status');
+            if (lbl) {
+                lbl.textContent = activo ? 'Exclusiones Habilitadas' : 'Exclusiones Deshabilitadas (Enviar a todos)';
+                lbl.style.color = activo ? '#059669' : '#dc2626';
+            }
+            if (badge) {
+                badge.textContent = activo ? 'ACTIVO' : 'PAUSADO (IGNORADO)';
+                badge.style.background = activo ? '#dcfce7' : '#fee2e2';
+                badge.style.color = activo ? '#15803d' : '#b91c1c';
+            }
+            if (window.Notyf) {
+                new Notyf().success(res.message);
+            } else if (window.Swal) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: res.message,
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        } else {
+            throw new Error(res.message || 'Error al actualizar exclusiones globales');
+        }
+    } catch (err) {
+        const chk = document.getElementById('toggle_global_exclusiones');
+        if (chk) chk.checked = !activo;
+
+        if (window.Swal) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#2563eb' });
+        } else {
+            alert(err.message);
+        }
+    }
+}
+
+// ── Toggle Visual de Exclusiones en Modal ─────────────────────────
+function toggleModalExclusiones(activo) {
+    const lbl = document.getElementById('lbl_modal_exc_switch');
+    const container = document.getElementById('contenedor_lista_excluidos');
+    const searchInput = document.getElementById('busqueda_excluidos');
+    if (lbl) {
+        lbl.textContent = activo ? 'Activo' : 'Pausado';
+        lbl.style.color = activo ? '#9f1239' : '#64748b';
+    }
+    if (container) {
+        container.style.opacity = activo ? '1' : '0.4';
+        container.style.pointerEvents = activo ? 'auto' : 'none';
+    }
+    if (searchInput) {
+        searchInput.disabled = !activo;
+    }
+}
+
+// ── Filtro en Tiempo Real para Usuarios Excluidos en Modal ─────────
+function filtrarUsuariosExcluidos(q) {
+    const term = (q || '').trim().toLowerCase();
+    document.querySelectorAll('.item-usuario-excluido').forEach(item => {
+        const text = item.getAttribute('data-busqueda') || '';
+        item.style.display = (!term || text.includes(term)) ? 'flex' : 'none';
+    });
+}
+
 // ── Modal de Destinatarios y Exclusiones ─────────────────────────
 function abrirModalDestinatarios(regla) {
     document.getElementById('modalReglaId').value = regla.id;
     document.getElementById('modalTituloRegla').textContent = regla.titulo;
     document.getElementById('modalCodigoRegla').textContent = 'Código de Evento: ' + regla.codigo_evento;
+
+    // Reset buscador
+    const searchInput = document.getElementById('busqueda_excluidos');
+    if (searchInput) {
+        searchInput.value = '';
+        filtrarUsuariosExcluidos('');
+    }
 
     // 1. Marcar roles
     const roles = regla.roles_arr || [];
@@ -662,7 +882,14 @@ function abrirModalDestinatarios(regla) {
         if (chk) chk.checked = roles.includes(String(r));
     });
 
-    // 2. Marcar exclusiones
+    // 2. Marcar switch de exclusiones y lista
+    const excActivas = regla.exclusiones_activas !== undefined ? (parseInt(regla.exclusiones_activas, 10) === 1) : true;
+    const modalExcSwitch = document.getElementById('modal_exclusiones_activas');
+    if (modalExcSwitch) {
+        modalExcSwitch.checked = excActivas;
+        toggleModalExclusiones(excActivas);
+    }
+
     const excluidos = regla.usuarios_excluidos_arr || [];
     document.querySelectorAll('.user-excluido-chk').forEach(c => {
         c.checked = excluidos.includes(parseInt(c.value, 10));
@@ -696,6 +923,10 @@ async function guardarConfigDestinatarios() {
     document.querySelectorAll('input[name="rol_dest"]:checked').forEach(c => {
         fd.append('roles[]', c.value);
     });
+
+    // Exclusiones activas switch
+    const modalExcSwitch = document.getElementById('modal_exclusiones_activas');
+    fd.append('exclusiones_activas', (modalExcSwitch && modalExcSwitch.checked) ? 1 : 0);
 
     // Excluidos
     document.querySelectorAll('.user-excluido-chk:checked').forEach(c => {

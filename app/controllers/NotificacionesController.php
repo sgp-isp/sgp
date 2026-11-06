@@ -41,7 +41,28 @@ class NotificacionesController extends Controller
      */
     public function correos(): void
     {
-        // 1. Obtener todas las reglas de eventos
+        // 1. Asegurar columna exclusiones_activas (resiliente para entornos locales y Render/Cloud)
+        try {
+            $this->db->query("SHOW COLUMNS FROM mail_reglas LIKE 'exclusiones_activas'");
+            if (!$this->db->single()) {
+                $this->db->query("ALTER TABLE mail_reglas ADD COLUMN exclusiones_activas TINYINT(1) NOT NULL DEFAULT 1 AFTER usuarios_excluidos");
+                $this->db->execute();
+            }
+        } catch (\Throwable $e) {
+            error_log('[SGP-MAIL] Error asegurando columna exclusiones_activas: ' . $e->getMessage());
+        }
+
+        // Obtener estado global de exclusiones
+        $globalExclusiones = true;
+        try {
+            $this->db->query("SELECT valor FROM configuracion WHERE clave = 'mail_exclusiones_activas' LIMIT 1");
+            $cfgRow = $this->db->single();
+            if ($cfgRow && (string)$cfgRow->valor === '0') {
+                $globalExclusiones = false;
+            }
+        } catch (\Throwable $e) {}
+
+        // Obtener todas las reglas de eventos
         $this->db->query("SELECT * FROM mail_reglas ORDER BY FIELD(categoria, 'seguridad', 'asistencia', 'academico', 'sistema') ASC, id ASC");
         $reglas = $this->db->resultSet() ?: [];
 
@@ -50,6 +71,7 @@ class NotificacionesController extends Controller
             $r->usuarios_incluidos_arr = !empty($r->usuarios_incluidos) ? (json_decode($r->usuarios_incluidos, true) ?: []) : [];
             $r->usuarios_excluidos_arr = !empty($r->usuarios_excluidos) ? (json_decode($r->usuarios_excluidos, true) ?: []) : [];
             $r->roles_arr = !empty($r->enviar_a_roles) ? explode(',', $r->enviar_a_roles) : [];
+            $r->exclusiones_activas = isset($r->exclusiones_activas) ? (int)$r->exclusiones_activas : 1;
         }
 
         // 2. Obtener lista completa de usuarios para los selectores de destinatarios
@@ -94,15 +116,16 @@ class NotificacionesController extends Controller
         $totalFallidos = (int)($rowFallidos->total_fallidos ?? 0);
 
         $data = [
-            'title'         => 'Gestión de Alertas y Notificaciones por Correo',
-            'reglas'        => $reglas,
-            'usuarios'      => $usuarios,
-            'historial'     => $historial,
-            'smtpConfig'    => $smtpConfig,
-            'totalReglas'   => $totalReglas,
-            'activasReglas' => $activasReglas,
-            'totalHoy'      => $totalHoy,
-            'totalFallidos' => $totalFallidos
+            'title'             => 'Gestión de Alertas y Notificaciones por Correo',
+            'reglas'            => $reglas,
+            'usuarios'          => $usuarios,
+            'historial'         => $historial,
+            'smtpConfig'        => $smtpConfig,
+            'totalReglas'       => $totalReglas,
+            'activasReglas'     => $activasReglas,
+            'totalHoy'          => $totalHoy,
+            'totalFallidos'     => $totalFallidos,
+            'globalExclusiones' => $globalExclusiones
         ];
 
         $this->view('notificaciones/correos', $data);
@@ -142,6 +165,74 @@ class NotificacionesController extends Controller
     }
 
     /**
+     * AJAX POST: Activar o Pausar el filtro de exclusiones para una regla específica
+     */
+    public function toggleExclusionesRegla(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            return;
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+        $activo = (int)($_POST['activo'] ?? 1);
+
+        if ($id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Identificador de regla no válido']);
+            return;
+        }
+
+        try {
+            $this->db->query("UPDATE mail_reglas SET exclusiones_activas = :act WHERE id = :id");
+            $this->db->bind(':act', $activo);
+            $this->db->bind(':id',  $id);
+            $this->db->execute();
+
+            $msg = $activo === 1 
+                ? 'Filtro de exclusiones activado para esta notificación' 
+                : 'Filtro de exclusiones pausado (los usuarios excluidos sí recibirán el correo)';
+            echo json_encode(['success' => true, 'id' => $id, 'activo' => $activo, 'message' => $msg]);
+        } catch (\Throwable $e) {
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar exclusiones: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * AJAX POST: Activar o Pausar el sistema global de exclusiones de correo
+     */
+    public function toggleExclusionesGlobal(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            return;
+        }
+
+        $activo = (int)($_POST['activo'] ?? 1);
+
+        try {
+            $this->db->query("
+                INSERT INTO configuracion (clave, valor, descripcion)
+                VALUES ('mail_exclusiones_activas', :val, 'Habilita o pausa el bloqueo para los usuarios en listas de exclusión de correo')
+                ON DUPLICATE KEY UPDATE valor = :val2, updated_at = NOW()
+            ");
+            $this->db->bind(':val', (string)$activo);
+            $this->db->bind(':val2', (string)$activo);
+            $this->db->execute();
+
+            $msg = $activo === 1 
+                ? 'Sistema de exclusiones activado globalmente (se respetarán las listas de exclusión)' 
+                : 'Sistema de exclusiones pausado (todos los usuarios recibirán correos según su rol)';
+            echo json_encode(['success' => true, 'activo' => $activo, 'message' => $msg]);
+        } catch (\Throwable $e) {
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar configuración: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
      * AJAX POST: Guardar configuración de Destinatarios, Roles y Exclusiones
      */
     public function guardarDestinatarios(): void
@@ -172,18 +263,22 @@ class NotificacionesController extends Controller
             ? json_encode(array_values(array_unique(array_map('intval', $excluidos))))
             : null;
 
+        $exclusionesActivas = isset($_POST['exclusiones_activas']) ? (int)$_POST['exclusiones_activas'] : 1;
+
         try {
             $this->db->query("
                 UPDATE mail_reglas
                 SET enviar_a_roles = :roles,
                     usuarios_incluidos = :inc,
-                    usuarios_excluidos = :exc
+                    usuarios_excluidos = :exc,
+                    exclusiones_activas = :exc_act
                 WHERE id = :id
             ");
-            $this->db->bind(':roles', $rolesStr);
-            $this->db->bind(':inc',   $incluidosJson);
-            $this->db->bind(':exc',   $excluidosJson);
-            $this->db->bind(':id',    $id);
+            $this->db->bind(':roles',   $rolesStr);
+            $this->db->bind(':inc',     $incluidosJson);
+            $this->db->bind(':exc',     $excluidosJson);
+            $this->db->bind(':exc_act', $exclusionesActivas);
+            $this->db->bind(':id',      $id);
             $this->db->execute();
 
             echo json_encode(['success' => true, 'message' => 'Destinatarios y reglas guardadas correctamente']);
