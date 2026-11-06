@@ -792,14 +792,95 @@ class MailService
     }
 
     /**
-     * Alerta de seguridad por inicio de sesión (Biometría o nuevo dispositivo)
+     * Helper para desglosar el User-Agent en especificaciones técnicas de hardware y software (Estilo Bancario)
      */
-    public static function notifySecurityLogin(int $userId, string $authMethod, string $deviceName, string $ip): bool
+    public static function parseUserAgent(?string $ua): array
+    {
+        $ua = $ua ?? ($_SERVER['HTTP_USER_AGENT'] ?? '');
+        if (empty($ua)) {
+            return [
+                'dispositivo' => 'Dispositivo Móvil Autorizado',
+                'so'          => 'Android / iOS',
+                'navegador'   => 'Navegador Web Seguro'
+            ];
+        }
+
+        // 1. Sistema Operativo
+        $so = 'Desconocido';
+        if (preg_match('/Android\s*([0-9\.]+)?/i', $ua, $m)) {
+            $so = 'Android' . (!empty($m[1]) ? ' ' . $m[1] : '');
+        } elseif (preg_match('/iPhone|iPad|iPod/i', $ua)) {
+            if (preg_match('/OS\s*([0-9_]+)/i', $ua, $m)) {
+                $so = 'iOS ' . str_replace('_', '.', $m[1]);
+            } else {
+                $so = 'Apple iOS';
+            }
+        } elseif (preg_match('/Windows NT\s*([0-9\.]+)/i', $ua, $m)) {
+            $winVer = [
+                '10.0' => 'Windows 10 / 11',
+                '6.3'  => 'Windows 8.1',
+                '6.2'  => 'Windows 8',
+                '6.1'  => 'Windows 7'
+            ];
+            $so = $winVer[$m[1]] ?? ('Windows (NT ' . $m[1] . ')');
+        } elseif (preg_match('/Macintosh|Mac OS X\s*([0-9_]+)?/i', $ua, $m)) {
+            $so = 'macOS' . (!empty($m[1]) ? ' ' . str_replace('_', '.', $m[1]) : '');
+        } elseif (preg_match('/Linux/i', $ua)) {
+            $so = 'GNU/Linux';
+        }
+
+        // 2. Navegador Web
+        $nav = 'Navegador Web Seguro';
+        if (preg_match('/SamsungBrowser\/([0-9]+)/i', $ua, $m)) {
+            $nav = 'Samsung Internet (v' . $m[1] . ')';
+        } elseif (preg_match('/Edg\/([0-9]+)/i', $ua, $m)) {
+            $nav = 'Microsoft Edge (v' . $m[1] . ')';
+        } elseif (preg_match('/Chrome\/([0-9]+)/i', $ua, $m) && !preg_match('/Edg|OPR/i', $ua)) {
+            $isMobile = stripos($ua, 'Mobile') !== false;
+            $nav = ($isMobile ? 'Chrome Mobile' : 'Google Chrome') . ' (v' . $m[1] . ')';
+        } elseif (preg_match('/Safari\/([0-9]+)/i', $ua) && !preg_match('/Chrome/i', $ua)) {
+            $nav = (stripos($ua, 'Mobile') !== false ? 'Safari Mobile' : 'Apple Safari');
+        } elseif (preg_match('/Firefox\/([0-9]+)/i', $ua, $m)) {
+            $nav = 'Mozilla Firefox (v' . $m[1] . ')';
+        }
+
+        // 3. Dispositivo / Marca / Modelo
+        $disp = 'Computadora Personal';
+        if (preg_match('/iPhone/i', $ua)) {
+            $disp = 'Apple iPhone';
+        } elseif (preg_match('/iPad/i', $ua)) {
+            $disp = 'Apple iPad';
+        } elseif (preg_match('/Mobile/i', $ua) || preg_match('/Android/i', $ua)) {
+            if (preg_match('/Android\s+[\d\.]+;\s*([^;\)]+)/i', $ua, $m)) {
+                $modelo = trim($m[1]);
+                $modelo = preg_replace('/\s*Build\/.*$/i', '', $modelo);
+                if ($modelo !== '' && $modelo !== 'K') {
+                    $disp = $modelo;
+                } else {
+                    $disp = 'Teléfono Inteligente (Android)';
+                }
+            } else {
+                $disp = 'Teléfono Móvil';
+            }
+        }
+
+        return [
+            'dispositivo' => $disp,
+            'so'          => $so,
+            'navegador'   => $nav
+        ];
+    }
+
+    /**
+     * Alerta de seguridad por inicio de sesión (Biometría o nuevo dispositivo) — Estilo Bancario
+     */
+    public static function notifySecurityLogin(int $userId, string $authMethod, string $deviceName, string $ip, ?string $ua = null): bool
     {
         try {
             $db = Database::getInstance();
             $db->query("
-                SELECT u.correo AS email, COALESCE(dp.nombres, u.cedula) AS nombre
+                SELECT u.correo AS email, u.cedula,
+                       TRIM(CONCAT(COALESCE(dp.nombres, ''), ' ', COALESCE(dp.apellidos, ''))) AS nombre
                 FROM usuarios u
                 LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
                 WHERE u.id = :id LIMIT 1
@@ -809,35 +890,99 @@ class MailService
 
             if (!$user || empty($user->email)) return false;
 
-            // Cooldown de 24 horas: evitar spam si el usuario inicia sesión varias veces en el mismo día
+            // Cooldown de 12 horas para inicios de sesión normales: evitar spam si entra varias veces al día
             $db->query("
                 SELECT id FROM mail_historial
                 WHERE usuario_id = :uid
                   AND codigo_evento = 'SEGURIDAD_LOGIN'
                   AND estado IN ('enviado', 'simulado')
-                  AND created_at >= NOW() - INTERVAL 24 HOUR
+                  AND created_at >= NOW() - INTERVAL 12 HOUR
                 LIMIT 1
             ");
             $db->bind(':uid', $userId);
             if ($db->single()) {
-                return true; // Suprimir duplicados en 24h
+                return true; // Suprimir duplicados en 12h
             }
 
+            $uaInfo = self::parseUserAgent($ua ?? ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+            $finalDevice = (!empty($deviceName) && $deviceName !== 'Dispositivo Móvil Institucional' && $deviceName !== 'K')
+                ? $deviceName
+                : $uaInfo['dispositivo'];
+
             $fechaHora = date('d/m/Y h:i:s A');
+            $refCode = 'LOG-' . date('Ymd') . '-' . strtoupper(substr(md5($userId . $finalDevice . time()), 0, 8));
+            $urlSoporte = (defined('URLROOT') ? rtrim(URLROOT, '/') : '') . '/soporte';
+            $urlPerfil  = (defined('URLROOT') ? rtrim(URLROOT, '/') : '') . '/perfil/ver';
+
             $content = "
-                <p>Hola <strong>{$user->nombre}</strong>,</p>
-                <p>Detectamos un inicio de sesión en tu cuenta del Sistema de Gestión de Pasantes:</p>
-                <div style='background-color: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 16px; margin: 18px 0;'>
-                    <div style='font-size: 13px; color: #1e3a8a; margin-bottom: 4px;'><strong>Método:</strong> {$authMethod}</div>
-                    <div style='font-size: 13px; color: #1e3a8a; margin-bottom: 4px;'><strong>Dispositivo:</strong> {$deviceName}</div>
-                    <div style='font-size: 13px; color: #1e3a8a; margin-bottom: 4px;'><strong>Fecha y Hora:</strong> {$fechaHora}</div>
-                    <div style='font-size: 13px; color: #1e3a8a;'><strong>Dirección IP:</strong> {$ip}</div>
+                <p style='color: #1e293b; font-size: 15px;'>Hola <strong>{$user->nombre}</strong> (C.I. {$user->cedula}),</p>
+                <p style='color: #334155; line-height: 1.55;'>
+                    Te informamos que se ha registrado un <strong>inicio de sesión exitoso</strong> en tu cuenta del <strong>Sistema de Gestión de Pasantes (SGP)</strong> del Instituto de Salud Pública del Estado Bolívar (ISPEB):
+                </p>
+
+                <!-- Ficha Técnica de la Conexión -->
+                <div style='background-color: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 18px 20px; margin: 20px 0;'>
+                    <div style='font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;'>
+                        <span style='display:inline-block; width:9px; height:9px; border-radius:50%; background:#2563eb;'></span>
+                        Especificaciones del Acceso
+                    </div>
+                    <table style='width: 100%; border-collapse: collapse; font-size: 13px; color: #334155;'>
+                        <tr style='border-bottom: 1px solid #e2e8f0;'>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600; width: 38%;'>🔑 Método de Acceso:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #1e40af;'>{$authMethod}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #e2e8f0;'>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>📱 Equipo / Dispositivo:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$finalDevice}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #e2e8f0;'>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>💻 Sistema Operativo:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$uaInfo['so']}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #e2e8f0;'>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>🌐 Navegador Web:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$uaInfo['navegador']}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #e2e8f0;'>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>🌐 Dirección IP:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a; font-family: monospace;'>{$ip}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #e2e8f0;'>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>📅 Fecha y Hora Oficial:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$fechaHora} (VET)</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>🔖 Referencia de Auditoría:</td>
+                            <td style='padding: 8px 0; font-weight: 800; color: #2563eb; font-family: monospace;'>{$refCode}</td>
+                        </tr>
+                    </table>
                 </div>
-                <p style='color: #64748b; font-size: 13px;'>Si fuiste tú, puedes ignorar este mensaje. Si no reconoces este acceso, por favor comunícate de inmediato con la administración del sistema o cambia tu contraseña.</p>
+
+                <!-- Aviso de Seguridad Bancaria -->
+                <div style='background-color: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 12px; padding: 16px; margin: 20px 0;'>
+                    <div style='font-weight: 800; color: #9f1239; font-size: 13.5px; margin-bottom: 6px;'>
+                        🛡️ Verificación de Actividad Bancaria
+                    </div>
+                    <p style='margin: 0 0 8px; font-size: 12.5px; color: #9f1239; line-height: 1.45;'>
+                        <strong>¿Fuiste tú?</strong> Si reconoces este inicio de sesión, puedes desestimar este aviso. Este correo es generado de manera automática como medida de protección de tu identidad.
+                    </p>
+                    <p style='margin: 0; font-size: 12.5px; color: #9f1239; line-height: 1.45;'>
+                        <strong>¿NO fuiste tú?</strong> Si no realizaste este acceso, te recomendamos ingresar de inmediato y <strong>cambiar tu contraseña</strong> o reportar la anomalía ante la Mesa de Ayuda de Telemática.
+                    </p>
+                </div>
+
+                <div style='margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;'>
+                    <a href='{$urlPerfil}' style='display:inline-block; background:#162660; color:#ffffff; font-weight:800; font-size:13px; padding:10px 20px; border-radius:10px; text-decoration:none;'>
+                        🔒 Gestionar Mi Seguridad
+                    </a>
+                    <a href='{$urlSoporte}' style='display:inline-block; background:#ffffff; color:#dc2626; border:1.5px solid #fca5a5; font-weight:700; font-size:13px; padding:9px 16px; border-radius:10px; text-decoration:none;'>
+                        🚨 Reportar Acceso No Autorizado
+                    </a>
+                </div>
             ";
 
-            $html = self::renderBentoTemplate('Alerta de Seguridad', '#2563eb', 'Inicio de Sesión Detectado', $content, '', '', 'Aviso de seguridad del Sistema de Gestión de Pasantes.');
-            $res = self::send($user->email, (string)$user->nombre, "🛡️ Alerta de Seguridad: Acceso con {$authMethod}", $html, '', 'SEGURIDAD_LOGIN', $userId);
+            $html = self::renderBentoTemplate('Alerta de Acceso', '#2563eb', 'Inicio de Sesión Detectado', $content, '', '', 'Aviso de seguridad del Sistema de Gestión de Pasantes (ISPEB).');
+            $res = self::send($user->email, (string)$user->nombre, "🛡️ Alerta de Seguridad: Inicio de Sesión ({$authMethod})", $html, '', 'SEGURIDAD_LOGIN', $userId);
             return !empty($res['success']);
 
         } catch (\Throwable $e) {
@@ -847,14 +992,15 @@ class MailService
     }
 
     /**
-     * Notificación cuando se registra/vincula un nuevo dispositivo biométrico
+     * Notificación cuando se registra/vincula un nuevo dispositivo biométrico (Estilo Bancario con Ficha Técnica Completa)
      */
-    public static function notifyBiometricEnrolled(int $userId, string $deviceName, string $ip): bool
+    public static function notifyBiometricEnrolled(int $userId, string $deviceName, string $ip, ?string $ua = null): bool
     {
         try {
             $db = Database::getInstance();
             $db->query("
-                SELECT u.correo AS email, COALESCE(dp.nombres, u.cedula) AS nombre
+                SELECT u.correo AS email, u.cedula,
+                       TRIM(CONCAT(COALESCE(dp.nombres, ''), ' ', COALESCE(dp.apellidos, ''))) AS nombre
                 FROM usuarios u
                 LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
                 WHERE u.id = :id LIMIT 1
@@ -864,21 +1010,93 @@ class MailService
 
             if (!$user || empty($user->email)) return false;
 
+            $uaInfo = self::parseUserAgent($ua ?? ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+            $finalDevice = (!empty($deviceName) && $deviceName !== 'Dispositivo Móvil Institucional' && $deviceName !== 'K')
+                ? $deviceName
+                : $uaInfo['dispositivo'];
+
             $fechaHora = date('d/m/Y h:i:s A');
+            $refCode = 'BIO-ENROLL-' . date('Ymd') . '-' . strtoupper(substr(md5($userId . $finalDevice . time()), 0, 8));
+
+            $urlPerfil = (defined('URLROOT') ? rtrim(URLROOT, '/') : '') . '/perfil/ver';
+            $urlSoporte = (defined('URLROOT') ? rtrim(URLROOT, '/') : '') . '/soporte';
+
             $content = "
-                <p>Hola <strong>{$user->nombre}</strong>,</p>
-                <p>Te confirmamos que se ha activado exitosamente el <strong>Acceso Biométrico Móvil (Huella Dactilar / Face ID)</strong> en tu cuenta del Sistema de Gestión de Pasantes:</p>
-                <div style='background-color: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 16px; margin: 18px 0;'>
-                    <div style='font-size: 13px; color: #166534; margin-bottom: 4px;'><strong>Dispositivo:</strong> {$deviceName}</div>
-                    <div style='font-size: 13px; color: #166534; margin-bottom: 4px;'><strong>Fecha y Hora de Vinculación:</strong> {$fechaHora}</div>
-                    <div style='font-size: 13px; color: #166534;'><strong>Dirección IP:</strong> {$ip}</div>
+                <p style='color: #1e293b; font-size: 15px;'>Estimado(a) <strong>{$user->nombre}</strong> (C.I. {$user->cedula}),</p>
+                <p style='color: #334155; line-height: 1.55;'>
+                    Te notificamos que se ha registrado con éxito la <strong>afiliación de un nuevo dispositivo móvil con Acceso Biométrico (Huella Dactilar / Face ID)</strong> en tu cuenta del <strong>Sistema de Gestión de Pasantes (SGP)</strong> del Instituto de Salud Pública del Estado Bolívar (ISPEB).
+                </p>
+
+                <!-- Tarjeta Bento de Especificaciones Técnicas Estilo Bancario -->
+                <div style='background-color: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);'>
+                    <div style='font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;'>
+                        <span style='display:inline-block; width:9px; height:9px; border-radius:50%; background:#10b981;'></span>
+                        Ficha Técnica del Dispositivo Afiliado
+                    </div>
+                    <table style='width: 100%; border-collapse: collapse; font-size: 13px; color: #334155;'>
+                        <tr style='border-bottom: 1px solid #e2e8f0;'>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600; width: 38%;'>📱 Equipo / Modelo:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$finalDevice}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #e2e8f0;'>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>💻 Sistema Operativo:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$uaInfo['so']}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #e2e8f0;'>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>🌐 Navegador Web:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$uaInfo['navegador']}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #e2e8f0;'>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>🔐 Tecnología de Enrolamiento:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #166534;'>
+                                <span style='display:inline-block; background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:6px; font-size:12px; font-weight:800;'>Huella Dactilar (WebAuthn / Passkey FIDO2)</span>
+                            </td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #e2e8f0;'>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>🌐 Dirección IP de Registro:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a; font-family: monospace;'>{$ip}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #e2e8f0;'>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>📅 Fecha y Hora Oficial:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$fechaHora} (Hora VET)</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>🔖 Nro. de Referencia:</td>
+                            <td style='padding: 8px 0; font-weight: 800; color: #2563eb; font-family: monospace;'>{$refCode}</td>
+                        </tr>
+                    </table>
                 </div>
-                <p style='color: #334155;'>A partir de ahora podrás iniciar sesión de forma instantánea pulsando el botón <strong>\"Ingresar con Huella Dactilar\"</strong> sin tener que escribir tu contraseña.</p>
-                <p style='color: #64748b; font-size: 13px;'>Si no realizaste esta acción o no reconoces este dispositivo, puedes desvincularlo inmediatamente ingresando a tu Perfil en el sistema.</p>
+
+                <p style='color: #334155; line-height: 1.5;'>
+                    A partir de este momento puedes iniciar sesión de forma instantánea pulsando el botón <strong>\"Ingresar con Huella Dactilar\"</strong> en la pantalla de acceso, o registrar tu jornada diaria en el quiosco de asistencia directamente desde este dispositivo.
+                </p>
+
+                <!-- Caja de Alerta Preventiva Bancaria -->
+                <div style='background-color: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 12px; padding: 16px; margin: 22px 0;'>
+                    <div style='font-weight: 800; color: #9f1239; font-size: 13.5px; margin-bottom: 6px;'>
+                        🛡️ Medidas de Seguridad Bancaria
+                    </div>
+                    <p style='margin: 0 0 8px; font-size: 12.5px; color: #9f1239; line-height: 1.45;'>
+                        <strong>¿Fuiste tú?</strong> Si tú mismo realizaste esta afiliación desde tu teléfono, este correo sirve como comprobante digital oficial de seguridad. No necesitas responder a este mensaje.
+                    </p>
+                    <p style='margin: 0; font-size: 12.5px; color: #9f1239; line-height: 1.45;'>
+                        <strong>¿NO reconoces este dispositivo?</strong> Si no realizaste esta acción o sospechas de una actividad fraudulenta, tu cuenta puede estar en riesgo. Pulsa inmediatamente el botón para <strong>Desvincular el Dispositivo</strong> desde tu perfil o reporta la incidencia a la Mesa de Ayuda Técnica.
+                    </p>
+                </div>
+
+                <!-- Botones de Acción Directa -->
+                <div style='margin-top: 22px; text-align: center; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;'>
+                    <a href='{$urlPerfil}' style='display:inline-block; background:#162660; color:#ffffff; font-weight:800; font-size:13px; padding:11px 22px; border-radius:10px; text-decoration:none; box-shadow:0 4px 12px rgba(22,38,96,0.25);'>
+                        🔐 Administrar Mis Dispositivos
+                    </a>
+                    <a href='{$urlSoporte}' style='display:inline-block; background:#ffffff; color:#dc2626; border:1.5px solid #fca5a5; font-weight:700; font-size:13px; padding:10px 18px; border-radius:10px; text-decoration:none;'>
+                        🚨 Reportar a Soporte
+                    </a>
+                </div>
             ";
 
-            $html = self::renderBentoTemplate('Biometría Activada', '#16a34a', 'Acceso Biométrico Vinculado', $content, '', '', 'Registro de autenticación emitido por el SGP.');
-            $res = self::send($user->email, (string)$user->nombre, "🔐 Acceso Biométrico Activado: {$deviceName}", $html, '', 'BIOMETRIA_VINCULADA', $userId);
+            $html = self::renderBentoTemplate('Seguridad Bancaria', '#16a34a', 'Dispositivo Afiliado con Huella Dactilar', $content, '', '', 'Comprobante digital emitido automáticamente por el Sistema de Gestión de Pasantes (ISPEB).');
+            $res = self::send($user->email, (string)$user->nombre, "🔐 Alerta de Seguridad: Dispositivo Afiliado con Huella ({$finalDevice})", $html, '', 'BIOMETRIA_VINCULADA', $userId);
             return !empty($res['success']);
 
         } catch (\Throwable $e) {
@@ -888,14 +1106,15 @@ class MailService
     }
 
     /**
-     * Notificación cuando se desvincula/elimina un dispositivo biométrico
+     * Notificación cuando se desvincula/elimina un dispositivo biométrico — Estilo Bancario
      */
-    public static function notifyBiometricRemoved(int $userId, string $deviceName, string $ip): bool
+    public static function notifyBiometricRemoved(int $userId, string $deviceName, string $ip, ?string $ua = null): bool
     {
         try {
             $db = Database::getInstance();
             $db->query("
-                SELECT u.correo AS email, COALESCE(dp.nombres, u.cedula) AS nombre
+                SELECT u.correo AS email, u.cedula,
+                       TRIM(CONCAT(COALESCE(dp.nombres, ''), ' ', COALESCE(dp.apellidos, ''))) AS nombre
                 FROM usuarios u
                 LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
                 WHERE u.id = :id LIMIT 1
@@ -905,21 +1124,79 @@ class MailService
 
             if (!$user || empty($user->email)) return false;
 
+            $uaInfo = self::parseUserAgent($ua ?? ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+            $finalDevice = (!empty($deviceName) && $deviceName !== 'Dispositivo Móvil Institucional' && $deviceName !== 'K')
+                ? $deviceName
+                : $uaInfo['dispositivo'];
+
             $fechaHora = date('d/m/Y h:i:s A');
+            $refCode = 'BIO-REVOKE-' . date('Ymd') . '-' . strtoupper(substr(md5($userId . $finalDevice . time()), 0, 8));
+
+            $urlPerfil = (defined('URLROOT') ? rtrim(URLROOT, '/') : '') . '/perfil/ver';
+            $urlSoporte = (defined('URLROOT') ? rtrim(URLROOT, '/') : '') . '/soporte';
+
             $content = "
-                <p>Hola <strong>{$user->nombre}</strong>,</p>
-                <p>Te informamos que se ha <strong>desvinculado</strong> un dispositivo biométrico de tu cuenta:</p>
-                <div style='background-color: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 12px; padding: 16px; margin: 18px 0;'>
-                    <div style='font-size: 13px; color: #9a3412; margin-bottom: 4px;'><strong>Dispositivo Desafiliado:</strong> {$deviceName}</div>
-                    <div style='font-size: 13px; color: #9a3412; margin-bottom: 4px;'><strong>Fecha y Hora:</strong> {$fechaHora}</div>
-                    <div style='font-size: 13px; color: #9a3412;'><strong>Dirección IP:</strong> {$ip}</div>
+                <p style='color: #1e293b; font-size: 15px;'>Estimado(a) <strong>{$user->nombre}</strong> (C.I. {$user->cedula}),</p>
+                <p style='color: #334155; line-height: 1.55;'>
+                    Te notificamos que se ha procesado con éxito la <strong>desvinculación y revocación de acceso biométrico</strong> de un dispositivo móvil en tu cuenta del <strong>Sistema de Gestión de Pasantes (SGP)</strong> del ISPEB:
+                </p>
+
+                <!-- Ficha Técnica de Desafiliación -->
+                <div style='background-color: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 14px; padding: 20px; margin: 20px 0;'>
+                    <div style='font-size: 12px; font-weight: 800; color: #9a3412; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;'>
+                        <span style='display:inline-block; width:9px; height:9px; border-radius:50%; background:#ea580c;'></span>
+                        Detalles de la Desafiliación
+                    </div>
+                    <table style='width: 100%; border-collapse: collapse; font-size: 13px; color: #334155;'>
+                        <tr style='border-bottom: 1px solid #ffedd5;'>
+                            <td style='padding: 8px 0; color: #9a3412; font-weight: 600; width: 38%;'>📱 Equipo Revocado:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$finalDevice}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #ffedd5;'>
+                            <td style='padding: 8px 0; color: #9a3412; font-weight: 600;'>💻 Sistema Operativo:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$uaInfo['so']}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #ffedd5;'>
+                            <td style='padding: 8px 0; color: #9a3412; font-weight: 600;'>🌐 Dirección IP:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a; font-family: monospace;'>{$ip}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #ffedd5;'>
+                            <td style='padding: 8px 0; color: #9a3412; font-weight: 600;'>📅 Fecha de Revocación:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$fechaHora} (VET)</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 8px 0; color: #9a3412; font-weight: 600;'>🔖 Nro. de Anulación:</td>
+                            <td style='padding: 8px 0; font-weight: 800; color: #c2410c; font-family: monospace;'>{$refCode}</td>
+                        </tr>
+                    </table>
                 </div>
-                <p style='color: #334155;'>Para iniciar sesión en futuros accesos desde ese dispositivo deberás utilizar tu correo electrónico y tu contraseña.</p>
-                <p style='color: #64748b; font-size: 13px;'>Si tú no solicitaste esta desafiliación, por favor cambia tu contraseña de inmediato.</p>
+
+                <p style='color: #334155; line-height: 1.5;'>
+                    A partir de este momento, el sensor biométrico de este equipo <strong>ha quedado invalidado</strong>. Para volver a iniciar sesión o marcar asistencia desde este equipo deberás escribir manualmente tu correo y contraseña.
+                </p>
+
+                <!-- Aviso de Seguridad Preventiva -->
+                <div style='background-color: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 12px; padding: 16px; margin: 20px 0;'>
+                    <div style='font-weight: 800; color: #9f1239; font-size: 13.5px; margin-bottom: 6px;'>
+                        🚨 ¿Tú no solicitaste esta desafiliación?
+                    </div>
+                    <p style='margin: 0; font-size: 12.5px; color: #9f1239; line-height: 1.45;'>
+                        Si no reconoces esta acción, es posible que alguien haya ingresado a tu cuenta. Te recomendamos <strong>cambiar tu contraseña de inmediato</strong> y reportar el evento a Soporte Técnico.
+                    </p>
+                </div>
+
+                <div style='margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;'>
+                    <a href='{$urlPerfil}' style='display:inline-block; background:#162660; color:#ffffff; font-weight:800; font-size:13px; padding:10px 20px; border-radius:10px; text-decoration:none;'>
+                        🔒 Cambiar Mi Contraseña
+                    </a>
+                    <a href='{$urlSoporte}' style='display:inline-block; background:#ffffff; color:#dc2626; border:1.5px solid #fca5a5; font-weight:700; font-size:13px; padding:9px 16px; border-radius:10px; text-decoration:none;'>
+                        🚨 Reportar a Soporte
+                    </a>
+                </div>
             ";
 
-            $html = self::renderBentoTemplate('Seguridad', '#ea580c', 'Dispositivo Biométrico Desvinculado', $content, '', '', 'Aviso de seguridad del SGP.');
-            $res = self::send($user->email, (string)$user->nombre, "⚠️ Dispositivo Biométrico Desvinculado: {$deviceName}", $html, '', 'BIOMETRIA_DESAFILIADA', $userId);
+            $html = self::renderBentoTemplate('Seguridad', '#ea580c', 'Dispositivo Biométrico Desvinculado', $content, '', '', 'Comprobante de anulación emitido por el Sistema de Gestión de Pasantes (ISPEB).');
+            $res = self::send($user->email, (string)$user->nombre, "⚠️ Alerta de Seguridad: Dispositivo Biométrico Desvinculado ({$finalDevice})", $html, '', 'BIOMETRIA_DESAFILIADA', $userId);
             return !empty($res['success']);
 
         } catch (\Throwable $e) {
@@ -931,34 +1208,46 @@ class MailService
     /**
      * Enviar Código OTP de 6 Dígitos para Autorización Bancaria de Nuevo Dispositivo Frecuente
      */
-    public static function notifyDeviceVinculacionOtp(string $email, string $fullName, string $otp, string $deviceName, string $ip): bool
+    public static function notifyDeviceVinculacionOtp(string $email, string $fullName, string $otp, string $deviceName, string $ip, ?string $ua = null): bool
     {
         try {
+            $uaInfo = self::parseUserAgent($ua ?? ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+            $finalDevice = (!empty($deviceName) && $deviceName !== 'Dispositivo Móvil Institucional' && $deviceName !== 'K')
+                ? $deviceName
+                : $uaInfo['dispositivo'];
+
             $fechaHora = date('d/m/Y h:i:s A');
-            // Formatear código con espacio en medio: ej 849 201
             $otpFormateado = strlen($otp) === 6 ? substr($otp, 0, 3) . ' ' . substr($otp, 3, 3) : $otp;
+            $refCode = 'OTP-' . date('Ymd') . '-' . strtoupper(substr(md5($email . $finalDevice . time()), 0, 6));
 
             $content = "
                 <p style='color: #1e293b; font-size: 15px;'>Hola <strong>{$fullName}</strong>,</p>
-                <p style='color: #334155;'>Hemos recibido una solicitud para <strong>vincular un nuevo dispositivo frecuente</strong> a tu cuenta institucional en el Sistema de Gestión de Pasantes (SGP):</p>
+                <p style='color: #334155; line-height: 1.55;'>
+                    Hemos recibido una solicitud para <strong>vincular un nuevo dispositivo móvil de confianza</strong> a tu cuenta institucional en el Sistema de Gestión de Pasantes (SGP):
+                </p>
                 
-                <div style='background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 14px; padding: 22px; margin: 24px 0; text-align: center;'>
+                <div style='background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 14px; padding: 22px; margin: 22px 0; text-align: center;'>
                     <div style='font-size: 12px; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;'>Código de Autorización Único</div>
                     <div style='font-family: monospace, monospace; font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #1d4ed8; margin: 6px 0;'>{$otpFormateado}</div>
                     <div style='font-size: 12px; color: #3b82f6; font-weight: 600; margin-top: 8px;'>⏱️ Válido durante 10 minutos (1 solo uso)</div>
                 </div>
 
-                <div style='background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 20px;'>
-                    <div style='font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; text-transform: uppercase;'>Detalles del Dispositivo Solicitante:</div>
-                    <div style='font-size: 13px; color: #334155; margin-bottom: 4px;'>📱 <strong>Dispositivo:</strong> {$deviceName}</div>
-                    <div style='font-size: 13px; color: #334155; margin-bottom: 4px;'>🌐 <strong>Dirección IP:</strong> {$ip}</div>
-                    <div style='font-size: 13px; color: #334155;'>📅 <strong>Fecha y Hora:</strong> {$fechaHora}</div>
+                <div style='background-color: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 20px;'>
+                    <div style='font-size: 12px; font-weight: 800; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;'>Detalles del Dispositivo Solicitante:</div>
+                    <div style='font-size: 13px; color: #334155; margin-bottom: 5px;'>📱 <strong>Dispositivo:</strong> {$finalDevice}</div>
+                    <div style='font-size: 13px; color: #334155; margin-bottom: 5px;'>💻 <strong>Sistema Operativo:</strong> {$uaInfo['so']}</div>
+                    <div style='font-size: 13px; color: #334155; margin-bottom: 5px;'>🌐 <strong>Navegador:</strong> {$uaInfo['navegador']}</div>
+                    <div style='font-size: 13px; color: #334155; margin-bottom: 5px;'>🌐 <strong>Dirección IP:</strong> {$ip}</div>
+                    <div style='font-size: 13px; color: #334155; margin-bottom: 5px;'>📅 <strong>Fecha y Hora:</strong> {$fechaHora} (VET)</div>
+                    <div style='font-size: 13px; color: #334155;'>🔖 <strong>Referencia:</strong> <span style='font-family: monospace; color:#2563eb;'>{$refCode}</span></div>
                 </div>
 
-                <p style='color: #475569; font-size: 13px; line-height: 1.5;'>Ingresa este código en tu pantalla para autorizar la vinculación. Una vez validado, podrás acceder a tu cuenta de forma rápida y segura utilizando tu <strong>huella dactilar</strong> o tu <strong>patrón gestual</strong>.</p>
+                <p style='color: #475569; font-size: 13px; line-height: 1.5;'>
+                    Ingresa este código en tu pantalla para autorizar la vinculación. Una vez validado, podrás acceder a tu cuenta de forma rápida y segura utilizando tu <strong>huella dactilar</strong> o tu <strong>patrón gestual</strong>.
+                </p>
                 
-                <div style='background: #fff1f2; border: 1px solid #fecdd3; border-radius: 10px; padding: 12px; font-size: 12px; color: #9f1239; margin-top: 20px;'>
-                    🛡️ <strong>Alerta de Seguridad:</strong> Si tú no iniciaste esta solicitud, alguien está intentando acceder a tu cuenta. Ignora este código y cambia tu contraseña inmediatamente.
+                <div style='background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 10px; padding: 14px; font-size: 12.5px; color: #9f1239; margin-top: 20px;'>
+                    🛡️ <strong>Alerta de Seguridad Bancaria:</strong> Si tú no iniciaste esta solicitud, alguien está intentando acceder a tu cuenta. Ignora este código y cambia tu contraseña inmediatamente.
                 </div>
             ";
 
@@ -973,32 +1262,90 @@ class MailService
     }
 
     /**
-     * Enviar Confirmación cuando un Dispositivo queda Vinculado Exitosamente
+     * Enviar Confirmación cuando un Dispositivo queda Vinculado Exitosamente — Estilo Bancario
      */
-    public static function notifyDeviceVinculadoConfirmacion(string $email, string $fullName, string $deviceName, string $metodo, string $ip): bool
+    public static function notifyDeviceVinculadoConfirmacion(string $email, string $fullName, string $deviceName, string $metodo, string $ip, ?string $ua = null): bool
     {
         try {
+            $uaInfo = self::parseUserAgent($ua ?? ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+            $finalDevice = (!empty($deviceName) && $deviceName !== 'Dispositivo Móvil Institucional' && $deviceName !== 'K')
+                ? $deviceName
+                : $uaInfo['dispositivo'];
+
             $fechaHora = date('d/m/Y h:i:s A');
-            $metodoTexto = ($metodo === 'patron') ? 'Patrón de Desbloqueo Gestual' : 'Huella Dactilar / Biometría';
+            $metodoTexto = ($metodo === 'patron') ? 'Patrón de Desbloqueo Gestual' : 'Huella Dactilar / Biometría WebAuthn';
+            $refCode = 'DEV-LINK-' . date('Ymd') . '-' . strtoupper(substr(md5($email . $finalDevice . time()), 0, 8));
+
+            $urlPerfil = (defined('URLROOT') ? rtrim(URLROOT, '/') : '') . '/perfil/ver';
+            $urlSoporte = (defined('URLROOT') ? rtrim(URLROOT, '/') : '') . '/soporte';
 
             $content = "
                 <p style='color: #1e293b; font-size: 15px;'>Hola <strong>{$fullName}</strong>,</p>
-                <p style='color: #334155;'>Te confirmamos que el siguiente dispositivo ha sido <strong>vinculado con éxito</strong> a tu cuenta institucional en el Sistema de Gestión de Pasantes (SGP):</p>
+                <p style='color: #334155; line-height: 1.55;'>
+                    Te confirmamos que el siguiente dispositivo ha sido <strong>vinculado con éxito</strong> a tu cuenta institucional en el Sistema de Gestión de Pasantes (SGP):
+                </p>
                 
-                <div style='background-color: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 18px; margin: 18px 0;'>
-                    <div style='font-size: 14px; font-weight: 700; color: #166534; margin-bottom: 8px;'>✅ Dispositivo Frecuente Autorizado</div>
-                    <div style='font-size: 13px; color: #166534; margin-bottom: 4px;'>📱 <strong>Dispositivo:</strong> {$deviceName}</div>
-                    <div style='font-size: 13px; color: #166534; margin-bottom: 4px;'>🔑 <strong>Método de Acceso Rápido:</strong> {$metodoTexto}</div>
-                    <div style='font-size: 13px; color: #166534; margin-bottom: 4px;'>🌐 <strong>Dirección IP:</strong> {$ip}</div>
-                    <div style='font-size: 13px; color: #166534;'>📅 <strong>Fecha:</strong> {$fechaHora}</div>
+                <div style='background-color: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; padding: 20px; margin: 20px 0;'>
+                    <div style='font-size: 13px; font-weight: 800; color: #166534; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.6px;'>
+                        ✅ Dispositivo Frecuente Autorizado
+                    </div>
+                    <table style='width: 100%; border-collapse: collapse; font-size: 13px; color: #334155;'>
+                        <tr style='border-bottom: 1px solid #dcfce7;'>
+                            <td style='padding: 8px 0; color: #166534; font-weight: 600; width: 38%;'>📱 Dispositivo:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$finalDevice}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #dcfce7;'>
+                            <td style='padding: 8px 0; color: #166534; font-weight: 600;'>💻 Sistema Operativo:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$uaInfo['so']}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #dcfce7;'>
+                            <td style='padding: 8px 0; color: #166534; font-weight: 600;'>🌐 Navegador:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$uaInfo['navegador']}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #dcfce7;'>
+                            <td style='padding: 8px 0; color: #166534; font-weight: 600;'>🔑 Método Autorizado:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #15803d;'>{$metodoTexto}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #dcfce7;'>
+                            <td style='padding: 8px 0; color: #166534; font-weight: 600;'>🌐 Dirección IP:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a; font-family: monospace;'>{$ip}</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid #dcfce7;'>
+                            <td style='padding: 8px 0; color: #166534; font-weight: 600;'>📅 Fecha de Registro:</td>
+                            <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>{$fechaHora} (VET)</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 8px 0; color: #166534; font-weight: 600;'>🔖 Nro. de Referencia:</td>
+                            <td style='padding: 8px 0; font-weight: 800; color: #166534; font-family: monospace;'>{$refCode}</td>
+                        </tr>
+                    </table>
                 </div>
 
-                <p style='color: #334155; font-size: 13px; line-height: 1.5;'>A partir de ahora podrás iniciar sesión de forma rápida y cómoda desde este equipo utilizando tu {$metodoTexto}.</p>
-                <p style='color: #64748b; font-size: 13px;'>Si no reconoces este dispositivo o deseas revocar su acceso, puedes desvincularlo en cualquier momento desde la sección de Seguridad en tu Perfil.</p>
+                <p style='color: #334155; font-size: 13.5px; line-height: 1.5;'>
+                    A partir de ahora podrás iniciar sesión de forma rápida y cómoda desde este equipo utilizando tu {$metodoTexto}.
+                </p>
+
+                <div style='background-color: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 12px; padding: 14px; margin: 20px 0;'>
+                    <div style='font-weight: 800; color: #9f1239; font-size: 13px; margin-bottom: 5px;'>
+                        🛡️ Recordatorio de Seguridad
+                    </div>
+                    <p style='margin: 0; font-size: 12px; color: #9f1239; line-height: 1.45;'>
+                        Si tú no vinculaste este dispositivo o deseas revocar su acceso, puedes desvincularlo en cualquier momento desde tu Perfil o avisar a Soporte Técnico.
+                    </p>
+                </div>
+
+                <div style='margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;'>
+                    <a href='{$urlPerfil}' style='display:inline-block; background:#162660; color:#ffffff; font-weight:800; font-size:13px; padding:10px 20px; border-radius:10px; text-decoration:none;'>
+                        🔐 Ver Dispositivos en mi Perfil
+                    </a>
+                    <a href='{$urlSoporte}' style='display:inline-block; background:#ffffff; color:#dc2626; border:1.5px solid #fca5a5; font-weight:700; font-size:13px; padding:9px 16px; border-radius:10px; text-decoration:none;'>
+                        🚨 Mesa de Ayuda
+                    </a>
+                </div>
             ";
 
             $html = self::renderBentoTemplate('Dispositivo Vinculado', '#16a34a', 'Nuevo Dispositivo Autorizado', $content, '', '', 'Aviso de seguridad institucional SGP.');
-            $res = self::send($email, $fullName, "🛡️ Dispositivo Vinculado Exitosamente: {$deviceName}", $html, '', 'DISPOSITIVO_VINCULADO');
+            $res = self::send($email, $fullName, "🛡️ Dispositivo Vinculado Exitosamente: {$finalDevice}", $html, '', 'DISPOSITIVO_VINCULADO');
             return !empty($res['success']);
 
         } catch (\Throwable $e) {

@@ -694,7 +694,6 @@ input:checked + .switch-slider:before {
                 <a href="<?= URLROOT ?>/soporte" style="color:#2563eb;font-weight:700;font-size:0.78rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
                     Ver todos en Mesa de Ayuda &rarr;
                 </a>
-                </button>
             </div>
         </div>
     </div>

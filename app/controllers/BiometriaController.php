@@ -235,7 +235,7 @@ class BiometriaController extends Controller
             // Alerta de confirmación por correo en segundo plano
             try {
                 $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
-                MailService::notifyBiometricEnrolled($userId, $deviceName, $ip);
+                MailService::notifyBiometricEnrolled($userId, $deviceName, $ip, $userAgent);
             } catch (\Throwable $mErr) {
                 error_log('[SGP-BIOMETRIA] Error enviando correo de afiliación: ' . $mErr->getMessage());
             }
@@ -490,7 +490,8 @@ class BiometriaController extends Controller
                     (int)$record->user_id,
                     'Huella Digital / Biometría Móvil',
                     (string)$record->device_name,
-                    $ip
+                    $ip,
+                    $_SERVER['HTTP_USER_AGENT'] ?? null
                 );
             } catch (\Throwable $te) {
                 error_log('[SGP-BIOMETRIA] mail-alert error: ' . $te->getMessage());
@@ -572,7 +573,7 @@ class BiometriaController extends Controller
             // Alerta por correo institucional
             try {
                 $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
-                MailService::notifyBiometricRemoved($userId, $deviceName, $ip);
+                MailService::notifyBiometricRemoved($userId, $deviceName, $ip, $_SERVER['HTTP_USER_AGENT'] ?? null);
             } catch (\Throwable $mErr) {
                 error_log('[SGP-BIOMETRIA] Error enviando correo de desafiliación: ' . $mErr->getMessage());
             }

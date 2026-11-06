@@ -155,8 +155,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 18px;
-            padding-bottom: 14px;
+            gap: 16px;
+            padding-bottom: 12px;
         }
 
         .strip-col-left {
@@ -167,11 +167,11 @@
         }
 
         .strip-col-center {
-            flex: 1 1 auto;
+            flex: 0 1 auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 8px;
+            padding: 0 10px;
             min-width: 0;
         }
 
@@ -183,25 +183,25 @@
         }
 
         .logo-top-sgp {
-            height: 42px;
+            height: 36px;
             width: auto;
-            max-width: 95px;
+            max-width: 80px;
             object-fit: contain;
             filter: drop-shadow(0 1px 3px rgba(0,0,0,0.08));
         }
 
         .logo-top-salud {
-            height: 38px;
+            height: 32px;
             width: auto;
-            max-width: 205px;
+            max-width: 175px;
             object-fit: contain;
             filter: drop-shadow(0 1px 3px rgba(0,0,0,0.06));
         }
 
         .logo-top-gobe {
-            height: 40px;
+            height: 34px;
             width: auto;
-            max-width: 125px;
+            max-width: 105px;
             object-fit: contain;
             filter: drop-shadow(0 1px 3px rgba(0,0,0,0.06));
         }

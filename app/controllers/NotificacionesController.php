@@ -354,21 +354,186 @@ class NotificacionesController extends Controller
                 ";
                 break;
 
-            case 'SEGURIDAD_LOGIN':
             case 'BIOMETRIA_VINCULADA':
-            case 'BIOMETRIA_DESAFILIADA':
-            default:
-                $badge = 'Seguridad Institucional';
-                $badgeColor = '#ea580c';
-                $subject = '🛡️ [PRUEBA] Alerta de Seguridad del Sistema SGP';
+                $badge = 'Seguridad Bancaria';
+                $badgeColor = '#16a34a';
+                $subject = '🔐 [PRUEBA] Alerta de Seguridad: Dispositivo Afiliado con Huella (Xiaomi Poco X5 Pro)';
+                $refCode = 'BIO-ENROLL-' . date('Ymd') . '-A94F2B10';
+                $urlPerfil = (defined('URLROOT') ? rtrim(URLROOT, '/') : '') . '/perfil/ver';
+                $urlSoporte = (defined('URLROOT') ? rtrim(URLROOT, '/') : '') . '/soporte';
                 $content = "
-                    <p>Hola <strong>{$nombre}</strong>,</p>
-                    <p>Muestra de notificación generada ante eventos de seguridad, inicio de sesión o gestión de llaves biométricas:</p>
-                    <div style='background-color: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 12px; padding: 16px; margin: 18px 0;'>
-                        <div style='font-size: 13px; color: #9a3412;'><strong>Evento:</strong> {$codigo}</div>
-                        <div style='font-size: 13px; color: #9a3412;'><strong>Fecha y Hora:</strong> " . date('d/m/Y h:i:s A') . "</div>
-                        <div style='font-size: 13px; color: #9a3412;'><strong>Dirección IP:</strong> {$ip}</div>
+                    <p style='color: #1e293b; font-size: 15px;'>Estimado(a) <strong>{$nombre}</strong>,</p>
+                    <p style='color: #334155; line-height: 1.55;'>
+                        Te notificamos que se ha registrado con éxito la <strong>afiliación de un nuevo dispositivo móvil con Acceso Biométrico (Huella Dactilar / Face ID)</strong> en tu cuenta del <strong>Sistema de Gestión de Pasantes (SGP)</strong> del ISPEB:
+                    </p>
+
+                    <!-- Ficha Técnica Estilo Bancario -->
+                    <div style='background-color: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 20px; margin: 20px 0;'>
+                        <div style='font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;'>
+                            <span style='display:inline-block; width:9px; height:9px; border-radius:50%; background:#10b981;'></span>
+                            Ficha Técnica del Dispositivo Afiliado
+                        </div>
+                        <table style='width: 100%; border-collapse: collapse; font-size: 13px; color: #334155;'>
+                            <tr style='border-bottom: 1px solid #e2e8f0;'>
+                                <td style='padding: 8px 0; color: #64748b; font-weight: 600; width: 38%;'>📱 Equipo / Modelo:</td>
+                                <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>Xiaomi Poco X5 Pro 5G</td>
+                            </tr>
+                            <tr style='border-bottom: 1px solid #e2e8f0;'>
+                                <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>💻 Sistema Operativo:</td>
+                                <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>Android 14 (HyperOS)</td>
+                            </tr>
+                            <tr style='border-bottom: 1px solid #e2e8f0;'>
+                                <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>🌐 Navegador Web:</td>
+                                <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>Chrome Mobile (v130.0)</td>
+                            </tr>
+                            <tr style='border-bottom: 1px solid #e2e8f0;'>
+                                <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>🔐 Tecnología de Enrolamiento:</td>
+                                <td style='padding: 8px 0; font-weight: 700; color: #166534;'>
+                                    <span style='display:inline-block; background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:6px; font-size:12px; font-weight:800;'>Huella Dactilar (WebAuthn / Passkey FIDO2)</span>
+                                </td>
+                            </tr>
+                            <tr style='border-bottom: 1px solid #e2e8f0;'>
+                                <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>🌐 Dirección IP de Registro:</td>
+                                <td style='padding: 8px 0; font-weight: 700; color: #0f172a; font-family: monospace;'>{$ip}</td>
+                            </tr>
+                            <tr style='border-bottom: 1px solid #e2e8f0;'>
+                                <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>📅 Fecha y Hora Oficial:</td>
+                                <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>" . date('d/m/Y h:i:s A') . " (Hora VET)</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 8px 0; color: #64748b; font-weight: 600;'>🔖 Nro. de Referencia:</td>
+                                <td style='padding: 8px 0; font-weight: 800; color: #2563eb; font-family: monospace;'>{$refCode}</td>
+                            </tr>
+                        </table>
                     </div>
+
+                    <p style='color: #334155; line-height: 1.5;'>
+                        A partir de este momento puedes iniciar sesión de forma instantánea pulsando el botón <strong>\"Ingresar con Huella Dactilar\"</strong> o registrar tu jornada en el quiosco institucional directamente desde tu celular.
+                    </p>
+
+                    <div style='background-color: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 12px; padding: 16px; margin: 22px 0;'>
+                        <div style='font-weight: 800; color: #9f1239; font-size: 13.5px; margin-bottom: 6px;'>
+                            🛡️ Medidas de Seguridad Bancaria
+                        </div>
+                        <p style='margin: 0 0 8px; font-size: 12.5px; color: #9f1239; line-height: 1.45;'>
+                            <strong>¿Fuiste tú?</strong> Si tú mismo realizaste esta afiliación desde tu teléfono, este correo sirve como comprobante digital oficial. No necesitas responder a este mensaje.
+                        </p>
+                        <p style='margin: 0; font-size: 12.5px; color: #9f1239; line-height: 1.45;'>
+                            <strong>¿NO reconoces este dispositivo?</strong> Si no realizaste esta acción o sospechas de una actividad fraudulenta, tu cuenta puede estar en riesgo. Pulsa inmediatamente para <strong>Desvincular el Dispositivo</strong> desde tu perfil o reporta la incidencia a Soporte Técnico.
+                        </p>
+                    </div>
+
+                    <div style='margin-top: 22px; text-align: center; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;'>
+                        <a href='{$urlPerfil}' style='display:inline-block; background:#162660; color:#ffffff; font-weight:800; font-size:13px; padding:11px 22px; border-radius:10px; text-decoration:none;'>
+                            🔐 Administrar Mis Dispositivos
+                        </a>
+                        <a href='{$urlSoporte}' style='display:inline-block; background:#ffffff; color:#dc2626; border:1.5px solid #fca5a5; font-weight:700; font-size:13px; padding:10px 18px; border-radius:10px; text-decoration:none;'>
+                            🚨 Reportar a Soporte
+                        </a>
+                    </div>
+                ";
+                break;
+
+            case 'BIOMETRIA_DESAFILIADA':
+                $badge = 'Seguridad';
+                $badgeColor = '#ea580c';
+                $subject = '⚠️ [PRUEBA] Alerta de Seguridad: Dispositivo Biométrico Desvinculado';
+                $refCode = 'BIO-REVOKE-' . date('Ymd') . '-C81B43D9';
+                $urlPerfil = (defined('URLROOT') ? rtrim(URLROOT, '/') : '') . '/perfil/ver';
+                $content = "
+                    <p style='color: #1e293b; font-size: 15px;'>Estimado(a) <strong>{$nombre}</strong>,</p>
+                    <p style='color: #334155; line-height: 1.55;'>
+                        Te notificamos que se ha procesado con éxito la <strong>desvinculación y revocación de acceso biométrico</strong> de un dispositivo móvil en tu cuenta institucional del ISPEB:
+                    </p>
+
+                    <div style='background-color: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 14px; padding: 20px; margin: 20px 0;'>
+                        <div style='font-size: 12px; font-weight: 800; color: #9a3412; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px;'>
+                            Detalles de la Desafiliación
+                        </div>
+                        <table style='width: 100%; border-collapse: collapse; font-size: 13px; color: #334155;'>
+                            <tr style='border-bottom: 1px solid #ffedd5;'>
+                                <td style='padding: 8px 0; color: #9a3412; font-weight: 600; width: 38%;'>📱 Equipo Revocado:</td>
+                                <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>Xiaomi Poco X5 Pro 5G</td>
+                            </tr>
+                            <tr style='border-bottom: 1px solid #ffedd5;'>
+                                <td style='padding: 8px 0; color: #9a3412; font-weight: 600;'>🌐 Dirección IP:</td>
+                                <td style='padding: 8px 0; font-weight: 700; color: #0f172a; font-family: monospace;'>{$ip}</td>
+                            </tr>
+                            <tr style='border-bottom: 1px solid #ffedd5;'>
+                                <td style='padding: 8px 0; color: #9a3412; font-weight: 600;'>📅 Fecha de Revocación:</td>
+                                <td style='padding: 8px 0; font-weight: 700; color: #0f172a;'>" . date('d/m/Y h:i:s A') . " (VET)</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 8px 0; color: #9a3412; font-weight: 600;'>🔖 Nro. de Anulación:</td>
+                                <td style='padding: 8px 0; font-weight: 800; color: #c2410c; font-family: monospace;'>{$refCode}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <p style='color: #334155; line-height: 1.5;'>
+                        A partir de este momento, el sensor biométrico de este equipo ha dejado de tener acceso directo a tu cuenta. Para volver a iniciar sesión deberás utilizar tu correo y tu contraseña.
+                    </p>
+                ";
+                break;
+
+            case 'VINCULACION_DISPOSITIVO_OTP':
+                $badge = 'Autorización Bancaria';
+                $badgeColor = '#2563eb';
+                $subject = '🔐 [PRUEBA] Código de Autorización: 849 201 — Vinculación de Dispositivo';
+                $content = "
+                    <p style='color: #1e293b; font-size: 15px;'>Hola <strong>{$nombre}</strong>,</p>
+                    <p style='color: #334155;'>Hemos recibido una solicitud para <strong>vincular un nuevo dispositivo móvil de confianza</strong> a tu cuenta institucional en el Sistema de Gestión de Pasantes (SGP):</p>
+                    
+                    <div style='background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 14px; padding: 22px; margin: 22px 0; text-align: center;'>
+                        <div style='font-size: 12px; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;'>Código de Autorización Único</div>
+                        <div style='font-family: monospace, monospace; font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #1d4ed8; margin: 6px 0;'>849 201</div>
+                        <div style='font-size: 12px; color: #3b82f6; font-weight: 600; margin-top: 8px;'>⏱️ Válido durante 10 minutos (1 solo uso)</div>
+                    </div>
+
+                    <div style='background-color: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 20px;'>
+                        <div style='font-size: 12px; font-weight: 800; color: #475569; margin-bottom: 8px; text-transform: uppercase;'>Detalles del Dispositivo:</div>
+                        <div style='font-size: 13px; color: #334155; margin-bottom: 4px;'>📱 <strong>Dispositivo:</strong> Xiaomi Poco X5 Pro</div>
+                        <div style='font-size: 13px; color: #334155; margin-bottom: 4px;'>🌐 <strong>Dirección IP:</strong> {$ip}</div>
+                        <div style='font-size: 13px; color: #334155;'>📅 <strong>Fecha:</strong> " . date('d/m/Y h:i:s A') . "</div>
+                    </div>
+                ";
+                break;
+
+            case 'DISPOSITIVO_VINCULADO':
+                $badge = 'Dispositivo Vinculado';
+                $badgeColor = '#16a34a';
+                $subject = '🛡️ [PRUEBA] Dispositivo Vinculado Exitosamente: Xiaomi Poco X5 Pro';
+                $content = "
+                    <p style='color: #1e293b; font-size: 15px;'>Hola <strong>{$nombre}</strong>,</p>
+                    <p style='color: #334155;'>Te confirmamos que el siguiente dispositivo ha sido <strong>vinculado con éxito</strong> a tu cuenta institucional en el Sistema de Gestión de Pasantes (SGP):</p>
+                    
+                    <div style='background-color: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; padding: 20px; margin: 20px 0;'>
+                        <div style='font-size: 13px; font-weight: 800; color: #166534; margin-bottom: 10px; text-transform: uppercase;'>
+                            ✅ Dispositivo Frecuente Autorizado
+                        </div>
+                        <div style='font-size: 13px; color: #166534; margin-bottom: 5px;'>📱 <strong>Dispositivo:</strong> Xiaomi Poco X5 Pro</div>
+                        <div style='font-size: 13px; color: #166534; margin-bottom: 5px;'>🔑 <strong>Método:</strong> Huella Dactilar / Biometría WebAuthn</div>
+                        <div style='font-size: 13px; color: #166534; margin-bottom: 5px;'>🌐 <strong>Dirección IP:</strong> {$ip}</div>
+                        <div style='font-size: 13px; color: #166534;'>📅 <strong>Fecha y Hora:</strong> " . date('d/m/Y h:i:s A') . "</div>
+                    </div>
+                ";
+                break;
+
+            case 'SEGURIDAD_LOGIN':
+            default:
+                $badge = 'Alerta de Acceso';
+                $badgeColor = '#2563eb';
+                $subject = '🛡️ [PRUEBA] Alerta de Seguridad: Inicio de Sesión (Huella Digital)';
+                $content = "
+                    <p style='color: #1e293b; font-size: 15px;'>Hola <strong>{$nombre}</strong>,</p>
+                    <p style='color: #334155; line-height: 1.5;'>Detectamos un inicio de sesión en tu cuenta del Sistema de Gestión de Pasantes (SGP):</p>
+                    <div style='background-color: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 14px; padding: 18px; margin: 18px 0;'>
+                        <div style='font-size: 13px; color: #1e3a8a; margin-bottom: 5px;'><strong>🔑 Método:</strong> Huella Digital / Biometría Móvil</div>
+                        <div style='font-size: 13px; color: #1e3a8a; margin-bottom: 5px;'><strong>📱 Dispositivo:</strong> Teléfono Android (Sensor Biométrico)</div>
+                        <div style='font-size: 13px; color: #1e3a8a; margin-bottom: 5px;'><strong>📅 Fecha y Hora:</strong> " . date('d/m/Y h:i:s A') . "</div>
+                        <div style='font-size: 13px; color: #1e3a8a;'><strong>🌐 Dirección IP:</strong> {$ip}</div>
+                    </div>
+                    <p style='color: #64748b; font-size: 13px;'>Si fuiste tú, puedes ignorar este mensaje. Si no reconoces este acceso, por favor comunícate de inmediato con la administración del sistema o cambia tu contraseña.</p>
                 ";
                 break;
         }
