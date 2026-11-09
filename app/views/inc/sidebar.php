@@ -101,8 +101,8 @@ if (!function_exists('isActive')) {
                 </a>
             </li>
             <li>
-                <a href="<?= URLROOT ?>/superadmin/plantillas"
-                   class="nav-link <?= isActive('/superadmin/plantillas') ?>"
+                <a href="<?= URLROOT ?>/plantillas"
+                   class="nav-link <?= isActive(['/plantillas', '/superadmin/plantillas', '/evaluaciones/plantillas']) ?>"
                    data-tooltip="Diseñador de Plantillas PDF">
                     <i class="ti ti-file-pencil"></i>
                     <span class="menu-text">Plantillas PDF</span>
@@ -514,7 +514,7 @@ if (!function_exists('isActive')) {
             <span class="dock-sheet-icon"><i class="ti ti-star"></i></span>
             <span class="dock-sheet-label">Evaluaciones</span>
         </a>
-        <a href="<?= URLROOT ?>/evaluaciones/plantillas" class="dock-sheet-item" data-href="/evaluaciones/plantillas">
+        <a href="<?= URLROOT ?>/plantillas" class="dock-sheet-item" data-href="/plantillas">
             <span class="dock-sheet-icon"><i class="ti ti-template"></i></span>
             <span class="dock-sheet-label">Plantillas PDF</span>
         </a>
@@ -587,7 +587,7 @@ if (!function_exists('isActive')) {
             <span class="dock-sheet-icon"><i class="ti ti-star"></i></span>
             <span class="dock-sheet-label">Evaluaciones</span>
         </a>
-        <a href="<?= URLROOT ?>/evaluaciones/plantillas" class="dock-sheet-item" data-href="/evaluaciones/plantillas">
+        <a href="<?= URLROOT ?>/plantillas" class="dock-sheet-item" data-href="/plantillas">
             <span class="dock-sheet-icon"><i class="ti ti-template"></i></span>
             <span class="dock-sheet-label">Plantillas PDF</span>
         </a>
@@ -644,7 +644,7 @@ if (!function_exists('isActive')) {
             <span class="dock-sheet-icon"><i class="ti ti-clock-exclamation"></i></span>
             <span class="dock-sheet-label">Puntualidad</span>
         </a>
-        <a href="<?= URLROOT ?>/evaluaciones/plantillas" class="dock-sheet-item" data-href="/evaluaciones/plantillas">
+        <a href="<?= URLROOT ?>/plantillas" class="dock-sheet-item" data-href="/plantillas">
             <span class="dock-sheet-icon"><i class="ti ti-template"></i></span>
             <span class="dock-sheet-label">Plantillas PDF</span>
         </a>

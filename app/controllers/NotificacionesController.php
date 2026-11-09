@@ -892,5 +892,88 @@ class NotificacionesController extends Controller
             ]);
         }
     }
+
+    /**
+     * POST /notificaciones/reintentar
+     * Reintenta el despacho individual de un correo fallido
+     */
+    public function reintentar(): void
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            return;
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'ID de correo inválido']);
+            return;
+        }
+
+        $res = MailService::reintentarDespacho($id);
+        echo json_encode($res);
+    }
+
+    /**
+     * POST /notificaciones/reintentarTodosFallidos
+     * Reintenta en lote todos los correos fallidos de las últimas 48 horas
+     */
+    public function reintentarTodosFallidos(): void
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            return;
+        }
+
+        try {
+            $this->db->query("
+                SELECT id FROM mail_historial 
+                WHERE estado = 'fallido' 
+                  AND created_at >= DATE_SUB(NOW(), INTERVAL 48 HOUR)
+                ORDER BY id DESC 
+                LIMIT 20
+            ");
+            $fallidos = $this->db->resultSet() ?: [];
+
+            if (empty($fallidos)) {
+                echo json_encode(['success' => true, 'message' => 'No hay correos fallidos recientes para reintentar.', 'total' => 0]);
+                return;
+            }
+
+            $exitosos = 0;
+            $errores = 0;
+            $mensajesError = [];
+
+            foreach ($fallidos as $f) {
+                $res = MailService::reintentarDespacho((int)$f->id);
+                if (!empty($res['success'])) {
+                    $exitosos++;
+                } else {
+                    $errores++;
+                    if (count($mensajesError) < 2) {
+                        $mensajesError[] = $res['message'] ?? 'Error de conexión';
+                    }
+                }
+            }
+
+            $msg = "Reintento finalizado: {$exitosos} correo(s) enviado(s) con éxito.";
+            if ($errores > 0) {
+                $msg .= " {$errores} fallaron (" . implode(', ', $mensajesError) . ").";
+            }
+
+            echo json_encode([
+                'success' => $exitosos > 0,
+                'exitosos' => $exitosos,
+                'errores' => $errores,
+                'message' => $msg
+            ]);
+        } catch (\Throwable $e) {
+            echo json_encode(['success' => false, 'message' => 'Error al procesar reintentos: ' . $e->getMessage()]);
+        }
+    }
 }
 

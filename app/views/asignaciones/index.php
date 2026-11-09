@@ -128,6 +128,95 @@ $estadoConfig = [
     .asig-banner-actions { flex-direction: column !important; gap: 8px !important; }
     .asig-banner-actions button { width: 100% !important; flex: 1 1 100% !important; }
 }
+
+/* ===== FILTRO Y BUSCADOR RESPONSIVE ===== */
+.asig-filter-bar {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: #ffffff;
+    padding: 16px 24px;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.asig-filter-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+}
+.asig-filter-pills-track {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.asig-filter-pills-track .vento-pill {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.asig-search-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+.asig-search-input {
+    padding: 10px 16px 10px 42px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    outline: none;
+    width: 280px;
+    transition: all 0.2s;
+    background: #f8fafc;
+}
+
+[data-theme="dark"] .asig-filter-bar {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+}
+[data-theme="dark"] .asig-search-input {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+@media (max-width: 768px) {
+    .asig-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 14px;
+        gap: 12px;
+    }
+    .asig-filter-left {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    .asig-filter-label {
+        display: none !important;
+    }
+    .asig-filter-pills-track {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 4px 2px 8px;
+        scrollbar-width: none;
+        width: 100%;
+    }
+    .asig-filter-pills-track::-webkit-scrollbar {
+        display: none;
+    }
+    .asig-search-wrap {
+        width: 100%;
+    }
+    .asig-search-input {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+}
 </style>
 
 <div class="dashboard-container" style="width: 100%; max-width: 100%; padding: 0;">
@@ -231,13 +320,13 @@ $estadoConfig = [
     </div>
 
     <!-- Filtros Rápidos y Buscador -->
-    <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; background: white; padding: 16px 24px; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04);">
+    <div class="asig-filter-bar">
         
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <p style="font-size: 0.9rem; font-weight: 700; color: #64748b; margin: 0; display:flex; align-items:center; gap:6px;">
+        <div class="asig-filter-left">
+            <p class="asig-filter-label" style="font-size: 0.9rem; font-weight: 700; color: #64748b; margin: 0; display:flex; align-items:center; gap:6px; flex-shrink: 0;">
                 <i class="ti ti-filter" style="font-size:1.1rem; color:#2563eb;"></i> Filtrar:
             </p>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;" id="ventoFilterPillsAsignaciones">
+            <div class="asig-filter-pills-track" id="ventoFilterPillsAsignaciones">
                 <button class="vento-pill active" onclick="filtrarPorEstado('')" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(37,99,235,0.25);">
                     Todos
                 </button>
@@ -256,10 +345,9 @@ $estadoConfig = [
             </div>
         </div>
 
-        <div style="position: relative;">
+        <div class="asig-search-wrap">
             <i class="ti ti-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.1rem; pointer-events: none;"></i>
-            <input type="text" id="searchAsignaciones" placeholder="Buscar por Cédula o Nombre..."
-                style="padding: 10px 16px 10px 42px; border: 1.5px solid #e5e7eb; border-radius: 12px; font-size: 0.9rem; color: #1e293b; outline: none; width: 280px; transition: all 0.2s; background: #f8fafc;"
+            <input type="text" id="searchAsignaciones" class="asig-search-input" placeholder="Buscar por Cédula o Nombre..."
                 onfocus="this.style.borderColor='#2563eb';this.style.background='white';this.style.boxShadow='0 0 0 4px rgba(37,99,235,0.1)'"
                 onblur="this.style.borderColor='#e5e7eb';this.style.background='#f8fafc';this.style.boxShadow='none'">
         </div>

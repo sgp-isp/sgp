@@ -157,19 +157,20 @@ class MailService
     /**
      * Registra un despacho en la tabla de auditoría `mail_historial`
      */
-    public static function logDelivery(string $eventCode, string $email, ?string $name, ?int $userId, string $subject, string $status, ?string $details = null): void
+    public static function logDelivery(string $eventCode, string $email, ?string $name, ?int $userId, string $subject, string $status, ?string $details = null, ?string $cuerpoHtml = null): void
     {
         try {
             $db = Database::getInstance();
             $db->query("
-                INSERT INTO mail_historial (codigo_evento, destinatario_email, destinatario_nombre, usuario_id, asunto, estado, detalles, created_at)
-                VALUES (:cod, :email, :nombre, :uid, :subj, :est, :det, NOW())
+                INSERT INTO mail_historial (codigo_evento, destinatario_email, destinatario_nombre, usuario_id, asunto, cuerpo_html, estado, detalles, created_at)
+                VALUES (:cod, :email, :nombre, :uid, :subj, :cuerpo, :est, :det, NOW())
             ");
             $db->bind(':cod',    $eventCode);
             $db->bind(':email',  $email);
             $db->bind(':nombre', $name);
             $db->bind(':uid',    $userId);
             $db->bind(':subj',   $subject);
+            $db->bind(':cuerpo', $cuerpoHtml);
             $db->bind(':est',    $status);
             $db->bind(':det',    $details);
             $db->execute();
@@ -259,13 +260,13 @@ class MailService
 
         if ($httpCode >= 200 && $httpCode < 300) {
             $msgId = $resData['messageId'] ?? 'OK';
-            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'enviado', "Despachado exitosamente vía Brevo REST API (HTTPS :443) [ID: {$msgId}]");
+            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'enviado', "Despachado exitosamente vía Brevo REST API (HTTPS :443) [ID: {$msgId}]", $htmlBody);
             return ['success' => true, 'message' => 'Correo enviado exitosamente vía Brevo API (HTTPS)'];
         }
 
         $apiError = $resData['message'] ?? ($errMsg ?: "Respuesta HTTP {$httpCode} de Brevo API");
         error_log("[SGP-MAIL] Error Brevo API ({$httpCode}): {$apiError}");
-        self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', "Brevo API ({$httpCode}): {$apiError}");
+        self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', "Brevo API ({$httpCode}): {$apiError}", $htmlBody);
         return ['success' => false, 'message' => "Error Brevo API ({$httpCode}): {$apiError}"];
     }
 
@@ -327,12 +328,12 @@ class MailService
 
         if ($httpCode >= 200 && $httpCode < 300) {
             $msgId = $resData['id'] ?? 'OK';
-            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'enviado', "Despachado exitosamente vía Resend API (HTTPS) [ID: {$msgId}]");
+            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'enviado', "Despachado exitosamente vía Resend API (HTTPS) [ID: {$msgId}]", $htmlBody);
             return ['success' => true, 'message' => 'Correo enviado exitosamente vía Resend API'];
         }
 
         $apiError = $resData['message'] ?? ($errMsg ?: "Respuesta HTTP {$httpCode} de Resend");
-        self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', "Resend API ({$httpCode}): {$apiError}");
+        self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', "Resend API ({$httpCode}): {$apiError}", $htmlBody);
         return ['success' => false, 'message' => "Error Resend API ({$httpCode}): {$apiError}"];
     }
 
@@ -345,6 +346,57 @@ class MailService
     }
 
     /**
+     * Reintenta el despacho de un correo fallido a partir de su registro en `mail_historial`
+     */
+    public static function reintentarDespacho(int $historialId): array
+    {
+        try {
+            $db = Database::getInstance();
+            $db->query("SELECT * FROM mail_historial WHERE id = :id LIMIT 1");
+            $db->bind(':id', $historialId);
+            $item = $db->single();
+
+            if (!$item) {
+                return ['success' => false, 'message' => 'Registro de correo no encontrado en la bitácora'];
+            }
+
+            // Si no tiene cuerpo_html guardado (correos anteriores a la migración), generamos un mensaje formal
+            $html = !empty($item->cuerpo_html) ? $item->cuerpo_html : self::renderBentoTemplate(
+                'Reintento de Notificación',
+                '#2563eb',
+                $item->asunto,
+                "<p style='margin:0 0 12px;font-size:15px;color:#1e293b;'>Estimado(a) <strong>" . htmlspecialchars($item->destinatario_nombre ?: $item->destinatario_email) . "</strong>,</p>" .
+                "<p style='margin:0 0 14px;color:#475569;font-size:14px;line-height:1.6;'>Este es un reintento manual del despacho institucional con asunto: <strong>" . htmlspecialchars($item->asunto) . "</strong>.</p>" .
+                (!empty($item->detalles) ? "<div style='background:#f8fafc;border-left:4px solid #ef4444;padding:12px;margin:12px 0;border-radius:4px;font-size:12px;color:#64748b;'><strong>Diagnóstico original:</strong> " . htmlspecialchars($item->detalles) . "</div>" : "")
+            );
+
+            // Despachar ignorando reglas de exclusión para garantizar el reintento explícito del usuario
+            $res = self::send(
+                $item->destinatario_email,
+                $item->destinatario_nombre ?? '',
+                $item->asunto,
+                $html,
+                '',
+                $item->codigo_evento ?: 'REINTENTO',
+                !empty($item->usuario_id) ? (int)$item->usuario_id : null,
+                true // ignoreRules
+            );
+
+            if (!empty($res['success'])) {
+                // Actualizar estado del registro anterior marcando que fue reintentado con éxito
+                $db->query("UPDATE mail_historial SET estado = 'reintentado', detalles = CONCAT(COALESCE(detalles, ''), ' | Reintentado con éxito el ', NOW()) WHERE id = :id");
+                $db->bind(':id', $historialId);
+                $db->execute();
+            }
+
+            return $res;
+        } catch (\Throwable $e) {
+            error_log('[SGP-MAIL-RETRY] Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
+
+    /**
      * Envía un correo electrónico mediante SMTP autenticado o API REST en la nube
      */
     public static function send(string $toEmail, string $toName, string $subject, string $htmlBody, string $textBody = '', string $eventCode = 'MANUAL', ?int $userId = null, bool $ignoreRules = false, array $attachments = []): array
@@ -353,7 +405,7 @@ class MailService
         if (!$ignoreRules && $eventCode !== 'MANUAL' && $eventCode !== 'TEST' && $eventCode !== 'RESPALDO_NUBE') {
             $ruleCheck = self::checkRule($eventCode, $userId);
             if (!$ruleCheck['allowed']) {
-                self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'excluido', $ruleCheck['reason']);
+                self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'excluido', $ruleCheck['reason'], $htmlBody);
                 return [
                     'success'  => false,
                     'excluded' => true,
@@ -366,7 +418,7 @@ class MailService
 
         // Circuit breaker: Si SMTP ya falló en esta misma petición, no reintentar para no demorar la respuesta
         if (self::$smtpFailedInRequest) {
-            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', 'Conexión SMTP cancelada por fallo previo en la misma petición');
+            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', 'Conexión SMTP cancelada por fallo previo en la misma petición', $htmlBody);
             return ['success' => false, 'message' => 'Servidor SMTP no disponible actualmente'];
         }
 
@@ -379,7 +431,7 @@ class MailService
                 $db->bind(':em', $toEmail);
                 $totalHoy = (int)($db->single()->total_hoy ?? 0);
                 if ($totalHoy >= 5) {
-                    self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'limitado', "Límite diario alcanzado ({$totalHoy}/5 correos enviados hoy a este destinatario). Prevención anti-spam.");
+                    self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'limitado', "Límite diario alcanzado ({$totalHoy}/5 correos enviados hoy a este destinatario). Prevención anti-spam.", $htmlBody);
                     return ['success' => false, 'limited' => true, 'message' => 'Límite de 5 correos diarios alcanzado para este destinatario'];
                 }
             } catch (\Throwable $te) {}
@@ -403,7 +455,7 @@ class MailService
         // Modo Simulación si SMTP no está activo
         if (empty($cfg['activo']) || empty($cfg['user']) || empty($cfg['pass'])) {
             error_log("[SGP-MAIL-SIMULADO] Para: {$toEmail} ({$toName}) | Asunto: {$subject}");
-            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'simulado', 'Servidor SMTP en modo simulación / credenciales pendientes');
+            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'simulado', 'Servidor SMTP en modo simulación / credenciales pendientes', $htmlBody);
             return [
                 'success' => true,
                 'simulated' => true,
@@ -453,7 +505,7 @@ class MailService
                 $msg .= " ⚠️ Aviso: Los entornos gratuitos en la nube (como Render Free) bloquean los puertos SMTP salientes (25, 465 y 587) por políticas de red. Para enviar correos desde Render gratis y sin bloqueos, utiliza una clave de API de Brevo (inicia con 'xkeysib-') en la Contraseña o configura la variable de entorno BREVO_API_KEY para despachar vía HTTPS (puerto 443).";
             }
             error_log("[SGP-MAIL] Error de conexión socket: {$errstr} ({$errno}) hacia {$target}");
-            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', "Socket error {$errno}: {$errstr}");
+            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', "Socket error {$errno}: {$errstr}", $htmlBody);
             return ['success' => false, 'message' => $msg];
         }
 
@@ -652,13 +704,13 @@ class MailService
 
             $cmd($bodyPayload, 250);
             $cmd("QUIT", 221);
-            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'enviado', 'Despachado exitosamente vía SMTP' . ($hasAttachments ? ' (con adjuntos)' : ''));
+            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'enviado', 'Despachado exitosamente vía SMTP' . ($hasAttachments ? ' (con adjuntos)' : ''), $htmlBody);
             return ['success' => true, 'message' => 'Correo enviado exitosamente'];
 
         } catch (\Throwable $e) {
             if (is_resource($socket)) fclose($socket);
             error_log('[SGP-MAIL] Error en transmisión SMTP: ' . $e->getMessage());
-            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', $e->getMessage());
+            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', $e->getMessage(), $htmlBody);
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }

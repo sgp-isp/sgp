@@ -484,6 +484,9 @@
             width: 100% !important;
             justify-content: center !important;
         }
+        .btn-banner-egresados {
+            display: none !important;
+        }
         
         .kpi-users-grid {
             grid-template-columns: 1fr 1fr !important;
@@ -573,7 +576,7 @@
         </div>
         <div class="users-banner-actions" style="display:flex; gap:16px; z-index:1; align-items:center;">
             <!-- Botón Egresados -->
-            <a href="<?= URLROOT ?>/users/egresados" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 12px 20px; border-radius: 10px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'" title="Ver archivo histórico de pasantes egresados">
+            <a href="<?= URLROOT ?>/users/egresados" class="btn-banner-egresados" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 12px 20px; border-radius: 10px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'" title="Ver archivo histórico de pasantes egresados">
                 <i class="ti ti-school" style="font-size: 1.1rem;"></i> Egresados (<?= $kpis['egresados'] ?? 0 ?>)
             </a>
 

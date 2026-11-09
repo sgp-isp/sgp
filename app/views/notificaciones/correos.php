@@ -420,9 +420,24 @@
                 </div>
             </div>
 
-            <button type="button" onclick="window.location.reload()" style="padding:7px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:9px;font-size:0.78rem;font-weight:700;color:#334155;cursor:pointer;display:inline-flex;align-items:center;gap:5px;">
-                <i class="ti ti-refresh"></i> Actualizar
-            </button>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <?php
+                $totalFallidos = 0;
+                if (!empty($historial)) {
+                    foreach ($historial as $hi) {
+                        if ($hi->estado === 'fallido') $totalFallidos++;
+                    }
+                }
+                if ($totalFallidos > 0):
+                ?>
+                <button type="button" onclick="reintentarTodosFallidos()" id="btnReintentarTodos" style="padding:7px 14px;background:#ef4444;border:none;border-radius:9px;font-size:0.78rem;font-weight:700;color:#ffffff;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 6px rgba(239,68,68,0.25);transition:all .2s;">
+                    <i class="ti ti-rotate-clockwise-2"></i> Reintentar Fallidos (<?= $totalFallidos ?>)
+                </button>
+                <?php endif; ?>
+                <button type="button" onclick="window.location.reload()" style="padding:7px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:9px;font-size:0.78rem;font-weight:700;color:#334155;cursor:pointer;display:inline-flex;align-items:center;gap:5px;">
+                    <i class="ti ti-refresh"></i> Actualizar
+                </button>
+            </div>
         </div>
 
         <div class="table-responsive" style="overflow-x:auto;">
@@ -435,12 +450,13 @@
                         <th style="padding:10px 14px;">Asunto</th>
                         <th style="padding:10px 14px;">Estado</th>
                         <th style="padding:10px 14px;">Detalles</th>
+                        <th style="padding:10px 14px;text-align:center;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($historial)): ?>
                     <tr>
-                        <td colspan="6" style="text-align:center;padding:30px;color:#94a3b8;font-style:italic;">
+                        <td colspan="7" style="text-align:center;padding:30px;color:#94a3b8;font-style:italic;">
                             No hay despachos de correo registrados en el historial todavía.
                         </td>
                     </tr>
@@ -461,6 +477,10 @@
                                 $badgeClass = '#ef4444';
                                 $badgeBg = '#fef2f2';
                                 $estadoText = 'Fallido';
+                            } elseif ($h->estado === 'reintentado') {
+                                $badgeClass = '#8b5cf6';
+                                $badgeBg = '#f5f3ff';
+                                $estadoText = 'Reintentado';
                             }
                         ?>
                         <tr style="border-bottom:1px solid #f1f5f9;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
@@ -482,8 +502,37 @@
                                     <?= $estadoText ?>
                                 </span>
                             </td>
-                            <td style="padding:10px 14px;font-size:0.75rem;color:#64748b;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                            <td style="padding:10px 14px;font-size:0.75rem;color:#64748b;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?= htmlspecialchars($h->detalles ?: 'Sin detalles') ?>">
                                 <?= htmlspecialchars($h->detalles ?: 'Sin detalles') ?>
+                            </td>
+                            <td style="padding:10px 14px;text-align:center;white-space:nowrap;">
+                                <div style="display:inline-flex;align-items:center;gap:6px;">
+                                    <button type="button" 
+                                            class="btn-detalle-despacho"
+                                            onclick='abrirDetalleDespacho(<?= json_encode([
+                                                "id" => (int)$h->id,
+                                                "fecha" => date("d/m/Y h:i A", strtotime($h->created_at)),
+                                                "evento" => $h->codigo_evento,
+                                                "email" => $h->destinatario_email,
+                                                "nombre" => $h->destinatario_nombre ?: "Sin nombre",
+                                                "asunto" => $h->asunto,
+                                                "estado" => $h->estado,
+                                                "estadoText" => $estadoText,
+                                                "detalles" => $h->detalles ?: "Sin detalles adicionales"
+                                            ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                                            style="padding:5px 9px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:7px;font-size:0.75rem;font-weight:600;color:#334155;cursor:pointer;display:inline-flex;align-items:center;gap:4px;"
+                                            title="Ver detalles técnicos y diagnóstico">
+                                        <i class="ti ti-info-circle"></i> Detalle
+                                    </button>
+                                    <?php if ($h->estado === 'fallido'): ?>
+                                    <button type="button" 
+                                            onclick="reintentarDespacho(<?= (int)$h->id ?>, this)"
+                                            style="padding:5px 9px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;font-size:0.75rem;font-weight:700;color:#2563eb;cursor:pointer;display:inline-flex;align-items:center;gap:4px;"
+                                            title="Reintentar despacho inmediatamente">
+                                        <i class="ti ti-rotate-clockwise-2"></i> Reintentar
+                                    </button>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -624,6 +673,80 @@
             </button>
             <button type="button" onclick="guardarConfigDestinatarios()" id="btnGuardarDest" style="padding:9px 22px;background:linear-gradient(135deg, #1e3a8a, #2563eb);border:none;border-radius:10px;font-size:0.84rem;font-weight:800;color:#ffffff;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(37,99,235,0.3);">
                 <i class="ti ti-device-floppy"></i> Guardar Cambios
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL: Diagnóstico y Detalles del Despacho de Correo
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="modalDetalleDespacho" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,0.6);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#ffffff;border-radius:20px;max-width:560px;width:100%;box-shadow:0 25px 60px rgba(0,0,0,0.3);overflow:hidden;display:flex;flex-direction:column;max-height:90vh;animation:modalZoomIn .25s ease;">
+        
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg, #0f172a, #1e293b);padding:18px 22px;color:#fff;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#38bdf8;">
+                    <i class="ti ti-mail-search"></i>
+                </div>
+                <div>
+                    <h3 style="font-size:1rem;font-weight:800;color:#ffffff;margin:0;">Diagnóstico de Despacho</h3>
+                    <p style="font-size:0.75rem;color:#94a3b8;margin:0;" id="modalDetalleFecha">Fecha y hora de transmisión</p>
+                </div>
+            </div>
+            <button type="button" onclick="cerrarModalDetalleDespacho()" style="background:rgba(255,255,255,0.12);border:none;color:#fff;border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:22px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;font-size:0.85rem;">
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div style="background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;">
+                    <div style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;">Estado</div>
+                    <div id="modalDetalleEstado" style="font-weight:800;font-size:0.95rem;margin-top:2px;">-</div>
+                </div>
+                <div style="background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;">
+                    <div style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;">Evento</div>
+                    <code id="modalDetalleEvento" style="font-weight:800;font-size:0.85rem;color:#1e3a8a;margin-top:2px;display:inline-block;">-</code>
+                </div>
+            </div>
+
+            <div style="background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;">
+                <div style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;">Destinatario</div>
+                <div id="modalDetalleDestinatario" style="font-weight:700;color:#0f172a;margin-top:2px;">-</div>
+            </div>
+
+            <div style="background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;">
+                <div style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;">Asunto</div>
+                <div id="modalDetalleAsunto" style="color:#334155;margin-top:2px;font-weight:600;">-</div>
+            </div>
+
+            <div>
+                <div style="font-size:0.75rem;font-weight:800;color:#475569;margin-bottom:6px;text-transform:uppercase;">Detalle Técnico / Respuesta del Servidor</div>
+                <pre id="modalDetalleRaw" style="background:#0f172a;color:#f8fafc;padding:14px;border-radius:10px;font-size:0.76rem;line-height:1.5;white-space:pre-wrap;word-break:break-all;margin:0;max-height:160px;overflow-y:auto;font-family:monospace;"></pre>
+            </div>
+
+            <!-- Alerta Inteligente de Solución (para errores en Render/Cloud) -->
+            <div id="modalDetalleConsejo" style="display:none;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px;color:#1e40af;font-size:0.78rem;line-height:1.5;">
+                <div style="font-weight:800;display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                    <i class="ti ti-bulb" style="font-size:1.1rem;color:#2563eb;"></i> Causa Probable &amp; Solución:
+                </div>
+                <div id="modalDetalleConsejoTexto"></div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div style="background:#f8fafc;padding:14px 22px;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <button type="button" onclick="cerrarModalDetalleDespacho()" style="padding:8px 16px;background:#ffffff;border:1px solid #cbd5e1;border-radius:9px;font-size:0.82rem;font-weight:700;color:#475569;cursor:pointer;">
+                Cerrar
+            </button>
+            <button type="button" id="btnModalReintentar" onclick="reintentarDesdeModal()" style="display:none;padding:8px 18px;background:linear-gradient(135deg, #2563eb, #1d4ed8);border:none;border-radius:9px;font-size:0.82rem;font-weight:800;color:#ffffff;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 3px 10px rgba(37,99,235,0.25);">
+                <i class="ti ti-rotate-clockwise-2"></i> Reintentar Despacho Ahora
             </button>
         </div>
 
@@ -1115,6 +1238,187 @@ async function ejecutarPruebaSmtpModulo() {
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = originalText;
+        }
+    }
+}
+
+// ── Diagnóstico y Reintento de Despacho ──────────────────────────
+let despachoActualSeleccionado = null;
+
+function abrirDetalleDespacho(data) {
+    despachoActualSeleccionado = data;
+    document.getElementById('modalDetalleFecha').textContent = data.fecha;
+    document.getElementById('modalDetalleEvento').textContent = data.evento;
+    document.getElementById('modalDetalleDestinatario').innerHTML = `<strong>${data.nombre}</strong> &lt;${data.email}&gt;`;
+    document.getElementById('modalDetalleAsunto').textContent = data.asunto;
+    document.getElementById('modalDetalleRaw').textContent = data.detalles;
+
+    const estadoEl = document.getElementById('modalDetalleEstado');
+    estadoEl.textContent = data.estadoText;
+    if (data.estado === 'fallido') {
+        estadoEl.style.color = '#ef4444';
+    } else if (data.estado === 'enviado' || data.estado === 'reintentado') {
+        estadoEl.style.color = '#10b981';
+    } else if (data.estado === 'excluido') {
+        estadoEl.style.color = '#d97706';
+    } else {
+        estadoEl.style.color = '#3b82f6';
+    }
+
+    // Diagnóstico inteligente
+    const consejoEl = document.getElementById('modalDetalleConsejo');
+    const consejoTxt = document.getElementById('modalDetalleConsejoTexto');
+    const btnReintentar = document.getElementById('btnModalReintentar');
+
+    const det = (data.detalles || '').toLowerCase();
+    if (data.estado === 'fallido') {
+        btnReintentar.style.display = 'inline-flex';
+        if (det.includes('110') || det.includes('timed out') || det.includes('timeout')) {
+            consejoEl.style.display = 'block';
+            consejoTxt.innerHTML = '<strong>Bloqueo de red en plataforma Cloud / Render:</strong> El puerto SMTP saliente está bloqueado por el firewall de Render Free. Para resolverlo definitivamente, configure una API Key de Brevo en el panel SMTP (comienza con <code>xkeysib-</code>) o la variable <code>BREVO_API_KEY</code> para enviar vía HTTPS (puerto 443).';
+        } else if (det.includes('auth') || det.includes('credential') || det.includes('535')) {
+            consejoEl.style.display = 'block';
+            consejoTxt.innerHTML = '<strong>Error de Autenticación SMTP:</strong> Las credenciales (usuario o contraseña de aplicación) no fueron aceptadas por el servidor de correo. Verifique la contraseña de aplicación de 16 letras de Gmail en el panel de configuración.';
+        } else {
+            consejoEl.style.display = 'none';
+        }
+    } else {
+        btnReintentar.style.display = 'none';
+        consejoEl.style.display = 'none';
+    }
+
+    document.getElementById('modalDetalleDespacho').style.display = 'flex';
+}
+
+function cerrarModalDetalleDespacho() {
+    document.getElementById('modalDetalleDespacho').style.display = 'none';
+    despachoActualSeleccionado = null;
+}
+
+function reintentarDesdeModal() {
+    if (despachoActualSeleccionado && despachoActualSeleccionado.id) {
+        const id = despachoActualSeleccionado.id;
+        cerrarModalDetalleDespacho();
+        reintentarDespacho(id, null);
+    }
+}
+
+async function reintentarDespacho(id, btnElement) {
+    let originalHtml = '';
+    if (btnElement) {
+        originalHtml = btnElement.innerHTML;
+        btnElement.disabled = true;
+        btnElement.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i>';
+    }
+
+    if (window.Swal) {
+        Swal.fire({
+            title: 'Reintentando despacho...',
+            text: 'Conectando con el despachador de correo...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+    }
+
+    try {
+        const fd = new FormData();
+        fd.append('id', id);
+        const resp = await fetch('<?= URLROOT ?>/notificaciones/reintentar', {
+            method: 'POST',
+            body: fd
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Correo Despachado!',
+                    text: res.message || 'El reintento se ejecutó exitosamente.',
+                    confirmButtonColor: '#16a34a'
+                }).then(() => window.location.reload());
+            } else {
+                alert(res.message);
+                window.location.reload();
+            }
+        } else {
+            throw new Error(res.message || 'Error en el reintento de despacho');
+        }
+    } catch (err) {
+        if (window.Swal) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Fallo al reintentar',
+                text: err.message,
+                confirmButtonColor: '#dc2626'
+            });
+        } else {
+            alert('Error: ' + err.message);
+        }
+    } finally {
+        if (btnElement) {
+            btnElement.disabled = false;
+            btnElement.innerHTML = originalHtml;
+        }
+    }
+}
+
+async function reintentarTodosFallidos() {
+    const confirmRes = window.Swal 
+        ? await Swal.fire({
+            title: '¿Reintentar correos fallidos?',
+            text: 'Se intentará procesar nuevamente los correos fallidos recientes.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Sí, reintentar todos',
+            cancelButtonText: 'Cancelar'
+        })
+        : { isConfirmed: confirm('¿Desea reintentar los correos fallidos?') };
+
+    if (!confirmRes.isConfirmed) return;
+
+    if (window.Swal) {
+        Swal.fire({
+            title: 'Procesando reintentos...',
+            text: 'Por favor espere mientras se despachan los correos pendientes...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+    }
+
+    try {
+        const resp = await fetch('<?= URLROOT ?>/notificaciones/reintentarTodosFallidos', {
+            method: 'POST'
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Proceso Finalizado',
+                    text: res.message,
+                    confirmButtonColor: '#16a34a'
+                }).then(() => window.location.reload());
+            } else {
+                alert(res.message);
+                window.location.reload();
+            }
+        } else {
+            throw new Error(res.message || 'Error al procesar los reintentos');
+        }
+    } catch (err) {
+        if (window.Swal) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Atención',
+                text: err.message,
+                confirmButtonColor: '#dc2626'
+            });
+        } else {
+            alert('Error: ' + err.message);
         }
     }
 }

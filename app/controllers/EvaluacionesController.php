@@ -552,4 +552,12 @@ class EvaluacionesController extends Controller {
             error_log('[SGP-EVAL-NOTIF] ' . $e->getMessage());
         }
     }
+
+    /**
+     * Alias a /plantillas para compatibilidad
+     */
+    public function plantillas(): void
+    {
+        $this->redirect('/plantillas');
+    }
 }
