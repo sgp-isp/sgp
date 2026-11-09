@@ -576,8 +576,10 @@ input:checked + .switch-slider:before {
                             <td style="text-align:right;">
                                 <?php if (!$isSelf): ?>
                                     <button type="button" 
-                                            onclick="forzarCierreSesion(<?= (int)$uOn->id ?>, '<?= htmlspecialchars(addslashes($uNombre)) ?>')" 
-                                            class="btn btn-sm"
+                                            data-user-id="<?= (int)$uOn->id ?>"
+                                            data-user-nombre="<?= htmlspecialchars($uNombre, ENT_QUOTES, 'UTF-8') ?>"
+                                            onclick="forzarCierreSesion(this)" 
+                                            class="btn btn-sm btn-desconectar-remoto"
                                             style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;padding:5px 12px;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all 0.2s;"
                                             onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
                                         <i class="ti ti-logout"></i> Desconectar
@@ -1281,19 +1283,39 @@ window.cerrarModalAccionesUser = function() {
 };
 
 // ── Control de Sesiones Remotas ────────────────────────────────
-window.forzarCierreSesion = function(userId, nombre) {
+window.forzarCierreSesion = function(btnOrId, nombreOpt) {
+    let userId = 0;
+    let nombre = 'este usuario';
+    let btnEl = null;
+
+    if (btnOrId instanceof HTMLElement) {
+        btnEl = btnOrId;
+        userId = parseInt(btnEl.getAttribute('data-user-id') || 0, 10);
+        nombre = btnEl.getAttribute('data-user-nombre') || 'este usuario';
+    } else {
+        userId = parseInt(btnOrId, 10);
+        nombre = nombreOpt || 'este usuario';
+    }
+
+    if (!userId) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'ID de usuario inválido.' });
+        return;
+    }
+
     Swal.fire({
         title: '¿Revocar Sesión?',
-        html: `Se forzará el cierre de sesión inmediato de <strong>${nombre}</strong>. El usuario perderá el acceso interactivo y será desconectado del sistema.`,
+        html: `Se forzará el cierre de sesión inmediato de <strong>${nombre}</strong>. El usuario perderá el acceso interactivo y será desconectado del sistema de inmediato.`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc2626',
         cancelButtonColor: '#64748b',
-        confirmButtonText: 'Sí, desconectar',
+        confirmButtonText: '<i class="ti ti-logout"></i> Sí, desconectar',
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch('<?= URLROOT ?>/superAdmin/cerrarSesionRemota', {
+            if (btnEl) btnEl.disabled = true;
+
+            fetch('<?= URLROOT ?>/superadmin/cerrarSesionRemota', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 body: JSON.stringify({ usuario_id: userId })
@@ -1305,14 +1327,26 @@ window.forzarCierreSesion = function(userId, nombre) {
                         icon: 'success',
                         title: 'Sesión Revocada',
                         text: res.message,
-                        timer: 2000,
+                        timer: 1800,
                         showConfirmButton: false
-                    }).then(() => location.reload());
+                    }).then(() => {
+                        const tr = btnEl ? btnEl.closest('tr') : null;
+                        if (tr) {
+                            tr.style.transition = 'all 0.4s ease';
+                            tr.style.opacity = '0';
+                            tr.style.transform = 'translateX(-20px)';
+                            setTimeout(() => location.reload(), 400);
+                        } else {
+                            location.reload();
+                        }
+                    });
                 } else {
+                    if (btnEl) btnEl.disabled = false;
                     Swal.fire({ icon: 'error', title: 'Error', text: res.message || 'No se pudo revocar la sesión' });
                 }
             })
             .catch(() => {
+                if (btnEl) btnEl.disabled = false;
                 Swal.fire({ icon: 'error', title: 'Error de Red', text: 'No se pudo comunicar con el servidor' });
             });
         }

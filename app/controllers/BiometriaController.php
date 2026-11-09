@@ -413,8 +413,27 @@ class BiometriaController extends Controller
 
             // ── Iniciar sesión del usuario (Idéntico a AuthController) ──
             Session::regenerate();
+            $currSid = session_id();
+
+            try {
+                $this->db->query("
+                    UPDATE usuarios 
+                    SET sesion_id = :sid, 
+                        ultima_actividad = NOW(), 
+                        ultima_ip = :ip, 
+                        ultimo_user_agent = :ua 
+                    WHERE id = :uid
+                ");
+                $this->db->bind(':sid', $currSid);
+                $this->db->bind(':ip',  $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+                $this->db->bind(':ua',  substr($_SERVER['HTTP_USER_AGENT'] ?? 'WebAuthn', 0, 255));
+                $this->db->bind(':uid', (int)$record->user_id);
+                $this->db->execute();
+            } catch (\Throwable $e) {}
+
             Session::set('user_id', (int)$record->user_id);
             Session::set('role_id', (int)$record->rol_id);
+            Session::set('last_db_session_check', time());
 
             $fullName = trim(($record->nombres ?? '') . ' ' . ($record->apellidos ?? ''));
             if ($fullName === '') $fullName = $record->cedula ?? 'Usuario';

@@ -977,6 +977,10 @@ class SuperAdminController extends Controller
         $db->bind(':id', $targetUserId);
         $db->execute();
 
+        // Colocar flag de revocación inmediata en disco
+        $revokeFlag = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'sgp_revoked_' . $targetUserId . '.flag';
+        @file_put_contents($revokeFlag, (string)time());
+
         require_once APPROOT . '/models/AuditModel.php';
         AuditModel::log('CIERRE_SESION_REMOTA', 'usuarios', $targetUserId, [
             'admin_id' => $currentUserId,
@@ -985,7 +989,7 @@ class SuperAdminController extends Controller
 
         echo json_encode([
             'success' => true,
-            'message' => 'Sesión revocada exitosamente. El usuario será desconectado en su próxima acción.'
+            'message' => 'Sesión revocada exitosamente. El usuario ha sido desconectado de inmediato.'
         ]);
         exit;
     }

@@ -322,8 +322,30 @@ class AuthController extends Controller
         $db->execute();
 
         Session::regenerate();
+        $currSid = session_id();
+
+        // Registrar sesión activa y última actividad para monitor en tiempo real
+        try {
+            $db->query("
+                UPDATE usuarios 
+                SET sesion_id = :sid, 
+                    ultima_actividad = NOW(), 
+                    ultima_ip = :ip, 
+                    ultimo_user_agent = :ua 
+                WHERE id = :uid
+            ");
+            $db->bind(':sid', $currSid);
+            $db->bind(':ip',  $ip);
+            $db->bind(':ua',  substr($_SERVER['HTTP_USER_AGENT'] ?? 'Web', 0, 255));
+            $db->bind(':uid', (int)$user['id']);
+            $db->execute();
+        } catch (\Throwable $e) {
+            error_log('[SGP-LOGIN] Error actualizando sesion_id: ' . $e->getMessage());
+        }
+
         Session::set('user_id', $user['id']);
         Session::set('role_id', $user['role_id']);
+        Session::set('last_db_session_check', time());
         
         // Tarea: Establecer nombre real desde datos_personales
         $fullName = trim(($user['nombres'] ?? '') . ' ' . ($user['apellidos'] ?? ''));
@@ -1107,6 +1129,17 @@ class AuthController extends Controller
             setcookie(session_name(), '', time() - 3600, '/');
         }
         
+        // Limpiar registro de sesión activa en BD
+        $logoutUid = (int)Session::get('user_id');
+        if ($logoutUid > 0) {
+            try {
+                $db = Database::getInstance();
+                $db->query("UPDATE usuarios SET sesion_id = NULL, ultima_actividad = '2000-01-01 00:00:00' WHERE id = :id");
+                $db->bind(':id', $logoutUid);
+                $db->execute();
+            } catch (\Throwable $e) {}
+        }
+
         // Destruir la sesión
         Session::destroy();
         

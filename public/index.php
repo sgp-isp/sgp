@@ -120,6 +120,40 @@ Session::start();
     Session::set('permisos_ts', $__flagTs);
     @unlink($__flag);
 })();
+
+// ── Comprobación de revocación forzada de sesión por SuperAdmin ─────────────
+(function () {
+    $__uid = (int)Session::get('user_id');
+    if (!$__uid) return;
+
+    $__revFlag = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'sgp_revoked_' . $__uid . '.flag';
+    if (file_exists($__revFlag)) {
+        @unlink($__revFlag);
+        Session::destroy();
+
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+               || (!empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+
+        if ($isAjax) {
+            http_response_code(401);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success'  => false,
+                'reason'   => 'session_revoked',
+                'message'  => 'Tu sesión ha sido revocada por el administrador.',
+                'redirect' => (defined('URLROOT') ? URLROOT : '') . '/auth/login?razon=revocada'
+            ]);
+            exit;
+        }
+
+        Session::start(false);
+        Session::setFlash('login_error', 'Tu sesión ha sido revocada por el administrador de seguridad.');
+        session_write_close();
+
+        header('Location: ' . (defined('URLROOT') ? URLROOT : '') . '/auth/login?razon=revocada');
+        exit;
+    }
+})();
 // ────────────────────────────────────────────────────────────────────────────
 
 // Si accede a la raíz (/) sin URL específica

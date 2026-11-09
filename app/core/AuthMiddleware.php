@@ -29,13 +29,45 @@ class AuthMiddleware
         // [FIX-P3] Session::start() ya invoca checkInactivity() internamente con SESSION_TIMEOUT_SECONDS
         Session::start();
 
+        $userId = (int)Session::get('user_id');
         // Verificar si existe sesión de usuario (si expiró, checkInactivity ya destruyó la sesión y redirigió)
-        if (!Session::get('user_id')) {
+        if (!$userId) {
             self::redirectToLogin($isAjax, 'Debe iniciar sesión');
             return;
         }
-        // [FIX-P3] Eliminados isInactive() y updateActivity() — lógica duplicada y con timeout incorrecto.
-        // Session::checkInactivity() ya actualizó $_SESSION['last_activity'] en esta misma request.
+
+        // 1. Verificación instantánea por flag en disco (revocación forzada inmediata)
+        $flag = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'sgp_revoked_' . $userId . '.flag';
+        if (file_exists($flag)) {
+            @unlink($flag);
+            Session::destroy();
+            self::redirectToLogin($isAjax, 'Tu sesión ha sido revocada por el administrador.');
+            return;
+        }
+
+        // 2. Verificación periódica en BD (cada 20s) y actualización de actividad en tiempo real
+        $lastCheck = (int)Session::get('last_db_session_check');
+        if (time() - $lastCheck >= 20) {
+            Session::set('last_db_session_check', time());
+            try {
+                $db = Database::getInstance();
+                $db->query("SELECT sesion_id, estado FROM usuarios WHERE id = :id LIMIT 1");
+                $db->bind(':id', $userId);
+                $uRow = $db->single();
+                $currSid = session_id();
+
+                if (!$uRow || empty($uRow->sesion_id) || $uRow->estado === 'inactivo' || ($uRow->sesion_id !== $currSid && $currSid !== '')) {
+                    Session::destroy();
+                    self::redirectToLogin($isAjax, 'Tu sesión ha sido revocada por el administrador.');
+                    return;
+                }
+
+                // Mantener actualizada la última actividad para el monitor de usuarios en línea en tiempo real
+                $db->query("UPDATE usuarios SET ultima_actividad = NOW() WHERE id = :id");
+                $db->bind(':id', $userId);
+                $db->execute();
+            } catch (\Throwable $e) {}
+        }
     }
     
     /**

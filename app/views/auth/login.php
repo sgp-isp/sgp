@@ -711,14 +711,50 @@
         <?php endif; ?>
 
         // ============================================
-        // ALERTA: INACTIVIDAD (Con recarga para Captcha)
+        // ALERTA: SESIÓN REVOCADA O INACTIVIDAD
         // ============================================
         <?php
-        // Detectar inactividad por flash consumiéndolo (evita bucles en recarga) O por URL param ?razon=inactividad
+        // Detectar inactividad o revocación forzada por flash o URL
         $flashInactividad   = Session::getFlash('inactividad');
+        $flashError         = Session::getFlash('login_error');
         $mostrarInactividad = ($flashInactividad !== null) || (($_GET['razon'] ?? '') === 'inactividad');
+        $mostrarRevocada    = (($_GET['razon'] ?? '') === 'revocada') || ($flashError !== null && stripos($flashError, 'revocada') !== false);
         ?>
-        <?php if ($mostrarInactividad): ?>
+        <?php if ($mostrarRevocada): ?>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Acceso Revocado',
+                html: [
+                    '<div style="text-align:center;padding:4px 0 8px;">',
+                    '<div style="display:inline-flex;align-items:center;justify-content:center;',
+                    'width:56px;height:56px;border-radius:50%;',
+                    'background:linear-gradient(135deg,#fee2e2,#fecaca);margin-bottom:14px;">',
+                    '<i class="ti ti-shield-lock" style="font-size:1.7rem;color:#dc2626;"></i>',
+                    '</div>',
+                    '<p style="color:#64748b;font-size:0.9rem;line-height:1.6;margin:0;">',
+                    'Tu sesión activa ha sido cerrada remotamente por el<br>',
+                    '<strong style="color:#1e293b;">SuperAdministrador del sistema</strong>.<br>',
+                    '<span style="font-size:0.8rem;color:#94a3b8;margin-top:6px;display:block;">',
+                    'Si consideras que se trata de un error, contacta a la Dirección de Telemática.',
+                    '</span>',
+                    '</p>',
+                    '</div>'
+                ].join(''),
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#dc2626',
+                customClass: {
+                    popup: 'sgp-swal-revocada',
+                    confirmButton: 'sgp-swal-btn-confirm'
+                }
+            }).then(() => {
+                if (window.history.replaceState) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('razon');
+                    const cleanPath = url.pathname + (url.search ? url.search : '');
+                    window.history.replaceState({}, document.title, cleanPath);
+                }
+            });
+        <?php elseif ($mostrarInactividad): ?>
             Swal.fire({
                 icon: 'info',
                 title: 'Sesión Finalizada',
