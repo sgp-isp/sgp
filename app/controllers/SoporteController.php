@@ -199,9 +199,10 @@ class SoporteController extends Controller
                 error_log('[SGP-SOPORTE] Error creando notificacion interna: ' . $e->getMessage());
             }
 
-            // Notificación por correo electrónico (sin bloquear)
+            // Notificación por correo electrónico al usuario solicitante y a administradores
             try {
                 require_once APPROOT . '/lib/MailService.php';
+                MailService::notifyTicketConfirmationUser($ticketId);
                 MailService::notifyNewSupportTicket($ticketId);
             } catch (\Throwable $e) {
                 error_log('[SGP-SOPORTE] Error enviando correo: ' . $e->getMessage());
@@ -211,7 +212,8 @@ class SoporteController extends Controller
                 'success'   => true,
                 'message'   => "Ticket {$codigo} generado exitosamente. Nuestro equipo técnico responderá a la brevedad.",
                 'ticket_id' => $ticketId,
-                'codigo'    => $codigo
+                'codigo'    => $codigo,
+                'asunto'    => $asunto
             ]);
             exit;
 
@@ -624,9 +626,10 @@ class SoporteController extends Controller
                 error_log('[SGP-SOPORTE-GUEST] Error notificacion interna: ' . $ne->getMessage());
             }
 
-            // Notificación por correo a administradores
+            // Notificación por correo al usuario solicitante y a administradores
             try {
                 require_once APPROOT . '/lib/MailService.php';
+                MailService::notifyTicketConfirmationUser($ticketId);
                 MailService::notifyNewSupportTicket($ticketId);
             } catch (\Throwable $me) {
                 error_log('[SGP-SOPORTE-GUEST] Error enviando correo: ' . $me->getMessage());
@@ -637,13 +640,18 @@ class SoporteController extends Controller
                 'message'     => "Caso {$codigo} registrado exitosamente. Un técnico responderá en vivo en este chat.",
                 'ticket_id'   => $ticketId,
                 'codigo'      => $codigo,
+                'asunto'      => $asunto,
                 'guest_token' => $guestToken
             ]);
             exit;
 
         } catch (\Throwable $e) {
-            error_log('[SGP-SOPORTE-GUEST-FATAL] ' . $e->getMessage());
-            echo json_encode(['success' => false, 'message' => 'Ocurrió un error al procesar el caso: ' . $e->getMessage()]);
+            $errMsg = $e->getMessage();
+            if ($e->getPrevious()) {
+                $errMsg .= ' (' . $e->getPrevious()->getMessage() . ')';
+            }
+            error_log('[SGP-SOPORTE-GUEST-FATAL] ' . $errMsg);
+            echo json_encode(['success' => false, 'message' => 'Ocurrió un error al procesar el caso: ' . $errMsg]);
             exit;
         }
     }

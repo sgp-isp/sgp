@@ -45,24 +45,28 @@ class SoporteModel
                     PRIMARY KEY (`id`),
                     UNIQUE KEY `codigo` (`codigo`),
                     KEY `idx_estado` (`estado`),
-                    KEY `idx_usuario` (`usuario_id`),
-                    KEY `idx_guest_token` (`guest_token`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                    KEY `idx_usuario` (`usuario_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
             ");
             $this->db->execute();
 
             // Migración suave si la columna guest_token aún no existe
             try {
-                $this->db->query("ALTER TABLE `soporte_tickets` ADD COLUMN `guest_token` varchar(64) DEFAULT NULL AFTER `ip`");
+                $this->db->query("SELECT `guest_token` FROM `soporte_tickets` LIMIT 1");
                 $this->db->execute();
             } catch (\Throwable $mEx) {
-                // Ya existe la columna
+                try {
+                    $this->db->query("ALTER TABLE `soporte_tickets` ADD COLUMN `guest_token` varchar(64) DEFAULT NULL");
+                    $this->db->execute();
+                } catch (\Throwable $mEx2) {
+                    // Ya existe o error DDL
+                }
             }
 
             try {
                 $this->db->query("ALTER TABLE `soporte_tickets` ADD INDEX `idx_guest_token` (`guest_token`)");
                 $this->db->execute();
-            } catch (\Throwable $mEx2) {
+            } catch (\Throwable $mEx3) {
                 // Ya existe el índice
             }
 
@@ -80,7 +84,7 @@ class SoporteModel
                     PRIMARY KEY (`id`),
                     KEY `idx_ticket_id` (`ticket_id`),
                     KEY `idx_usuario_id` (`usuario_id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
             ");
             $this->db->execute();
         } catch (\Throwable $e) {
@@ -299,18 +303,23 @@ class SoporteModel
 
         $guestToken = !empty($data['guest_token']) ? (string)$data['guest_token'] : bin2hex(random_bytes(16));
 
-        // Asegurar que la columna guest_token exista
+        // Asegurar que las tablas existan
+        $this->checkSchema();
+
+        // Comprobar de forma segura si la columna guest_token existe
         $colExiste = false;
         try {
-            $this->db->query("SHOW COLUMNS FROM `soporte_tickets` LIKE 'guest_token'");
-            $colExiste = !empty($this->db->single());
-            if (!$colExiste) {
-                $this->db->query("ALTER TABLE `soporte_tickets` ADD COLUMN `guest_token` varchar(64) DEFAULT NULL AFTER `ip`");
+            $this->db->query("SELECT `guest_token` FROM `soporte_tickets` LIMIT 1");
+            $this->db->execute();
+            $colExiste = true;
+        } catch (\Throwable $e) {
+            try {
+                $this->db->query("ALTER TABLE `soporte_tickets` ADD COLUMN `guest_token` varchar(64) DEFAULT NULL");
                 $this->db->execute();
                 $colExiste = true;
+            } catch (\Throwable $e2) {
+                $colExiste = false;
             }
-        } catch (\Throwable $e) {
-            // Error en introspección o DDL
         }
 
         if ($colExiste) {
@@ -341,8 +350,35 @@ class SoporteModel
         $this->db->bind(':mensaje',      $data['mensaje'] ?? '');
         $this->db->bind(':ip',           $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
 
-        $this->db->execute();
-        $ticketId = (int)$this->db->lastInsertId();
+        try {
+            $this->db->execute();
+            $ticketId = (int)$this->db->lastInsertId();
+        } catch (\Throwable $insEx) {
+            error_log('[SGP-SOPORTE-INSERT-FAIL] ' . $insEx->getMessage());
+            // Fallback de emergencia sin guest_token si falló la inserción principal
+            if ($colExiste) {
+                $this->db->query("
+                    INSERT INTO soporte_tickets 
+                        (codigo, usuario_id, nombre, correo, telefono, categoria, prioridad, asunto, mensaje, estado, ip, created_at)
+                    VALUES 
+                        (:codigo, :usuario_id, :nombre, :correo, :telefono, :categoria, :prioridad, :asunto, :mensaje, 'Abierto', :ip, NOW())
+                ");
+                $this->db->bind(':codigo',       $codigo);
+                $this->db->bind(':usuario_id',   !empty($data['usuario_id']) ? (int)$data['usuario_id'] : null);
+                $this->db->bind(':nombre',       $data['nombre'] ?? 'Usuario');
+                $this->db->bind(':correo',       $data['correo'] ?? '');
+                $this->db->bind(':telefono',     $data['telefono'] ?? null);
+                $this->db->bind(':categoria',    $data['categoria'] ?? 'Error del Sistema');
+                $this->db->bind(':prioridad',    $data['prioridad'] ?? 'Media');
+                $this->db->bind(':asunto',       $data['asunto'] ?? 'Sin Asunto');
+                $this->db->bind(':mensaje',      $data['mensaje'] ?? '');
+                $this->db->bind(':ip',           $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+                $this->db->execute();
+                $ticketId = (int)$this->db->lastInsertId();
+            } else {
+                throw $insEx;
+            }
+        }
 
         // Registrar el primer mensaje en el historial del chat
         if ($ticketId > 0 && !empty($data['mensaje'])) {
@@ -476,7 +512,7 @@ class SoporteModel
             // Normalizar cédula si viene con prefijos o solo números
             $cedulaPura = preg_replace('/[^0-9]/', '', $limpio);
 
-            $this->db->query("
+            $sql = "
                 SELECT 
                     u.id,
                     u.cedula,
@@ -491,12 +527,19 @@ class SoporteModel
                 LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
                 LEFT JOIN departamentos d ON d.id = u.departamento_id
                 WHERE LOWER(u.correo) = LOWER(:ident)
-                   OR u.cedula = :ident
-                   OR (:cedulaPura != '' AND REPLACE(REPLACE(u.cedula, 'V-', ''), 'E-', '') = :cedulaPura)
-                LIMIT 1
-            ");
+                   OR u.cedula = :ident2
+            ";
+            if (!empty($cedulaPura)) {
+                $sql .= " OR REPLACE(REPLACE(u.cedula, 'V-', ''), 'E-', '') = :cedulaPura ";
+            }
+            $sql .= " LIMIT 1";
+
+            $this->db->query($sql);
             $this->db->bind(':ident', $limpio);
-            $this->db->bind(':cedulaPura', $cedulaPura);
+            $this->db->bind(':ident2', $limpio);
+            if (!empty($cedulaPura)) {
+                $this->db->bind(':cedulaPura', $cedulaPura);
+            }
 
             $user = $this->db->single();
             return $user ?: null;

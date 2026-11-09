@@ -156,8 +156,8 @@
 
     .kiosco-floating-actions {
         position: fixed;
-        top: 380px;
-        right: 40px;
+        top: 36px;
+        right: 36px;
         z-index: 9000;
         display: flex;
         flex-direction: column;
@@ -873,54 +873,190 @@
                 <!-- Feedback de Identificación -->
                 <div id="sgpGuestFeedback" style="display: none; margin-top: 14px;"></div>
 
-                <!-- Formulario de Creación de Caso (Se muestra tras identificar o si es visitante) -->
-                <form id="formSoporteGuest" onsubmit="crearCasoGuest(event)" style="display: none; margin-top: 18px;">
-                    <input type="hidden" id="sgpGuestUsuarioId" value="">
-                    
-                    <div class="sgp-guest-grid-2">
-                        <div class="sgp-guest-field">
-                            <label class="sgp-guest-label">Nombre Completo *</label>
-                            <input type="text" id="sgpGuestNombre" class="sgp-guest-input" required placeholder="Tu nombre y apellido">
-                        </div>
-                        <div class="sgp-guest-field">
-                            <label class="sgp-guest-label">Correo Electrónico *</label>
-                            <input type="email" id="sgpGuestCorreo" class="sgp-guest-input" required placeholder="tu@correo.com">
-                        </div>
+                <!-- Bento: Selección Rápida de Temas Frecuentes -->
+                <div id="sgpTopicChipsSection" class="sgp-topic-chips-wrapper" style="display: none; margin-top: 14px;">
+                    <div class="sgp-topic-chips-title">
+                        <i class="ti ti-sparkles" style="color: #2563eb;"></i> <strong>Selección rápida por motivo frecuente:</strong>
                     </div>
-
-                    <div class="sgp-guest-grid-2" style="margin-top: 12px;">
-                        <div class="sgp-guest-field">
-                            <label class="sgp-guest-label">Teléfono de Contacto</label>
-                            <input type="text" id="sgpGuestTelefono" class="sgp-guest-input" placeholder="Ej. 0414-1234567 (opcional)">
-                        </div>
-                        <div class="sgp-guest-field">
-                            <label class="sgp-guest-label">Motivo de la Consulta *</label>
-                            <select id="sgpGuestCategoria" class="sgp-guest-input" required>
-                                <option value="Problema de Acceso">Problema de Acceso / Contraseña olvidada</option>
-                                <option value="Error del Sistema">Error en Acceso Biométrico o Huella</option>
-                                <option value="Duda Operativa">Inconveniente con Kiosco o Marcaje</option>
-                                <option value="Sugerencia">Duda sobre mi Pasantía / Tutor</option>
-                                <option value="Otro">Otro problema técnico</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="sgp-guest-field" style="margin-top: 12px;">
-                        <label class="sgp-guest-label">Asunto Breve *</label>
-                        <input type="text" id="sgpGuestAsunto" class="sgp-guest-input" required placeholder="Ej. Olvidé mi clave y no puedo ingresar">
-                    </div>
-
-                    <div class="sgp-guest-field" style="margin-top: 12px;">
-                        <label class="sgp-guest-label">Detalle de tu problema o mensaje inicial *</label>
-                        <textarea id="sgpGuestMensaje" class="sgp-guest-textarea" rows="3" required placeholder="Cuéntanos con detalle qué ocurre para que el equipo técnico te responda de inmediato..."></textarea>
-                    </div>
-
-                    <div style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 10px;">
-                        <button type="submit" id="btnSubmitGuestTicket" class="btn-sgp-guest-submit">
-                            <i class="ti ti-brand-hipchat"></i> Iniciar Chat de Soporte
+                    <div class="sgp-topic-chips">
+                        <button type="button" class="sgp-chip" onclick="seleccionarChipTema('Problema de Acceso', 'Olvidé mi contraseña o credenciales de acceso')">
+                            <span>🔑</span> Clave Olvidada
+                        </button>
+                        <button type="button" class="sgp-chip" onclick="seleccionarChipTema('Error del Sistema', 'Error al leer huella o credencial biométrica')">
+                            <span>👆</span> Error Huella
+                        </button>
+                        <button type="button" class="sgp-chip" onclick="seleccionarChipTema('Duda Operativa', 'Problema al registrar asistencia en el Kiosco / PIN')">
+                            <span>⏱️</span> Kiosco / PIN
+                        </button>
+                        <button type="button" class="sgp-chip" onclick="seleccionarChipTema('Sugerencia', 'Duda sobre registro de horas o tutor de pasantía')">
+                            <span>🎓</span> Duda Pasantía
+                        </button>
+                        <button type="button" class="sgp-chip" onclick="seleccionarChipTema('Otro', 'Problema técnico general en la plataforma')">
+                            <span>🛠️</span> Problema Técnico
                         </button>
                     </div>
+                </div>
+
+                <!-- Formulario Bento Estilo Ticket Stub / Vale Digital -->
+                <form id="formSoporteGuest" onsubmit="crearCasoGuest(event)" class="sgp-ticket-form-card" style="display: none; margin-top: 16px;">
+                    <input type="hidden" id="sgpGuestUsuarioId" value="">
+                    
+                    <!-- Cabecera de Ticket con Código de Barras Simulado -->
+                    <div class="sgp-ticket-stub-top">
+                        <div class="sgp-ticket-barcode-wrap" title="ISPEB HelpDesk Voucher">
+                            <span class="barcode-line thin"></span>
+                            <span class="barcode-line thick"></span>
+                            <span class="barcode-line mid"></span>
+                            <span class="barcode-line thin"></span>
+                            <span class="barcode-line thick"></span>
+                            <span class="barcode-line mid"></span>
+                            <span class="barcode-line thin"></span>
+                            <span class="barcode-line thick"></span>
+                            <span class="barcode-line thin"></span>
+                            <span class="barcode-line mid"></span>
+                        </div>
+                        <div class="sgp-ticket-stub-heading">
+                            <span class="sgp-ticket-badge-tag"><i class="ti ti-ticket"></i> TICKET DIGITAL ISPEB</span>
+                            <span class="sgp-ticket-subtag">Mesa de Guardia 24/7</span>
+                        </div>
+                    </div>
+
+                    <div class="sgp-ticket-perforated-line">
+                        <span class="ticket-notch notch-left"></span>
+                        <span class="ticket-notch notch-right"></span>
+                    </div>
+
+                    <div class="sgp-ticket-body-content">
+                        <div class="sgp-guest-grid-2">
+                            <div class="sgp-guest-field">
+                                <label class="sgp-guest-label"><i class="ti ti-user"></i> Nombre Completo *</label>
+                                <input type="text" id="sgpGuestNombre" class="sgp-guest-input" required placeholder="Tu nombre y apellido">
+                            </div>
+                            <div class="sgp-guest-field">
+                                <label class="sgp-guest-label"><i class="ti ti-mail"></i> Correo Electrónico *</label>
+                                <input type="email" id="sgpGuestCorreo" class="sgp-guest-input" required placeholder="tu@correo.com">
+                            </div>
+                        </div>
+
+                        <div class="sgp-guest-grid-2" style="margin-top: 12px;">
+                            <div class="sgp-guest-field">
+                                <label class="sgp-guest-label"><i class="ti ti-phone"></i> Teléfono Móvil</label>
+                                <input type="text" id="sgpGuestTelefono" class="sgp-guest-input" placeholder="Ej. 0414-1234567 (opcional)">
+                            </div>
+                            <div class="sgp-guest-field">
+                                <label class="sgp-guest-label"><i class="ti ti-category"></i> Categoría del Caso *</label>
+                                <select id="sgpGuestCategoria" class="sgp-guest-input" required>
+                                    <option value="Problema de Acceso">Problema de Acceso / Contraseña olvidada</option>
+                                    <option value="Error del Sistema">Error en Acceso Biométrico o Huella</option>
+                                    <option value="Duda Operativa">Inconveniente con Kiosco o Marcaje</option>
+                                    <option value="Sugerencia">Duda sobre mi Pasantía / Tutor</option>
+                                    <option value="Otro">Otro problema técnico</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="sgp-guest-field" style="margin-top: 12px;">
+                            <label class="sgp-guest-label"><i class="ti ti-tag"></i> Asunto Breve de la Consulta *</label>
+                            <input type="text" id="sgpGuestAsunto" class="sgp-guest-input" required placeholder="Ej. Olvidé mi clave y no puedo ingresar al sistema">
+                        </div>
+
+                        <div class="sgp-guest-field" style="margin-top: 12px;">
+                            <label class="sgp-guest-label"><i class="ti ti-message-2"></i> Detalle de la Incidencia *</label>
+                            <textarea id="sgpGuestMensaje" class="sgp-guest-textarea" rows="3" required placeholder="Describe lo que ocurre para que nuestro equipo técnico te responda de inmediato en vivo..."></textarea>
+                        </div>
+
+                        <div class="sgp-ticket-footer-actions">
+                            <div class="sgp-ticket-meta-hint">
+                                <i class="ti ti-shield-check" style="color: #059669;"></i>
+                                <span>Recibirás copia en tu correo y acceso inmediato al chat técnico.</span>
+                            </div>
+                            <button type="submit" id="btnSubmitGuestTicket" class="btn-sgp-guest-submit">
+                                <i class="ti ti-send"></i> Generar Ticket & Entrar al Chat
+                            </button>
+                        </div>
+                    </div>
                 </form>
+            </div>
+
+            <!-- Contenido Modal: Vista de Éxito / Comprobante de Ticket Emitido -->
+            <div id="sgpGuestViewSuccess" class="sgp-guest-modal-body" style="display: none; padding: 26px 22px;">
+                <div class="sgp-success-voucher-card">
+                    <div class="sgp-voucher-stamp">EMITIDO ✓</div>
+                    <div class="sgp-voucher-barcode">|||| ||| || |||| | ||| ||||</div>
+                    <div class="sgp-voucher-tag">COMPROBANTE OFICIAL DE ASISTENCIA TÉCNICA</div>
+                    
+                    <div class="sgp-voucher-code-box">
+                        <div class="sgp-voucher-code-title">CÓDIGO DE SEGUIMIENTO:</div>
+                        <div class="sgp-voucher-code-row">
+                            <span id="sgpSuccessCode" class="sgp-voucher-code">#TCK-000000-0000</span>
+                            <button type="button" class="btn-voucher-copy" onclick="copiarCodigoTicket()" title="Copiar código al portapapeles">
+                                <i class="ti ti-copy" id="sgpCopyIcon"></i> <span id="sgpCopyText">Copiar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="sgp-voucher-info-grid">
+                        <div class="sgp-vig-item">
+                            <span class="sgp-vig-label">Solicitante</span>
+                            <strong id="sgpSuccessNombre" class="sgp-vig-val">-</strong>
+                        </div>
+                        <div class="sgp-vig-item">
+                            <span class="sgp-vig-label">Estado</span>
+                            <span class="sgp-vig-badge"><i class="ti ti-clock"></i> ABIERTO</span>
+                        </div>
+                        <div class="sgp-vig-item full-width">
+                            <span class="sgp-vig-label">Asunto</span>
+                            <span id="sgpSuccessAsunto" class="sgp-vig-val">-</span>
+                        </div>
+                    </div>
+
+                    <div class="sgp-voucher-email-notice">
+                        <i class="ti ti-mail-check" style="color: #059669; font-size: 1.25rem;"></i>
+                        <div>
+                            <strong>Comprobante enviado por correo electrónico:</strong>
+                            <p style="margin: 2px 0 0; font-size: 0.78rem; color: #475569;">
+                                Hemos despachado una notificación tanto a tu buzón como a los técnicos administradores de guardia.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                    <button type="button" id="btnEnterLiveChat" onclick="entrarAlChatDirecto()" class="btn-sgp-guest-submit" style="width: 100%; justify-content: center; padding: 13px 20px; font-size: 0.98rem;">
+                        <i class="ti ti-messages"></i> Abrir Chat en Vivo Ahora
+                    </button>
+                    <span id="sgpAutoTransitionCount" style="font-size: 0.80rem; color: #64748b; font-weight: 500;">
+                        Ingresando automáticamente al chat en 3 segundos...
+                    </span>
+                </div>
+            </div>
+
+            <!-- Overlay de Animación: Imprimiendo Ticket Digital -->
+            <div id="sgpTicketGeneratingOverlay" class="sgp-ticket-generating-overlay" style="display: none;">
+                <div class="sgp-printer-animation-card">
+                    <div class="sgp-printer-slot-machine">
+                        <div class="sgp-printer-mouth"></div>
+                        <div class="sgp-printer-sheet">
+                            <div class="sgp-printer-paper-header">
+                                <span class="ph-dot"></span>
+                                <span class="ph-title">SGP ISPEB HELPDESK</span>
+                                <span class="ph-dot"></span>
+                            </div>
+                            <div class="sgp-printer-paper-barcode">||| |||| || |||</div>
+                            <div class="sgp-printer-paper-code" id="sgpPrintingCodePreview">#TCK-TICKET</div>
+                        </div>
+                    </div>
+                    <div class="sgp-printer-step-info">
+                        <div class="sgp-printer-step-icon">
+                            <i class="ti ti-printer animate-bounce" id="sgpPrinterStepIcon"></i>
+                        </div>
+                        <h4 id="sgpPrinterStepTitle" class="sgp-printer-title">Generando Ticket Digital...</h4>
+                        <p id="sgpPrinterStepSub" class="sgp-printer-desc">Registrando la incidencia y preparando el chat en vivo...</p>
+                        <div class="sgp-printer-progress-bar">
+                            <div class="sgp-printer-progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Contenido Modal: Vista 2 - Chat en Vivo -->
@@ -1176,6 +1312,380 @@
         box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
     }
 
+    /* ── Bento Topic Chips ── */
+    .sgp-topic-chips-wrapper {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 12px 14px;
+        margin-bottom: 14px;
+    }
+    .sgp-topic-chips-title {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .sgp-topic-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .sgp-chip {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 20px;
+        padding: 5px 11px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: #334155;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .sgp-chip:hover {
+        background: #eff6ff;
+        border-color: #3b82f6;
+        color: #1e40af;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
+    }
+    .sgp-chip.active {
+        background: #1e40af;
+        border-color: #1e40af;
+        color: #ffffff;
+    }
+
+    /* ── Ticket Stub Form Container ── */
+    .sgp-ticket-form-card {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 16px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+    }
+    .sgp-ticket-stub-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #0f172a;
+        color: #ffffff;
+    }
+    .sgp-ticket-barcode-wrap {
+        display: flex;
+        gap: 3px;
+        align-items: flex-end;
+        height: 22px;
+    }
+    .barcode-line {
+        background: #94a3b8;
+        height: 100%;
+        display: inline-block;
+        border-radius: 1px;
+    }
+    .barcode-line.thin { width: 1.5px; }
+    .barcode-line.mid { width: 3px; }
+    .barcode-line.thick { width: 4.5px; }
+    .sgp-ticket-stub-heading {
+        text-align: right;
+    }
+    .sgp-ticket-badge-tag {
+        font-size: 0.70rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        color: #38bdf8;
+        display: block;
+    }
+    .sgp-ticket-subtag {
+        font-size: 0.64rem;
+        color: #94a3b8;
+    }
+    .sgp-ticket-perforated-line {
+        position: relative;
+        height: 0;
+        border-top: 2px dashed #cbd5e1;
+        margin: 0;
+    }
+    .ticket-notch {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        background: #ffffff;
+        border-radius: 50%;
+        top: -9px;
+        border: 1.5px solid #cbd5e1;
+        z-index: 2;
+    }
+    .ticket-notch.notch-left {
+        left: -10px;
+        clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+    }
+    .ticket-notch.notch-right {
+        right: -10px;
+        clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+    }
+    .sgp-ticket-body-content {
+        padding: 16px 16px 14px;
+    }
+    .sgp-ticket-footer-actions {
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .sgp-ticket-meta-hint {
+        font-size: 0.72rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 250px;
+        line-height: 1.3;
+    }
+
+    /* ── Voucher de Éxito / Rubber Stamp ── */
+    .sgp-success-voucher-card {
+        background: #ffffff;
+        border: 2px dashed #93c5fd;
+        border-radius: 18px;
+        padding: 24px 20px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.08);
+        text-align: center;
+    }
+    .sgp-voucher-stamp {
+        position: absolute;
+        top: 16px;
+        right: 14px;
+        border: 3px solid #059669;
+        color: #059669;
+        padding: 4px 12px;
+        font-size: 0.85rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        border-radius: 8px;
+        transform: rotate(12deg);
+        mask-image: radial-gradient(circle, #000 70%, rgba(0,0,0,0.4) 100%);
+        animation: stampDrop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes stampDrop {
+        0% { transform: scale(2.5) rotate(0deg); opacity: 0; }
+        100% { transform: scale(1) rotate(12deg); opacity: 1; }
+    }
+    .sgp-voucher-barcode {
+        font-family: monospace;
+        letter-spacing: 4px;
+        color: #64748b;
+        font-size: 1.1rem;
+        margin-bottom: 4px;
+    }
+    .sgp-voucher-tag {
+        font-size: 0.70rem;
+        font-weight: 800;
+        color: #1e3a8a;
+        letter-spacing: 1px;
+        margin-bottom: 14px;
+    }
+    .sgp-voucher-code-box {
+        background: #f0fdf4;
+        border: 1.5px solid #86efac;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+    }
+    .sgp-voucher-code-title {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #166534;
+        letter-spacing: 0.5px;
+    }
+    .sgp-voucher-code-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 4px;
+    }
+    .sgp-voucher-code {
+        font-size: 1.25rem;
+        font-weight: 900;
+        color: #15803d;
+        letter-spacing: 1px;
+    }
+    .btn-voucher-copy {
+        background: #ffffff;
+        border: 1.5px solid #86efac;
+        color: #166534;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s;
+    }
+    .btn-voucher-copy:hover {
+        background: #dcfce7;
+    }
+    .sgp-voucher-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        text-align: left;
+        margin-bottom: 14px;
+        background: #f8fafc;
+        padding: 12px;
+        border-radius: 10px;
+    }
+    .sgp-vig-item { display: flex; flex-direction: column; }
+    .sgp-vig-item.full-width { grid-column: span 2; }
+    .sgp-vig-label { font-size: 0.68rem; color: #64748b; font-weight: 600; }
+    .sgp-vig-val { font-size: 0.82rem; color: #0f172a; }
+    .sgp-vig-badge {
+        font-size: 0.70rem;
+        font-weight: 800;
+        color: #b45309;
+        background: #fef3c7;
+        padding: 2px 8px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        width: fit-content;
+    }
+    .sgp-voucher-email-notice {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-align: left;
+    }
+
+    /* ── Overlay Animación Generando / Imprimiendo Ticket ── */
+    .sgp-ticket-generating-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.92);
+        backdrop-filter: blur(6px);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+        animation: guestFadeIn 0.25s ease-out;
+    }
+    .sgp-printer-animation-card {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 28px 24px;
+        width: 100%;
+        max-width: 380px;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+        position: relative;
+    }
+    .sgp-printer-slot-machine {
+        position: relative;
+        width: 190px;
+        height: 110px;
+        margin: 0 auto 18px;
+        background: #0f172a;
+        border-radius: 12px;
+        border: 3px solid #334155;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: inset 0 6px 12px rgba(0,0,0,0.5);
+    }
+    .sgp-printer-mouth {
+        width: 140px;
+        height: 8px;
+        background: #000000;
+        border-radius: 4px;
+        margin-top: 14px;
+        box-shadow: 0 2px 4px rgba(255,255,255,0.1);
+    }
+    .sgp-printer-sheet {
+        width: 120px;
+        background: #ffffff;
+        border-radius: 4px 4px 0 0;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        padding: 8px 6px;
+        animation: printSheetOut 1.8s infinite alternate ease-in-out;
+        transform-origin: top;
+    }
+    @keyframes printSheetOut {
+        0% { transform: translateY(-50px) scale(0.9); opacity: 0.3; }
+        100% { transform: translateY(0px) scale(1); opacity: 1; }
+    }
+    .sgp-printer-paper-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+    }
+    .ph-dot { width: 4px; height: 4px; background: #2563eb; border-radius: 50%; }
+    .ph-title { font-size: 0.50rem; font-weight: 800; color: #1e3a8a; }
+    .sgp-printer-paper-barcode { font-family: monospace; font-size: 0.55rem; color: #475569; letter-spacing: 2px; }
+    .sgp-printer-paper-code { font-size: 0.60rem; font-weight: 800; color: #059669; }
+    .sgp-printer-step-info { margin-top: 10px; }
+    .sgp-printer-step-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #eff6ff;
+        color: #2563eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin: 0 auto 10px;
+    }
+    .sgp-printer-title { margin: 0 0 4px; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
+    .sgp-printer-desc { margin: 0 0 14px; font-size: 0.78rem; color: #64748b; }
+    .sgp-printer-progress-bar {
+        width: 100%;
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .sgp-printer-progress-fill {
+        height: 100%;
+        width: 65%;
+        background: linear-gradient(90deg, #2563eb, #38bdf8);
+        border-radius: 10px;
+        animation: progressSlide 1.5s infinite ease-in-out;
+    }
+    @keyframes progressSlide {
+        0% { transform: translateX(-100%); width: 30%; }
+        50% { width: 70%; }
+        100% { transform: translateX(200%); width: 30%; }
+    }
+
     /* ── Chat en Vivo ── */
     .sgp-guest-chat-header {
         display: flex;
@@ -1404,6 +1914,12 @@
             clearInterval(sgpGuestPollTimer);
             sgpGuestPollTimer = null;
         }
+        if (sgpSuccessCountdownTimer) {
+            clearInterval(sgpSuccessCountdownTimer);
+            sgpSuccessCountdownTimer = null;
+        }
+        const successView = document.getElementById('sgpGuestViewSuccess');
+        if (successView) successView.style.display = 'none';
         document.getElementById('sgpGuestViewChat').style.display = 'none';
         document.getElementById('sgpGuestViewIdent').style.display = 'block';
     }
@@ -1425,6 +1941,8 @@
                 document.getElementById('sgpGuestUsuarioId').value = '';
                 document.getElementById('sgpGuestFeedback').style.display = 'none';
                 document.getElementById('formSoporteGuest').style.display = 'none';
+                const chips = document.getElementById('sgpTopicChipsSection');
+                if (chips) chips.style.display = 'none';
                 const banner = document.getElementById('sgpGuestActiveBanner');
                 if (banner) banner.style.display = 'none';
             }
@@ -1441,11 +1959,70 @@
         } catch (e) {}
     }
 
+    // Selección rápida de temas mediante Chips Bento
+    function seleccionarChipTema(categoria, sugerencia) {
+        const select = document.getElementById('sgpGuestCategoria');
+        const asunto = document.getElementById('sgpGuestAsunto');
+        if (select) select.value = categoria;
+        if (asunto && (!asunto.value || asunto.value.trim().length === 0)) {
+            asunto.value = sugerencia;
+        }
+
+        // Resaltar visualmente el chip activo
+        document.querySelectorAll('.sgp-chip').forEach(ch => ch.classList.remove('active'));
+        if (event && event.currentTarget) {
+            event.currentTarget.classList.add('active');
+        }
+
+        const msgInput = document.getElementById('sgpGuestMensaje');
+        if (msgInput) msgInput.focus();
+    }
+
+    // Copiar código de ticket al portapapeles
+    function copiarCodigoTicket() {
+        const codeEl = document.getElementById('sgpSuccessCode');
+        const text = codeEl ? codeEl.textContent.trim() : '';
+        if (!text) return;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const copyIcon = document.getElementById('sgpCopyIcon');
+            const copyText = document.getElementById('sgpCopyText');
+            if (copyIcon) copyIcon.className = 'ti ti-check';
+            if (copyText) copyText.textContent = '¡Copiado!';
+            setTimeout(() => {
+                if (copyIcon) copyIcon.className = 'ti ti-copy';
+                if (copyText) copyText.textContent = 'Copiar';
+            }, 2000);
+        }).catch(() => {
+            // Fallback manual si portapapeles no está disponible
+            const tmp = document.createElement('textarea');
+            tmp.value = text;
+            document.body.appendChild(tmp);
+            tmp.select();
+            document.execCommand('copy');
+            document.body.removeChild(tmp);
+        });
+    }
+
+    // Entrar al chat directamente desde la pantalla de confirmación
+    function entrarAlChatDirecto() {
+        if (sgpSuccessCountdownTimer) {
+            clearInterval(sgpSuccessCountdownTimer);
+            sgpSuccessCountdownTimer = null;
+        }
+        if (sgpPendingSuccessData) {
+            const d = sgpPendingSuccessData;
+            document.getElementById('sgpGuestViewSuccess').style.display = 'none';
+            cargarChatGuest(d.ticket_id, d.guest_token, d.codigo, d.asunto, 'Abierto');
+        }
+    }
+
     async function identificarGuestUsuario() {
         const input = document.getElementById('sgpGuestIdentInput');
         const ident = input ? input.value.trim() : '';
         const feedback = document.getElementById('sgpGuestFeedback');
         const form = document.getElementById('formSoporteGuest');
+        const chips = document.getElementById('sgpTopicChipsSection');
         const btn = document.getElementById('btnSgpGuestIdent');
 
         if (!ident) {
@@ -1494,13 +2071,14 @@
                                 <button type="button" onclick="cargarChatGuest(${tk.id}, '${tk.guest_token}', '${tk.codigo}', '${tk.asunto.replace(/'/g, "\\'")}', '${tk.estado}')" class="btn-guest-resume" style="padding:8px 16px;">
                                     <i class="ti ti-messages"></i> Entrar al Chat de este Caso
                                 </button>
-                                <button type="button" onclick="document.getElementById('formSoporteGuest').style.display='block'; this.style.display='none';" style="background:transparent; border:1.5px solid #d97706; color:#92400e; padding:6px 12px; border-radius:8px; font-weight:700; font-size:0.78rem; cursor:pointer;">
+                                <button type="button" onclick="document.getElementById('formSoporteGuest').style.display='block'; if(document.getElementById('sgpTopicChipsSection')) document.getElementById('sgpTopicChipsSection').style.display='block'; this.style.display='none';" style="background:transparent; border:1.5px solid #d97706; color:#92400e; padding:6px 12px; border-radius:8px; font-weight:700; font-size:0.78rem; cursor:pointer;">
                                     Crear un caso diferente
                                 </button>
                             </div>
                         </div>
                     `;
                     form.style.display = 'none';
+                    if (chips) chips.style.display = 'none';
                 } else {
                     feedback.innerHTML = `
                         <div style="background:#ecfdf5; border:1.5px solid #a7f3d0; border-radius:12px; padding:12px 14px; color:#065f46; display:flex; align-items:center; gap:10px;">
@@ -1512,6 +2090,7 @@
                         </div>
                     `;
                     form.style.display = 'block';
+                    if (chips) chips.style.display = 'block';
                 }
             } else {
                 document.getElementById('sgpGuestUsuarioId').value = '';
@@ -1524,6 +2103,7 @@
                     </div>
                 `;
                 form.style.display = 'block';
+                if (chips) chips.style.display = 'block';
             }
 
         } catch (e) {
@@ -1533,9 +2113,17 @@
         }
     }
 
+    let sgpSuccessCountdownTimer = null;
+    let sgpPendingSuccessData    = null;
+
     async function crearCasoGuest(e) {
         e.preventDefault();
         const btn = document.getElementById('btnSubmitGuestTicket');
+        const overlay = document.getElementById('sgpTicketGeneratingOverlay');
+        const titleEl = document.getElementById('sgpPrinterStepTitle');
+        const subEl   = document.getElementById('sgpPrinterStepSub');
+        const codePrev = document.getElementById('sgpPrintingCodePreview');
+
         const payload = {
             usuario_id: document.getElementById('sgpGuestUsuarioId').value || null,
             nombre:     document.getElementById('sgpGuestNombre').value.trim(),
@@ -1554,17 +2142,46 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="ti ti-loader animate-spin"></i> Generando caso...';
 
+        // Activar overlay con micro-animaciones secuenciales
+        if (overlay) {
+            overlay.style.display = 'flex';
+            if (titleEl) titleEl.textContent = 'Imprimiendo Ticket Digital...';
+            if (subEl)   subEl.textContent   = 'Registrando incidencia en la Mesa de Guardia...';
+            if (codePrev) codePrev.textContent = '#TCK-GENERANDO';
+        }
+
+        const stepTimer1 = setTimeout(() => {
+            if (titleEl) titleEl.textContent = 'Notificando a la Guardia Técnica...';
+            if (subEl)   subEl.textContent   = 'Despachando alertas internas y confirmación por correo...';
+        }, 800);
+
+        const stepTimer2 = setTimeout(() => {
+            if (titleEl) titleEl.textContent = 'Conectando Chat en Vivo...';
+            if (subEl)   subEl.textContent   = 'Habilitando canal seguro con soporte técnico...';
+        }, 1600);
+
+        // Controlador de tiempo de espera con AbortController (máximo 12 segundos)
+        const abortCtrl = new AbortController();
+        const timeoutId = setTimeout(() => abortCtrl.abort(), 12000);
+
         try {
             const resp = await fetch('<?= URLROOT ?>/soporte/crearGuest', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
+                signal: abortCtrl.signal
             });
+            clearTimeout(timeoutId);
+            clearTimeout(stepTimer1);
+            clearTimeout(stepTimer2);
+
             const data = await resp.json();
+
             btn.disabled = false;
-            btn.innerHTML = '<i class="ti ti-brand-hipchat"></i> Iniciar Chat de Soporte';
+            btn.innerHTML = '<i class="ti ti-send"></i> Generar Ticket & Entrar al Chat';
 
             if (!data.success) {
+                if (overlay) overlay.style.display = 'none';
                 Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo crear el ticket.' });
                 return;
             }
@@ -1580,12 +2197,64 @@
                 }));
             } catch (err) {}
 
-            cargarChatGuest(data.ticket_id, data.guest_token, data.codigo, payload.asunto, 'Abierto');
+            // Ocultar overlay de impresión
+            if (overlay) overlay.style.display = 'none';
+
+            // Preparar y mostrar comprobante de éxito (Voucher con sello de agua y código)
+            sgpPendingSuccessData = {
+                ticket_id:   data.ticket_id,
+                guest_token: data.guest_token,
+                codigo:      data.codigo,
+                asunto:      payload.asunto
+            };
+
+            document.getElementById('sgpGuestViewIdent').style.display = 'none';
+            const successView = document.getElementById('sgpGuestViewSuccess');
+            if (successView) {
+                document.getElementById('sgpSuccessCode').textContent   = data.codigo;
+                document.getElementById('sgpSuccessNombre').textContent = payload.nombre;
+                document.getElementById('sgpSuccessAsunto').textContent = payload.asunto;
+                successView.style.display = 'block';
+
+                // Reproducir tono sutil de confirmación
+                reproducirTonoSoporte();
+
+                // Cuenta regresiva automática para entrar al chat (3 segundos)
+                let remaining = 3;
+                const countEl = document.getElementById('sgpAutoTransitionCount');
+                if (countEl) countEl.textContent = `Ingresando automáticamente al chat en ${remaining} segundos...`;
+
+                if (sgpSuccessCountdownTimer) clearInterval(sgpSuccessCountdownTimer);
+                sgpSuccessCountdownTimer = setInterval(() => {
+                    remaining--;
+                    if (remaining > 0) {
+                        if (countEl) countEl.textContent = `Ingresando automáticamente al chat en ${remaining} segundo${remaining !== 1 ? 's' : ''}...`;
+                    } else {
+                        clearInterval(sgpSuccessCountdownTimer);
+                        sgpSuccessCountdownTimer = null;
+                        entrarAlChatDirecto();
+                    }
+                }, 1000);
+            } else {
+                cargarChatGuest(data.ticket_id, data.guest_token, data.codigo, payload.asunto, 'Abierto');
+            }
 
         } catch (e) {
+            clearTimeout(timeoutId);
+            clearTimeout(stepTimer1);
+            clearTimeout(stepTimer2);
+            if (overlay) overlay.style.display = 'none';
             btn.disabled = false;
-            btn.innerHTML = '<i class="ti ti-brand-hipchat"></i> Iniciar Chat de Soporte';
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Error al enviar la solicitud.' });
+            btn.innerHTML = '<i class="ti ti-send"></i> Generar Ticket & Entrar al Chat';
+
+            const isTimeout = e.name === 'AbortError';
+            Swal.fire({
+                icon: 'error',
+                title: isTimeout ? 'Tiempo de espera agotado' : 'Error',
+                text: isTimeout 
+                    ? 'El servidor tardó más de lo esperado en procesar el caso. Por favor verifica tu conexión y vuelve a intentarlo.'
+                    : 'Error al enviar la solicitud: ' + (e.message || 'Verifica tu conexión.')
+            });
         }
     }
 

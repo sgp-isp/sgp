@@ -134,7 +134,7 @@ class Database
             return $this->stmt->execute();
         } catch (PDOException $e) {
             error_log('[SGP-DB-EXEC-ERROR] ' . date('Y-m-d H:i:s') . ' | Error: ' . $e->getMessage());
-            throw new RuntimeException('Error al ejecutar la consulta.', 0, $e);
+            throw new RuntimeException('Error al ejecutar la consulta: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
 

@@ -16,6 +16,114 @@ class PermisosModel
     public function __construct()
     {
         $this->db = Database::getInstance();
+        $this->checkModulosSistema();
+    }
+
+    /**
+     * Asegura que los módulos clave (soporte, alertas_correo, etc.) existan en la matriz de permisos
+     */
+    private function checkModulosSistema(): void
+    {
+        try {
+            $modulos = [
+                [
+                    'clave'     => 'soporte',
+                    'nombre'    => 'Mesa de Ayuda / Soporte Técnico',
+                    'icono'     => 'ti-headset',
+                    'ruta_base' => '/soporte',
+                    'grupo'     => 'Administración',
+                    'rol_base'  => 1,
+                    'orden'     => 16,
+                    'acciones'  => [
+                        ['clave' => 'ver_soporte',             'nombre' => 'Ver Tickets y Casos de Soporte',    'tipo' => 'ver'],
+                        ['clave' => 'atender_soporte',         'nombre' => 'Atender y Chatear con Solicitantes', 'tipo' => 'editar'],
+                        ['clave' => 'gestionar_estado_soporte', 'nombre' => 'Resolver y Cerrar Tickets',          'tipo' => 'configurar'],
+                    ]
+                ],
+                [
+                    'clave'     => 'alertas_correo',
+                    'nombre'    => 'Alertas por Correo',
+                    'icono'     => 'ti-mail',
+                    'ruta_base' => '/notificaciones/configuracion',
+                    'grupo'     => 'Sistema',
+                    'rol_base'  => 1,
+                    'orden'     => 17,
+                    'acciones'  => [
+                        ['clave' => 'ver_alertas_correo',       'nombre' => 'Ver Configuración y Bitácora Mail', 'tipo' => 'ver'],
+                        ['clave' => 'gestionar_alertas_correo', 'nombre' => 'Modificar Reglas y Exclusiones',     'tipo' => 'configurar'],
+                    ]
+                ],
+                [
+                    'clave'     => 'actualizaciones',
+                    'nombre'    => 'Actualizaciones del Sistema',
+                    'icono'     => 'ti-cloud-upload',
+                    'ruta_base' => '/actualizaciones',
+                    'grupo'     => 'Sistema',
+                    'rol_base'  => 1,
+                    'orden'     => 18,
+                    'acciones'  => [
+                        ['clave' => 'ver_actualizaciones',     'nombre' => 'Ver Estado y Paquetes de Actualización', 'tipo' => 'ver'],
+                        ['clave' => 'aplicar_actualizaciones', 'nombre' => 'Instalar y Aplicar Actualizaciones',     'tipo' => 'configurar'],
+                    ]
+                ]
+            ];
+
+            foreach ($modulos as $m) {
+                $this->db->query("SELECT id FROM modulos_sistema WHERE clave = :c LIMIT 1");
+                $this->db->bind(':c', $m['clave']);
+                $modRow = $this->db->single();
+
+                if (!$modRow) {
+                    $this->db->query("
+                        INSERT INTO modulos_sistema (clave, nombre, icono, ruta_base, grupo, rol_base, activo, orden)
+                        VALUES (:c, :n, :i, :r, :g, :rb, 1, :o)
+                    ");
+                    $this->db->bind(':c',  $m['clave']);
+                    $this->db->bind(':n',  $m['nombre']);
+                    $this->db->bind(':i',  $m['icono']);
+                    $this->db->bind(':r',  $m['ruta_base']);
+                    $this->db->bind(':g',  $m['grupo']);
+                    $this->db->bind(':rb', $m['rol_base']);
+                    $this->db->bind(':o',  $m['orden']);
+                    $this->db->execute();
+                    $modId = (int)$this->db->lastInsertId();
+                } else {
+                    $modId = (int)$modRow->id;
+                }
+
+                if ($modId > 0) {
+                    foreach ($m['acciones'] as $a) {
+                        $this->db->query("SELECT id FROM acciones_modulo WHERE clave = :ac LIMIT 1");
+                        $this->db->bind(':ac', $a['clave']);
+                        $accRow = $this->db->single();
+                        if (!$accRow) {
+                            $this->db->query("
+                                INSERT INTO acciones_modulo (modulo_id, clave, nombre, tipo)
+                                VALUES (:mid, :ac, :an, :at)
+                            ");
+                            $this->db->bind(':mid', $modId);
+                            $this->db->bind(':ac',  $a['clave']);
+                            $this->db->bind(':an',  $a['nombre']);
+                            $this->db->bind(':at',  $a['tipo']);
+                            $this->db->execute();
+                            $accId = (int)$this->db->lastInsertId();
+
+                            // Asignar por defecto a Admin (rol 1)
+                            if ($accId > 0) {
+                                $this->db->query("
+                                    INSERT IGNORE INTO permisos_rol (rol_id, accion_id, habilitado)
+                                    VALUES (1, :aid, 1)
+                                ");
+                                $this->db->bind(':aid', $accId);
+                                $this->db->execute();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            error_log('[SGP-PERMISOS-SYNC] ' . $e->getMessage());
+        }
     }
 
     /**

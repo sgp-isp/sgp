@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 class MailService
 {
+    private static bool $smtpFailedInRequest = false;
+
     /**
      * Obtiene la configuración SMTP desde la tabla `configuracion`
      */
@@ -362,6 +364,27 @@ class MailService
 
         $cfg = self::getConfig();
 
+        // Circuit breaker: Si SMTP ya falló en esta misma petición, no reintentar para no demorar la respuesta
+        if (self::$smtpFailedInRequest) {
+            self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'fallido', 'Conexión SMTP cancelada por fallo previo en la misma petición');
+            return ['success' => false, 'message' => 'Servidor SMTP no disponible actualmente'];
+        }
+
+        // Límite diario de correos por destinatario (máximo 5 correos diarios para eventos no críticos)
+        $eventosCriticos = ['RECUPERAR_CLAVE', 'SEGURIDAD_DISPOSITIVO', 'BIOMETRIA_VINCULADA', 'SOPORTE_NUEVO_TICKET', 'SOPORTE_CONFIRMACION_USUARIO', 'SOPORTE_RESPUESTA', 'MANUAL', 'TEST'];
+        if (!in_array($eventCode, $eventosCriticos, true) && !empty($toEmail)) {
+            try {
+                $db = Database::getInstance();
+                $db->query("SELECT COUNT(*) AS total_hoy FROM mail_historial WHERE destinatario_email = :em AND estado IN ('enviado', 'simulado') AND created_at >= CURDATE()");
+                $db->bind(':em', $toEmail);
+                $totalHoy = (int)($db->single()->total_hoy ?? 0);
+                if ($totalHoy >= 5) {
+                    self::logDelivery($eventCode, $toEmail, $toName, $userId, $subject, 'limitado', "Límite diario alcanzado ({$totalHoy}/5 correos enviados hoy a este destinatario). Prevención anti-spam.");
+                    return ['success' => false, 'limited' => true, 'message' => 'Límite de 5 correos diarios alcanzado para este destinatario'];
+                }
+            } catch (\Throwable $te) {}
+        }
+
         // 2. Detección Inteligente de API REST (Bypass de puertos SMTP 25, 465, 587 bloqueados en Render Free)
         $brevoApiKey = !empty($cfg['brevo_api_key']) 
             ? $cfg['brevo_api_key'] 
@@ -393,7 +416,7 @@ class MailService
         $user    = $cfg['user'];
         $pass    = $cfg['pass'];
         $secure  = strtolower($cfg['secure']);
-        $timeout = 8; // Conexión ágil (8 segundos)
+        $timeout = 3.5; // Conexión ágil (máximo 3.5 segundos para evitar bloqueos)
 
         $contextOptions = [
             'ssl' => [
@@ -415,7 +438,7 @@ class MailService
         // Fallback inteligente: si puerto 587 STARTTLS falla, intentar puerto 465 SSL directo
         if (!$socket && ($port === 587 || $secure === 'tls')) {
             $fallbackTarget = "ssl://{$connHost}:465";
-            $socket = @stream_socket_client($fallbackTarget, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
+            $socket = @stream_socket_client($fallbackTarget, $errno, $errstr, 2.0, STREAM_CLIENT_CONNECT, $context);
             if ($socket) {
                 $secure = 'ssl';
                 $port = 465;
@@ -423,6 +446,7 @@ class MailService
         }
 
         if (!$socket) {
+            self::$smtpFailedInRequest = true;
             $isCloudTimeout = ($errno === 110 || stripos($errstr, 'timed out') !== false);
             $msg = "No se pudo conectar al servidor SMTP: {$errstr} ({$errno}).";
             if ($isCloudTimeout) {
@@ -2384,6 +2408,54 @@ class MailService
             return true;
         } catch (\Throwable $e) {
             error_log('[SGP-MAIL] notifyNewSupportTicket error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Enviar confirmación al solicitante (usuario o pasante) de que su ticket fue recibido
+     */
+    public static function notifyTicketConfirmationUser(int $ticketId): bool
+    {
+        try {
+            $cfg = self::getConfig();
+            if (empty($cfg['activo']) && empty($cfg['brevo_api_key']) && empty($cfg['resend_api_key'])) {
+                return false;
+            }
+
+            $db = Database::getInstance();
+            $db->query("SELECT * FROM soporte_tickets WHERE id = :id");
+            $db->bind(':id', $ticketId);
+            $ticket = $db->single();
+            if (!$ticket || empty($ticket->correo)) return false;
+
+            $asuntoEmail = "🎟️ [Soporte SGP] Caso Recibido {$ticket->codigo}: " . htmlspecialchars($ticket->asunto);
+            $url = (defined('URLROOT') ? URLROOT : '') . '/soporte';
+
+            $content = "
+                <p>Hola <strong>" . htmlspecialchars($ticket->nombre) . "</strong>,</p>
+                <p>Hemos recibido tu reporte en la <strong>Mesa de Ayuda y Soporte Técnico</strong> del ISPEB.</p>
+                <div style='background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 18px; margin: 18px 0;'>
+                    <div style='display:flex; justify-content:space-between; margin-bottom:8px;'>
+                        <strong style='color:#1e3a8a; font-size:15px;'>Ticket: " . htmlspecialchars($ticket->codigo) . "</strong>
+                        <span style='background:#fef3c7; color:#b45309; padding:2px 8px; border-radius:6px; font-weight:700; font-size:12px;'>ABIERTO</span>
+                    </div>
+                    <div style='font-size:14px; margin-bottom:6px;'><strong>Categoría:</strong> " . htmlspecialchars($ticket->categoria) . "</div>
+                    <div style='font-size:14px; margin-bottom:10px;'><strong>Asunto:</strong> " . htmlspecialchars($ticket->asunto) . "</div>
+                    <div style='font-size:13px; color:#475569; background:#fff; padding:12px; border-radius:8px; border:1px solid #cbd5e1;'>
+                        " . nl2br(htmlspecialchars($ticket->mensaje)) . "
+                    </div>
+                </div>
+                <p style='color:#334155; font-size:13.5px;'>
+                    Un técnico asignado revisará tu caso y te responderá en el chat interactivo. Recibirás un aviso cada vez que se emita una respuesta.
+                </p>
+            ";
+            $html = self::renderBentoTemplate('Ticket Registrado', '#2563eb', "Caso Asignado: {$ticket->codigo}", $content, 'Consultar en SGP', $url, 'Dirección de Telemática — Instituto de Salud Pública de Bolívar.');
+            self::send($ticket->correo, $ticket->nombre, $asuntoEmail, $html, '', 'SOPORTE_CONFIRMACION_USUARIO', $ticket->usuario_id ? (int)$ticket->usuario_id : null, true);
+
+            return true;
+        } catch (\Throwable $e) {
+            error_log('[SGP-MAIL] notifyTicketConfirmationUser error: ' . $e->getMessage());
             return false;
         }
     }
