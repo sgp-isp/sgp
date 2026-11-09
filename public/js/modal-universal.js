@@ -319,23 +319,24 @@
                 `).join('')}
             </div>`;
 
-        // Actions
+        // Actions: 3 Botones reducidos a Iconos Minimalistas
         let actionsHtml = '';
         if (d.tiene_pin) {
-            actionsHtml += `<button class="sgp-btn-action sgp-btn-reset-pin" onclick="SGPModal.resetPin(${d.id}, '${escHtml(d.nombres)} ${escHtml(d.apellidos)}')">
-                <i class="ti ti-refresh"></i> Restablecer PIN
+            actionsHtml += `<button type="button" class="sgp-icon-btn sgp-icon-btn-amber" onclick="SGPModal.resetPin(${d.id}, '${escHtml(d.nombres)} ${escHtml(d.apellidos)}')" title="Restablecer PIN" aria-label="Restablecer PIN">
+                <i class="ti ti-key"></i>
             </button>`;
         }
         if (d.es_pasante) {
-            actionsHtml += `<a href="${URLROOT}/users/exportPdf/${d.id}" target="_blank" class="sgp-btn-action btn btn-outline-danger fw-bold d-flex align-items-center justify-content-center gap-2" style="text-decoration:none; border: 1.5px solid currentColor !important;">
-                <i class="ti ti-file-type-pdf fs-5"></i> Descargar PDF
+            actionsHtml += `<a href="${URLROOT}/users/exportPdf/${d.id}" target="_blank" class="sgp-icon-btn sgp-icon-btn-rose" title="Descargar Resumen PDF" aria-label="Descargar PDF">
+                <i class="ti ti-file-type-pdf"></i>
             </a>`;
             if (typeof window.abrirModalEditarPasante === 'function') {
-                actionsHtml += `<button class="sgp-btn-action" style="background:#eff6ff;color:#2563eb;border:1.5px solid #bfdbfe;" onclick="SGPModal.cerrar('ver'); window.abrirModalEditarPasante(${d.id})">
-                    <i class="ti ti-edit"></i> Editar Datos
+                actionsHtml += `<button type="button" class="sgp-icon-btn sgp-icon-btn-blue" onclick="SGPModal.cerrar('ver'); window.abrirModalEditarPasante(${d.id})" title="Editar Datos" aria-label="Editar Datos">
+                    <i class="ti ti-pencil"></i>
                 </button>`;
             }
         }
+        actionsEl.className = 'sgp-modal-actions sgp-minimal-icon-actions';
         actionsEl.innerHTML = actionsHtml;
     }
 

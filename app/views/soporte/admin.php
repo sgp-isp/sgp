@@ -9,7 +9,7 @@ $mensajes       = $data['mensajes'] ?? [];
 $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Todas', 'q' => ''];
 ?>
 
-<div class="soporte-container">
+<div class="soporte-container <?= $selectedTicket ? 'has-ticket-open' : '' ?>">
     <!-- ══ HEADER BANNER (Estandarizado SGP) ══ -->
     <div class="admin-banner soporte-banner" style="position:relative;overflow:hidden;background:linear-gradient(135deg, #162660 0%, #1e3a8a 50%, #2563eb 100%);border-radius:20px;padding:26px 32px;color:#ffffff;box-shadow:0 10px 30px rgba(22, 38, 96, 0.2);margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;">
         <div style="position:absolute;top:-30px;right:-30px;width:180px;height:180px;background:rgba(255,255,255,0.05);border-radius:50%;pointer-events:none;"></div>
@@ -1144,15 +1144,16 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
 .chat-quick-replies {
     background: #f8fafc;
     border-top: 1px solid #e2e8f0;
-    padding: 8px 16px;
+    padding: 8px 14px;
     display: flex;
     align-items: center;
     gap: 8px;
     overflow-x: auto;
     flex-shrink: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
-.chat-quick-replies::-webkit-scrollbar { height: 4px; }
-.chat-quick-replies::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.chat-quick-replies::-webkit-scrollbar { display: none; }
 .cqr-label {
     font-size: 0.72rem;
     font-weight: 800;
@@ -1189,12 +1190,12 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
 
 /* ── Barra de Input estilo Messenger / Steam ──────────────────────── */
 .messenger-input-bar {
-    padding: 12px 18px;
+    padding: 10px 14px;
     background: #ffffff;
     border-top: 1.5px solid #f1f5f9;
     display: flex;
     align-items: flex-end;
-    gap: 10px;
+    gap: 8px;
     flex-shrink: 0;
 }
 .cib-input-wrap {
@@ -1203,8 +1204,8 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
 .messenger-input-bar textarea {
     width: 100%;
     border: 1.5px solid #cbd5e1;
-    border-radius: 20px;
-    padding: 10px 16px;
+    border-radius: 22px;
+    padding: 9px 16px;
     font-size: 0.88rem;
     font-weight: 500;
     outline: none;
@@ -1214,6 +1215,14 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     transition: border-color 0.2s, box-shadow 0.2s;
     background: #f8fafc;
     box-sizing: border-box;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    min-height: 40px;
+    max-height: 110px;
+}
+.messenger-input-bar textarea::-webkit-scrollbar {
+    display: none;
 }
 .messenger-input-bar textarea:focus {
     border-color: #2563eb;
@@ -1221,8 +1230,8 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
 }
 .btn-send-chat {
-    padding: 10px 18px;
-    border-radius: 12px;
+    padding: 9px 16px;
+    border-radius: 20px;
     border: none;
     background: linear-gradient(135deg, #162660, #2563eb);
     color: #ffffff;
@@ -1235,7 +1244,7 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     box-shadow: 0 4px 12px rgba(37,99,235,0.25);
     transition: transform 0.2s;
     flex-shrink: 0;
-    height: 42px;
+    height: 40px;
 }
 .btn-send-chat:hover {
     transform: translateY(-1px);
@@ -1310,6 +1319,13 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     }
 
     /* MÓVIL: Modo WhatsApp / Steam Chat — Transición fluida lista vs chat */
+    .soporte-container.has-ticket-open .soporte-banner,
+    .soporte-container.has-ticket-open .soporte-kpis {
+        display: none !important;
+    }
+    .soporte-container.has-ticket-open {
+        padding: 0 4px 10px !important;
+    }
     .soporte-workspace {
         display: flex !important;
         flex-direction: column !important;
@@ -1335,8 +1351,25 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     .soporte-workspace.has-selected-ticket .soporte-detail-chat {
         display: flex !important;
         width: 100% !important;
-        height: calc(100vh - 180px) !important;
-        min-height: 520px !important;
+        height: calc(100vh - 130px) !important;
+        min-height: 460px !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06) !important;
+        overflow: hidden !important;
+    }
+    .btn-send-chat span {
+        display: none !important;
+    }
+    .btn-send-chat {
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        justify-content: center !important;
+    }
+    .btn-send-chat i {
+        font-size: 1.25rem !important;
+        margin-left: 2px;
     }
 
     .ticket-item-card {
@@ -1430,10 +1463,17 @@ function playChatChime() {
     } catch (e) {}
 }
 
-// Auto-expandir textarea de mensaje
+// Auto-expandir textarea de mensaje estilo WhatsApp (sin scrollbars internos)
 function autoExpandChatInput(el) {
     el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 110) + 'px';
+    const maxH = 110;
+    if (el.scrollHeight > maxH) {
+        el.style.height = maxH + 'px';
+        el.style.overflowY = 'auto';
+    } else {
+        el.style.height = Math.max(el.scrollHeight, 40) + 'px';
+        el.style.overflowY = 'hidden';
+    }
 }
 
 // Insertar plantilla de respuesta rápida

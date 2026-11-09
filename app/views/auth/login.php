@@ -86,28 +86,6 @@
     } catch (Exception $e) { /* asumir activo si no existe tabla */ }
     $urlTokenParam = !empty($_GET['token']) ? '?token=' . urlencode(trim($_GET['token'])) : '';
     ?>
-    <!-- Botón Flotante de Soporte Técnico en Esquina Inferior Izquierda (Solo Icono) -->
-    <div class="sgp-soporte-fab-dock">
-        <button type="button" class="sgp-soporte-fab-btn" onclick="abrirSoporteGuestModal()" title="Mesa de Ayuda y Soporte Técnico" aria-label="Abrir Soporte Técnico">
-            <i class="ti ti-headset"></i>
-        </button>
-    </div>
-
-    <?php if ($kioscoHabilitado): ?>
-    <div class="kiosco-floating-actions">
-        <a href="<?= URLROOT ?>/kiosco<?= $urlTokenParam ?>" class="kiosco-pill" target="_self" title="Acceso al Kiosco de Asistencia">
-            <i class="ti ti-clock-check"></i>
-            <span class="kiosco-text">
-                <span>Marcar Asistencia</span>
-                <span class="kiosco-label-sub">Acceso al Kiosco Público</span>
-            </span>
-        </a>
-        <a href="<?= URLROOT ?>/configuracion/cartelQr" target="_blank" class="btn-qr-login-pill" title="Abrir Cartel Oficial QR para escanear e imprimir">
-            <i class="ti ti-qrcode"></i>
-            <span>Cartel QR</span>
-        </a>
-    </div>
-    <?php endif; ?>
 
     <style>
     /* ── Botón Flotante Circular de Soporte Técnico (Esquina Inferior Izquierda) ── */
@@ -324,6 +302,24 @@
 
     <?php include_once APPROOT . '/views/layouts/header_strip.php'; ?>
     
+    <?php if ($kioscoHabilitado): ?>
+    <!-- Botón Principal de Marcar Asistencia (Mismas dimensiones y ancho que el cuadro de login) -->
+    <div class="login-kiosco-banner-wrap">
+        <a href="<?= URLROOT ?>/kiosco<?= $urlTokenParam ?>" class="login-kiosco-banner-btn" target="_self" title="Acceso al Kiosco de Asistencia">
+            <div class="lkb-icon">
+                <i class="ti ti-clock-check"></i>
+            </div>
+            <div class="lkb-text">
+                <span class="lkb-title">Marcar Asistencia</span>
+                <span class="lkb-sub">Acceso directo al Kiosco Público Oficial</span>
+            </div>
+            <div class="lkb-arrow">
+                <i class="ti ti-chevron-right"></i>
+            </div>
+        </a>
+    </div>
+    <?php endif; ?>
+
     <!-- Tarjeta Premium Flotante -->
     <div class="auth-card">
         <div class="auth-header">

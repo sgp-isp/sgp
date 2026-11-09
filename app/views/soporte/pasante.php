@@ -963,15 +963,16 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
 .chat-quick-replies {
     background: #f8fafc;
     border-top: 1px solid #e2e8f0;
-    padding: 8px 16px;
+    padding: 8px 14px;
     display: flex;
     align-items: center;
     gap: 8px;
     overflow-x: auto;
     flex-shrink: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
-.chat-quick-replies::-webkit-scrollbar { height: 4px; }
-.chat-quick-replies::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.chat-quick-replies::-webkit-scrollbar { display: none; }
 .cqr-label {
     font-size: 0.72rem;
     font-weight: 800;
@@ -1008,12 +1009,12 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
 
 /* ── Barra de Input estilo Messenger / Steam ──────────────────────── */
 .messenger-input-bar {
-    padding: 12px 18px;
+    padding: 10px 14px;
     background: #ffffff;
     border-top: 1.5px solid #f1f5f9;
     display: flex;
     align-items: flex-end;
-    gap: 10px;
+    gap: 8px;
     flex-shrink: 0;
 }
 .cib-input-wrap {
@@ -1022,8 +1023,8 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
 .messenger-input-bar textarea {
     width: 100%;
     border: 1.5px solid #cbd5e1;
-    border-radius: 20px;
-    padding: 10px 16px;
+    border-radius: 22px;
+    padding: 9px 16px;
     font-size: 0.88rem;
     font-weight: 500;
     outline: none;
@@ -1033,6 +1034,14 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
     transition: border-color 0.2s, box-shadow 0.2s;
     background: #f8fafc;
     box-sizing: border-box;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    min-height: 40px;
+    max-height: 110px;
+}
+.messenger-input-bar textarea::-webkit-scrollbar {
+    display: none;
 }
 .messenger-input-bar textarea:focus {
     border-color: #2563eb;
@@ -1040,8 +1049,8 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
     box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
 }
 .btn-send-chat {
-    padding: 10px 18px;
-    border-radius: 12px;
+    padding: 9px 16px;
+    border-radius: 20px;
     border: none;
     background: linear-gradient(135deg, #162660, #2563eb);
     color: #ffffff;
@@ -1054,7 +1063,7 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
     box-shadow: 0 4px 12px rgba(37,99,235,0.25);
     transition: transform 0.2s;
     flex-shrink: 0;
-    height: 42px;
+    height: 40px;
 }
 .btn-send-chat:hover {
     transform: translateY(-1px);
@@ -1231,7 +1240,14 @@ function playChatChime() {
 
 function autoExpandChatInputPasante(el) {
     el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 110) + 'px';
+    const maxH = 110;
+    if (el.scrollHeight > maxH) {
+        el.style.height = maxH + 'px';
+        el.style.overflowY = 'auto';
+    } else {
+        el.style.height = Math.max(el.scrollHeight, 40) + 'px';
+        el.style.overflowY = 'hidden';
+    }
 }
 
 function insertarPlantillaPasante(texto) {

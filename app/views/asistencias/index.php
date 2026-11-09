@@ -77,6 +77,174 @@ table.dataTable tbody tr:hover {
     }
 }
 
+/* ── LISTADO MÓVIL ASISTENCIAS (Card-based Minimalist) ── */
+.asist-mobile-list {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    max-height: 480px;
+    overflow-y: auto;
+}
+.asist-desktop-table {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .asist-desktop-table {
+        display: none !important;
+    }
+    .asist-mobile-list {
+        display: flex !important;
+    }
+    .asist-diaria-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+}
+
+.asist-mobile-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.asist-mobile-card:hover {
+    background: #f8fafc;
+}
+.amc-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+}
+.amc-info {
+    min-width: 0;
+    flex: 1;
+}
+.amc-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.3;
+    white-space: normal;
+    word-break: break-word;
+}
+.amc-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 0.74rem;
+    color: #64748b;
+    flex-wrap: wrap;
+}
+.amc-badge-cedula {
+    background: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+.amc-dot {
+    color: #cbd5e1;
+}
+.amc-time {
+    font-weight: 700;
+    color: #1e293b;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+.amc-dept {
+    color: #475569;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+}
+.amc-metodo {
+    margin-top: 3px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #475569;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 6px;
+}
+.amc-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.amc-status-pill {
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+}
+.amc-btn-view {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #2563eb;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.amc-btn-view:hover {
+    background: #2563eb;
+    color: #ffffff;
+}
+.amc-btn-reg {
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    font-size: 0.76rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+.amc-btn-reg:hover {
+    background: #2563eb;
+    color: #ffffff;
+}
+
 /* ── KPI GRID TIPO EXÁMENES RÁPIDOS ── */
 .asist-kpi-grid-4 { 
     display: grid !important;
@@ -450,7 +618,8 @@ table.dataTable tbody tr:hover {
                 </p>
             </div>
             <?php else: ?>
-            <div style="overflow-x:hidden;max-height:380px;overflow-y:auto; scrollbar-width: thin;">
+            <!-- Vista Tabla Desktop -->
+            <div class="asist-desktop-table" style="overflow-x:hidden;max-height:380px;overflow-y:auto; scrollbar-width: thin;">
                 <table style="width: 100%; table-layout: fixed; border-collapse: collapse;">
                     <colgroup>
                         <col style="width: 42%;">
@@ -531,6 +700,50 @@ table.dataTable tbody tr:hover {
                     </tbody>
                 </table>
             </div>
+
+            <!-- Vista Móvil Minimalista (Card List) -->
+            <div class="asist-mobile-list">
+                <?php foreach ($registrosHoy as $r):
+                    $cfg       = $estadoConfig[$r->estado] ?? $estadoConfig['Ausente'];
+                    $nombre    = trim(($r->apellidos ?? '') . ', ' . ($r->nombres ?? ''));
+                    $iniciales = strtoupper(substr($r->nombres ?? '?', 0, 1) . substr($r->apellidos ?? '', 0, 1));
+                    $detalleJson = htmlspecialchars(json_encode([
+                        'nombre'     => $nombre,
+                        'cedula'     => $r->cedula ?? '—',
+                        'depto'      => $r->departamento_nombre ?? '—',
+                        'hora'       => $r->hora_registro ? date('h:i A', strtotime($r->hora_registro)) : '—',
+                        'metodo'     => $r->metodo ?? '—',
+                        'estado'     => $r->estado,
+                        'motivo'     => $r->motivo_justificacion ?? '',
+                        'pasante_id' => (int)($r->pasante_id ?? 0)
+                    ]), ENT_QUOTES);
+                ?>
+                <div class="asist-mobile-card">
+                    <div class="amc-main">
+                        <div class="dt-avatar av-emerald"><?= htmlspecialchars($iniciales) ?></div>
+                        <div class="amc-info">
+                            <div class="amc-name"><?= htmlspecialchars($nombre) ?></div>
+                            <div class="amc-meta-row">
+                                <span class="amc-badge-cedula"><i class="ti ti-id"></i> <?= htmlspecialchars($r->cedula ?? '—') ?></span>
+                                <span class="amc-dot">•</span>
+                                <span class="amc-time"><i class="ti ti-clock"></i> <?= ($r->hora_registro && $r->hora_registro !== '00:00:00') ? date('h:i A', strtotime($r->hora_registro)) : '—' ?></span>
+                            </div>
+                            <?php if ($r->metodo): ?>
+                            <div class="amc-metodo"><i class="ti ti-device-desktop"></i> <?= htmlspecialchars($r->metodo) ?></div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="amc-actions">
+                        <span class="amc-status-pill" style="background:<?= $cfg['bg'] ?>;color:<?= $cfg['color'] ?>;">
+                            <i class="ti <?= $cfg['icon'] ?>"></i> <?= htmlspecialchars($r->estado) ?>
+                        </span>
+                        <button type="button" class="amc-btn-view" onclick='verDetalle(<?= (int)$r->id ?>, <?= $detalleJson ?>)' title="Ver detalle">
+                            <i class="ti ti-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
             <?php endif; ?>
         </div>
 
@@ -586,7 +799,8 @@ table.dataTable tbody tr:hover {
                 </div>
                 <?php endif; ?>
             <?php else: ?>
-            <div class="asist-sinmarcar-table-wrapper" style="overflow-x:auto; -webkit-overflow-scrolling: touch; max-height:380px; overflow-y:auto; scrollbar-width: thin;">
+            <!-- Vista Tabla Desktop -->
+            <div class="asist-desktop-table asist-sinmarcar-table-wrapper" style="overflow-x:auto; -webkit-overflow-scrolling: touch; max-height:380px; overflow-y:auto; scrollbar-width: thin;">
                 <table style="width: 100%; min-width: 410px; border-collapse: collapse;">
                     <colgroup>
                         <col style="width: 44%; min-width: 150px;">
@@ -640,6 +854,37 @@ table.dataTable tbody tr:hover {
                     <?php endforeach; ?>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Vista Móvil Minimalista (Card List) -->
+            <div class="asist-mobile-list">
+                <?php foreach ($sinMarcar as $p):
+                    $nombre    = trim(($p->apellidos ?? '') . ', ' . ($p->nombres ?? ''));
+                    $iniciales = strtoupper(substr($p->nombres ?? '?', 0, 1) . substr($p->apellidos ?? '', 0, 1));
+                ?>
+                <div class="asist-mobile-card">
+                    <div class="amc-main">
+                        <div class="dt-avatar" style="background: linear-gradient(135deg,#dc2626,#ef4444);"><?= htmlspecialchars($iniciales) ?></div>
+                        <div class="amc-info">
+                            <div class="amc-name"><?= htmlspecialchars($nombre) ?></div>
+                            <div class="amc-meta-row">
+                                <span class="amc-badge-cedula"><i class="ti ti-id"></i> <?= htmlspecialchars($p->cedula ?? '—') ?></span>
+                                <span class="amc-dot">•</span>
+                                <span class="amc-dept"><i class="ti ti-building-community"></i> <?= htmlspecialchars($p->departamento_nombre ?? 'Sin asignar') ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="amc-actions">
+                        <?php if ($esHabilHoy): ?>
+                        <button type="button" class="amc-btn-reg" onclick="abrirModalManual(<?= (int)$p->id ?>, '<?= addslashes($nombre) ?>')" title="Registrar asistencia">
+                            <i class="ti ti-plus"></i> Registrar
+                        </button>
+                        <?php else: ?>
+                        <span class="badge-feriado" style="background:#f1f5f9;color:#94a3b8;padding:4px 8px;border-radius:6px;font-size:0.72rem;font-weight:700;"><i class="ti ti-ban"></i> Feriado</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
             </div>
             <?php endif; ?>
         </div>
