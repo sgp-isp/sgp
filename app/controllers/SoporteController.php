@@ -56,7 +56,8 @@ class SoporteController extends Controller
             ]);
         } else {
             // Vista de Mesa de Ayuda Administrativa (SuperAdmin, Admin, Tutor)
-            $estado    = trim((string)($_GET['estado'] ?? 'Todos'));
+            // Por defecto filtrar por 'Activos' (Abierto + En Proceso) para mantener el historial limpio
+            $estado    = trim((string)($_GET['estado'] ?? 'Activos'));
             $prioridad = trim((string)($_GET['prioridad'] ?? 'Todas'));
             $busqueda  = trim((string)($_GET['q'] ?? ''));
 
@@ -276,7 +277,23 @@ class SoporteController extends Controller
             $mensaje
         );
 
-        // Notificaciones internas y por correo
+        $resPayload = [
+            'success'          => true,
+            'message'          => 'Mensaje enviado correctamente.',
+            'msg_id'           => $msgId,
+            'remitente_tipo'   => $remitenteTipo,
+            'remitente_nombre' => $nombre,
+            'created_at'       => date('d/m H:i'),
+            'hora'             => date('H:i')
+        ];
+
+        // Liberar al navegador inmediatamente si fastcgi_finish_request está disponible (Render / PHP-FPM)
+        if (function_exists('fastcgi_finish_request')) {
+            echo json_encode($resPayload);
+            fastcgi_finish_request();
+        }
+
+        // Notificaciones internas y por correo (se ejecutan en segundo plano sin demorar la respuesta de chat)
         try {
             require_once APPROOT . '/models/NotificationModel.php';
             $notifModel = new NotificationModel($this->db);
@@ -316,16 +333,10 @@ class SoporteController extends Controller
             error_log('[SGP-SOPORTE] Error en notificaciones de mensaje: ' . $e->getMessage());
         }
 
-        echo json_encode([
-            'success'          => true,
-            'message'          => 'Mensaje enviado correctamente.',
-            'msg_id'           => $msgId,
-            'remitente_tipo'   => $remitenteTipo,
-            'remitente_nombre' => $nombre,
-            'created_at'       => date('d/m H:i'),
-            'hora'             => date('H:i')
-        ]);
-        exit;
+        if (!function_exists('fastcgi_finish_request')) {
+            echo json_encode($resPayload);
+            exit;
+        }
     }
 
     /**
@@ -723,7 +734,18 @@ class SoporteController extends Controller
             $mensaje
         );
 
-        // Notificaciones internas y correo a los administradores
+        $resPayload = [
+            'success'    => true,
+            'message_id' => $msgId
+        ];
+
+        // Liberar al navegador inmediatamente si fastcgi_finish_request está disponible
+        if (function_exists('fastcgi_finish_request')) {
+            echo json_encode($resPayload);
+            fastcgi_finish_request();
+        }
+
+        // Notificaciones internas y correo a los administradores en segundo plano
         try {
             require_once APPROOT . '/models/NotificationModel.php';
             $notifModel = new NotificationModel($this->db);
@@ -744,11 +766,10 @@ class SoporteController extends Controller
             error_log('[SGP-SOPORTE-GUEST] Error notificacion mensaje: ' . $e->getMessage());
         }
 
-        echo json_encode([
-            'success'    => true,
-            'message_id' => $msgId
-        ]);
-        exit;
+        if (!function_exists('fastcgi_finish_request')) {
+            echo json_encode($resPayload);
+            exit;
+        }
     }
 
     /**

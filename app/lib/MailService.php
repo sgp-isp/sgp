@@ -2372,12 +2372,25 @@ class MailService
             $ticket = $db->single();
             if (!$ticket) return false;
 
-            // Obtener administradores
+            $ruleCheck = self::checkRule('SOPORTE_NUEVO_TICKET');
+            if (!$ruleCheck['allowed']) {
+                return false; // Notificación por correo pausada en el módulo de Alertas y Notificaciones
+            }
+
+            // Obtener destinatarios: SuperAdmin (0), Administradores (1) y Tutores (2) que tengan el permiso 'atender_soporte'
             $db->query("
-                SELECT u.id, u.correo, COALESCE(dp.nombres, u.cedula) AS admin_nom
+                SELECT DISTINCT u.id, u.correo, COALESCE(dp.nombres, u.cedula) AS admin_nom
                 FROM usuarios u
                 LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
-                WHERE u.rol_id IN (0, 1) AND u.estado = 'activo' AND u.correo IS NOT NULL AND u.correo != ''
+                LEFT JOIN permisos_usuario pu ON pu.usuario_id = u.id
+                LEFT JOIN acciones_modulo am ON am.id = pu.accion_id AND am.clave = 'atender_soporte'
+                WHERE (
+                    u.rol_id IN (0, 1) 
+                    OR (u.rol_id = 2 AND pu.habilitado = 1 AND am.clave = 'atender_soporte')
+                )
+                AND u.estado = 'activo' 
+                AND u.correo IS NOT NULL 
+                AND u.correo != ''
             ");
             $admins = $db->resultSet() ?: [];
 

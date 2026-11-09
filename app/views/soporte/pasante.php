@@ -369,9 +369,11 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
 
 <style>
 .pasante-soporte-wrap {
-    max-width: 1440px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
     padding: 0 4px 30px;
+    box-sizing: border-box;
 }
 .soporte-banner {
     display: flex;
@@ -1272,9 +1274,48 @@ async function enviarMensajePasante(e, ticketId) {
     const msg = txtEl.value.trim();
     if (!msg) return;
 
-    const btn = document.getElementById('btnEnviarChatPasante');
-    btn.disabled = true;
+    // ── 0ms Optimistic UI: vaciar campo inmediatamente y resetear altura ──
+    txtEl.value = '';
+    txtEl.style.height = 'auto';
 
+    // Ocultar hint de chat vacío si existe
+    const hint = document.getElementById('emptyChatHint');
+    if (hint) hint.style.display = 'none';
+
+    // Inyectar burbuja optimista inmediatamente en el contenedor
+    const container = document.getElementById('chatPasanteContainer');
+    const tempRowId = 'temp_pas_' + Date.now();
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const row = document.createElement('div');
+    row.className = 'chat-msg-row msg-me';
+    row.id = tempRowId;
+    row.innerHTML = `
+        <div class="msg-bubble-wrap">
+            <div class="msg-meta-line">
+                <span class="msg-author-name">
+                    Tú <span class="badge-role-user"><i class="ti ti-school"></i> Tú (Pasante)</span>
+                </span>
+                <span class="msg-time">Ahora</span>
+            </div>
+            <div class="msg-bubble bubble-me">
+                <div class="msg-text">${escapeHtml(msg).replace(/\n/g, '<br>')}</div>
+                <div class="msg-check-status">
+                    <span class="msg-clock">${nowTime}</span>
+                    <i class="ti ti-clock msg-clock-pending" title="Enviando..." style="display:inline-block;animation:spin 1.2s linear infinite;color:rgba(255,255,255,0.7);"></i>
+                </div>
+            </div>
+        </div>
+        <div class="msg-avatar-col msg-avatar-right" title="Tú">
+            <div class="msg-avatar msg-avatar-user">
+                P
+            </div>
+        </div>
+    `;
+    container.appendChild(row);
+    scrollChatPasanteToBottom(true);
+    txtEl.focus();
+
+    // ── Petición en segundo plano ──
     try {
         const resp = await fetch(URLROOT + '/soporte/mensaje', {
             method: 'POST',
@@ -1283,52 +1324,29 @@ async function enviarMensajePasante(e, ticketId) {
         });
         const res = await resp.json();
         if (res.success) {
-            txtEl.value = '';
-            txtEl.style.height = 'auto';
-
-            const hint = document.getElementById('emptyChatHint');
-            if (hint) hint.remove();
-
-            const container = document.getElementById('chatPasanteContainer');
-            const row = document.createElement('div');
-            row.className = 'chat-msg-row msg-me';
             if (res.msg_id) {
                 row.setAttribute('data-msg-id', res.msg_id);
                 lastPasanteMsgId = Math.max(lastPasanteMsgId, parseInt(res.msg_id, 10));
             }
-            row.innerHTML = `
-                <div class="msg-bubble-wrap">
-                    <div class="msg-meta-line">
-                        <span class="msg-author-name">
-                            ${escapeHtml(res.remitente_nombre || 'Tú')}
-                            <span class="badge-role-user"><i class="ti ti-school"></i> Tú (Pasante)</span>
-                        </span>
-                        <span class="msg-time">${res.created_at || 'Ahora'}</span>
-                    </div>
-                    <div class="msg-bubble bubble-me">
-                        <div class="msg-text">${escapeHtml(msg).replace(/\\n/g, '<br>')}</div>
-                        <div class="msg-check-status">
-                            <span class="msg-clock">${res.hora || 'Ahora'}</span>
-                            <i class="ti ti-checks msg-checks" title="Enviado"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="msg-avatar-col msg-avatar-right" title="Tú">
-                    <div class="msg-avatar msg-avatar-user">
-                        ${(res.remitente_nombre || 'P').charAt(0).toUpperCase()}
-                    </div>
-                </div>
-            `;
-            container.appendChild(row);
-            scrollChatPasanteToBottom(true);
+            const statusBox = row.querySelector('.msg-check-status');
+            if (statusBox) {
+                statusBox.innerHTML = `
+                    <span class="msg-clock">${res.hora || nowTime}</span>
+                    <i class="ti ti-checks msg-checks" title="Enviado"></i>
+                `;
+            }
+            if (hint) hint.remove();
         } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: res.message });
+            row.remove();
+            txtEl.value = msg;
+            if (hint) hint.style.display = 'block';
+            Swal.fire({ icon: 'error', title: 'Error', text: res.message || 'No se pudo enviar el mensaje.' });
         }
     } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error de Red', text: 'No se pudo enviar el mensaje.' });
-    } finally {
-        btn.disabled = false;
-        txtEl.focus();
+        row.remove();
+        txtEl.value = msg;
+        if (hint) hint.style.display = 'block';
+        Swal.fire({ icon: 'error', title: 'Error de Red', text: 'No se pudo enviar el mensaje. Intenta de nuevo.' });
     }
 }
 

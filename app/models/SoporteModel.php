@@ -155,8 +155,12 @@ class SoporteModel
             $params = [];
 
             if (!empty($estado) && $estado !== 'Todos') {
-                $sql .= " AND t.estado = :estado";
-                $params[':estado'] = $estado;
+                if ($estado === 'Activos') {
+                    $sql .= " AND t.estado IN ('Abierto', 'En Proceso')";
+                } else {
+                    $sql .= " AND t.estado = :estado";
+                    $params[':estado'] = $estado;
+                }
             }
 
             if (!empty($prioridad) && $prioridad !== 'Todas') {

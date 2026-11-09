@@ -37,13 +37,13 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
 
     <!-- ══ KPI CARDS ESTANDARIZADAS (Estilo Asistencias/Inicio SGP) ══ -->
     <div class="sgp-kpi-grid soporte-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px;">
-        <!-- Total Casos (Azul) -->
-        <div class="asist-kpi-card c-blue <?= $filtros['estado'] === 'Todos' ? 'active-kpi' : '' ?>" onclick="filtrarPorEstado('Todos')" style="cursor:pointer;" title="Ver todos los casos">
+        <!-- Casos Activos (Azul) -->
+        <div class="asist-kpi-card c-blue <?= in_array($filtros['estado'], ['Activos', 'Todos']) ? 'active-kpi' : '' ?>" onclick="filtrarPorEstado('Activos')" style="cursor:pointer;" title="Ver casos activos (Abiertos y En Proceso)">
             <div class="asist-kpi-top">
                 <div>
-                    <div class="asist-kpi-label">Total Casos</div>
-                    <div class="asist-kpi-val" style="color:#2563eb;"><?= (int)$kpis->total_tickets ?></div>
-                    <div class="asist-kpi-sub">registrados en la plataforma</div>
+                    <div class="asist-kpi-label">Casos Activos</div>
+                    <div class="asist-kpi-val" id="kpiActivosVal" style="color:#2563eb;"><?= (int)($kpis->abiertos + $kpis->en_proceso) ?></div>
+                    <div class="asist-kpi-sub">requieren seguimiento técnico</div>
                 </div>
                 <div class="asist-kpi-icon" style="background:#eff6ff;">
                     <i class="ti ti-ticket" style="color:#2563eb;"></i>
@@ -56,7 +56,7 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
             <div class="asist-kpi-top">
                 <div>
                     <div class="asist-kpi-label">Abiertos (Sin Atender)</div>
-                    <div class="asist-kpi-val" style="color:#dc2626;"><?= (int)$kpis->abiertos ?></div>
+                    <div class="asist-kpi-val" id="kpiAbiertosVal" style="color:#dc2626;"><?= (int)$kpis->abiertos ?></div>
                     <div class="asist-kpi-sub">requieren atención técnica</div>
                 </div>
                 <div class="asist-kpi-icon" style="background:#fef2f2;">
@@ -70,7 +70,7 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
             <div class="asist-kpi-top">
                 <div>
                     <div class="asist-kpi-label">En Proceso</div>
-                    <div class="asist-kpi-val" style="color:#d97706;"><?= (int)$kpis->en_proceso ?></div>
+                    <div class="asist-kpi-val" id="kpiEnProcesoVal" style="color:#d97706;"><?= (int)$kpis->en_proceso ?></div>
                     <div class="asist-kpi-sub">en diálogo o evaluación</div>
                 </div>
                 <div class="asist-kpi-icon" style="background:#fffbeb;">
@@ -83,8 +83,8 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
         <div class="asist-kpi-card c-green <?= $filtros['estado'] === 'Resuelto' ? 'active-kpi' : '' ?>" onclick="filtrarPorEstado('Resuelto')" style="cursor:pointer;" title="Casos resueltos">
             <div class="asist-kpi-top">
                 <div>
-                    <div class="asist-kpi-label">Resueltos</div>
-                    <div class="asist-kpi-val" style="color:#059669;"><?= (int)$kpis->resueltos ?></div>
+                    <div class="asist-kpi-label">Resueltos / Cerrados</div>
+                    <div class="asist-kpi-val" id="kpiResueltosVal" style="color:#059669;"><?= (int)$kpis->resueltos ?></div>
                     <div class="asist-kpi-sub">atención completada</div>
                 </div>
                 <div class="asist-kpi-icon" style="background:#ecfdf5;">
@@ -109,7 +109,7 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
             <!-- Filtros rápidos por píldoras -->
             <div class="status-pills-bar">
                 <?php 
-                $estadosPills = ['Todos', 'Abierto', 'En Proceso', 'Resuelto', 'Cerrado'];
+                $estadosPills = ['Activos', 'Abierto', 'En Proceso', 'Resuelto', 'Cerrado', 'Todos'];
                 foreach ($estadosPills as $ep):
                     $act = ($filtros['estado'] === $ep) ? 'active' : '';
                 ?>
@@ -142,7 +142,7 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
                             default   => '#f1f5f9; color: #475569;'
                         };
                     ?>
-                    <div class="ticket-item-card <?= $isSelected ? 'selected' : '' ?>" onclick="seleccionarTicket(<?= (int)$t->id ?>)">
+                    <div class="ticket-item-card <?= $isSelected ? 'selected' : '' ?>" data-ticket-id="<?= (int)$t->id ?>" data-estado="<?= htmlspecialchars($t->estado) ?>" onclick="seleccionarTicket(<?= (int)$t->id ?>)">
                         <div class="tic-header">
                             <span class="tic-code"><?= htmlspecialchars($t->codigo) ?></span>
                             <span class="tic-badge" style="background: <?= $badgeColor ?>; color: #fff;"><?= htmlspecialchars($t->estado) ?></span>
@@ -425,11 +425,13 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
 </div>
 
 <style>
-/* ── Layout General de Soporte ───────────────────────────────────── */
+/* ── Layout General de Soporte (Aprovechamiento 100% de Pantalla) ── */
 .soporte-container {
-    max-width: 1440px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
     padding: 0 4px 30px;
+    box-sizing: border-box;
 }
 .soporte-banner {
     display: flex;
@@ -1503,15 +1505,58 @@ function handleChatKeyDown(e, ticketId) {
     }
 }
 
+// Filtro activo actual para gestión dinámica de archivado
+const CURRENT_ESTADO_FILTRO = '<?= htmlspecialchars($filtros['estado']) ?>';
+
 async function enviarMensajeChat(e, ticketId) {
     if (e) e.preventDefault();
     const txtEl = document.getElementById('chatInputTexto');
     const msg = txtEl.value.trim();
     if (!msg) return;
 
-    const btn = document.getElementById('btnEnviarChat');
-    btn.disabled = true;
+    // ── 0ms Optimistic UI: vaciar campo inmediatamente y resetear altura ──
+    txtEl.value = '';
+    txtEl.style.height = 'auto';
 
+    // Ocultar hint de chat vacío si existe
+    const hint = document.getElementById('emptyChatHint');
+    if (hint) hint.style.display = 'none';
+
+    // Inyectar burbuja optimista inmediatamente en el contenedor (0 milisegundos de espera)
+    const container = document.getElementById('chatMessagesContainer');
+    const tempRowId = 'temp_msg_' + Date.now();
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const row = document.createElement('div');
+    row.className = 'chat-msg-row msg-me';
+    row.id = tempRowId;
+    row.innerHTML = `
+        <div class="msg-bubble-wrap">
+            <div class="msg-meta-line">
+                <span class="msg-author-name">
+                    Tú
+                    <span class="badge-role-tech"><i class="ti ti-shield-check"></i> Soporte Telemática</span>
+                </span>
+                <span class="msg-time">Ahora</span>
+            </div>
+            <div class="msg-bubble bubble-me">
+                <div class="msg-text">${escapeHtml(msg).replace(/\n/g, '<br>')}</div>
+                <div class="msg-check-status">
+                    <span class="msg-clock">${nowTime}</span>
+                    <i class="ti ti-clock msg-clock-pending" title="Enviando..." style="display:inline-block;animation:spin 1.2s linear infinite;color:rgba(255,255,255,0.7);"></i>
+                </div>
+            </div>
+        </div>
+        <div class="msg-avatar-col msg-avatar-right" title="Tú (Soporte)">
+            <div class="msg-avatar msg-avatar-tech">
+                <i class="ti ti-headset"></i>
+            </div>
+        </div>
+    `;
+    container.appendChild(row);
+    scrollChatToBottom(true);
+    txtEl.focus();
+
+    // ── Petición en segundo plano (no bloquea al usuario) ──
     try {
         const resp = await fetch(URLROOT + '/soporte/mensaje', {
             method: 'POST',
@@ -1520,54 +1565,32 @@ async function enviarMensajeChat(e, ticketId) {
         });
         const res = await resp.json();
         if (res.success) {
-            txtEl.value = '';
-            txtEl.style.height = 'auto';
-
-            // Ocultar hint de vacío si existe
-            const hint = document.getElementById('emptyChatHint');
-            if (hint) hint.remove();
-
-            // Agregar burbuja en vivo estilo Steam / Messenger (lado derecho)
-            const container = document.getElementById('chatMessagesContainer');
-            const row = document.createElement('div');
-            row.className = 'chat-msg-row msg-me';
+            // Confirmación exitosa: actualizar id del mensaje y cambiar ícono a checks
             if (res.msg_id) {
                 row.setAttribute('data-msg-id', res.msg_id);
                 lastMsgId = Math.max(lastMsgId, parseInt(res.msg_id, 10));
             }
-            row.innerHTML = `
-                <div class="msg-bubble-wrap">
-                    <div class="msg-meta-line">
-                        <span class="msg-author-name">
-                            ${res.remitente_nombre || 'Tú'}
-                            <span class="badge-role-tech"><i class="ti ti-shield-check"></i> Soporte Telemática</span>
-                        </span>
-                        <span class="msg-time">${res.created_at || 'Ahora'}</span>
-                    </div>
-                    <div class="msg-bubble bubble-me">
-                        <div class="msg-text">${escapeHtml(msg).replace(/\\n/g, '<br>')}</div>
-                        <div class="msg-check-status">
-                            <span class="msg-clock">${res.hora || 'Ahora'}</span>
-                            <i class="ti ti-checks msg-checks" title="Enviado"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="msg-avatar-col msg-avatar-right" title="Tú (Soporte)">
-                    <div class="msg-avatar msg-avatar-tech">
-                        <i class="ti ti-headset"></i>
-                    </div>
-                </div>
-            `;
-            container.appendChild(row);
-            scrollChatToBottom(true);
+            const statusBox = row.querySelector('.msg-check-status');
+            if (statusBox) {
+                statusBox.innerHTML = `
+                    <span class="msg-clock">${res.hora || nowTime}</span>
+                    <i class="ti ti-checks msg-checks" title="Enviado"></i>
+                `;
+            }
+            if (hint) hint.remove();
         } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: res.message });
+            // Error devuelto por el servidor: retirar burbuja y restaurar texto en input
+            row.remove();
+            txtEl.value = msg;
+            if (hint) hint.style.display = 'block';
+            Swal.fire({ icon: 'error', title: 'Error', text: res.message || 'No se pudo enviar el mensaje.' });
         }
     } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error de Red', text: 'No se pudo enviar el mensaje.' });
-    } finally {
-        btn.disabled = false;
-        txtEl.focus();
+        // Error de red: retirar burbuja y restaurar texto en input para que no se pierda
+        row.remove();
+        txtEl.value = msg;
+        if (hint) hint.style.display = 'block';
+        Swal.fire({ icon: 'error', title: 'Error de Red', text: 'No se pudo conectar con el servidor. Tu mensaje no se envió.' });
     }
 }
 
@@ -1591,13 +1614,14 @@ async function cambiarEstadoTicketDirecto(ticketId, nuevoEstado) {
                 container.appendChild(sysDiv);
                 scrollChatToBottom(true);
             }
+            const esCerrado = (nuevoEstado === 'Cerrado' || nuevoEstado === 'Resuelto');
             Swal.fire({
                 toast: true,
                 position: 'top-end',
                 icon: 'success',
-                title: `Estado actualizado: ${nuevoEstado}`,
+                title: esCerrado ? `Caso archivado en Historial (${nuevoEstado})` : `Estado actualizado: ${nuevoEstado}`,
                 showConfirmButton: false,
-                timer: 2000
+                timer: 2500
             });
         } else {
             Swal.fire({ icon: 'error', title: 'Error', text: res.message });
@@ -1608,7 +1632,7 @@ async function cambiarEstadoTicketDirecto(ticketId, nuevoEstado) {
 }
 
 function actualizarUIPorEstado(nuevoEstado) {
-    // Actualizar botones de estado activos
+    // 1. Actualizar botones de estado activos
     document.querySelectorAll('#sqsPillsContainer .sqs-btn').forEach(btn => {
         if (btn.getAttribute('data-estado') === nuevoEstado) {
             btn.classList.add('active');
@@ -1617,11 +1641,59 @@ function actualizarUIPorEstado(nuevoEstado) {
         }
     });
 
-    // Actualizar píldora de cabecera
+    // 2. Actualizar píldora de cabecera
     const headerPill = document.getElementById('headerEstadoPill');
     if (headerPill) {
         headerPill.textContent = nuevoEstado;
-        headerPill.className = 'mh-status-pill status-pill-' + nuevoEstado.toLowerCase().replace(/\\s+/g, '-');
+        headerPill.className = 'mh-status-pill status-pill-' + nuevoEstado.toLowerCase().replace(/\s+/g, '-');
+    }
+
+    // 3. Actualizar tarjeta en la lista izquierda y archivar si corresponde
+    const card = document.querySelector(`.ticket-item-card[data-ticket-id="${CURRENT_TICKET_ID}"]`);
+    if (card) {
+        card.setAttribute('data-estado', nuevoEstado);
+        const badge = card.querySelector('.tic-badge');
+        if (badge) {
+            badge.textContent = nuevoEstado;
+            const badgeColors = {
+                'Abierto': '#ef4444',
+                'En Proceso': '#f59e0b',
+                'Resuelto': '#10b981',
+                'Cerrado': '#64748b'
+            };
+            badge.style.background = badgeColors[nuevoEstado] || '#2563eb';
+        }
+
+        // Si estamos viendo "Activos" (o "Abierto") y el caso pasó a "Cerrado" o "Resuelto",
+        // animar su salida para mantener limpio el panel de trabajo activo
+        const debeArchivar = (CURRENT_ESTADO_FILTRO === 'Activos' && (nuevoEstado === 'Cerrado' || nuevoEstado === 'Resuelto'))
+                          || (CURRENT_ESTADO_FILTRO === 'Abierto' && nuevoEstado !== 'Abierto')
+                          || (CURRENT_ESTADO_FILTRO === 'En Proceso' && nuevoEstado !== 'En Proceso');
+
+        if (debeArchivar) {
+            card.style.transition = 'all 0.4s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'translateX(-30px)';
+            card.style.maxHeight = '0';
+            card.style.paddingTop = '0';
+            card.style.paddingBottom = '0';
+            card.style.marginTop = '0';
+            card.style.marginBottom = '0';
+            card.style.overflow = 'hidden';
+            setTimeout(() => {
+                card.remove();
+                const scrollList = document.querySelector('.tickets-scroll-list');
+                if (scrollList && !scrollList.querySelector('.ticket-item-card')) {
+                    scrollList.innerHTML = `
+                        <div class="empty-tickets">
+                            <i class="ti ti-circle-check" style="font-size: 2.2rem; color: #10b981; margin-bottom: 8px;"></i>
+                            <p style="margin: 0; font-weight: 700; color: #1e293b;">¡Casos activos al día!</p>
+                            <small style="color: #64748b;">No quedan más incidencias pendientes en esta vista.</small>
+                        </div>
+                    `;
+                }
+            }, 400);
+        }
     }
 }
 
