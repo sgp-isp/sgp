@@ -442,6 +442,22 @@ $esTutor = ($rolId === 2);
             </div>
         </div>
         <?php endif; ?>
+
+        <!-- 10. Historial y Control de Número de Informes -->
+        <div class="p-card">
+            <div class="p-card-header"><span class="p-badge p-badge-final" style="background:#ecfeff;color:#0891b2;border-color:#cffafe;"><i class="ti ti-barcode"></i> TRAZABILIDAD</span></div>
+            <h3 class="p-card-title">Control de Informes</h3><h4 class="p-card-subtitle" style="color:#0891b2;">N° DE CONTROL</h4>
+            <p class="p-card-desc">Historial y seguimiento oficial de informes por su código único de control.</p>
+            <div class="p-icon-ring" style="color:#0891b2;">
+                <i class="ti ti-list-numbers" style="font-size: 2.5rem;"></i>
+            </div>
+            <div class="p-card-footer">
+                <button class="btn-p-soft btn-soft-pdf" style="color:#0891b2!important;border-color:#cffafe!important;background:#ecfeff;"
+                        onclick="abrirModalControlInformes()">
+                    <i class="ti ti-search"></i> VER HISTORIAL Y CONTROL
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -789,6 +805,93 @@ $esTutor = ($rolId === 2);
                 </div>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: HISTORIAL Y CONTROL DE NÚMERO DE INFORMES             -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div class="sgp-modal-overlay" id="modalControlInformes" onclick="if(event.target===this)cerrarModalControlInformes()">
+    <div class="sgp-modal-card" style="max-width: 1080px; width: 96vw; max-height: 92vh; display: flex; flex-direction: column;">
+        <div class="sgp-modal-header" style="background: linear-gradient(135deg, #0f172a 0%, #0e7490 100%);">
+            <div>
+                <h2 class="sgp-modal-title" style="display:flex; align-items:center; gap:8px;">
+                    <i class="ti ti-list-numbers"></i> Historial y Control de Número de Informes
+                </h2>
+                <p style="margin:2px 0 0; font-size:0.78rem; color:rgba(255,255,255,0.82);">
+                    Seguimiento centralizado por código de control (INF-AAAA-XXXX / CST-AAAA-XXXX)
+                </p>
+            </div>
+            <button type="button" class="sgp-modal-close" onclick="cerrarModalControlInformes()">&times;</button>
+        </div>
+
+        <div class="sgp-modal-body" style="padding: 18px 22px; overflow-y: auto; flex: 1;">
+            <!-- KPIs -->
+            <div id="ciKpis" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap:10px; margin-bottom:16px;">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px;">
+                    <div style="font-size:11px; color:#64748b; font-weight:700; text-transform:uppercase;">Total</div>
+                    <div id="ciKpiTotal" style="font-size:20px; font-weight:800; color:#0f172a;">0</div>
+                </div>
+                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:10px 14px;">
+                    <div style="font-size:11px; color:#1d4ed8; font-weight:700; text-transform:uppercase;">Emitidos</div>
+                    <div id="ciKpiEmitidos" style="font-size:20px; font-weight:800; color:#1e40af;">0</div>
+                </div>
+                <div style="background:#ecfeff; border:1px solid #a5f3fc; border-radius:12px; padding:10px 14px;">
+                    <div style="font-size:11px; color:#0e7490; font-weight:700; text-transform:uppercase;">Verificados</div>
+                    <div id="ciKpiVerificados" style="font-size:20px; font-weight:800; color:#155e75;">0</div>
+                </div>
+                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:10px 14px;">
+                    <div style="font-size:11px; color:#15803d; font-weight:700; text-transform:uppercase;">Entregados</div>
+                    <div id="ciKpiEntregados" style="font-size:20px; font-weight:800; color:#166534;">0</div>
+                </div>
+                <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:10px 14px;">
+                    <div style="font-size:11px; color:#dc2626; font-weight:700; text-transform:uppercase;">Anulados</div>
+                    <div id="ciKpiAnulados" style="font-size:20px; font-weight:800; color:#991b1b;">0</div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; align-items:center;">
+                <div style="flex: 1 1 240px; position:relative;">
+                    <i class="ti ti-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8;"></i>
+                    <input type="text" id="ciBuscador" oninput="buscarControlInformes()"
+                           placeholder="Buscar por N° de control (ej. INF-2026-0001), nombre o cédula..."
+                           style="width:100%; padding:9px 12px 9px 36px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.86rem; outline:none;">
+                </div>
+                <select id="ciFiltroModulo" onchange="cargarControlInformes()"
+                        style="flex: 0 1 190px; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.86rem; background:#fff;">
+                    <option value="todos">Todos los módulos</option>
+                    <option value="constancias">Constancias</option>
+                    <option value="constancias_grupal">Constancia Grupal</option>
+                    <option value="asistencias">Asistencias</option>
+                    <option value="asistencia_individual">Ficha Individual</option>
+                    <option value="evaluaciones">Evaluaciones ISP</option>
+                    <option value="pasantes">Pasantes</option>
+                    <option value="asignaciones">Asignaciones</option>
+                    <option value="bitacora">Auditoría / Bitácora</option>
+                    <option value="ejecutivo">Resumen Ejecutivo</option>
+                    <option value="usuarios">Usuarios</option>
+                </select>
+                <select id="ciFiltroEstado" onchange="cargarControlInformes()"
+                        style="flex: 0 1 165px; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.86rem; background:#fff;">
+                    <option value="todos">Todos los estados</option>
+                    <option value="Emitido">Emitido</option>
+                    <option value="Verificado">Verificado</option>
+                    <option value="Entregado">Entregado</option>
+                    <option value="Anulado">Anulado</option>
+                </select>
+                <button type="button" onclick="cargarControlInformes()" class="btn-p-soft btn-soft-pdf" style="padding:9px 14px;">
+                    <i class="ti ti-refresh"></i> Actualizar
+                </button>
+            </div>
+
+            <!-- Tabla / Resultados -->
+            <div id="ciLista" style="overflow-x:auto;">
+                <div style="text-align:center; padding:32px; color:#64748b;">
+                    <i class="ti ti-loader-2 ti-spin" style="font-size:24px;"></i> Cargando historial de informes...
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -1700,7 +1803,8 @@ function abrirEditorConstancia(id) {
     if (item.cuerpo_personalizado && item.cuerpo_personalizado.trim().length > 0) {
         areaTexto.value = item.cuerpo_personalizado;
     } else {
-        areaTexto.value = construirRedaccionBase(item);
+        areaTexto.value = '';
+        areaTexto.placeholder = 'Dejar vacío para usar automáticamente la Plantilla Maestra configurada en /plantillas. Escriba aquí solo si desea personalizar únicamente esta constancia.';
     }
 
     const modal = document.getElementById('modalEditarConstancia');
@@ -2473,5 +2577,188 @@ function validarGeneracion(event) {
 
 function generarReporteEjecutivo() {
     window.open('<?= URLROOT ?>/reportes/ejecutivo', '_blank');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// HISTORIAL Y CONTROL DE NÚMERO DE INFORMES
+// ══════════════════════════════════════════════════════════════════════
+let ciTimer = null;
+let ciCacheRows = [];
+
+function abrirModalControlInformes() {
+    document.getElementById('modalControlInformes').classList.add('active');
+    cargarControlInformes();
+}
+
+function cerrarModalControlInformes() {
+    document.getElementById('modalControlInformes').classList.remove('active');
+}
+
+function buscarControlInformes() {
+    clearTimeout(ciTimer);
+    ciTimer = setTimeout(cargarControlInformes, 280);
+}
+
+async function cargarControlInformes() {
+    const lista = document.getElementById('ciLista');
+    const q = encodeURIComponent((document.getElementById('ciBuscador')?.value || '').trim());
+    const modulo = encodeURIComponent(document.getElementById('ciFiltroModulo')?.value || 'todos');
+    const estado = encodeURIComponent(document.getElementById('ciFiltroEstado')?.value || 'todos');
+
+    lista.innerHTML = '<div style="text-align:center; padding:30px; color:#64748b;"><i class="ti ti-loader-2 ti-spin"></i> Consultando registros...</div>';
+
+    try {
+        const res = await fetch(`${URLROOT}/reportes/historialInformesAjax?q=${q}&modulo=${modulo}&estado=${estado}`);
+        const json = await res.json();
+        if (!json.success) {
+            lista.innerHTML = `<div style="text-align:center; padding:24px; color:#dc2626;">${json.error || 'Error al cargar historial.'}</div>`;
+            return;
+        }
+        ciCacheRows = json.data || [];
+        renderControlInformes(ciCacheRows, json.kpis || {});
+    } catch (err) {
+        console.error(err);
+        lista.innerHTML = '<div style="text-align:center; padding:24px; color:#dc2626;">Error de conexión al consultar informes.</div>';
+    }
+}
+
+function renderControlInformes(rows, kpis) {
+    document.getElementById('ciKpiTotal').textContent = kpis.total ?? 0;
+    document.getElementById('ciKpiEmitidos').textContent = kpis.emitidos ?? 0;
+    document.getElementById('ciKpiVerificados').textContent = kpis.verificados ?? 0;
+    document.getElementById('ciKpiEntregados').textContent = kpis.entregados ?? 0;
+    document.getElementById('ciKpiAnulados').textContent = kpis.anulados ?? 0;
+
+    const lista = document.getElementById('ciLista');
+    if (!rows.length) {
+        lista.innerHTML = `
+            <div style="text-align:center; padding:36px 16px; color:#64748b; border:1px dashed #cbd5e1; border-radius:12px;">
+                <i class="ti ti-file-search" style="font-size:32px; color:#94a3b8; display:block; margin-bottom:8px;"></i>
+                No se encontraron informes con los filtros aplicados.
+            </div>`;
+        return;
+    }
+
+    const badgeEstado = (est) => {
+        const map = {
+            'Emitido':    'background:#dbeafe;color:#1d4ed8;',
+            'Verificado': 'background:#cffafe;color:#0e7490;',
+            'Entregado':  'background:#dcfce7;color:#15803d;',
+            'Anulado':    'background:#fee2e2;color:#dc2626;',
+        };
+        const st = map[est] || 'background:#f1f5f9;color:#475569;';
+        return `<span style="display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;${st}">${est}</span>`;
+    };
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+    let html = `
+        <table style="width:100%; border-collapse:collapse; font-size:0.83rem;">
+            <thead>
+                <tr style="background:#f1f5f9; color:#334155; text-align:left;">
+                    <th style="padding:10px 12px; border-bottom:1px solid #cbd5e1;">N° Control</th>
+                    <th style="padding:10px 12px; border-bottom:1px solid #cbd5e1;">Informe / Módulo</th>
+                    <th style="padding:10px 12px; border-bottom:1px solid #cbd5e1;">Referencia</th>
+                    <th style="padding:10px 12px; border-bottom:1px solid #cbd5e1;">Emitido por / Fecha</th>
+                    <th style="padding:10px 12px; border-bottom:1px solid #cbd5e1;">Estado</th>
+                    <th style="padding:10px 12px; border-bottom:1px solid #cbd5e1; text-align:right;">Seguimiento</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    rows.forEach(r => {
+        const fecha = r.created_at ? new Date(r.created_at.replace(' ', 'T')).toLocaleString('es-VE', { dateStyle:'short', timeStyle:'short' }) : '—';
+        const ref = r.referencia_nombre
+            ? `${esc(r.referencia_nombre)}${r.referencia_cedula ? `<br><small style="color:#64748b;">C.I. ${esc(r.referencia_cedula)}</small>` : ''}`
+            : (r.departamento ? esc(r.departamento) : '<span style="color:#94a3b8;">General</span>');
+        const obsHtml = r.observaciones ? `<div style="font-size:11px;color:#475569;margin-top:3px;"><i class="ti ti-note"></i> ${esc(r.observaciones)}</div>` : '';
+
+        html += `
+            <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:10px 12px; white-space:nowrap;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <code style="background:#0f172a; color:#38bdf8; padding:3px 8px; border-radius:6px; font-weight:700; font-size:12px;">${esc(r.codigo_control)}</code>
+                        <button type="button" onclick="copiarCodigoControl('${esc(r.codigo_control)}')" title="Copiar código"
+                                style="border:none; background:#f1f5f9; color:#475569; border-radius:6px; padding:4px 6px; cursor:pointer;">
+                            <i class="ti ti-copy"></i>
+                        </button>
+                    </div>
+                    <span style="font-size:10px; color:#64748b; font-weight:700;">${esc(r.formato)}</span>
+                </td>
+                <td style="padding:10px 12px;">
+                    <div style="font-weight:700; color:#0f172a;">${esc(r.titulo_informe)}</div>
+                    <div style="font-size:11px; color:#64748b;">Módulo: ${esc(r.modulo)}</div>
+                    ${obsHtml}
+                </td>
+                <td style="padding:10px 12px;">${ref}</td>
+                <td style="padding:10px 12px;">
+                    <div style="font-weight:600; color:#1e293b;">${esc(r.emitido_por_nombre || 'Sistema')}</div>
+                    <div style="font-size:11px; color:#64748b;">${esc(fecha)}</div>
+                </td>
+                <td style="padding:10px 12px;">${badgeEstado(r.estado)}</td>
+                <td style="padding:10px 12px; text-align:right; white-space:nowrap;">
+                    <button type="button" onclick="abrirSeguimientoInforme(${Number(r.id)})"
+                            style="border:1px solid #cbd5e1; background:#fff; color:#0e7490; border-radius:8px; padding:6px 10px; font-size:12px; font-weight:700; cursor:pointer;">
+                        <i class="ti ti-edit"></i> Seguimiento
+                    </button>
+                </td>
+            </tr>`;
+    });
+
+    html += '</tbody></table>';
+    lista.innerHTML = html;
+}
+
+function copiarCodigoControl(codigo) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(codigo);
+    }
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Código ${codigo} copiado`, showConfirmButton: false, timer: 1600 });
+    }
+}
+
+function abrirSeguimientoInforme(id) {
+    const row = ciCacheRows.find(x => Number(x.id) === Number(id));
+    if (!row) return;
+
+    Swal.fire({
+        title: `Seguimiento ${row.codigo_control}`,
+        html: `
+            <div style="text-align:left; font-size:0.88rem;">
+                <p style="margin:0 0 10px; color:#475569;"><strong>Informe:</strong> ${row.titulo_informe}</p>
+                <label style="display:block; font-weight:700; margin-bottom:4px;">Estado de Control</label>
+                <select id="swCiEstado" class="swal2-select" style="width:100%; margin:0 0 12px; padding:8px; border:1px solid #cbd5e1; border-radius:8px;">
+                    <option value="Emitido" ${row.estado === 'Emitido' ? 'selected' : ''}>Emitido</option>
+                    <option value="Verificado" ${row.estado === 'Verificado' ? 'selected' : ''}>Verificado</option>
+                    <option value="Entregado" ${row.estado === 'Entregado' ? 'selected' : ''}>Entregado</option>
+                    <option value="Anulado" ${row.estado === 'Anulado' ? 'selected' : ''}>Anulado</option>
+                </select>
+                <label style="display:block; font-weight:700; margin-bottom:4px;">Observaciones de Seguimiento</label>
+                <textarea id="swCiObs" rows="3" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px;" placeholder="Ej. Entregado a RRHH, sellado por dirección...">${row.observaciones ? String(row.observaciones).replace(/</g, '&lt;') : ''}</textarea>
+            </div>`,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar Seguimiento',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#0e7490',
+        preConfirm: async () => {
+            const fd = new FormData();
+            fd.append('id', id);
+            fd.append('estado', document.getElementById('swCiEstado').value);
+            fd.append('observaciones', document.getElementById('swCiObs').value.trim());
+            const r = await fetch(`${URLROOT}/reportes/actualizarEstadoInformeAjax`, { method: 'POST', body: fd });
+            const j = await r.json();
+            if (!j.success) {
+                Swal.showValidationMessage(j.error || 'No se pudo actualizar');
+                return false;
+            }
+            return true;
+        }
+    }).then(res => {
+        if (res.isConfirmed) {
+            Swal.fire({ icon: 'success', title: 'Seguimiento actualizado', timer: 1400, showConfirmButton: false });
+            cargarControlInformes();
+        }
+    });
 }
 </script>

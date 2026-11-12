@@ -37,14 +37,29 @@ elseif ($prom >= 1.5)
 else
     $resultado = 'DEFICIENTE';
 
+$tplEvalVars = [
+    'NOMBRE_PASANTE' => $nombrePasante,
+    'CEDULA_PASANTE' => (string)($eval->cedula ?? ''),
+    'INSTITUCION'    => (string)($eval->inst_nombre ?? 'N/D'),
+    'DEPARTAMENTO'   => (string)($eval->departamento ?? 'N/D'),
+    'TUTOR_NOMBRE'   => $jefeNombre !== '' ? $jefeNombre : $tutorNombre,
+    'FECHA_EMISION'  => date('d/m/Y'),
+];
+$tplEval = class_exists('PlantillaHelper') ? PlantillaHelper::obtener('evaluacion_desempeno', $tplEvalVars) : null;
+
 // Cintillo como Base64 con altura controlada
-$baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(__DIR__)) . '/public/img/';
-$cintilloCandidates = [
+$publicRoot = defined('APPROOT') ? dirname(APPROOT) . '/public/' : dirname(dirname(__DIR__)) . '/public/';
+$baseImgDir = $publicRoot . 'img/';
+$cintilloCandidates = [];
+if ($tplEval && !empty($tplEval->cintillo)) {
+    $cintilloCandidates[] = $publicRoot . ltrim($tplEval->cintillo, '/');
+}
+$cintilloCandidates = array_merge($cintilloCandidates, [
     $baseImgDir . 'cintillo.png',
     $baseImgDir . 'cintillo_isp_bolivar.jpg',
     $baseImgDir . 'cintillo_pdf.png',
     $baseImgDir . 'cintillo-salud.png'
-];
+]);
 $bCintillo = '';
 foreach ($cintilloCandidates as $candidate) {
     if (file_exists($candidate)) {
@@ -215,10 +230,14 @@ $criterios = [
 
     <!-- Títulos institucionales -->
     <div class="inst-titles">
-        DIRECCIÓN DE RECURSOS HUMANOS<br>
-        DIVISIÓN DE DESARROLLO DEL PERSONAL<br>
-        DEPARTAMENTO DE CAPACITACIÓN Y DESARROLLO ORGANIZACIONAL
-        <div class="subtitulo">Evaluación de Pasantías</div>
+        <?php if ($tplEval && $tplEval->es_personalizada && $tplEval->subtitulo !== ''): ?>
+            <?= nl2br(htmlspecialchars($tplEval->subtitulo)) ?>
+        <?php else: ?>
+            DIRECCIÓN DE RECURSOS HUMANOS<br>
+            DIVISIÓN DE DESARROLLO DEL PERSONAL<br>
+            DEPARTAMENTO DE CAPACITACIÓN Y DESARROLLO ORGANIZACIONAL
+        <?php endif; ?>
+        <div class="subtitulo"><?= htmlspecialchars(($tplEval && $tplEval->es_personalizada && $tplEval->titulo !== '') ? $tplEval->titulo : 'Evaluación de Pasantías') ?></div>
     </div>
 
     <!-- DATOS DEL PASANTE -->

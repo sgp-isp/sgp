@@ -53,7 +53,24 @@ body {
 </head>
 <body>
 
-<?php include __DIR__ . '/comunes/header.php'; ?>
+<?php
+// Cargar Plantilla Maestra antes del header para aplicar cintillo personalizado
+$dbPlantilla = Database::getInstance();
+$tipoDoc = $tipo ?? 'servicio';
+if ($tipoDoc === 'servicio') {
+    $codigoPlantilla = 'constancia_servicio';
+} elseif ($tipoDoc === 'egresado') {
+    $codigoPlantilla = 'constancia_egresado';
+} else {
+    $codigoPlantilla = 'constancia_culminacion';
+}
+$dbPlantilla->query("SELECT * FROM plantillas_reportes WHERE codigo = :cod LIMIT 1");
+$dbPlantilla->bind(':cod', $codigoPlantilla);
+$plantillaMaestra = $dbPlantilla->single();
+
+$cintilloPersonalizado = $plantillaMaestra->cintillo_url ?? null;
+include __DIR__ . '/comunes/header.php';
+?>
 
 <div class="carta-body">
 
@@ -106,14 +123,10 @@ body {
     $anioEmision= $anioEmision ?? date('Y');
 
     // ── Conexión con Plantillas Maestras SGP (SuperAdmin) ─────────
-    $db = Database::getInstance();
-    $codigoPlantilla = (($tipo ?? 'servicio') === 'servicio') ? 'constancia_servicio' : 'constancia_culminacion';
-    $db->query("SELECT * FROM plantillas_reportes WHERE codigo = :cod LIMIT 1");
-    $db->bind(':cod', $codigoPlantilla);
-    $plantillaMaestra = $db->single();
-
     $cuerpoDesdePlantilla = null;
     $tituloDesdePlantilla = null;
+    $subtituloDesdePlantilla = null;
+    $pieDesdePlantilla    = null;
     $firmasConfiguradas   = null;
 
     if ($plantillaMaestra) {
@@ -135,17 +148,24 @@ body {
                 '{FECHA_EMISION}'    => $diaEmision . ' de ' . $mesEmision . ' de ' . $anioEmision,
                 '{NUMERO_CONTROL}'   => htmlspecialchars($codigoConstancia ?? ('SGP-CST-' . date('Ymd-His'))),
                 '{TUTOR_NOMBRE}'     => $tutor,
-                '{TUTOR_CARGO}'      => $tutorCargo ?: 'Tutor Institucional'
+                '{TUTOR_CARGO}'      => $tutorCargo ?: 'Tutor Institucional',
+                '{JEFE_NOMBRE}'      => htmlspecialchars($jefeNombre ?? $tutor),
             ];
-            $cuerpoDesdePlantilla = str_replace(array_keys($varsMap), array_values($varsMap), $plantillaMaestra->cuerpo_html);
-            $tituloDesdePlantilla = str_replace(array_keys($varsMap), array_values($varsMap), $plantillaMaestra->titulo_documento);
+            $cuerpoDesdePlantilla    = str_replace(array_keys($varsMap), array_values($varsMap), (string)$plantillaMaestra->cuerpo_html);
+            $tituloDesdePlantilla    = str_replace(array_keys($varsMap), array_values($varsMap), (string)$plantillaMaestra->titulo_documento);
+            $subtituloDesdePlantilla = !empty($plantillaMaestra->subtitulo_documento)
+                ? str_replace(array_keys($varsMap), array_values($varsMap), (string)$plantillaMaestra->subtitulo_documento)
+                : null;
+            $pieDesdePlantilla       = !empty($plantillaMaestra->pie_pagina)
+                ? str_replace(array_keys($varsMap), array_values($varsMap), (string)$plantillaMaestra->pie_pagina)
+                : null;
         }
     }
     ?>
 
     <?php if (!empty($pasante->cuerpo_personalizado)): ?>
     <!-- ══════════════════ TEXTO EDITADO PUNTUAL PARA ESTE PASANTE ══════════════════ -->
-    <div class="asunto"><?= (($tipo ?? 'servicio') === 'servicio') ? 'CONSTANCIA DE PASANTÍA' : 'CARTA DE CULMINACIÓN DE PASANTÍAS PROFESIONALES' ?></div>
+    <div class="asunto"><?= htmlspecialchars($tituloDesdePlantilla ?: ((($tipo ?? 'servicio') === 'servicio') ? 'CONSTANCIA DE PASANTÍA' : 'CARTA DE CULMINACIÓN DE PASANTÍAS PROFESIONALES')) ?></div>
     <div class="parrafo" style="white-space: pre-line; text-align: justify; margin-bottom: 20px;">
         <?= $pasante->cuerpo_personalizado ?>
     </div>
@@ -153,6 +173,9 @@ body {
     <?php elseif ($cuerpoDesdePlantilla): ?>
     <!-- ══════════════════ TEXTO DE PLANTILLA MAESTRA DEL SUPERADMIN ══════════════════ -->
     <div class="asunto"><?= htmlspecialchars($tituloDesdePlantilla ?: ((($tipo ?? 'servicio') === 'servicio') ? 'CONSTANCIA DE PASANTÍA' : 'CARTA DE CULMINACIÓN DE PASANTÍAS PROFESIONALES')) ?></div>
+    <?php if (!empty($subtituloDesdePlantilla)): ?>
+    <div style="text-align:center; font-size:10.5px; color:#64748b; margin-top:-14px; margin-bottom:18px;"><?= htmlspecialchars($subtituloDesdePlantilla) ?></div>
+    <?php endif; ?>
     <div class="parrafo" style="text-align: justify; margin-bottom: 20px;">
         <?= $cuerpoDesdePlantilla ?>
     </div>
@@ -263,10 +286,15 @@ body {
 
 <!-- ══════════════════ FIRMAS Y SELLO ══════════════════ -->
 <?php
-$cargoMostrar = !empty($firmasConfiguradas['firmante_cargo']) ? $firmasConfiguradas['firmante_cargo'] : 'Jefe de la División de Soporte Técnico de la Dirección de Telemática';
+$antefirmaMostrar      = !empty($firmasConfiguradas['antefirma']) ? $firmasConfiguradas['antefirma'] : '';
+$cargoMostrar          = !empty($firmasConfiguradas['firmante_cargo']) ? $firmasConfiguradas['firmante_cargo'] : 'Jefe de la División de Soporte Técnico de la Dirección de Telemática';
 $nombreFirmanteMostrar = (!empty($firmasConfiguradas['firmante_nombre']) && $firmasConfiguradas['firmante_nombre'] !== '{TUTOR_NOMBRE}') ? $firmasConfiguradas['firmante_nombre'] : $tutor;
-$mostrarSelloDoc = isset($firmasConfiguradas['mostrar_sello']) ? !empty($firmasConfiguradas['mostrar_sello']) : true;
+$mostrarSelloDoc       = isset($firmasConfiguradas['mostrar_sello']) ? !empty($firmasConfiguradas['mostrar_sello']) : true;
+$selloTextoMostrar     = !empty($firmasConfiguradas['sello_texto']) ? $firmasConfiguradas['sello_texto'] : "Sello\nOficial";
 ?>
+<?php if ($antefirmaMostrar !== ''): ?>
+<div style="text-align:center; font-size:11px; color:#334155; margin-top:26px; margin-bottom:-28px;"><?= htmlspecialchars($antefirmaMostrar) ?></div>
+<?php endif; ?>
 <div class="firma-row">
     <div class="firma-col" style="vertical-align: bottom;">
         <div class="firma-linea" style="min-width: 280px;">
@@ -276,14 +304,18 @@ $mostrarSelloDoc = isset($firmasConfiguradas['mostrar_sello']) ? !empty($firmasC
     </div>
     <?php if ($mostrarSelloDoc): ?>
     <div class="firma-col" style="vertical-align: bottom;">
-        <div class="sello-box" style="margin: 0 auto 12px; display: block; width: 140px; height: 90px; padding-top: 40px; font-size: 9px; border-width: 2px;">Sello<br>Oficial</div>
+        <div class="sello-box" style="margin: 0 auto 12px; display: block; width: 140px; height: 90px; padding-top: 40px; font-size: 9px; border-width: 2px;"><?= nl2br(htmlspecialchars($selloTextoMostrar)) ?></div>
     </div>
     <?php endif; ?>
 </div>
 
 <div class="footer-line">
-    Documento generado por el Sistema de Gestión de Pasantes (SGP) &nbsp;|&nbsp;
-    Instituto de Salud Pública del Estado Bolívar &nbsp;|&nbsp; <?= date('d/m/Y h:i A') ?>
+    <?php if (!empty($pieDesdePlantilla)): ?>
+        <?= htmlspecialchars($pieDesdePlantilla) ?> &nbsp;|&nbsp; <?= date('d/m/Y h:i A') ?>
+    <?php else: ?>
+        Documento generado por el Sistema de Gestión de Pasantes (SGP) &nbsp;|&nbsp;
+        Instituto de Salud Pública del Estado Bolívar &nbsp;|&nbsp; <?= date('d/m/Y h:i A') ?>
+    <?php endif; ?>
 </div>
 
 </body>

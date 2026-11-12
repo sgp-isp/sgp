@@ -1,8 +1,22 @@
+<?php
+$nombreCompletoPasante = ucwords(strtolower(trim(($pasante->apellidos ?? '') . ', ' . ($pasante->nombres ?? ''))));
+$tplVars = [
+    'NOMBRE_PASANTE' => $nombreCompletoPasante,
+    'CEDULA_PASANTE' => (string)($pasante->cedula ?? '—'),
+    'DEPARTAMENTO'   => (string)($pasante->departamento ?? 'Sin asignar'),
+    'FECHA_EMISION'  => date('d/m/Y H:i'),
+];
+$tpl = class_exists('PlantillaHelper') ? PlantillaHelper::obtener('ficha_asistencia_individual', $tplVars) : null;
+$cintilloPersonalizado = ($tpl && !empty($tpl->cintillo)) ? $tpl->cintillo : null;
+$tituloFicha    = ($tpl && $tpl->es_personalizada && $tpl->titulo !== '') ? $tpl->titulo : 'Ficha Personal';
+$subtituloFicha = ($tpl && $tpl->es_personalizada && $tpl->subtitulo !== '') ? $tpl->subtitulo : ($subtitulo_pdf ?? '');
+$pieFicha       = ($tpl && $tpl->es_personalizada && $tpl->pie !== '') ? $tpl->pie : '';
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Ficha Personal</title>
+    <title><?= htmlspecialchars($tituloFicha) ?></title>
     <style>
         @page { margin: 2cm 2.2cm; }
         body   { font-family: Helvetica, Arial, sans-serif; font-size: 14px; color: #111; line-height: 1.5; }
@@ -25,9 +39,9 @@
 
     <?php include 'comunes/header.php'; ?>
 
-    <h1>Ficha Personal</h1>
+    <h1><?= htmlspecialchars($tituloFicha) ?></h1>
     <div class="sub">
-        <?= htmlspecialchars($subtitulo_pdf) ?>
+        <?= htmlspecialchars($subtituloFicha) ?>
         &nbsp;|&nbsp; Generado el <?= date('d/m/Y \a \l\a\s H:i') ?>
     </div>
 
@@ -117,8 +131,12 @@
     <?php endif; ?>
 
     <div class="foot">
-        Documento generado electrónicamente &mdash; Sistema de Gestión de Pasantes (SGP) &mdash;
-        Instituto de Salud Pública de Bolívar &mdash; <?= date('d/m/Y H:i') ?>
+        <?php if ($pieFicha !== ''): ?>
+            <?= nl2br(htmlspecialchars($pieFicha)) ?>
+        <?php else: ?>
+            Documento generado electrónicamente &mdash; Sistema de Gestión de Pasantes (SGP) &mdash;
+            Instituto de Salud Pública de Bolívar &mdash; <?= date('d/m/Y H:i') ?>
+        <?php endif; ?>
     </div>
 
 </body>

@@ -8,12 +8,20 @@
  */
 
 $baseImgDir = defined('APPROOT') ? APPROOT . '/../public/img/' : dirname(dirname(dirname(__DIR__))) . '/public/img/';
-$cintilloCandidates = [
+$publicBaseDir = defined('APPROOT') ? APPROOT . '/../public/' : dirname(dirname(dirname(__DIR__))) . '/public/';
+$cintilloCandidates = [];
+if (!empty($cintilloPersonalizado)) {
+    $customRel = ltrim(str_replace('\\', '/', (string)$cintilloPersonalizado), '/');
+    if (strpos($customRel, '..') === false) {
+        $cintilloCandidates[] = $publicBaseDir . $customRel;
+    }
+}
+$cintilloCandidates = array_merge($cintilloCandidates, [
     $baseImgDir . 'cintillo.png',
     $baseImgDir . 'cintillo_isp_bolivar.jpg',
     $baseImgDir . 'cintillo_pdf.png',
     $baseImgDir . 'cintillo-salud.png'
-];
+]);
 
 $base64_cintillo = '';
 foreach ($cintilloCandidates as $cp) {

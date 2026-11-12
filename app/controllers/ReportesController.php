@@ -21,6 +21,7 @@ class ReportesController extends Controller
 
         $this->db = Database::getInstance();
         require_once '../app/lib/PdfGenerator.php';
+        require_once '../app/helpers/PlantillaHelper.php';
         $this->pdf = new PdfGenerator();
     }
 
@@ -196,7 +197,20 @@ class ReportesController extends Controller
         include '../app/views/reportes/pdf_asistencia_individual.php';
         $html = ob_get_clean();
 
-        $this->pdf->renderDomPdf($html, 'Ficha_Personal_' . ($pasante->cedula ?? $pasanteId), false);
+        $tplFicha = PlantillaHelper::obtener('ficha_asistencia_individual');
+        $paperFicha = $tplFicha->tamano ?? 'A4';
+        $orientFicha = $tplFicha->orientacion ?? 'portrait';
+
+        $this->registrarControlInforme(
+            'asistencia_individual',
+            'Ficha Personal de Asistencia',
+            'PDF',
+            trim(($pasante->apellidos ?? '') . ', ' . ($pasante->nombres ?? '')),
+            (string)($pasante->cedula ?? ''),
+            (string)($pasante->departamento ?? '')
+        );
+
+        $this->pdf->renderDomPdf($html, 'Ficha_Personal_' . ($pasante->cedula ?? $pasanteId), false, $paperFicha, $orientFicha);
     }
 
     /**
@@ -257,6 +271,23 @@ class ReportesController extends Controller
             }
         }
         // ── Fin RBAC ────────────────────────────────────────────────────────────
+
+        // Registrar en control de informes (constancias se registran con su código CST en registrarRespaldoConstancia)
+        if ($modulo !== 'constancias') {
+            $titulosModulo = [
+                'ejecutivo'    => 'Resumen Ejecutivo Institucional',
+                'usuarios'     => 'Directorio de Usuarios del Sistema',
+                'pasantes'     => 'Registro General de Pasantes',
+                'evaluaciones' => 'Planilla de Evaluación de Desempeño ISP',
+                'asistencias'  => isset($filtros['formato_trimestral']) ? 'Control Trimestral de Asistencias ISP' : 'Reporte de Asistencias',
+                'bitacora'     => 'Reporte de Auditoría y Bitácora',
+                'asignaciones' => 'Reporte de Asignaciones por Departamento',
+                'diaria'       => 'Ficha Diaria de Asistencias',
+            ];
+            $tituloInf = $titulosModulo[$modulo] ?? ('Reporte de ' . ucfirst($modulo));
+            $formatoInf = strtoupper((string)($filtros['formato'] ?? 'PDF'));
+            $this->registrarControlInforme($modulo, $tituloInf, $formatoInf);
+        }
 
         // Lógica de Enrutamiento
         switch ($modulo) {
@@ -385,8 +416,12 @@ class ReportesController extends Controller
         include '../app/views/reportes/pdf_evaluacion_isp.php';
         $html = ob_get_clean();
 
+        $tplEval = PlantillaHelper::obtener('evaluacion_desempeno');
+        $paperEval = $tplEval->tamano ?? 'A4';
+        $orientEval = $tplEval->orientacion ?? 'portrait';
+
         // Renderizar SIN wrapHtml y en modo INLINE (false)
-        $this->pdf->renderDomPdf($html, "Evaluacion_ISP_" . $evaluacion->cedula, false);
+        $this->pdf->renderDomPdf($html, "Evaluacion_ISP_" . $evaluacion->cedula, false, $paperEval, $orientEval);
     }
 
     private function renderErrorPage(string $titulo, string $mensaje): never
@@ -1633,7 +1668,10 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 13px;
         ob_start();
         include '../app/views/reportes/pdf_auditoria.php';
         $html = ob_get_clean();
-        $this->pdf->renderDomPdf($html, 'Auditoria_' . date('Ymd'), false);
+        $tplAud = PlantillaHelper::obtener('auditoria_bitacora');
+        $paperAud = $tplAud->tamano ?? 'A4';
+        $orientAud = $tplAud->orientacion ?? 'portrait';
+        $this->pdf->renderDomPdf($html, 'Auditoria_' . date('Ymd'), false, $paperAud, $orientAud);
     }
 
     /**
@@ -1923,6 +1961,15 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 13px;
         require APPROOT . '/views/reportes/pdf_constancia_grupal.php';
         $html = ob_get_clean();
 
+        $this->registrarControlInforme(
+            'constancias_grupal',
+            'Constancia Grupal / Acta Colectiva',
+            'PDF',
+            count($pasantes) . ' pasante(s)',
+            null,
+            $departamentoNombre ?? null
+        );
+
         $dompdf->loadHtml($html, 'UTF-8');
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
@@ -2104,9 +2151,15 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 13px;
             include '../app/views/reportes/pdf_constancia.php';
             $html = ob_get_clean();
 
+            $tplConstCod = match ($tipo) {
+                'culminacion' => 'constancia_culminacion',
+                'egresado'    => 'constancia_egresado',
+                default       => 'constancia_servicio',
+            };
+            $tplConst = PlantillaHelper::obtener($tplConstCod);
             $nombreArchivo = ($tipo === 'culminacion' ? 'Carta_Culminacion' : 'Constancia_Servicio')
                 . '_' . ($pasante->cedula ?? 'Historico') . '_' . $codigoConstancia;
-            $this->pdf->renderDomPdf($html, $nombreArchivo, false);
+            $this->pdf->renderDomPdf($html, $nombreArchivo, false, $tplConst->tamano ?? 'letter', $tplConst->orientacion ?? 'portrait');
             return;
         }
 
@@ -2202,9 +2255,15 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 13px;
         include '../app/views/reportes/pdf_constancia.php';
         $html = ob_get_clean();
 
+        $tplConstCod = match ($tipo) {
+            'culminacion' => 'constancia_culminacion',
+            'egresado'    => 'constancia_egresado',
+            default       => 'constancia_servicio',
+        };
+        $tplConst = PlantillaHelper::obtener($tplConstCod);
         $nombreArchivo = ($tipo === 'culminacion' ? 'Carta_Culminacion' : 'Constancia_Servicio')
             . '_' . ($pasante->cedula ?? $pasanteId) . '_' . $codigoConstancia;
-        $this->pdf->renderDomPdf($html, $nombreArchivo, false);
+        $this->pdf->renderDomPdf($html, $nombreArchivo, false, $tplConst->tamano ?? 'letter', $tplConst->orientacion ?? 'portrait');
     }
 
     /**
@@ -2281,6 +2340,17 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 13px;
                 $periodoTexto ?: 'Carga Horaria Estándar'
             ));
             $this->db->execute();
+
+            // Registrar también en el Control Centralizado de Informes
+            $this->registrarControlInforme(
+                'constancias',
+                $tipoConstancia === 'culminacion' ? 'Carta de Culminación' : ($tipoConstancia === 'egresado' ? 'Constancia de Egresado' : 'Constancia de Servicio'),
+                'PDF',
+                $nombreCompleto,
+                $cedula,
+                $departamento,
+                $codigoConstancia
+            );
 
             return $codigoConstancia;
         } catch (\Throwable $e) {
@@ -2373,10 +2443,16 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 13px;
         include '../app/views/reportes/pdf_constancia.php';
         $html = ob_get_clean();
 
+        $tplConstCod = match ($tipo) {
+            'culminacion' => 'constancia_culminacion',
+            'egresado'    => 'constancia_egresado',
+            default       => 'constancia_servicio',
+        };
+        $tplConst = PlantillaHelper::obtener($tplConstCod);
         $download = (!empty($_GET['download']) && $_GET['download'] == 1);
         $nombreArchivo = ($tipo === 'culminacion' ? 'Carta_Culminacion' : 'Constancia_Servicio')
             . '_' . ($pasante->cedula ?? 'Historico') . '_' . $codigoConstancia;
-        $this->pdf->renderDomPdf($html, $nombreArchivo, $download);
+        $this->pdf->renderDomPdf($html, $nombreArchivo, $download, $tplConst->tamano ?? 'letter', $tplConst->orientacion ?? 'portrait');
     }
 
     /**
@@ -2694,6 +2770,276 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 13px;
             ], ';');
         }
         fclose($out);
+        exit;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HISTORIAL Y CONTROL DE NÚMERO DE INFORMES
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    private function ensureControlInformesTable(): void
+    {
+        static $verificada = false;
+        if ($verificada) {
+            return;
+        }
+        $this->db->query("
+            CREATE TABLE IF NOT EXISTS control_informes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                codigo_control VARCHAR(30) NOT NULL UNIQUE,
+                modulo VARCHAR(60) NOT NULL,
+                titulo_informe VARCHAR(180) NOT NULL,
+                formato VARCHAR(15) NOT NULL DEFAULT 'PDF',
+                referencia_nombre VARCHAR(180) NULL,
+                referencia_cedula VARCHAR(30) NULL,
+                departamento VARCHAR(120) NULL,
+                estado ENUM('Emitido','Verificado','Entregado','Anulado') NOT NULL DEFAULT 'Emitido',
+                observaciones TEXT NULL,
+                emitido_por INT NULL,
+                emitido_por_nombre VARCHAR(120) NULL,
+                actualizado_por INT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_ctrl_modulo (modulo),
+                INDEX idx_ctrl_estado (estado),
+                INDEX idx_ctrl_created (created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+        $this->db->execute();
+        $verificada = true;
+    }
+
+    private function registrarControlInforme(
+        string $modulo,
+        string $tituloInforme,
+        string $formato = 'PDF',
+        ?string $refNombre = null,
+        ?string $refCedula = null,
+        ?string $departamento = null,
+        ?string $codigoForzado = null,
+        ?string $observaciones = null
+    ): string {
+        try {
+            $this->ensureControlInformesTable();
+
+            if ($codigoForzado !== null && $codigoForzado !== '') {
+                $codigoControl = $codigoForzado;
+                // Evitar duplicado si ya existe el código
+                $this->db->query("SELECT id FROM control_informes WHERE codigo_control = :cod LIMIT 1");
+                $this->db->bind(':cod', $codigoControl);
+                if ($this->db->single()) {
+                    return $codigoControl;
+                }
+            } else {
+                $anio = date('Y');
+                $prefijo = "INF-{$anio}-";
+                $this->db->query("SELECT COUNT(*) AS total FROM control_informes WHERE codigo_control LIKE :pref");
+                $this->db->bind(':pref', $prefijo . '%');
+                $seq = ((int)($this->db->single()->total ?? 0)) + 1;
+                $codigoControl = sprintf("INF-%s-%04d", $anio, $seq);
+                // Garantizar unicidad en caso de eliminaciones/concurrencia
+                for ($intento = 0; $intento < 10; $intento++) {
+                    $this->db->query("SELECT id FROM control_informes WHERE codigo_control = :cod LIMIT 1");
+                    $this->db->bind(':cod', $codigoControl);
+                    if (!$this->db->single()) {
+                        break;
+                    }
+                    $seq++;
+                    $codigoControl = sprintf("INF-%s-%04d", $anio, $seq);
+                }
+            }
+
+            $uid = (int)Session::get('user_id');
+            $uNombre = trim((string)(Session::get('user_name') ?? ''));
+            if ($uNombre === '' && $uid > 0) {
+                $this->db->query("SELECT CONCAT(COALESCE(dp.nombres,''), ' ', COALESCE(dp.apellidos,'')) AS nom FROM usuarios u LEFT JOIN datos_personales dp ON dp.usuario_id = u.id WHERE u.id = :uid LIMIT 1");
+                $this->db->bind(':uid', $uid);
+                $uRow = $this->db->single();
+                $uNombre = trim((string)($uRow->nom ?? '')) ?: 'Usuario #' . $uid;
+            }
+
+            $this->db->query("
+                INSERT INTO control_informes (
+                    codigo_control, modulo, titulo_informe, formato,
+                    referencia_nombre, referencia_cedula, departamento,
+                    estado, observaciones, emitido_por, emitido_por_nombre
+                ) VALUES (
+                    :codigo, :modulo, :titulo, :formato,
+                    :ref_nombre, :ref_cedula, :departamento,
+                    'Emitido', :obs, :emitido_por, :emitido_nom
+                )
+            ");
+            $this->db->bind(':codigo', $codigoControl);
+            $this->db->bind(':modulo', $modulo);
+            $this->db->bind(':titulo', mb_substr($tituloInforme, 0, 180, 'UTF-8'));
+            $this->db->bind(':formato', strtoupper(mb_substr($formato, 0, 15, 'UTF-8')));
+            $this->db->bind(':ref_nombre', $refNombre ? mb_substr($refNombre, 0, 180, 'UTF-8') : null);
+            $this->db->bind(':ref_cedula', $refCedula ? mb_substr($refCedula, 0, 30, 'UTF-8') : null);
+            $this->db->bind(':departamento', $departamento ? mb_substr($departamento, 0, 120, 'UTF-8') : null);
+            $this->db->bind(':obs', $observaciones);
+            $this->db->bind(':emitido_por', $uid ?: null);
+            $this->db->bind(':emitido_nom', $uNombre ?: null);
+            $this->db->execute();
+
+            return $codigoControl;
+        } catch (\Throwable $e) {
+            error_log('[ReportesController::registrarControlInforme] ' . $e->getMessage());
+            return '';
+        }
+    }
+
+    /**
+     * GET /reportes/historialInformesAjax
+     * Lista y filtra los informes registrados por código de control, módulo o estado.
+     */
+    public function historialInformesAjax(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        try {
+            $this->ensureControlInformesTable();
+
+            $q      = trim((string)($_GET['q'] ?? ''));
+            $modulo = trim((string)($_GET['modulo'] ?? ''));
+            $estado = trim((string)($_GET['estado'] ?? ''));
+            $rolId  = (int)Session::get('role_id');
+            $uid    = (int)Session::get('user_id');
+
+            $where = ['1=1'];
+            $params = [];
+
+            if ($rolId === 2) {
+                $where[] = 'ci.emitido_por = :uid';
+                $params[':uid'] = $uid;
+            }
+            if ($modulo !== '' && $modulo !== 'todos') {
+                $where[] = 'ci.modulo = :modulo';
+                $params[':modulo'] = $modulo;
+            }
+            if ($estado !== '' && $estado !== 'todos') {
+                $where[] = 'ci.estado = :estado';
+                $params[':estado'] = $estado;
+            }
+            if ($q !== '') {
+                $where[] = '(ci.codigo_control LIKE :q OR ci.titulo_informe LIKE :q OR ci.referencia_nombre LIKE :q OR ci.referencia_cedula LIKE :q OR ci.emitido_por_nombre LIKE :q)';
+                $params[':q'] = '%' . $q . '%';
+            }
+
+            $whereSql = implode(' AND ', $where);
+
+            $this->db->query("
+                SELECT ci.*
+                FROM control_informes ci
+                WHERE {$whereSql}
+                ORDER BY ci.created_at DESC, ci.id DESC
+                LIMIT 200
+            ");
+            foreach ($params as $k => $v) {
+                $this->db->bind($k, $v);
+            }
+            $rows = $this->db->resultSet();
+
+            // KPIs globales (respetando RBAC)
+            $kpiWhere = $rolId === 2 ? 'WHERE emitido_por = :uid' : '';
+            $this->db->query("
+                SELECT
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN estado = 'Emitido' THEN 1 ELSE 0 END) AS emitidos,
+                    SUM(CASE WHEN estado = 'Verificado' THEN 1 ELSE 0 END) AS verificados,
+                    SUM(CASE WHEN estado = 'Entregado' THEN 1 ELSE 0 END) AS entregados,
+                    SUM(CASE WHEN estado = 'Anulado' THEN 1 ELSE 0 END) AS anulados
+                FROM control_informes
+                {$kpiWhere}
+            ");
+            if ($rolId === 2) {
+                $this->db->bind(':uid', $uid);
+            }
+            $kpis = $this->db->single();
+
+            echo json_encode([
+                'success' => true,
+                'data'    => $rows,
+                'kpis'    => [
+                    'total'       => (int)($kpis->total ?? 0),
+                    'emitidos'    => (int)($kpis->emitidos ?? 0),
+                    'verificados' => (int)($kpis->verificados ?? 0),
+                    'entregados'  => (int)($kpis->entregados ?? 0),
+                    'anulados'    => (int)($kpis->anulados ?? 0),
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+    /**
+     * POST /reportes/actualizarEstadoInformeAjax
+     * Actualiza el estado de seguimiento y observaciones de un informe por ID.
+     */
+    public function actualizarEstadoInformeAjax(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        try {
+            $this->ensureControlInformesTable();
+
+            $id     = (int)($_POST['id'] ?? 0);
+            $estado = trim((string)($_POST['estado'] ?? ''));
+            $obs    = trim((string)($_POST['observaciones'] ?? ''));
+            $validos = ['Emitido', 'Verificado', 'Entregado', 'Anulado'];
+
+            if ($id <= 0 || !in_array($estado, $validos, true)) {
+                echo json_encode(['success' => false, 'error' => 'Datos inválidos para actualizar seguimiento']);
+                exit;
+            }
+
+            $this->db->query("SELECT codigo_control, emitido_por FROM control_informes WHERE id = :id LIMIT 1");
+            $this->db->bind(':id', $id);
+            $actual = $this->db->single();
+            if (!$actual) {
+                echo json_encode(['success' => false, 'error' => 'Informe no encontrado']);
+                exit;
+            }
+
+            $rolId = (int)Session::get('role_id');
+            $uid   = (int)Session::get('user_id');
+            if ($rolId === 2 && (int)$actual->emitido_por !== $uid) {
+                echo json_encode(['success' => false, 'error' => 'No tiene permisos para modificar este informe']);
+                exit;
+            }
+
+            $this->db->query("
+                UPDATE control_informes
+                SET estado = :estado,
+                    observaciones = :obs,
+                    actualizado_por = :uid
+                WHERE id = :id
+            ");
+            $this->db->bind(':estado', $estado);
+            $this->db->bind(':obs', $obs !== '' ? $obs : null);
+            $this->db->bind(':uid', $uid ?: null);
+            $this->db->bind(':id', $id);
+            $this->db->execute();
+
+            // Registro en bitácora
+            $this->db->query("
+                INSERT INTO bitacora (usuario_id, accion, tabla_afectada, registro_id, ip_address, detalles)
+                VALUES (:uid, 'SEGUIMIENTO_INFORME', 'control_informes', :rid, :ip, :detalles)
+            ");
+            $this->db->bind(':uid', $uid);
+            $this->db->bind(':rid', $id);
+            $this->db->bind(':ip', $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+            $this->db->bind(':detalles', sprintf(
+                "Seguimiento de informe %s actualizado a estado '%s'%s",
+                $actual->codigo_control,
+                $estado,
+                $obs !== '' ? ' — Obs: ' . $obs : ''
+            ));
+            $this->db->execute();
+
+            echo json_encode(['success' => true]);
+        } catch (\Throwable $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
         exit;
     }
 }

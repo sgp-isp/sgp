@@ -33,7 +33,7 @@ class PdfGenerator
      * @param string $filename Nombre del archivo .pdf para descarga
      * @param bool   $download true = forzar descarga | false = inline (para pdf.js viewer)
      */
-    public function renderDomPdf(string $html, string $filename = 'reporte.pdf', bool $download = true): void
+    public function renderDomPdf(string $html, string $filename = 'reporte.pdf', bool $download = true, string $paper = 'A4', string $orientation = 'portrait'): void
     {
         $autoload = $this->vendorPath . '/autoload.php';
         if (!file_exists($autoload)) {
@@ -48,7 +48,9 @@ class PdfGenerator
 
         $dompdf = new \Dompdf\Dompdf($options);
         $dompdf->loadHtml($html, 'UTF-8');
-        $dompdf->setPaper('A4', 'portrait');
+        $validPaper = in_array(strtolower($paper), ['letter', 'a4', 'legal'], true) ? $paper : 'A4';
+        $validOrient = in_array(strtolower($orientation), ['portrait', 'landscape'], true) ? $orientation : 'portrait';
+        $dompdf->setPaper($validPaper, $validOrient);
         $dompdf->render();
         $dompdf->stream($filename, ['Attachment' => $download]);
     }

@@ -1,3 +1,12 @@
+<?php
+$tplAud = class_exists('PlantillaHelper') ? PlantillaHelper::obtener('auditoria_bitacora', [
+    'FECHA_EMISION' => date('d/m/Y H:i'),
+]) : null;
+$cintilloPersonalizado = ($tplAud && !empty($tplAud->cintillo)) ? $tplAud->cintillo : null;
+$tituloAud    = ($tplAud && $tplAud->es_personalizada && $tplAud->titulo !== '') ? $tplAud->titulo : 'Reporte de Auditoría del Sistema';
+$subtituloAud = ($tplAud && $tplAud->es_personalizada && $tplAud->subtitulo !== '') ? $tplAud->subtitulo : ($subtitulo_pdf ?? '');
+$pieAud       = ($tplAud && $tplAud->es_personalizada && $tplAud->pie !== '') ? $tplAud->pie : '';
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -39,10 +48,10 @@ tr:nth-child(even) td { background: #f8fafc; }
 
 <p style="text-align:center; font-size:13px; font-weight:bold; color:#162660;
    text-transform:uppercase; margin:10px 0 4px;">
-    Reporte de Auditoría del Sistema
+    <?= htmlspecialchars($tituloAud) ?>
 </p>
 <p style="text-align:center; font-size:9px; color:#7480A0; margin:0 0 14px;">
-    <?= htmlspecialchars($subtitulo_pdf ?? '') ?>
+    <?= htmlspecialchars($subtituloAud) ?>
     &nbsp;|&nbsp; Generado: <?= date('d/m/Y H:i') ?>
 </p>
 
@@ -94,7 +103,11 @@ tr:nth-child(even) td { background: #f8fafc; }
 <?php endif; ?>
 
 <div class="footer-line">
-    SGP — Sistema de Gestión de Pasantes &nbsp;|&nbsp; Documento de uso interno &nbsp;|&nbsp; <?= date('d/m/Y') ?>
+    <?php if ($pieAud !== ''): ?>
+        <?= nl2br(htmlspecialchars($pieAud)) ?>
+    <?php else: ?>
+        SGP — Sistema de Gestión de Pasantes &nbsp;|&nbsp; Documento de uso interno &nbsp;|&nbsp; <?= date('d/m/Y') ?>
+    <?php endif; ?>
 </div>
 
 </body>
