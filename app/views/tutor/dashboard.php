@@ -306,6 +306,10 @@ $porcHoy            = $pasantesActivos > 0 ? round($presentesHoy / $pasantesActi
         <div class="td-quick-ico" style="background:#fef3c7;color:#b45309;"><i class="ti ti-calendar-week"></i></div>
         <div><div class="td-quick-lbl">Vista Semanal</div><div class="td-quick-sub">Resumen de la semana</div></div>
     </a>
+    <button type="button" onclick="abrirCalculadoraHoras()" class="td-quick-btn" style="border:none;text-align:left;cursor:pointer;font-family:inherit;">
+        <div class="td-quick-ico" style="background:#e0f2fe;color:#0284c7;"><i class="ti ti-calculator"></i></div>
+        <div><div class="td-quick-lbl">Calculadora Horas</div><div class="td-quick-sub">Fechas y feriados</div></div>
+    </button>
 </div>
 
 <!-- ════ TENDENCIA + ALERTAS ════ -->
@@ -550,3 +554,4 @@ $porcHoy            = $pasantesActivos > 0 ? round($presentesHoy / $pasantesActi
     tick(); setInterval(tick, 1000);
 })();
 </script>
+<?php require_once (defined('APPROOT') ? APPROOT . '/views/inc/modal_calculadora_horas.php' : __DIR__ . '/../inc/modal_calculadora_horas.php'); ?>

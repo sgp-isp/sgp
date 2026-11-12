@@ -432,7 +432,7 @@ class AsignacionesController extends Controller
     public function feriadosJson(): void
     {
         header('Content-Type: application/json');
-        $this->db->query("SELECT fecha, nombre, tipo FROM dias_feriados WHERE fecha >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) ORDER BY fecha ASC");
+        $this->db->query("SELECT fecha, nombre, tipo FROM dias_feriados WHERE es_laborable = 0 AND fecha >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) ORDER BY fecha ASC");
         echo json_encode($this->db->resultSet());
         exit;
     }
