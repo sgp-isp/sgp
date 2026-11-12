@@ -51,12 +51,23 @@ if ($rol_id == 3) $dashboardUrl = URLROOT . '/pasante/dashboard';
  */
 if (!function_exists('isActive')) {
     function isActive($url, $exact = false) {
-        $current = strtolower(rtrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/'));
-        if ($exact) {
-            $target = strtolower(rtrim(parse_url(URLROOT . $url, PHP_URL_PATH) ?? '', '/'));
-            return $current === $target ? 'active' : '';
+        $urls = is_array($url) ? $url : [$url];
+        $requestUri = (string)($_SERVER['REQUEST_URI'] ?? '');
+        $current = strtolower(rtrim(parse_url($requestUri, PHP_URL_PATH) ?? '', '/'));
+        foreach ($urls as $u) {
+            $uStr = (string)$u;
+            if ($exact) {
+                $target = strtolower(rtrim(parse_url(URLROOT . $uStr, PHP_URL_PATH) ?? '', '/'));
+                if ($current === $target) {
+                    return 'active';
+                }
+            } else {
+                if (strpos(strtolower($requestUri), strtolower($uStr)) !== false) {
+                    return 'active';
+                }
+            }
         }
-        return strpos(strtolower($_SERVER['REQUEST_URI']), strtolower($url)) !== false ? 'active' : '';
+        return '';
     }
 }
 ?>
