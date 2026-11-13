@@ -1000,7 +1000,7 @@
         if (Object.keys(vars).length > 0) {
             varsBox.innerHTML = Object.keys(vars).map(function (k) {
                 const desc = vars[k] || '';
-                return '<div class="sgp-tpl-var-pill" onclick="sgpInsertVariable(\'' + k + '\')" title="' + desc + '">' +
+                return '<div class="sgp-tpl-var-pill" onmousedown="event.preventDefault()" onclick="sgpInsertVariable(\'' + k + '\')" title="' + desc + '">' +
                        '    <i class="ti ti-plus"></i>' +
                        '    <span>' + k + '</span>' +
                        '</div>';
@@ -1138,22 +1138,20 @@
         const sheetBody = document.getElementById('sgpSheetBody');
         sheetBody.focus();
 
-        if (document.queryCommandSupported('insertText')) {
-            document.execCommand('insertText', false, varName);
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0 && sheetBody.contains(sel.anchorNode)) {
+            const range = sel.getRangeAt(0);
+            range.deleteContents();
+            const node = document.createTextNode(varName);
+            range.insertNode(node);
+            range.setStartAfter(node);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
         } else {
-            const sel = window.getSelection();
-            if (sel.getRangeAt && sel.rangeCount) {
-                const range = sel.getRangeAt(0);
-                range.deleteContents();
-                const node = document.createTextNode(varName);
-                range.insertNode(node);
-                range.setStartAfter(node);
-                range.collapse(true);
-                sel.removeAllRanges();
-                sel.addRange(range);
-            } else {
-                sheetBody.innerHTML += ' ' + varName;
-            }
+            // Si el cursor no estaba dentro de la hoja, insertar en el último párrafo
+            const lastP = sheetBody.querySelector('p:last-of-type') || sheetBody;
+            lastP.appendChild(document.createTextNode(' ' + varName));
         }
     };
 

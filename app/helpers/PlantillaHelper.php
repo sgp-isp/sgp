@@ -30,13 +30,24 @@ class PlantillaHelper
 
             $esPersonalizada = !empty($raw->es_personalizada);
 
-            // Normalizar claves de variables para aceptar con o sin llaves
+            // Normalizar claves de variables para aceptar con o sin llaves y variantes con/sin tilde
             $reemplazos = [];
             foreach ($vars as $k => $v) {
-                $key = (str_starts_with((string)$k, '{') && str_ends_with((string)$k, '}'))
-                    ? (string)$k
-                    : '{' . $k . '}';
-                $reemplazos[$key] = (string)$v;
+                $rawKey = trim((string)$k, '{}');
+                $val = (string)$v;
+
+                $reemplazos['{' . $rawKey . '}'] = $val;
+                $reemplazos['{' . strtoupper($rawKey) . '}'] = $val;
+                $reemplazos['{' . strtolower($rawKey) . '}'] = $val;
+                $reemplazos['{' . ucfirst(strtolower($rawKey)) . '}'] = $val;
+
+                // Variantes comunes con tilde
+                if (stripos($rawKey, 'institucion') !== false) {
+                    $reemplazos['{INSTITUCIÓN}'] = $val;
+                    $reemplazos['{institución}'] = $val;
+                    $reemplazos['{Institución}'] = $val;
+                    $reemplazos['{intutucion}']  = $val; // tolerancia a tipografía común
+                }
             }
 
             $aplicar = static function (?string $texto) use ($reemplazos): string {
@@ -72,3 +83,4 @@ class PlantillaHelper
         }
     }
 }
+
