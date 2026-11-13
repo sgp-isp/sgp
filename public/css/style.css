@@ -2037,55 +2037,62 @@ auth-wrapper::before {
 }
 
 /* FOOTER INSTITUCIONAL (sobre fondo oscuro) */
-/* FOOTER INSTITUCIONAL (anclado con diseño balanceado: 3 botones) */
+/* FOOTER INSTITUCIONAL (anclado con diseño balanceado: 3 botones + textos organizados) */
 .auth-institutional-footer {
     width: 100%;
-    margin-top: 26px;
-    margin-bottom: 14px;
+    margin-top: 24px;
+    margin-bottom: 20px;
     z-index: 10;
     position: relative;
-    padding: 0 24px;
+    padding: 0 16px;
     box-sizing: border-box;
 }
 
 .auth-footer-container {
-    max-width: 1200px;
+    max-width: 450px; /* Igual al ancho del cuadro de login para mantener simetría perfecta */
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* ── Fila de Acciones: 3 Botones en Línea Horizontal Equilibrada ── */
+.auth-footer-actions {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: relative;
-    min-height: 56px;
+    gap: 12px;
+    box-sizing: border-box;
 }
 
 .auth-footer-left {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    flex-shrink: 0;
+    flex: 0 0 auto;
 }
 
 .auth-footer-center {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 8px;
-    text-align: center;
-    flex: 1;
-    padding: 0 16px;
+    justify-content: center;
+    flex: 1 1 auto;
 }
 
 .auth-footer-right {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    flex-shrink: 0;
+    flex: 0 0 auto;
 }
 
 /* ── Botones Esféricos Circulares de Soporte y Cartel QR ── */
 .sgp-footer-sphere-btn {
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -2097,34 +2104,35 @@ auth-wrapper::before {
     outline: none;
     text-decoration: none;
     position: relative;
+    flex-shrink: 0;
 }
 
 .sgp-sphere-support {
     background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
     color: #ffffff !important;
-    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.45);
 }
 
 .sgp-sphere-support:hover {
     background: linear-gradient(135deg, #172554 0%, #1d4ed8 100%);
-    transform: translateY(-3px) scale(1.08);
-    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.6);
+    transform: translateY(-2px) scale(1.06);
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.6);
 }
 
 .sgp-sphere-qr {
     background: linear-gradient(135deg, #059669 0%, #10b981 100%);
     color: #ffffff !important;
-    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.45);
 }
 
 .sgp-sphere-qr:hover {
     background: linear-gradient(135deg, #047857 0%, #059669 100%);
-    transform: translateY(-3px) scale(1.08);
-    box-shadow: 0 12px 28px rgba(16, 185, 129, 0.6);
+    transform: translateY(-2px) scale(1.06);
+    box-shadow: 0 10px 24px rgba(16, 185, 129, 0.6);
 }
 
 .sgp-footer-sphere-btn i {
-    font-size: 1.6rem;
+    font-size: 1.45rem;
     color: #ffffff;
     transition: transform 0.28s ease;
 }
@@ -2142,58 +2150,79 @@ auth-wrapper::before {
 .sgp-help-docked .sgp-help-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
     color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
     border-radius: 999px;
-    padding: 9px 20px;
+    padding: 10px 18px;
     font-weight: 700;
-    font-size: 0.86rem;
+    font-size: 0.85rem;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
     backdrop-filter: blur(8px);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
     white-space: nowrap;
+    height: 46px;
+    box-sizing: border-box;
 }
 
 .auth-footer-center .sgp-help-btn:hover,
 .sgp-help-docked .sgp-help-btn:hover {
     background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.48);
+    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.5);
+}
+
+/* ── Textos Institucionales y Legales (Abajo de los botones, centrados y aireados) ── */
+.auth-footer-info {
+    width: 100%;
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
 }
 
 .auth-footer-legal {
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .auth-footer-link {
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     transition: color 0.2s ease;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .auth-footer-link:hover {
-    color: #60a5fa;
+    color: #93c5fd;
     text-decoration: underline;
 }
 
 .auth-footer-dot {
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
 }
 
 .auth-footer-copyleft {
-    color: rgba(255, 255, 255, 0.52);
-    font-size: 0.76rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    line-height: 1.45;
     margin: 0;
+    max-width: 380px;
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 /* ── Banner de Marcar Asistencia (Mismo ancho que Login Card) ── */
@@ -2274,8 +2303,17 @@ auth-wrapper::before {
 }
 
 @media (max-width: 640px) {
+    .auth-institutional-footer {
+        margin-top: 18px;
+        margin-bottom: 16px;
+        padding: 0 12px;
+    }
     .auth-footer-container {
         padding: 0 4px;
+        max-width: 100%;
+    }
+    .auth-footer-actions {
+        gap: 8px;
     }
     .sgp-footer-sphere-btn {
         width: 44px;
@@ -2285,12 +2323,26 @@ auth-wrapper::before {
         font-size: 1.35rem;
     }
     .auth-footer-center .sgp-help-btn {
-        padding: 7px 14px;
+        padding: 8px 14px;
         font-size: 0.78rem;
+        height: 42px;
+        gap: 6px;
+    }
+    .auth-footer-center .sgp-help-btn i {
+        font-size: 1.05rem;
+    }
+    .auth-footer-info {
+        margin-top: 12px;
+        gap: 4px;
     }
     .auth-footer-legal {
         font-size: 0.72rem;
         gap: 6px;
+    }
+    .auth-footer-copyleft {
+        font-size: 0.7rem;
+        max-width: 310px;
+        line-height: 1.38;
     }
     .login-kiosco-banner-wrap {
         padding: 0 14px;

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Vista: Gestión de Asignaciones — Admin
  * Módulo de asignación de pasantes a tutores y departamentos

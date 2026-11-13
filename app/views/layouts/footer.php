@@ -4,22 +4,36 @@
 <script src="<?= URLROOT ?>/js/notification-service.js"></script>
 <script src="<?= URLROOT ?>/js/notifications.js"></script>
 
-<!-- Footer Institucional con 3 botones anclados: Soporte (izq), ¿Necesitas ayuda? (centro), Cartel QR (der) -->
+<!-- Footer Institucional con 3 botones anclados: Soporte (izq), ¿Necesitas ayuda? (centro), Cartel QR (der) + Textos organizados abajo -->
 <footer class="auth-institutional-footer">
     <div class="auth-footer-container">
-        <!-- Esquina Inferior Izquierda: Soporte Técnico (Esfera con icono) -->
-        <div class="auth-footer-left">
-            <button type="button" class="sgp-footer-sphere-btn sgp-sphere-support" onclick="if(typeof abrirSoporteGuestModal==='function'){abrirSoporteGuestModal();}else{window.location.href='<?= URLROOT ?>/soporte';}" title="Mesa de Ayuda y Soporte Técnico" aria-label="Abrir Soporte Técnico">
-                <i class="ti ti-headset"></i>
-            </button>
+        <!-- Fila Superior: Botonera de 3 acciones en línea horizontal -->
+        <div class="auth-footer-actions">
+            <!-- Esquina Inferior Izquierda: Soporte Técnico (Esfera con icono) -->
+            <div class="auth-footer-left">
+                <button type="button" class="sgp-footer-sphere-btn sgp-sphere-support" onclick="if(typeof abrirSoporteGuestModal==='function'){abrirSoporteGuestModal();}else{window.location.href='<?= URLROOT ?>/soporte';}" title="Mesa de Ayuda y Soporte Técnico" aria-label="Abrir Soporte Técnico">
+                    <i class="ti ti-headset"></i>
+                </button>
+            </div>
+
+            <!-- Centro: ¿Necesitas ayuda? -->
+            <div class="auth-footer-center">
+                <button type="button" onclick="abrirAyudaLogin()" data-tooltip="Guía de uso del sistema" class="sgp-help-btn" aria-label="Abrir guía de ayuda del sistema">
+                    <i class="ti ti-help-circle"></i>
+                    <span>¿Necesitas ayuda?</span>
+                </button>
+            </div>
+
+            <!-- Esquina Inferior Derecha: Cartel QR Oficial (Esfera con icono) -->
+            <div class="auth-footer-right">
+                <a href="<?= URLROOT ?>/configuracion/cartelQr" target="_blank" class="sgp-footer-sphere-btn sgp-sphere-qr" title="Cartel Oficial QR para escanear e imprimir" aria-label="Abrir Cartel QR">
+                    <i class="ti ti-qrcode"></i>
+                </a>
+            </div>
         </div>
 
-        <!-- Centro: ¿Necesitas ayuda? y Enlaces Legales -->
-        <div class="auth-footer-center">
-            <button type="button" onclick="abrirAyudaLogin()" data-tooltip="Guía de uso del sistema" class="sgp-help-btn" aria-label="Abrir guía de ayuda del sistema">
-                <i class="ti ti-help-circle"></i>
-                <span>¿Necesitas ayuda?</span>
-            </button>
+        <!-- Fila Inferior: Enlaces Legales y Copyleft con espacio completo y centrados -->
+        <div class="auth-footer-info">
             <div class="auth-footer-legal">
                 <a href="<?= URLROOT ?>/legal/terminos" target="_blank" class="auth-footer-link">Términos de Servicio</a>
                 <span class="auth-footer-dot">•</span>
@@ -28,13 +42,6 @@
             <p class="auth-footer-copyleft">
                 Copyleft <?= date('Y') ?> Instituto de Salud Pública. Algunos derechos reservados.
             </p>
-        </div>
-
-        <!-- Esquina Inferior Derecha: Cartel QR Oficial (Esfera con icono) -->
-        <div class="auth-footer-right">
-            <a href="<?= URLROOT ?>/configuracion/cartelQr" target="_blank" class="sgp-footer-sphere-btn sgp-sphere-qr" title="Cartel Oficial QR para escanear e imprimir" aria-label="Abrir Cartel QR">
-                <i class="ti ti-qrcode"></i>
-            </a>
         </div>
     </div>
 </footer>
