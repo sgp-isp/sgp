@@ -292,7 +292,7 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
             <form class="chat-input-bar messenger-input-bar" id="formChatPasante" onsubmit="enviarMensajePasante(event, <?= (int)$selectedTicket->id ?>)">
                 <div class="cib-input-wrap">
                     <textarea id="chatInputPasanteTexto" 
-                              placeholder="Escribe tu mensaje para el equipo de soporte... (Enter para enviar, Shift+Enter para salto de línea)" 
+                              placeholder="Escribe tu mensaje..." 
                               rows="1" 
                               required 
                               onkeydown="handlePasanteChatKeyDown(event, <?= (int)$selectedTicket->id ?>)"
@@ -1204,10 +1204,75 @@ $pasResueltos = count(array_filter($tickets, fn($t) => in_array($t->estado, ['Re
     .asist-kpi-label { font-size: 0.68rem !important; }
     .asist-kpi-sub { display: none; }
     .banner-title { font-size: 1.18rem !important; }
+
+    /* ── CHAT HEADER compacto en fila horizontal (WhatsApp style) ── */
     .messenger-header {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 10px 12px !important;
+        flex-wrap: nowrap !important;
+        overflow: hidden !important;
+    }
+    .mh-left {
+        flex: 1 !important;
+        min-width: 0 !important;
+        gap: 8px !important;
+    }
+    .mh-name {
+        font-size: 0.88rem !important;
+        max-width: 200px !important;
+    }
+    .mh-name-row { gap: 4px !important; }
+    .mh-badge-code { font-size: 0.65rem !important; padding: 1px 5px !important; }
+    .mh-status-pill { font-size: 0.6rem !important; padding: 1px 6px !important; }
+    .mh-meta-line { font-size: 0.68rem !important; gap: 4px !important; }
+    .mh-dot { display: none !important; }
+
+    /* ── Status switch a la derecha como iconos ── */
+    .mh-right { flex-shrink: 0 !important; }
+    .status-quick-switch {
         flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 10px !important;
+        align-items: flex-end !important;
+        gap: 4px !important;
+        padding: 4px 6px !important;
+        border-radius: 10px !important;
+    }
+    .sqs-label { display: none !important; }
+    .sqs-pills { gap: 3px !important; }
+    .sqs-btn { padding: 5px 7px !important; border-radius: 8px !important; }
+    .sqs-btn span { display: none !important; }
+
+    /* ── Subject bar compacto ── */
+    .chat-subject-bar { padding: 6px 12px !important; }
+    .csb-time { display: none !important; }
+
+    /* ── Quick replies sin label y scrollable ── */
+    .chat-quick-replies { padding: 6px 10px !important; gap: 6px !important; overflow: hidden !important; }
+    .cqr-label { display: none !important; }
+    .cqr-chips {
+        width: 100% !important;
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    .cqr-chips::-webkit-scrollbar { display: none !important; }
+    .cqr-btn { font-size: 0.72rem !important; padding: 4px 10px !important; }
+
+    /* ── Input compacto ── */
+    .messenger-input-bar { padding: 8px 10px !important; gap: 6px !important; }
+    .messenger-input-bar textarea { font-size: 0.85rem !important; padding: 8px 14px !important; }
+
+    /* ── Burbujas ── */
+    .msg-bubble-wrap { max-width: 90% !important; }
+    .msg-bubble { padding: 10px 13px !important; font-size: 0.84rem !important; }
+    .msg-avatar { width: 28px !important; height: 28px !important; font-size: 0.75rem !important; }
+    .chat-messages-container { overflow-x: hidden !important; }
+
+    /* ── Chat panel full height ── */
+    .soporte-workspace.has-selected-ticket .soporte-detail-chat {
+        height: calc(100dvh - 110px) !important;
+        border-radius: 12px !important;
     }
 }
 </style>

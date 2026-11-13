@@ -349,7 +349,7 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
             <form class="chat-input-bar messenger-input-bar" id="formRespuestaChat" onsubmit="enviarMensajeChat(event, <?= (int)$selectedTicket->id ?>)">
                 <div class="cib-input-wrap">
                     <textarea id="chatInputTexto" 
-                              placeholder="Escribe tu respuesta técnica o instrucción... (Enter para enviar, Shift+Enter para salto de línea)" 
+                              placeholder="Responder..." 
                               rows="1" 
                               required 
                               onkeydown="handleChatKeyDown(event, <?= (int)$selectedTicket->id ?>)"
@@ -1407,6 +1407,16 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     }
     .asist-kpi-val  { font-size: 1.7rem !important; }
     .asist-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
+    /* Quick replies: scroll horizontal sin scrollbar visible */
+    .cqr-chips {
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    .cqr-chips::-webkit-scrollbar { display: none !important; }
+    .chat-quick-replies { overflow: hidden !important; }
+    /* Chat stream: sin overflow horizontal */
+    .chat-messages-container { overflow-x: hidden !important; }
 }
 @media (max-width: 480px) {
     .soporte-kpis {
@@ -1418,21 +1428,118 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     .asist-kpi-label { font-size: 0.68rem !important; }
     .asist-kpi-sub { display: none; }
     .banner-title { font-size: 1.18rem !important; }
+
+    /* ── CHAT HEADER MOBILE COMPACTO (estilo WhatsApp/Telegram) ── */
     .messenger-header {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 10px !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 10px 12px !important;
+        flex-wrap: nowrap !important;
+        overflow: hidden !important;
     }
+    .mh-left {
+        flex: 1 !important;
+        min-width: 0 !important;
+        gap: 8px !important;
+    }
+    .mh-name {
+        font-size: 0.88rem !important;
+        max-width: 160px !important;
+    }
+    .mh-name-row {
+        gap: 4px !important;
+    }
+    .mh-badge-code {
+        font-size: 0.65rem !important;
+        padding: 1px 5px !important;
+    }
+    .mh-status-pill {
+        font-size: 0.6rem !important;
+        padding: 1px 6px !important;
+    }
+    .mh-meta-line {
+        font-size: 0.68rem !important;
+        gap: 4px !important;
+    }
+    .mh-dot, .mh-meta-line > span:not(.mh-cat-pill):not(.mh-prio-pill) {
+        display: none !important;
+    }
+
+    /* ── STATUS SWITCH: solo iconos en fila compacta a la derecha ── */
     .mh-right {
-        width: 100% !important;
+        flex-shrink: 0 !important;
     }
     .status-quick-switch {
-        width: 100% !important;
-        justify-content: space-between !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        gap: 4px !important;
+        padding: 4px 6px !important;
+        border-radius: 10px !important;
+        background: #f8fafc !important;
     }
+    .sqs-label { display: none !important; }
     .sqs-pills {
-        flex: 1;
-        justify-content: flex-end;
+        display: flex !important;
+        gap: 3px !important;
+    }
+    .sqs-btn {
+        padding: 5px 7px !important;
+        border-radius: 8px !important;
+        font-size: 0.7rem !important;
+    }
+    .sqs-btn span { display: none !important; }
+
+    /* ── CHAT SUBJECT BAR: compacto ── */
+    .chat-subject-bar {
+        padding: 6px 12px !important;
+    }
+    .csb-time { display: none !important; }
+
+    /* ── QUICK REPLIES: pills deslizables sin label ── */
+    .chat-quick-replies {
+        padding: 6px 10px !important;
+        gap: 6px !important;
+    }
+    .cqr-label { display: none !important; }
+    .cqr-chips {
+        width: 100% !important;
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 2px !important;
+    }
+    .cqr-chips::-webkit-scrollbar { display: none !important; }
+    .cqr-btn {
+        font-size: 0.72rem !important;
+        padding: 4px 10px !important;
+    }
+
+    /* ── INPUT BAR FIJA AL FONDO ── */
+    .messenger-input-bar {
+        padding: 8px 10px !important;
+        gap: 6px !important;
+        background: #ffffff !important;
+        border-top: 1.5px solid #e2e8f0 !important;
+    }
+    .messenger-input-bar textarea {
+        font-size: 0.85rem !important;
+        padding: 8px 14px !important;
+    }
+
+    /* ── MENSAJES: más anchos en móvil ── */
+    .msg-bubble-wrap { max-width: 90% !important; }
+    .msg-meta-line { font-size: 0.68rem !important; }
+    .msg-bubble { padding: 10px 13px !important; font-size: 0.84rem !important; }
+    .msg-avatar { width: 28px !important; height: 28px !important; font-size: 0.75rem !important; }
+
+    /* ── TICKETS LIST ── */
+    .soporte-container.has-ticket-open {
+        padding: 0 0 0 !important;
+    }
+    .soporte-workspace.has-selected-ticket .soporte-detail-chat {
+        height: calc(100dvh - 110px) !important;
+        border-radius: 12px !important;
     }
 }
 </style>
