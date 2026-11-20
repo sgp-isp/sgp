@@ -22,9 +22,13 @@
 
     /* Modo Chat Fullscreen: ocultar dock y sheet en móvil */
     body.sgp-mobile-chat-active .sgp-mobile-dock,
+    body:has(.soporte-workspace.has-selected-ticket) .sgp-mobile-dock,
     body.sgp-mobile-chat-active .sgp-dock-sheet,
+    body:has(.soporte-workspace.has-selected-ticket) .sgp-dock-sheet,
     body.sgp-mobile-chat-active .sgp-dock-sheet-overlay,
-    body.sgp-mobile-chat-active #mobileDock {
+    body:has(.soporte-workspace.has-selected-ticket) .sgp-dock-sheet-overlay,
+    body.sgp-mobile-chat-active #mobileDock,
+    body:has(.soporte-workspace.has-selected-ticket) #mobileDock {
         display: none !important;
     }
 

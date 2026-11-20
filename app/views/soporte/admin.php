@@ -7,9 +7,24 @@ $tickets        = $data['tickets'] ?? [];
 $selectedTicket = $data['selectedTicket'] ?? null;
 $mensajes       = $data['mensajes'] ?? [];
 $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Todas', 'q' => ''];
+$hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_GET['ticket_id'])));
 ?>
 
-<div class="soporte-container <?= $selectedTicket ? 'has-ticket-open' : '' ?>">
+<!-- Sincronización inmediata de modo móvil antes del primer renderizado -->
+<script>
+(function() {
+    var hasExplicit = <?= $hasExplicitTicket ? 'true' : 'false' ?>;
+    if (window.innerWidth <= 768) {
+        if (hasExplicit) {
+            document.body.classList.add('sgp-mobile-chat-active');
+        } else {
+            document.body.classList.remove('sgp-mobile-chat-active');
+        }
+    }
+})();
+</script>
+
+<div class="soporte-container <?= $hasExplicitTicket ? 'has-ticket-open' : '' ?>">
     <!-- ══ HEADER BANNER (Estandarizado SGP) ══ -->
     <div class="admin-banner soporte-banner" style="position:relative;overflow:hidden;background:linear-gradient(135deg, #162660 0%, #1e3a8a 50%, #2563eb 100%);border-radius:20px;padding:26px 32px;color:#ffffff;box-shadow:0 10px 30px rgba(22, 38, 96, 0.2);margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;">
         <div style="position:absolute;top:-30px;right:-30px;width:180px;height:180px;background:rgba(255,255,255,0.05);border-radius:50%;pointer-events:none;"></div>
@@ -1438,21 +1453,38 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
     .soporte-workspace.no-selected-ticket .soporte-detail-chat {
         display: none !important;
     }
+    .soporte-workspace.has-selected-ticket .soporte-sidebar-list {
+        display: none !important;
+    }
+    .soporte-workspace.has-selected-ticket .soporte-detail-chat {
+        display: flex !important;
+    }
 
     /* ── 1. MODO FULLSCREEN CHAT ACTIVO (Oculta topbar, dock y libera 100% pantalla) ── */
     body.sgp-mobile-chat-active .main-header,
+    body:has(.soporte-workspace.has-selected-ticket) .main-header,
     body.sgp-mobile-chat-active .sgp-mobile-dock,
+    body:has(.soporte-workspace.has-selected-ticket) .sgp-mobile-dock,
     body.sgp-mobile-chat-active .sgp-dock-sheet,
+    body:has(.soporte-workspace.has-selected-ticket) .sgp-dock-sheet,
     body.sgp-mobile-chat-active .sgp-dock-sheet-overlay,
+    body:has(.soporte-workspace.has-selected-ticket) .sgp-dock-sheet-overlay,
     body.sgp-mobile-chat-active #mobileDock,
+    body:has(.soporte-workspace.has-selected-ticket) #mobileDock,
     body.sgp-mobile-chat-active #sidebarToggle,
+    body:has(.soporte-workspace.has-selected-ticket) #sidebarToggle,
     body.sgp-mobile-chat-active .sidebar-overlay,
+    body:has(.soporte-workspace.has-selected-ticket) .sidebar-overlay,
     body.sgp-mobile-chat-active .soporte-banner,
-    body.sgp-mobile-chat-active .soporte-kpis {
+    body:has(.soporte-workspace.has-selected-ticket) .soporte-banner,
+    body.sgp-mobile-chat-active .soporte-kpis,
+    body:has(.soporte-workspace.has-selected-ticket) .soporte-kpis {
         display: none !important;
     }
     body.sgp-mobile-chat-active .content-wrapper,
-    body.sgp-mobile-chat-active .wrapper {
+    body:has(.soporte-workspace.has-selected-ticket) .content-wrapper,
+    body.sgp-mobile-chat-active .wrapper,
+    body:has(.soporte-workspace.has-selected-ticket) .wrapper {
         padding: 0 !important;
         margin: 0 !important;
         width: 100vw !important;
@@ -1460,16 +1492,20 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
         overflow: hidden !important;
     }
     body.sgp-mobile-chat-active .soporte-container,
-    body.sgp-mobile-chat-active .soporte-workspace {
+    body:has(.soporte-workspace.has-selected-ticket) .soporte-container,
+    body.sgp-mobile-chat-active .soporte-workspace,
+    body:has(.soporte-workspace.has-selected-ticket) .soporte-workspace {
         padding: 0 !important;
         margin: 0 !important;
         height: 100dvh !important;
         max-height: 100dvh !important;
     }
-    body.sgp-mobile-chat-active .soporte-sidebar-list {
+    body.sgp-mobile-chat-active .soporte-sidebar-list,
+    body:has(.soporte-workspace.has-selected-ticket) .soporte-sidebar-list {
         display: none !important;
     }
-    body.sgp-mobile-chat-active #chatDetailSection {
+    body.sgp-mobile-chat-active #chatDetailSection,
+    body:has(.soporte-workspace.has-selected-ticket) #chatDetailSection {
         position: fixed !important;
         inset: 0 !important;
         width: 100vw !important;
@@ -1851,6 +1887,7 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
 <script>
 // Estado del chat en cliente
 const CURRENT_TICKET_ID = <?= $selectedTicket ? (int)$selectedTicket->id : 0 ?>;
+const HAS_EXPLICIT_TICKET = <?= $hasExplicitTicket ? 'true' : 'false' ?>;
 let lastMsgId = <?= !empty($mensajes) ? (int)end($mensajes)->id : 0 ?>;
 let chatPollingTimer = null;
 
@@ -1927,12 +1964,15 @@ function volverAListaAdmin() {
 
 // Control de modo pantalla completa móvil (<= 768px)
 function checkMobileChatActive() {
-    if (window.innerWidth <= 768 && CURRENT_TICKET_ID > 0) {
+    if (window.innerWidth <= 768 && HAS_EXPLICIT_TICKET && CURRENT_TICKET_ID > 0) {
         document.body.classList.add('sgp-mobile-chat-active');
     } else {
         document.body.classList.remove('sgp-mobile-chat-active');
     }
 }
+// Ejecutar de inmediato al procesar el script y al completar navegaciones PJAX
+checkMobileChatActive();
+document.addEventListener('pjax:complete', checkMobileChatActive);
 
 // Selector compacto de estado en móvil (Popover 4 estados)
 function toggleMobileStatusDropdown(e) {
@@ -1951,9 +1991,9 @@ function cerrarMobileStatusDropdown() {
     if (menu) menu.style.display = 'none';
 }
 
-async function seleccionarEstadoMobile(ticketId, nuevoEstado) {
+function seleccionarEstadoMobile(ticketId, nuevoEstado) {
     cerrarMobileStatusDropdown();
-    await cambiarEstadoTicketDirecto(ticketId, nuevoEstado);
+    cambiarEstadoTicketDirecto(ticketId, nuevoEstado);
 }
 
 // Drawer de Respuestas Rápidas en móvil
@@ -2111,8 +2151,48 @@ async function enviarMensajeChat(e, ticketId) {
     }
 }
 
-// Cambiar estado directo desde las píldoras del chat
+// Cambiar estado directo con Optimistic UI (0ms instantáneo + sincronización en segundo plano)
 async function cambiarEstadoTicketDirecto(ticketId, nuevoEstado) {
+    const estadoPrevio = document.getElementById('headerEstadoPill')?.textContent.trim() 
+                      || document.getElementById('mobileStatusBtnText')?.textContent.trim() 
+                      || '';
+
+    if (estadoPrevio === nuevoEstado) return;
+
+    // ── 1. ACTUALIZACIÓN VISUAL INMEDIATA (0 ms de espera) ──
+    actualizarUIPorEstado(nuevoEstado);
+
+    // Separador informativo inmediato en el chat
+    const container = document.getElementById('chatMessagesContainer');
+    let sysDiv = null;
+    if (container) {
+        sysDiv = document.createElement('div');
+        sysDiv.className = 'chat-date-separator temp-status-sep';
+        sysDiv.innerHTML = `<span>ℹ️ Has cambiado el estado del caso a: ${escapeHtml(nuevoEstado)}</span>`;
+        container.appendChild(sysDiv);
+        scrollChatToBottom(true);
+    }
+
+    // Alerta Toast instantánea (0 ms)
+    const esCerrado = (nuevoEstado === 'Cerrado' || nuevoEstado === 'Resuelto');
+    const toastTitulo = esCerrado ? `Caso archivado en Historial (${nuevoEstado})` : `Estado: ${nuevoEstado}`;
+
+    if (window.Notyf) {
+        if (!window._sgpNotyf) window._sgpNotyf = new Notyf({ duration: 2200, position: { x: 'right', y: 'top' } });
+        window._sgpNotyf.success(toastTitulo);
+    } else if (window.Swal) {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: toastTitulo,
+            showConfirmButton: false,
+            timer: 1800,
+            timerProgressBar: true
+        });
+    }
+
+    // ── 2. Petición en segundo plano (no bloquea al usuario) ──
     try {
         const resp = await fetch(URLROOT + '/soporte/actualizarEstado', {
             method: 'POST',
@@ -2120,31 +2200,17 @@ async function cambiarEstadoTicketDirecto(ticketId, nuevoEstado) {
             body: JSON.stringify({ ticket_id: ticketId, estado: nuevoEstado })
         });
         const res = await resp.json();
-        if (res.success) {
-            actualizarUIPorEstado(nuevoEstado);
-            // Mensaje de sistema en el chat
-            const container = document.getElementById('chatMessagesContainer');
-            if (container) {
-                const sysDiv = document.createElement('div');
-                sysDiv.className = 'chat-date-separator';
-                sysDiv.innerHTML = `<span>ℹ️ Has cambiado el estado del caso a: ${nuevoEstado}</span>`;
-                container.appendChild(sysDiv);
-                scrollChatToBottom(true);
-            }
-            const esCerrado = (nuevoEstado === 'Cerrado' || nuevoEstado === 'Resuelto');
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'success',
-                title: esCerrado ? `Caso archivado en Historial (${nuevoEstado})` : `Estado actualizado: ${nuevoEstado}`,
-                showConfirmButton: false,
-                timer: 2500
-            });
-        } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: res.message });
+        if (!res.success) {
+            // Revertir ante error del backend
+            if (estadoPrevio) actualizarUIPorEstado(estadoPrevio);
+            if (sysDiv) sysDiv.remove();
+            Swal.fire({ icon: 'error', title: 'Error', text: res.message || 'No se pudo actualizar el estado.' });
         }
     } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar el estado.' });
+        // Revertir ante falla de red
+        if (estadoPrevio) actualizarUIPorEstado(estadoPrevio);
+        if (sysDiv) sysDiv.remove();
+        Swal.fire({ icon: 'error', title: 'Error de Red', text: 'No se pudo conectar con el servidor. Se restauró el estado anterior.' });
     }
 }
 
@@ -2172,7 +2238,7 @@ function actualizarUIPorEstado(nuevoEstado) {
     }
     const mobileStatusTriggerBtn = document.getElementById('mobileStatusTriggerBtn');
     if (mobileStatusTriggerBtn) {
-        mobileStatusTriggerBtn.className = 'mobile-status-trigger status-pill-' + nuevoEstado.toLowerCase().replace(/\s+/g, '-');
+        mobileStatusTriggerBtn.className = 'mobile-status-pill-btn status-pill-' + nuevoEstado.toLowerCase().replace(/\s+/g, '-');
     }
     document.querySelectorAll('.msm-option').forEach(opt => {
         const isCur = (opt.getAttribute('data-estado') === nuevoEstado);
