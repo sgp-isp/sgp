@@ -2314,6 +2314,7 @@ auth-wrapper::before {
     }
     .auth-footer-actions {
         gap: 8px;
+        flex-wrap: nowrap;
     }
     .sgp-footer-sphere-btn {
         width: 44px;

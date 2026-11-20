@@ -169,13 +169,17 @@
 
         // Close search modal if open
         const buscarEl = document.getElementById('sgpModalBuscar');
-        if (buscarEl) buscarEl.classList.remove('active');
+        if (buscarEl) {
+            buscarEl.classList.remove('active');
+            buscarEl.style.display = 'none';
+        }
 
         const verEl = document.getElementById('sgpModalVer');
         const bodyEl = document.getElementById('sgpVerBody');
         const actionsEl = document.getElementById('sgpVerActions');
 
         // Show with skeleton
+        verEl.style.display = 'flex';
         verEl.classList.add('active');
         bodyEl.innerHTML = buildSkeleton();
         actionsEl.innerHTML = '';
@@ -184,7 +188,8 @@
         let data = getCached('user_' + userId);
         if (!data) {
             try {
-                const resp = await fetch(URLROOT + '/users/verUniversal/' + userId, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                const baseUrl = (typeof URLROOT !== 'undefined' ? URLROOT : '');
+                const resp = await fetch(baseUrl + '/users/verUniversal/' + userId, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
                 const json = await resp.json();
                 if (!json.success) {
                     bodyEl.innerHTML = `<div class="sgp-empty-state"><i class="ti ti-alert-circle"></i><p>${escHtml(json.message)}</p></div>`;
@@ -415,7 +420,10 @@
             this._onSelect = (options && options.onSelect) ? options.onSelect : null;
 
             const el = document.getElementById('sgpModalBuscar');
-            el.classList.add('active');
+            if (el) {
+                el.style.display = 'flex';
+                el.classList.add('active');
+            }
             // Update title based on filter
             const titleEl = el.querySelector('.sgp-modal-header h3');
             if (titleEl) {
@@ -457,7 +465,10 @@
         cerrar: function (tipo) {
             const id = tipo === 'buscar' ? 'sgpModalBuscar' : 'sgpModalVer';
             const el = document.getElementById(id);
-            if (el) el.classList.remove('active');
+            if (el) {
+                el.classList.remove('active');
+                el.style.display = 'none';
+            }
             if (tipo === 'buscar') this._onSelect = null;
         }
     };

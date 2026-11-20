@@ -268,9 +268,14 @@
      */
     function cleanupOrphanedModals() {
         try {
-            // 1. Restaurar scroll en el body
+            // 1. Restaurar scroll en el body y limpiar modo chat móvil
             document.body.style.overflow = '';
             document.body.classList.remove('modal-open');
+            document.body.classList.remove('sgp-mobile-chat-active');
+            if (window.chatPollingTimer) {
+                try { clearInterval(window.chatPollingTimer); } catch(e) {}
+                window.chatPollingTimer = null;
+            }
 
             // 2. Remover backdrops y popups temporales huérfanos
             document.querySelectorAll('.modal-backdrop, .flatpickr-calendar.open').forEach(function (el) {

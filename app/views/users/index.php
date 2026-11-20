@@ -907,8 +907,8 @@
 
         <!-- Acciones — mismas funciones JS que la tabla -->
         <div class="bcu-actions">
-            <button class="bcu-btn bcu-btn-view"
-                    onclick="SGPModal.verUsuario(<?= $user['id'] ?>)"
+            <button type="button" class="bcu-btn bcu-btn-view"
+                    onclick="if(window.SGPModal){SGPModal.verUsuario(<?= (int)$user['id'] ?>);}else{console.warn('SGPModal no disponible');}"
                     title="Ver perfil">
                 <i class="ti ti-eye"></i> Ver
             </button>

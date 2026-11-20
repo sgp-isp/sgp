@@ -20,6 +20,14 @@
     .main-sidebar           { display: none !important; }
     .sidebar-overlay        { display: none !important; }
 
+    /* Modo Chat Fullscreen: ocultar dock y sheet en móvil */
+    body.sgp-mobile-chat-active .sgp-mobile-dock,
+    body.sgp-mobile-chat-active .sgp-dock-sheet,
+    body.sgp-mobile-chat-active .sgp-dock-sheet-overlay,
+    body.sgp-mobile-chat-active #mobileDock {
+        display: none !important;
+    }
+
     /* Padding inferior del content para que el dock no tape contenido */
     .content-wrapper {
         margin-left: 0 !important;

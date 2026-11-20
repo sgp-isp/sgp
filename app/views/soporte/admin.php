@@ -200,35 +200,49 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
                         <span class="online-status-dot" title="Usuario activo"></span>
                     </div>
                     <div class="mh-info">
-                        <div class="mh-name-row">
-                            <h3 class="mh-name">
-                                <?= htmlspecialchars(trim(($selectedTicket->solicitante_nombres ?? '') . ' ' . ($selectedTicket->solicitante_apellidos ?? ''))) ?>
-                            </h3>
-                            <span class="mh-badge-code"><?= htmlspecialchars($selectedTicket->codigo) ?></span>
-                            <span class="mh-status-pill status-pill-<?= strtolower(str_replace(' ', '-', $selectedTicket->estado)) ?>" id="headerEstadoPill">
-                                <?= htmlspecialchars($selectedTicket->estado) ?>
-                            </span>
+                        <!-- Vista Desktop: nombre + pills completas -->
+                        <div class="mh-desktop-info">
+                            <div class="mh-name-row">
+                                <h3 class="mh-name">
+                                    <?= htmlspecialchars(trim(($selectedTicket->solicitante_nombres ?? '') . ' ' . ($selectedTicket->solicitante_apellidos ?? ''))) ?>
+                                </h3>
+                                <span class="mh-badge-code"><?= htmlspecialchars($selectedTicket->codigo) ?></span>
+                                <span class="mh-status-pill status-pill-<?= strtolower(str_replace(' ', '-', $selectedTicket->estado)) ?>" id="headerEstadoPill">
+                                    <?= htmlspecialchars($selectedTicket->estado) ?>
+                                </span>
+                            </div>
+                            <div class="mh-meta-line">
+                                <span class="mh-cat-pill"><?= htmlspecialchars($selectedTicket->categoria) ?></span>
+                                <span class="mh-prio-pill prio-<?= strtolower($selectedTicket->prioridad) ?>">
+                                    <?= htmlspecialchars($selectedTicket->prioridad) ?>
+                                </span>
+                                <?php if (!empty($selectedTicket->solicitante_cedula)): ?>
+                                <span class="mh-dot">&bull;</span>
+                                <span>C.I. <?= htmlspecialchars($selectedTicket->solicitante_cedula) ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($selectedTicket->departamento_nombre)): ?>
+                                <span class="mh-dot">&bull;</span>
+                                <span><?= htmlspecialchars($selectedTicket->departamento_nombre) ?></span>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                        <div class="mh-meta-line">
-                            <span class="mh-cat-pill"><?= htmlspecialchars($selectedTicket->categoria) ?></span>
-                            <span class="mh-prio-pill prio-<?= strtolower($selectedTicket->prioridad) ?>">
-                                <?= htmlspecialchars($selectedTicket->prioridad) ?>
-                            </span>
-                            <?php if (!empty($selectedTicket->solicitante_cedula)): ?>
-                            <span class="mh-dot">&bull;</span>
-                            <span>C.I. <?= htmlspecialchars($selectedTicket->solicitante_cedula) ?></span>
-                            <?php endif; ?>
-                            <?php if (!empty($selectedTicket->departamento_nombre)): ?>
-                            <span class="mh-dot">&bull;</span>
-                            <span><?= htmlspecialchars($selectedTicket->departamento_nombre) ?></span>
-                            <?php endif; ?>
+
+                        <!-- Vista Móvil: Barra Compacta 56px (Línea 1 Nombre, Línea 2 Asunto • #Código) -->
+                        <div class="mh-mobile-info">
+                            <div class="mh-mobile-title">
+                                <?= htmlspecialchars(trim(($selectedTicket->solicitante_nombres ?? '') . ' ' . ($selectedTicket->solicitante_apellidos ?? ''))) ?>
+                            </div>
+                            <div class="mh-mobile-sub">
+                                <?= htmlspecialchars($selectedTicket->asunto) ?> &bull; #<?= htmlspecialchars($selectedTicket->codigo) ?>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Acciones rápidas de soporte: Cambiar Estado en 1 clic estilo Steam -->
+                <!-- Acciones rápidas de soporte: Cambiar Estado -->
                 <div class="mh-right">
-                    <div class="status-quick-switch" title="Cambiar estado del caso">
+                    <!-- Selector Desktop: 4 píldoras horizontales -->
+                    <div class="status-quick-switch desktop-status-switch" title="Cambiar estado del caso">
                         <span class="sqs-label">Estado:</span>
                         <div class="sqs-pills" id="sqsPillsContainer">
                             <?php 
@@ -247,6 +261,29 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
                                     data-estado="<?= $estNombre ?>">
                                 <i class="ti <?= $estMeta['icon'] ?>"></i>
                                 <span><?= $estNombre ?></span>
+                            </button>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <!-- Selector Móvil: Dropdown compacto e interactivo (píldora actual con chevron) -->
+                    <div class="mobile-status-dropdown-wrap" id="mobileStatusDropdownWrap">
+                        <button type="button" 
+                                class="mobile-status-pill-btn status-pill-<?= strtolower(str_replace(' ', '-', $selectedTicket->estado)) ?>" 
+                                id="mobileStatusTriggerBtn" 
+                                onclick="toggleMobileStatusDropdown(event)">
+                            <span id="mobileStatusBtnText"><?= htmlspecialchars($selectedTicket->estado) ?></span>
+                            <i class="ti ti-chevron-down"></i>
+                        </button>
+                        <div class="mobile-status-menu" id="mobileStatusMenu" style="display: none;">
+                            <?php foreach ($estadosPosibles as $estNombre => $estMeta): ?>
+                            <button type="button" 
+                                    class="msm-option <?= $selectedTicket->estado === $estNombre ? 'active' : '' ?>" 
+                                    data-estado="<?= $estNombre ?>"
+                                    onclick="seleccionarEstadoMobile(<?= (int)$selectedTicket->id ?>, '<?= $estNombre ?>')">
+                                <i class="ti <?= $estMeta['icon'] ?>" style="color: <?= $estMeta['bg'] ?>;"></i>
+                                <span><?= $estNombre ?></span>
+                                <i class="ti ti-check msm-check-icon" style="<?= $selectedTicket->estado === $estNombre ? '' : 'display:none;' ?>"></i>
                             </button>
                             <?php endforeach; ?>
                         </div>
@@ -326,8 +363,8 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
                 <?php endif; ?>
             </div>
 
-            <!-- Respuestas Rápidas estilo Steam / Facebook -->
-            <div class="chat-quick-replies">
+            <!-- Respuestas Rápidas estilo Steam / Facebook (Visible en Desktop) -->
+            <div class="chat-quick-replies desktop-quick-replies">
                 <span class="cqr-label"><i class="ti ti-sparkles"></i> Respuestas Rápidas:</span>
                 <div class="cqr-chips">
                     <button type="button" class="cqr-btn" onclick="insertarPlantilla('Hola, tu caso ya está siendo atendido por la División de Telemática. Estamos verificando los detalles en el sistema.')">
@@ -345,8 +382,50 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
                 </div>
             </div>
 
+            <!-- Drawer Flotante de Respuestas Rápidas para Móvil (Popover encima del input) -->
+            <div class="mobile-quick-drawer" id="mobileQuickDrawer" style="display: none;">
+                <div class="mqd-header">
+                    <span class="mqd-title"><i class="ti ti-bolt" style="color: #f59e0b;"></i> Respuestas Rápidas</span>
+                    <button type="button" class="mqd-close-btn" onclick="cerrarQuickDrawer()" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+                </div>
+                <div class="mqd-list">
+                    <button type="button" class="mqd-item" onclick="seleccionarPlantillaDrawer('Hola, tu caso ya está siendo atendido por la División de Telemática. Estamos verificando los detalles en el sistema.')">
+                        <span class="mqd-emoji">💬</span>
+                        <div class="mqd-info">
+                            <strong class="mqd-label">En revisión</strong>
+                            <small class="mqd-desc">Hola, tu caso ya está siendo atendido por la División de Telemática...</small>
+                        </div>
+                    </button>
+                    <button type="button" class="mqd-item" onclick="seleccionarPlantillaDrawer('Tu dispositivo anterior ha sido desvinculado con éxito. Por favor vuelve a escanear el cartel QR con tu teléfono para vincularlo.')">
+                        <span class="mqd-emoji">🔄</span>
+                        <div class="mqd-info">
+                            <strong class="mqd-label">Dispositivo desvinculado</strong>
+                            <small class="mqd-desc">Tu dispositivo anterior ha sido desvinculado con éxito...</small>
+                        </div>
+                    </button>
+                    <button type="button" class="mqd-item" onclick="seleccionarPlantillaDrawer('Tu clave de acceso/PIN ha sido restablecida temporalmente a los últimos 4 dígitos de tu cédula. Por favor prueba ingresar.')">
+                        <span class="mqd-emoji">🔑</span>
+                        <div class="mqd-info">
+                            <strong class="mqd-label">PIN restablecido</strong>
+                            <small class="mqd-desc">Tu clave de acceso/PIN ha sido restablecida temporalmente...</small>
+                        </div>
+                    </button>
+                    <button type="button" class="mqd-item" onclick="seleccionarPlantillaDrawer('El requerimiento ha sido resuelto y validado en la plataforma. Por favor confirma si pudiste acceder con normalidad.')">
+                        <span class="mqd-emoji">✅</span>
+                        <div class="mqd-info">
+                            <strong class="mqd-label">Solución confirmada</strong>
+                            <small class="mqd-desc">El requerimiento ha sido resuelto y validado en la plataforma...</small>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
             <!-- Formulario de Envío de Mensaje (Steam / Messenger Bar) -->
             <form class="chat-input-bar messenger-input-bar" id="formRespuestaChat" onsubmit="enviarMensajeChat(event, <?= (int)$selectedTicket->id ?>)">
+                <!-- Botón disparador de respuestas rápidas en móvil -->
+                <button type="button" id="btnToggleQuickReplies" class="btn-quick-trigger" onclick="toggleQuickDrawer(event)" title="Respuestas rápidas">
+                    <i class="ti ti-bolt"></i>
+                </button>
                 <div class="cib-input-wrap">
                     <textarea id="chatInputTexto" 
                               placeholder="Responder..." 
@@ -1251,6 +1330,15 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
 }
 
 /* ── Overrides Responsive Globales SGP ────────────────────────────── */
+/* ── Reglas Base para componentes Desktop / Mobile Switch ── */
+.mh-desktop-info { display: block; }
+.mh-mobile-info { display: none; }
+.desktop-status-switch { display: flex; }
+.mobile-status-dropdown-wrap { display: none; }
+.desktop-quick-replies { display: flex; }
+.btn-quick-trigger { display: none; }
+.mobile-quick-drawer { display: none; }
+
 @media (max-width: 1366px) and (min-width: 1025px) {
     .soporte-kpis {
         grid-template-columns: repeat(2, 1fr) !important;
@@ -1277,38 +1365,42 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
         font-size: 1.4rem !important;
     }
 }
+
+/* ==========================================================================
+   REFACTORIZACIÓN MOBILE-FIRST SOPORTE CHAT (≤ 768px) — ESTÁNDAR 2026
+   ========================================================================== */
 @media (max-width: 768px) {
+    /* ── Estructura General en Móvil (Lista de Tickets) ── */
     .soporte-container {
-        padding: 0 10px 24px !important;
+        padding: 0 8px 24px !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
     }
     .soporte-banner {
         flex-direction: column !important;
         align-items: flex-start !important;
-        padding: 20px 18px !important;
-        gap: 16px !important;
+        padding: 18px 16px !important;
+        gap: 14px !important;
         border-radius: 16px !important;
     }
     .banner-main-group {
         width: 100% !important;
         flex-direction: row !important;
-        align-items: flex-start !important;
-        gap: 14px !important;
+        align-items: center !important;
+        gap: 12px !important;
     }
     .banner-icon-badge {
-        width: 44px !important;
-        height: 44px !important;
-        font-size: 1.4rem !important;
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 1.3rem !important;
         border-radius: 12px !important;
     }
     .banner-title {
-        font-size: 1.3rem !important;
+        font-size: 1.22rem !important;
         line-height: 1.25 !important;
     }
     .banner-subtitle {
-        font-size: 0.8rem !important;
-        line-height: 1.4 !important;
+        font-size: 0.78rem !important;
     }
     .admin-banner-actions {
         width: 100% !important;
@@ -1317,15 +1409,17 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
         width: 100% !important;
         justify-content: center !important;
     }
+    .soporte-kpis {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    .asist-kpi-card {
+        padding: 12px 10px !important;
+        border-radius: 14px !important;
+    }
+    .asist-kpi-val { font-size: 1.6rem !important; }
+    .asist-kpi-icon { width: 36px !important; height: 36px !important; font-size: 1.1rem !important; }
 
-    /* MÓVIL: Modo WhatsApp / Steam Chat — Transición fluida lista vs chat */
-    .soporte-container.has-ticket-open .soporte-banner,
-    .soporte-container.has-ticket-open .soporte-kpis {
-        display: none !important;
-    }
-    .soporte-container.has-ticket-open {
-        padding: 0 4px 10px !important;
-    }
     .soporte-workspace {
         display: flex !important;
         flex-direction: column !important;
@@ -1337,7 +1431,7 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
         width: 100% !important;
         max-height: none !important;
         height: auto !important;
-        min-height: 480px;
+        min-height: 440px;
         padding: 14px 12px !important;
         box-sizing: border-box !important;
     }
@@ -1345,202 +1439,412 @@ $filtros        = $data['filtros'] ?? ['estado' => 'Todos', 'prioridad' => 'Toda
         display: none !important;
     }
 
-    .soporte-workspace.has-selected-ticket .soporte-sidebar-list {
+    /* ── 1. MODO FULLSCREEN CHAT ACTIVO (Oculta topbar, dock y libera 100% pantalla) ── */
+    body.sgp-mobile-chat-active .main-header,
+    body.sgp-mobile-chat-active .sgp-mobile-dock,
+    body.sgp-mobile-chat-active .sgp-dock-sheet,
+    body.sgp-mobile-chat-active .sgp-dock-sheet-overlay,
+    body.sgp-mobile-chat-active #mobileDock,
+    body.sgp-mobile-chat-active #sidebarToggle,
+    body.sgp-mobile-chat-active .sidebar-overlay,
+    body.sgp-mobile-chat-active .soporte-banner,
+    body.sgp-mobile-chat-active .soporte-kpis {
         display: none !important;
     }
-    .soporte-workspace.has-selected-ticket .soporte-detail-chat {
-        display: flex !important;
-        width: 100% !important;
-        height: calc(100vh - 130px) !important;
-        min-height: 460px !important;
-        border-radius: 16px !important;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.06) !important;
-        overflow: hidden !important;
-    }
-    .btn-send-chat span {
-        display: none !important;
-    }
-    .btn-send-chat {
-        width: 40px !important;
-        height: 40px !important;
+    body.sgp-mobile-chat-active .content-wrapper,
+    body.sgp-mobile-chat-active .wrapper {
         padding: 0 !important;
-        border-radius: 50% !important;
-        justify-content: center !important;
-    }
-    .btn-send-chat i {
-        font-size: 1.25rem !important;
-        margin-left: 2px;
-    }
-
-    .ticket-item-card {
-        width: 100% !important;
-        box-sizing: border-box !important;
-        margin: 0 0 10px 0 !important;
-    }
-
-    .btn-back-mobile {
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-    }
-    .msg-bubble-wrap {
-        max-width: 88% !important;
-    }
-    .status-quick-switch {
-        padding: 4px;
-    }
-    .sqs-btn span {
-        display: none;
-    }
-    .sqs-btn {
-        padding: 6px 8px;
-    }
-    .soporte-kpis {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 10px !important;
-    }
-    .asist-kpi-card {
-        padding: 14px 12px !important;
-        border-radius: 16px !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-    .asist-kpi-val  { font-size: 1.7rem !important; }
-    .asist-kpi-icon { width: 38px !important; height: 38px !important; font-size: 1.15rem !important; }
-    /* Quick replies: scroll horizontal sin scrollbar visible */
-    .cqr-chips {
-        overflow-x: auto !important;
-        scrollbar-width: none !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-    .cqr-chips::-webkit-scrollbar { display: none !important; }
-    .chat-quick-replies { overflow: hidden !important; }
-    /* Chat stream: sin overflow horizontal */
-    .chat-messages-container { overflow-x: hidden !important; }
-}
-@media (max-width: 480px) {
-    .soporte-kpis {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 8px !important;
-    }
-    .asist-kpi-card { padding: 12px 10px !important; }
-    .asist-kpi-val  { font-size: 1.5rem !important; }
-    .asist-kpi-label { font-size: 0.68rem !important; }
-    .asist-kpi-sub { display: none; }
-    .banner-title { font-size: 1.18rem !important; }
-
-    /* ── CHAT HEADER MOBILE COMPACTO (estilo WhatsApp/Telegram) ── */
-    .messenger-header {
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 8px !important;
-        padding: 10px 12px !important;
-        flex-wrap: nowrap !important;
+        margin: 0 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
         overflow: hidden !important;
+    }
+    body.sgp-mobile-chat-active .soporte-container,
+    body.sgp-mobile-chat-active .soporte-workspace {
+        padding: 0 !important;
+        margin: 0 !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+    }
+    body.sgp-mobile-chat-active .soporte-sidebar-list {
+        display: none !important;
+    }
+    body.sgp-mobile-chat-active #chatDetailSection {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        z-index: 1050 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        background: var(--color-bg, #F0F5FA) !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* ── 2. APP BAR COMPACTA STICKY 56px ── */
+    .messenger-header {
+        height: 56px !important;
+        min-height: 56px !important;
+        max-height: 56px !important;
+        padding: 0 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: #FFFFFF !important;
+        border-bottom: 1px solid #E2E8F0 !important;
+        z-index: 30 !important;
+        flex-shrink: 0 !important;
+        box-sizing: border-box !important;
+        gap: 8px !important;
     }
     .mh-left {
         flex: 1 !important;
         min-width: 0 !important;
+        display: flex !important;
+        align-items: center !important;
         gap: 8px !important;
     }
-    .mh-name {
-        font-size: 0.88rem !important;
-        max-width: 160px !important;
+    .btn-back-mobile {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 10px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #1e293b !important;
+        cursor: pointer !important;
+        flex-shrink: 0 !important;
+        transition: background 0.15s !important;
     }
-    .mh-name-row {
-        gap: 4px !important;
+    .btn-back-mobile:active {
+        background: #e2e8f0 !important;
     }
-    .mh-badge-code {
-        font-size: 0.65rem !important;
-        padding: 1px 5px !important;
+    .mh-avatar-wrap {
+        position: relative !important;
+        flex-shrink: 0 !important;
     }
-    .mh-status-pill {
-        font-size: 0.6rem !important;
-        padding: 1px 6px !important;
+    .mh-avatar {
+        width: 34px !important;
+        height: 34px !important;
+        border-radius: 10px !important;
+        font-size: 0.95rem !important;
     }
-    .mh-meta-line {
-        font-size: 0.68rem !important;
-        gap: 4px !important;
+    .online-status-dot {
+        width: 9px !important;
+        height: 9px !important;
+        bottom: -1px !important;
+        right: -1px !important;
+        border-width: 1.5px !important;
     }
-    .mh-dot, .mh-meta-line > span:not(.mh-cat-pill):not(.mh-prio-pill) {
+    .mh-info {
+        flex: 1 !important;
+        min-width: 0 !important;
+        margin: 0 4px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+    }
+    .mh-desktop-info { display: none !important; }
+    .mh-mobile-info {
+        display: flex !important;
+        flex-direction: column !important;
+        min-width: 0 !important;
+        justify-content: center !important;
+    }
+    .mh-mobile-title {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: var(--text-dark, #1E293B) !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        line-height: 1.25 !important;
+    }
+    .mh-mobile-sub {
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        color: var(--text-body, #64748B) !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        line-height: 1.25 !important;
+        margin-top: 1px !important;
+    }
+    .chat-subject-bar {
         display: none !important;
     }
 
-    /* ── STATUS SWITCH: solo iconos en fila compacta a la derecha ── */
+    /* ── Dropdown de Estado Compacto (Móvil) ── */
     .mh-right {
         flex-shrink: 0 !important;
     }
-    .status-quick-switch {
-        flex-direction: column !important;
-        align-items: flex-end !important;
+    .desktop-status-switch { display: none !important; }
+    .mobile-status-dropdown-wrap {
+        display: block !important;
+        position: relative !important;
+    }
+    .mobile-status-pill-btn {
+        display: inline-flex !important;
+        align-items: center !important;
         gap: 4px !important;
-        padding: 4px 6px !important;
-        border-radius: 10px !important;
-        background: #f8fafc !important;
-    }
-    .sqs-label { display: none !important; }
-    .sqs-pills {
-        display: flex !important;
-        gap: 3px !important;
-    }
-    .sqs-btn {
-        padding: 5px 7px !important;
-        border-radius: 8px !important;
-        font-size: 0.7rem !important;
-    }
-    .sqs-btn span { display: none !important; }
-
-    /* ── CHAT SUBJECT BAR: compacto ── */
-    .chat-subject-bar {
-        padding: 6px 12px !important;
-    }
-    .csb-time { display: none !important; }
-
-    /* ── QUICK REPLIES: pills deslizables sin label ── */
-    .chat-quick-replies {
-        padding: 6px 10px !important;
-        gap: 6px !important;
-    }
-    .cqr-label { display: none !important; }
-    .cqr-chips {
-        width: 100% !important;
-        overflow-x: auto !important;
-        scrollbar-width: none !important;
-        -webkit-overflow-scrolling: touch !important;
-        padding-bottom: 2px !important;
-    }
-    .cqr-chips::-webkit-scrollbar { display: none !important; }
-    .cqr-btn {
+        padding: 5px 9px !important;
+        border-radius: 999px !important;
         font-size: 0.72rem !important;
-        padding: 4px 10px !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.3px !important;
+        border: 1px solid transparent !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06) !important;
+        transition: all 0.2s !important;
+    }
+    .mobile-status-pill-btn i {
+        font-size: 0.75rem !important;
+        margin-left: 1px !important;
+    }
+    .mobile-status-menu {
+        position: absolute !important;
+        top: calc(100% + 6px) !important;
+        right: 0 !important;
+        min-width: 155px !important;
+        background: #ffffff !important;
+        border-radius: 14px !important;
+        box-shadow: 0 12px 30px rgba(15,23,42,0.18) !important;
+        border: 1px solid #e2e8f0 !important;
+        z-index: 100 !important;
+        padding: 6px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 3px !important;
+        animation: fadeInScale 0.18s ease-out !important;
+    }
+    .msm-option {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+        padding: 7px 10px !important;
+        border: none !important;
+        background: transparent !important;
+        border-radius: 8px !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        color: #1e293b !important;
+        cursor: pointer !important;
+        text-align: left !important;
+        transition: background 0.15s !important;
+    }
+    .msm-option:hover, .msm-option:active {
+        background: #f1f5f9 !important;
+    }
+    .msm-option.active {
+        background: #eff6ff !important;
+        color: #1d4ed8 !important;
+        font-weight: 700 !important;
+    }
+    .msm-check-icon {
+        margin-left: auto !important;
+        font-size: 0.88rem !important;
+        color: #2563eb !important;
     }
 
-    /* ── INPUT BAR FIJA AL FONDO ── */
-    .messenger-input-bar {
-        padding: 8px 10px !important;
-        gap: 6px !important;
+    /* ── 3. DRAWER DE RESPUESTAS RÁPIDAS (Reemplaza carrusel ruidoso) ── */
+    .desktop-quick-replies { display: none !important; }
+    .chat-quick-replies { display: none !important; }
+
+    .btn-quick-trigger {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 50% !important;
+        background: #f8fafc !important;
+        border: 1.5px solid #cbd5e1 !important;
+        color: #d97706 !important;
+        font-size: 1.15rem !important;
+        cursor: pointer !important;
+        flex-shrink: 0 !important;
+        transition: all 0.2s !important;
+        margin-bottom: 1px !important;
+    }
+    .btn-quick-trigger.active {
+        background: #fef3c7 !important;
+        border-color: #f59e0b !important;
+        transform: scale(1.05) !important;
+    }
+    .mobile-quick-drawer {
+        position: absolute !important;
+        bottom: 60px !important;
+        left: 10px !important;
+        right: 10px !important;
         background: #ffffff !important;
-        border-top: 1.5px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 14px 40px rgba(15,23,42,0.2) !important;
+        border: 1px solid #e2e8f0 !important;
+        z-index: 50 !important;
+        padding: 12px 14px !important;
+        animation: drawerSlideUp 0.22s cubic-bezier(0.16,1,0.3,1) !important;
+        max-height: 280px !important;
+        overflow-y: auto !important;
+        flex-direction: column !important;
+    }
+    .mqd-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin-bottom: 8px !important;
+        padding-bottom: 6px !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+    }
+    .mqd-title {
+        font-size: 0.82rem !important;
+        font-weight: 800 !important;
+        color: #1e293b !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+    .mqd-close-btn {
+        background: none !important;
+        border: none !important;
+        color: #94a3b8 !important;
+        font-size: 1.1rem !important;
+        cursor: pointer !important;
+        padding: 2px !important;
+    }
+    .mqd-list {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+    .mqd-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        width: 100% !important;
+        padding: 8px 10px !important;
+        border: 1px solid #f1f5f9 !important;
+        background: #f8fafc !important;
+        border-radius: 10px !important;
+        cursor: pointer !important;
+        text-align: left !important;
+        transition: all 0.15s !important;
+    }
+    .mqd-item:active {
+        background: #eff6ff !important;
+        border-color: #93c5fd !important;
+    }
+    .mqd-emoji {
+        font-size: 1.1rem !important;
+        flex-shrink: 0 !important;
+    }
+    .mqd-info {
+        display: flex !important;
+        flex-direction: column !important;
+        min-width: 0 !important;
+    }
+    .mqd-label {
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        color: #1e293b !important;
+    }
+    .mqd-desc {
+        font-size: 0.7rem !important;
+        color: #64748b !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* ── 4. BURBUJAS Y FLUJO DE MENSAJES ESTILO WHATSAPP ── */
+    .chat-messages-container {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding: 12px 14px !important;
+        gap: 10px !important;
+        background: var(--color-bg, #F0F5FA) !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    .msg-avatar-col {
+        display: none !important;
+    }
+    .msg-bubble-wrap {
+        max-width: 84% !important;
+    }
+    .msg-meta-line {
+        font-size: 0.68rem !important;
+        margin-bottom: 2px !important;
+    }
+    .msg-bubble {
+        padding: 10px 14px !important;
+        font-size: 0.86rem !important;
+        border-radius: 16px !important;
+        line-height: 1.4 !important;
+    }
+    .bubble-me {
+        border-bottom-right-radius: 4px !important;
+        border-bottom-left-radius: 16px !important;
+    }
+    .bubble-other {
+        border-bottom-left-radius: 4px !important;
+        border-bottom-right-radius: 16px !important;
+    }
+
+    /* ── BARRA DE ENTRADA COMPACTA FIJA ── */
+    .messenger-input-bar {
+        padding: 8px 12px !important;
+        gap: 8px !important;
+        background: #FFFFFF !important;
+        border-top: 1px solid #E2E8F0 !important;
+        align-items: flex-end !important;
+        position: relative !important;
+        flex-shrink: 0 !important;
+    }
+    .cib-input-wrap {
+        flex: 1 !important;
     }
     .messenger-input-bar textarea {
-        font-size: 0.85rem !important;
-        padding: 8px 14px !important;
+        font-size: 0.88rem !important;
+        padding: 9px 14px !important;
+        border-radius: 20px !important;
+        min-height: 38px !important;
+        max-height: 90px !important;
     }
+    .btn-send-chat {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+    }
+    .btn-send-chat span {
+        display: none !important;
+    }
+    .btn-send-chat i {
+        font-size: 1.25rem !important;
+        margin-left: 2px !important;
+    }
+}
 
-    /* ── MENSAJES: más anchos en móvil ── */
-    .msg-bubble-wrap { max-width: 90% !important; }
-    .msg-meta-line { font-size: 0.68rem !important; }
-    .msg-bubble { padding: 10px 13px !important; font-size: 0.84rem !important; }
-    .msg-avatar { width: 28px !important; height: 28px !important; font-size: 0.75rem !important; }
-
-    /* ── TICKETS LIST ── */
-    .soporte-container.has-ticket-open {
-        padding: 0 0 0 !important;
-    }
-    .soporte-workspace.has-selected-ticket .soporte-detail-chat {
-        height: calc(100dvh - 110px) !important;
-        border-radius: 12px !important;
-    }
+@keyframes drawerSlideUp {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fadeInScale {
+    from { opacity: 0; transform: translateY(-6px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 </style>
 
@@ -1606,10 +1910,76 @@ function scrollChatToBottom(smooth = false) {
 
 // Volver al listado en móvil
 function volverAListaAdmin() {
+    document.body.classList.remove('sgp-mobile-chat-active');
+    if (chatPollingTimer) {
+        clearInterval(chatPollingTimer);
+        chatPollingTimer = null;
+    }
+    if (window.chatPollingTimer) {
+        clearInterval(window.chatPollingTimer);
+        window.chatPollingTimer = null;
+    }
     const params = new URLSearchParams(window.location.search);
     params.delete('id');
     const qs = params.toString();
     window.location.href = URLROOT + '/soporte' + (qs ? '?' + qs : '');
+}
+
+// Control de modo pantalla completa móvil (<= 768px)
+function checkMobileChatActive() {
+    if (window.innerWidth <= 768 && CURRENT_TICKET_ID > 0) {
+        document.body.classList.add('sgp-mobile-chat-active');
+    } else {
+        document.body.classList.remove('sgp-mobile-chat-active');
+    }
+}
+
+// Selector compacto de estado en móvil (Popover 4 estados)
+function toggleMobileStatusDropdown(e) {
+    if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+    }
+    const menu = document.getElementById('mobileStatusMenu');
+    if (!menu) return;
+    const isHidden = (menu.style.display === 'none' || !menu.style.display);
+    menu.style.display = isHidden ? 'flex' : 'none';
+}
+
+function cerrarMobileStatusDropdown() {
+    const menu = document.getElementById('mobileStatusMenu');
+    if (menu) menu.style.display = 'none';
+}
+
+async function seleccionarEstadoMobile(ticketId, nuevoEstado) {
+    cerrarMobileStatusDropdown();
+    await cambiarEstadoTicketDirecto(ticketId, nuevoEstado);
+}
+
+// Drawer de Respuestas Rápidas en móvil
+function toggleQuickDrawer(e) {
+    if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+    }
+    const drawer = document.getElementById('mobileQuickDrawer');
+    const trigger = document.getElementById('btnToggleQuickReplies');
+    if (!drawer) return;
+    const isHidden = (drawer.style.display === 'none' || !drawer.style.display);
+    drawer.style.display = isHidden ? 'flex' : 'none';
+    if (trigger) trigger.classList.toggle('active', isHidden);
+}
+
+function cerrarQuickDrawer() {
+    const drawer = document.getElementById('mobileQuickDrawer');
+    const trigger = document.getElementById('btnToggleQuickReplies');
+    if (drawer) drawer.style.display = 'none';
+    if (trigger) trigger.classList.remove('active');
+}
+
+function seleccionarPlantillaDrawer(texto) {
+    cerrarQuickDrawer();
+    insertarPlantilla(texto);
 }
 
 // Seleccionar ticket en la lista
@@ -1795,6 +2165,22 @@ function actualizarUIPorEstado(nuevoEstado) {
         headerPill.className = 'mh-status-pill status-pill-' + nuevoEstado.toLowerCase().replace(/\s+/g, '-');
     }
 
+    // 2b. Actualizar selector dropdown móvil compacto
+    const mobileStatusBtnText = document.getElementById('mobileStatusBtnText');
+    if (mobileStatusBtnText) {
+        mobileStatusBtnText.textContent = nuevoEstado;
+    }
+    const mobileStatusTriggerBtn = document.getElementById('mobileStatusTriggerBtn');
+    if (mobileStatusTriggerBtn) {
+        mobileStatusTriggerBtn.className = 'mobile-status-trigger status-pill-' + nuevoEstado.toLowerCase().replace(/\s+/g, '-');
+    }
+    document.querySelectorAll('.msm-option').forEach(opt => {
+        const isCur = (opt.getAttribute('data-estado') === nuevoEstado);
+        opt.classList.toggle('active', isCur);
+        const check = opt.querySelector('.msm-check-icon');
+        if (check) check.style.display = isCur ? 'inline-block' : 'none';
+    });
+
     // 3. Actualizar tarjeta en la lista izquierda y archivar si corresponde
     const card = document.querySelector(`.ticket-item-card[data-ticket-id="${CURRENT_TICKET_ID}"]`);
     if (card) {
@@ -1847,6 +2233,8 @@ function actualizarUIPorEstado(nuevoEstado) {
 // Polling en tiempo real (Estilo Steam / Messenger)
 function iniciarPollingChat() {
     if (!CURRENT_TICKET_ID) return;
+
+    if (chatPollingTimer) clearInterval(chatPollingTimer);
 
     chatPollingTimer = setInterval(async () => {
         try {
@@ -1937,6 +2325,8 @@ function iniciarPollingChat() {
             // Error silencioso en polling
         }
     }, 3500);
+
+    window.chatPollingTimer = chatPollingTimer;
 }
 
 function escapeHtml(str) {
@@ -1962,6 +2352,22 @@ function formatearHora(str) {
 
 // Iniciar al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
+    checkMobileChatActive();
+    window.addEventListener('resize', checkMobileChatActive);
+
+    // Cerrar dropdown de estado móvil y drawer al hacer click afuera
+    document.addEventListener('click', (e) => {
+        const statusWrap = document.getElementById('mobileStatusDropdownWrap');
+        if (statusWrap && !statusWrap.contains(e.target)) {
+            cerrarMobileStatusDropdown();
+        }
+        const drawer = document.getElementById('mobileQuickDrawer');
+        const trigger = document.getElementById('btnToggleQuickReplies');
+        if (drawer && trigger && !drawer.contains(e.target) && !trigger.contains(e.target)) {
+            cerrarQuickDrawer();
+        }
+    });
+
     scrollChatToBottom(false);
     iniciarPollingChat();
 
