@@ -223,15 +223,15 @@ $chartData   = json_encode(array_values($rangos));
 .ev-kpi-lbl { font-size:.76rem; color:#94a3b8; font-weight:500; margin-top:3px; }
 
 /* ── Results grid (chart + ranking side-by-side) ─────────── */
-.ev-results-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; margin-bottom:20px; }
-.ev-results-grid .ev-card { margin-bottom:0; }
-@media(max-width:900px) { .ev-results-grid { grid-template-columns:1fr; } }
+.ev-results-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; align-items:start; margin-bottom:20px; }
+.ev-results-grid .ev-card { margin-bottom:0; min-width:0; }
+@media(max-width:900px) { .ev-results-grid { grid-template-columns:minmax(0,1fr); } }
 
 /* ── Chart ───────────────────────────────────────────────── */
 .ev-chart-wrap { height:280px; position:relative; margin-bottom:0; }
 
 /* ── Table ───────────────────────────────────────────────── */
-.ev-table-wrap { overflow-x:auto; border-radius:14px; border:1.5px solid #e9d5ff; }
+.ev-table-wrap { width:100%; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:14px; border:1.5px solid #e9d5ff; }
 .ev-table {
     width:100%; border-collapse:collapse; font-size:.82rem;
 }
@@ -267,13 +267,15 @@ $chartData   = json_encode(array_values($rangos));
     .ev-kpi-grid{grid-template-columns:repeat(2,1fr);gap:12px}
     .ev-kpi{padding:16px}
     .ev-kpi-val{font-size:1.85rem}
-    .ev-kpi-row{grid-template-columns:1fr;gap:12px}
-    .ev-results-grid{grid-template-columns:1fr;gap:14px}
-    .ev-card{padding:18px 16px;border-radius:16px}
+    .ev-kpi-row{grid-template-columns:minmax(0,1fr);gap:12px}
+    .ev-results-grid{grid-template-columns:minmax(0,1fr);gap:14px}
+    .ev-card{padding:16px 14px;border-radius:16px;min-width:0;overflow:hidden}
     .ev-preg-item{padding:14px}
     .ev-opciones{padding-left:0}
     .ev-chart-wrap{height:200px}
-    .ev-table th,.ev-table td{padding:8px 10px;font-size:.8rem}
+    .ev-pct-track{display:none}
+    .ev-table th,.ev-table td{padding:9px 8px;font-size:.78rem}
+    .ev-table td:nth-child(2){min-width:120px}
     .ev-tabs{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:6px;box-sizing:border-box}
     .ev-tab{padding:9px 10px;font-size:.8rem;justify-content:center}
     .ev-tab i{display:none}
@@ -758,6 +760,8 @@ function initChart() {
 
     const avg = <?= (float)$promPct ?>;
     const chart = echarts.init(el);
+    window.addEventListener('resize', function() { chart.resize(); });
+    setTimeout(function() { chart.resize(); }, 120);
 
     chart.setOption({
         backgroundColor: 'transparent',
