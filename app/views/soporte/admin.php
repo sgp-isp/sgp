@@ -110,13 +110,13 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
             </div>
         </div>
 
-        <!-- Resueltos (Verde) -->
-        <div class="asist-kpi-card c-green <?= $filtros['estado'] === 'Resuelto' ? 'active-kpi' : '' ?>"
-            onclick="filtrarPorEstado('Resuelto')" style="cursor:pointer;" title="Casos resueltos">
+        <!-- Resueltos / Cerrados (Verde) -->
+        <div class="asist-kpi-card c-green <?= in_array($filtros['estado'], ['Resuelto', 'Cerrado']) ? 'active-kpi' : '' ?>"
+            onclick="filtrarPorEstado('Resuelto')" style="cursor:pointer;" title="Casos resueltos y cerrados">
             <div class="asist-kpi-top">
                 <div>
                     <div class="asist-kpi-label">Resueltos / Cerrados</div>
-                    <div class="asist-kpi-val" id="kpiResueltosVal" style="color:#059669;"><?= (int) $kpis->resueltos ?>
+                    <div class="asist-kpi-val" id="kpiResueltosVal" style="color:#059669;"><?= (int) (($kpis->resueltos ?? 0) + ($kpis->cerrados ?? 0)) ?>
                     </div>
                     <div class="asist-kpi-sub">atención completada</div>
                 </div>
@@ -143,16 +143,32 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
                 <?php endif; ?>
             </div>
 
-            <!-- Filtros rápidos por píldoras -->
-            <div class="status-pills-bar">
-                <?php
-                $estadosPills = ['Activos', 'Abierto', 'En Proceso', 'Resuelto', 'Cerrado', 'Todos'];
-                foreach ($estadosPills as $ep):
-                    $act = ($filtros['estado'] === $ep) ? 'active' : '';
-                    ?>
-                    <button type="button" class="pill-btn <?= $act ?>"
-                        onclick="filtrarPorEstado('<?= $ep ?>')"><?= $ep ?></button>
-                <?php endforeach; ?>
+            <!-- Barra de filtro profesional en 1 sola línea (Segmented + Select) -->
+            <div class="soporte-filter-toolbar">
+                <div class="sft-segmented" role="group" aria-label="Vista rápida de casos">
+                    <button type="button"
+                        class="sft-seg-btn <?= $filtros['estado'] === 'Activos' ? 'active' : '' ?>"
+                        onclick="filtrarPorEstado('Activos')">
+                        <i class="ti ti-bolt"></i> Activos
+                    </button>
+                    <button type="button"
+                        class="sft-seg-btn <?= $filtros['estado'] === 'Todos' ? 'active' : '' ?>"
+                        onclick="filtrarPorEstado('Todos')">
+                        <i class="ti ti-list"></i> Todos
+                    </button>
+                </div>
+                <div class="sft-select-wrap">
+                    <i class="ti ti-filter sft-select-ico"></i>
+                    <select id="selectFiltroEstadoSoporte" class="sft-select"
+                        onchange="filtrarPorEstado(this.value)" aria-label="Filtrar casos por estado">
+                        <option value="Activos" <?= $filtros['estado'] === 'Activos' ? 'selected' : '' ?>>Estado: Activos</option>
+                        <option value="Abierto" <?= $filtros['estado'] === 'Abierto' ? 'selected' : '' ?>>Abierto</option>
+                        <option value="En Proceso" <?= $filtros['estado'] === 'En Proceso' ? 'selected' : '' ?>>En Proceso</option>
+                        <option value="Resuelto" <?= $filtros['estado'] === 'Resuelto' ? 'selected' : '' ?>>Resuelto</option>
+                        <option value="Cerrado" <?= $filtros['estado'] === 'Cerrado' ? 'selected' : '' ?>>Cerrado</option>
+                        <option value="Todos" <?= $filtros['estado'] === 'Todos' ? 'selected' : '' ?>>Todos los estados</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Contenedor con scroll para lista de tickets -->
@@ -927,41 +943,96 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
         cursor: pointer;
     }
 
-    .status-pills-bar {
+    /* ── Toolbar de Filtro Profesional (1 sola fila: Segmented + Select) ── */
+    .soporte-filter-toolbar {
         display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        overflow-x: visible;
-        padding-bottom: 2px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
         margin-bottom: 12px;
     }
 
-    .status-pills-bar::-webkit-scrollbar {
-        height: 4px;
+    .sft-segmented {
+        display: inline-flex;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 3px;
+        gap: 2px;
+        flex-shrink: 0;
     }
 
-    .status-pills-bar::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 4px;
-    }
-
-    .pill-btn {
-        padding: 5px 11px;
-        border-radius: 16px;
-        border: 1px solid #cbd5e1;
-        background: #ffffff;
-        color: #475569;
-        font-size: 0.72rem;
+    .sft-seg-btn {
+        border: none;
+        background: transparent;
+        color: #64748b;
+        font-size: 0.74rem;
         font-weight: 700;
+        padding: 5px 10px;
+        border-radius: 7px;
         cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.18s ease;
         white-space: nowrap;
-        transition: all 0.2s;
     }
 
-    .pill-btn.active {
+    .sft-seg-btn.active {
         background: #162660;
         color: #ffffff;
-        border-color: #162660;
+        box-shadow: 0 2px 6px rgba(22, 38, 96, 0.2);
+    }
+
+    .sft-select-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .sft-select-ico {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        font-size: 0.9rem;
+        pointer-events: none;
+    }
+
+    .sft-select {
+        width: 100%;
+        height: 33px;
+        padding: 0 26px 0 28px;
+        border-radius: 10px;
+        border: 1.5px solid #cbd5e1;
+        background: #f8fafc;
+        color: #1e293b;
+        font-size: 0.76rem;
+        font-weight: 700;
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.18s;
+    }
+
+    .sft-select:focus {
+        border-color: #2563eb;
+        background: #ffffff;
+    }
+
+    html[data-theme="dark"] .sft-segmented,
+    html.dark .sft-segmented,
+    body.dark-mode .sft-segmented {
+        background: #1e293b;
+        border-color: #334155;
+    }
+
+    html[data-theme="dark"] .sft-select,
+    html.dark .sft-select,
+    body.dark-mode .sft-select {
+        background: #1e293b;
+        border-color: #334155;
+        color: #f1f5f9;
     }
 
     .tickets-scroll-list {
@@ -2538,11 +2609,12 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
 </style>
 
 <script>
-    // Estado del chat en cliente
-    const CURRENT_TICKET_ID = <?= $selectedTicket ? (int) $selectedTicket->id : 0 ?>;
-    const HAS_EXPLICIT_TICKET = <?= $hasExplicitTicket ? 'true' : 'false' ?>;
-    let lastMsgId = <?= !empty($mensajes) ? (int) end($mensajes)->id : 0 ?>;
-    let chatPollingTimer = null;
+    // Estado del chat en cliente (var para compatibilidad PJAX sin SyntaxError al re-navegar)
+    var CURRENT_TICKET_ID = <?= $selectedTicket ? (int) $selectedTicket->id : 0 ?>;
+    var HAS_EXPLICIT_TICKET = <?= $hasExplicitTicket ? 'true' : 'false' ?>;
+    var lastMsgId = <?= !empty($mensajes) ? (int) end($mensajes)->id : 0 ?>;
+    if (window.chatPollingTimer) { clearInterval(window.chatPollingTimer); }
+    var chatPollingTimer = null;
 
     // Sonido sutil de notificación estilo Messenger/Steam (Web Audio API)
     function playChatChime() {
@@ -2691,19 +2763,27 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
         insertarPlantilla(texto);
     }
 
-    // Seleccionar ticket en la lista
+    function navegarSoporteAjax(url) {
+        if (window.SGPPjax && typeof window.SGPPjax.navigate === 'function') {
+            window.SGPPjax.navigate(url, true);
+        } else {
+            window.location.href = url;
+        }
+    }
+
+    // Seleccionar ticket en la lista (PJAX/AJAX fluido)
     function seleccionarTicket(id) {
         const params = new URLSearchParams(window.location.search);
         params.set('id', id);
-        window.location.href = URLROOT + '/soporte?' + params.toString();
+        navegarSoporteAjax(URLROOT + '/soporte?' + params.toString());
     }
 
-    // Filtrar por estado
+    // Filtrar por estado (PJAX/AJAX fluido)
     function filtrarPorEstado(estado) {
         const params = new URLSearchParams(window.location.search);
         params.set('estado', estado);
         params.delete('id');
-        window.location.href = URLROOT + '/soporte?' + params.toString();
+        navegarSoporteAjax(URLROOT + '/soporte?' + params.toString());
     }
 
     // Búsqueda de tickets
@@ -2713,14 +2793,14 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
             const params = new URLSearchParams(window.location.search);
             if (q) params.set('q', q); else params.delete('q');
             params.delete('id');
-            window.location.href = URLROOT + '/soporte?' + params.toString();
+            navegarSoporteAjax(URLROOT + '/soporte?' + params.toString());
         }
     }
     function limpiarBusquedaTickets() {
         const params = new URLSearchParams(window.location.search);
         params.delete('q');
         params.delete('id');
-        window.location.href = URLROOT + '/soporte?' + params.toString();
+        navegarSoporteAjax(URLROOT + '/soporte?' + params.toString());
     }
 
     // Enviar mensaje en el chat
@@ -2731,8 +2811,8 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
         }
     }
 
-    // Filtro activo actual para gestión dinámica de archivado
-    const CURRENT_ESTADO_FILTRO = '<?= htmlspecialchars($filtros['estado']) ?>';
+    // Filtro activo actual para gestión dinámica de archivado (var compatible con recargas PJAX)
+    var CURRENT_ESTADO_FILTRO = '<?= htmlspecialchars($filtros['estado']) ?>';
 
     async function enviarMensajeChat(e, ticketId) {
         if (e) e.preventDefault();
