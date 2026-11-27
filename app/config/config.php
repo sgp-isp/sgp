@@ -9,9 +9,9 @@ if (!function_exists('cal_days_in_month')) {
     }
 }
 
-// SGP-FIX-v2 [1] aplicado — Timeout de sesión por inactividad
+// SGP-FIX-v2 [1] aplicado — Timeout de sesión por inactividad (30 min en servidor; modal JS a los 25 min)
 if (!defined('SESSION_TIMEOUT_SECONDS')) {
-    define('SESSION_TIMEOUT_SECONDS', 1500); // 25 minutos
+    define('SESSION_TIMEOUT_SECONDS', 1800); // 30 minutos
 }
 
 // Helper para obtener variables de entorno de forma agnóstica (getenv, $_SERVER o $_ENV)

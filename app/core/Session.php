@@ -8,6 +8,9 @@ class Session
             $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
                     || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
 
+            $gcLifetime = max(3600, defined('SESSION_TIMEOUT_SECONDS') ? (int)SESSION_TIMEOUT_SECONDS : 1800);
+            @ini_set('session.gc_maxlifetime', (string)$gcLifetime);
+
             session_set_cookie_params([
                 'lifetime' => 0,                              // Cookie de sesión (expira al cerrar el navegador)
                 'path'     => '/',

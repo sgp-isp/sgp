@@ -266,7 +266,7 @@
                     7000,
                     () => {
                         if (newest.url && newest.url !== '#') {
-                            markNotificationAsRead(newest.id, newest.url);
+                            markNotificationAsRead(newest.id, sanitizeUrl(newest.url));
                         }
                     }
                 );
@@ -284,7 +284,7 @@
                     n.onclick = function() {
                         window.focus();
                         if (newest && newest.url && newest.url !== '#') {
-                            markNotificationAsRead(newest.id, newest.url);
+                            markNotificationAsRead(newest.id, sanitizeUrl(newest.url));
                         }
                         n.close();
                     };
@@ -497,7 +497,7 @@
     }
 
     /**
-     * Sanitizar URL para prevenir XSS
+     * Sanitizar URL para prevenir XSS y normalizar rutas entre entornos (localhost / LAN / Render)
      * Bloquea URLs con javascript:, data:, vbscript:
      */
     function sanitizeUrl(url) {
@@ -509,6 +509,28 @@
             console.warn('⚠️ URL peligrosa bloqueada:', url);
             return '#';
         }
+
+        // Normalizar URLs absolutas guardadas en BD desde otro host/IP (ej. localhost o 192.168.x.x)
+        try {
+            const base = (typeof URLROOT !== 'undefined' && URLROOT) ? URLROOT.replace(/\/+$/, '') : window.location.origin;
+            if (/^https?:\/\//i.test(url)) {
+                const parsed = new URL(url);
+                let path = parsed.pathname || '';
+                // Si la URL guardada incluye /SGP/public o /public, extraer la ruta interna del módulo
+                const pubMatch = path.match(/^(?:\/SGP)?\/public(\/.*)$/i);
+                if (pubMatch && pubMatch[1]) {
+                    path = pubMatch[1];
+                }
+                return base + (path.startsWith('/') ? path : '/' + path) + (parsed.search || '') + (parsed.hash || '');
+            }
+            if (url.startsWith('/')) {
+                const pubMatch = url.match(/^(?:\/SGP)?\/public(\/.*)$/i);
+                if (pubMatch && pubMatch[1]) {
+                    return base + pubMatch[1];
+                }
+                return base + url;
+            }
+        } catch (e) {}
 
         return url;
     }

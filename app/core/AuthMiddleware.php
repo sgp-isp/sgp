@@ -32,7 +32,7 @@ class AuthMiddleware
         $userId = (int)Session::get('user_id');
         // Verificar si existe sesión de usuario (si expiró, checkInactivity ya destruyó la sesión y redirigió)
         if (!$userId) {
-            self::redirectToLogin($isAjax, 'Debe iniciar sesión');
+            self::redirectToLogin($isAjax, 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.', 'inactividad');
             return;
         }
 
@@ -41,7 +41,7 @@ class AuthMiddleware
         if (file_exists($flag)) {
             @unlink($flag);
             Session::destroy();
-            self::redirectToLogin($isAjax, 'Tu sesión ha sido revocada por el administrador.');
+            self::redirectToLogin($isAjax, 'Tu sesión ha sido revocada por el administrador.', 'revocada');
             return;
         }
 
@@ -56,9 +56,9 @@ class AuthMiddleware
                 $uRow = $db->single();
                 $currSid = session_id();
 
-                if (!$uRow || empty($uRow->sesion_id) || $uRow->estado === 'inactivo' || ($uRow->sesion_id !== $currSid && $currSid !== '')) {
+                if (!$uRow || empty($uRow->sesion_id) || $uRow->estado === 'inactivo' || $uRow->estado === 'bloqueado' || ($uRow->sesion_id !== $currSid && $currSid !== '')) {
                     Session::destroy();
-                    self::redirectToLogin($isAjax, 'Tu sesión ha sido revocada por el administrador.');
+                    self::redirectToLogin($isAjax, 'Tu sesión ha sido cerrada o revocada.', 'revocada');
                     return;
                 }
 
@@ -75,24 +75,36 @@ class AuthMiddleware
      * 
      * @param bool $isAjax
      * @param string $message
+     * @param string $razon
      * @return void
      */
-    private static function redirectToLogin($isAjax, $message)
+    private static function redirectToLogin($isAjax, $message, string $razon = 'inactividad')
     {
+        $loginUrl = URLROOT . '/auth/login?razon=' . urlencode($razon);
+
         if ($isAjax) {
+            http_response_code(401);
             header('Content-Type: application/json');
             echo json_encode([
-                'success' => false,
-                'message' => $message,
-                'redirect' => URLROOT . '/auth/login',
+                'success'         => false,
+                'message'         => $message,
+                'reason'          => 'session_expired',
+                'redirect'        => $loginUrl,
                 'session_expired' => true
             ]);
             exit;
         }
         
-        // Redirección normal
+        // Asegurar sesión limpia para almacenar flash antes de redirigir
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
         Session::setFlash('error', $message);
-        header('Location: ' . URLROOT . '/auth/login');
+        if ($razon === 'inactividad') {
+            Session::setFlash('inactividad', $message);
+        }
+        @session_write_close();
+        header('Location: ' . $loginUrl);
         exit;
     }
     
