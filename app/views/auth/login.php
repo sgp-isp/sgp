@@ -645,7 +645,26 @@
                             banner.classList.add('visible');
                             banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                         }
-                        NotificationService.error(data.message || 'Credenciales inválidas. Por favor verifica tus datos.');
+                        if (data.blocked && typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Usuario Bloqueado',
+                                text: data.plain_message || 'Tu usuario ha sido bloqueado por medida de seguridad tras 5 intentos fallidos. Dirígete al módulo de recuperación de contraseña para restablecer tu acceso.',
+                                showCancelButton: true,
+                                confirmButtonText: 'Recuperar contraseña',
+                                cancelButtonText: 'Cerrar',
+                                confirmButtonColor: '#162660',
+                                cancelButtonColor: '#64748b'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = '<?= URLROOT ?>/auth/recovery';
+                                }
+                            });
+                        } else {
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = data.plain_message || data.message || 'Credenciales inválidas. Por favor verifica tus datos.';
+                            NotificationService.error(tempDiv.textContent || 'Credenciales inválidas. Por favor verifica tus datos.');
+                        }
                     }
 
                     // AUTO-REFRESH CAPTCHA on error (con shake)
@@ -703,7 +722,7 @@
         // ============================================
         // Mostrar errores específicos (correo no existe, contraseña incorrecta)
         <?php if (Session::hasFlash('login_error')): ?>
-            NotificationService.error('<?= addslashes(Session::getFlash('login_error')) ?>');
+            NotificationService.error('<?= addslashes(strip_tags((string)Session::getFlash('login_error'))) ?>');
         <?php endif; ?>
 
         // ============================================

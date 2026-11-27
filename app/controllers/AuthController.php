@@ -101,7 +101,12 @@ class AuthController extends Controller
         if ($filaBloqueo && !empty($filaBloqueo->bloqueado_hasta) && $filaBloqueo->bloqueado_hasta > date('Y-m-d H:i:s')) {
             if ($isAjax) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => self::mensajeBloqueoPermanente(true), 'blocked' => true]);
+                echo json_encode([
+                    'success'       => false,
+                    'message'       => self::mensajeBloqueoPermanente(true),
+                    'plain_message' => self::mensajeBloqueoPermanente(false),
+                    'blocked'       => true,
+                ]);
                 exit;
             }
             Session::setFlash('login_error', self::mensajeBloqueoPermanente(false));
@@ -197,6 +202,16 @@ class AuthController extends Controller
                 $db->bind(':ip',    $ip);
                 $db->bind(':email', $email);
                 $db->execute();
+
+                // Sincronizar también usuarios.estado = 'bloqueado' en BD para visibilidad administrativa
+                try {
+                    $db->query("UPDATE usuarios SET estado = 'bloqueado' WHERE correo = :email AND estado = 'activo'");
+                    $db->bind(':email', $email);
+                    $db->execute();
+                } catch (\Throwable $ue) {
+                    error_log('[SGP-AUTH] No se pudo actualizar usuarios.estado a bloqueado: ' . $ue->getMessage());
+                }
+
                 $bloqueado = true;
 
                 // 🚨 Alerta por correo a administradores
@@ -211,9 +226,10 @@ class AuthController extends Controller
             if ($isAjax) {
                 header('Content-Type: application/json');
                 echo json_encode([
-                    'success' => false,
-                    'message' => $bloqueado ? self::mensajeBloqueoPermanente(true) : $errorMsg,
-                    'blocked' => $bloqueado,
+                    'success'       => false,
+                    'message'       => $bloqueado ? self::mensajeBloqueoPermanente(true) : $errorMsg,
+                    'plain_message' => $bloqueado ? self::mensajeBloqueoPermanente(false) : $errorMsg,
+                    'blocked'       => $bloqueado,
                 ]);
                 exit;
             }
@@ -224,16 +240,18 @@ class AuthController extends Controller
 
         // 3. Verificar si la cuenta está activa (Estado Auditoría Nivel Crítico)
         if (($user['estado'] ?? 'activo') === 'bloqueado') {
-            $errorMsg = 'Tu cuenta ha sido bloqueada por seguridad tras múltiples intentos fallidos.<br><br><a href="' . URLROOT . '/auth/recovery" style="color:#ffffff; font-weight:bold; text-decoration:underline;">➜ Recuperar mi cuenta ahora</a>';
-            
             if ($isAjax) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => $errorMsg]);
+                echo json_encode([
+                    'success'       => false,
+                    'message'       => self::mensajeBloqueoPermanente(true),
+                    'plain_message' => self::mensajeBloqueoPermanente(false),
+                    'blocked'       => true,
+                ]);
                 exit;
             }
             
-            // Pasamos raw_html = true por si el sistema lo renderiza
-            Session::setFlash('login_error', $errorMsg);
+            Session::setFlash('login_error', self::mensajeBloqueoPermanente(false));
             $this->view('auth/login', [], false);
             return;
         }
@@ -906,14 +924,16 @@ class AuthController extends Controller
             $this->model('User')->updatePassword($uid, $pass);
 
             // [SGP-LOCK-PERM] Liberar el bloqueo de login (todas las IP asociadas a
-            // este correo) — el usuario acaba de demostrar su identidad respondiendo
-            // las preguntas de seguridad y ya tiene contraseña nueva.
+            // este correo) y restaurar estado 'activo' en usuarios si estaba 'bloqueado'.
+            $dbUnlock = Database::getInstance();
             if (!empty($userRec['correo'])) {
-                $dbUnlock = Database::getInstance();
                 $dbUnlock->query('DELETE FROM intentos_acceso WHERE correo = :email');
                 $dbUnlock->bind(':email', $userRec['correo']);
                 $dbUnlock->execute();
             }
+            $dbUnlock->query("UPDATE usuarios SET estado = 'activo' WHERE id = :uid AND estado = 'bloqueado'");
+            $dbUnlock->bind(':uid', $uid);
+            $dbUnlock->execute();
 
             // Registrar en bitácora (sin sesión activa aún, se registrará como sistema/anónimo pero con el email en detalles)
             AuditModel::log('RECUPERACION_PASSWORD_EXITOSA', 'usuarios', $uid, [

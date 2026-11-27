@@ -894,6 +894,11 @@ public function update()
         $db->bind(':id', $id);
 
         if ($db->execute()) {
+            if ($newStatus === 'activo' && !empty($user['correo'])) {
+                $db->query("DELETE FROM intentos_acceso WHERE correo = :email");
+                $db->bind(':email', $user['correo']);
+                $db->execute();
+            }
             AuditModel::log('TOGGLE_USER_STATUS', 'usuarios', $id, ['nuevo_estado' => $newStatus]);
             $this->jsonResponse(true, 'Usuario ' . ($newStatus === 'activo' ? 'activado' : 'desactivado') . ' correctamente');
         } else {
