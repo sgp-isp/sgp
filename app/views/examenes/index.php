@@ -2038,6 +2038,153 @@ var BANCO_PREGUNTAS = [
             { texto: "Todos los equipos deben usar exactamente la misma versión del sistema operativo", es_correcta: false },
             { texto: "La PC anfitriona debe estar apagada para no generar conflicto de puertos", es_correcta: false }
         ]
+    },
+    // ── Instalación de Sistema Operativo y Respaldo ──
+    {
+        enunciado: "Antes de formatear e instalar un Sistema Operativo en el equipo de un funcionario, ¿cuál es el paso obligatorio previo?",
+        opciones: [
+            { texto: "Formatear directamente para ahorrar tiempo y luego recuperar archivos", es_correcta: false },
+            { texto: "Realizar respaldo (backup) de Documentos, Escritorio, Descargas, Imágenes y archivos institucionales en un medio externo o partición segura", es_correcta: true },
+            { texto: "Desinstalar únicamente el navegador web", es_correcta: false },
+            { texto: "Cambiar la memoria RAM del equipo", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "Si un equipo no logra iniciar Windows por daño en el sistema pero su disco duro está sano, ¿qué técnica permite respaldar los archivos antes de reinstalar?",
+        opciones: [
+            { texto: "Ejecutar un formateo rápido sin respaldo", es_correcta: false },
+            { texto: "Iniciar desde un entorno Live USB (Linux/WinPE) o conectar el disco como secundario en otra PC para copiar los datos", es_correcta: true },
+            { texto: "Reiniciar la BIOS a valores de fábrica", es_correcta: false },
+            { texto: "Reemplazar la fuente de poder ATX", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "¿Qué esquema de partición debe elegirse en Rufus al crear un USB booteable para instalar Windows en una PC moderna con firmware UEFI?",
+        opciones: [
+            { texto: "MBR únicamente para discos mayores a 4 TB", es_correcta: false },
+            { texto: "GPT (GUID Partition Table)", es_correcta: true },
+            { texto: "FAT12", es_correcta: false },
+            { texto: "EXT4", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "¿Cuál es la diferencia principal entre una instalación limpia y una actualización/reparación en sitio del Sistema Operativo?",
+        opciones: [
+            { texto: "La instalación limpia borra la partición del sistema y requiere reinstalar programas; la actualización conserva archivos y apps si el SO aún arranca", es_correcta: true },
+            { texto: "La instalación limpia no borra ningún archivo del disco C:", es_correcta: false },
+            { texto: "La actualización formatea todas las particiones del disco duro", es_correcta: false },
+            { texto: "Ambas realizan exactamente el mismo procedimiento", es_correcta: false }
+        ]
+    },
+    {
+        tipo: "verdadero_falso",
+        enunciado: "Antes de formatear un equipo institucional es recomendable verificar la disponibilidad de los controladores (drivers) de red e impresora para evitar quedar sin conectividad tras instalar el SO.",
+        opciones: [
+            { texto: "Verdadero", es_correcta: true },
+            { texto: "Falso", es_correcta: false }
+        ]
+    },
+    // ── Programas Básicos, Office y Activación ──
+    {
+        enunciado: "Tras instalar el Sistema Operativo desde cero en una estación de trabajo, ¿qué paquete básico debe instalarse y verificarse antes de entregar el equipo?",
+        opciones: [
+            { texto: "Únicamente videojuegos y reproductores multimedia", es_correcta: false },
+            { texto: "Controladores (drivers), suite ofimática (Office/LibreOffice), lector PDF, compresor (7-Zip/WinRAR), navegador actualizado y antivirus", es_correcta: true },
+            { texto: "Solo el fondo de pantalla institucional", es_correcta: false },
+            { texto: "Únicamente software de edición de video profesional", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "Al instalar y activar Microsoft Office en un equipo institucional, ¿qué práctica es la correcta?",
+        opciones: [
+            { texto: "Usar cualquier activador pirata descargado de sitios desconocidos", es_correcta: false },
+            { texto: "Verificar compatibilidad de arquitectura (32/64 bits), instalar desde fuente oficial y activar con licencia institucional o servidor KMS autorizado", es_correcta: true },
+            { texto: "Desactivar permanentemente Windows Defender antes de instalar", es_correcta: false },
+            { texto: "Instalar dos versiones distintas de Office al mismo tiempo por defecto", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "¿Por qué está prohibido utilizar activadores no oficiales (cracks o parches de terceros) para activar Windows u Office en la institución?",
+        opciones: [
+            { texto: "Porque hacen que el monitor consuma más electricidad", es_correcta: false },
+            { texto: "Porque suelen incluir malware/troyanos, deshabilitan protecciones del sistema y ponen en riesgo la seguridad de toda la red", es_correcta: true },
+            { texto: "Porque borran la memoria caché L1 del procesador", es_correcta: false },
+            { texto: "Porque impiden conectar un teclado USB", es_correcta: false }
+        ]
+    },
+    // ── Periféricos de Entrada y Salida ──
+    {
+        enunciado: "¿Cuál de los siguientes grupos contiene únicamente periféricos de ENTRADA?",
+        opciones: [
+            { texto: "Monitor, impresora y cornetas", es_correcta: false },
+            { texto: "Teclado, ratón (mouse), escáner y micrófono", es_correcta: true },
+            { texto: "Proyector, plotter y audífonos", es_correcta: false },
+            { texto: "Impresora láser, monitor y teclado", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "¿Cuál de los siguientes dispositivos funciona como periférico mixto (ENTRADA y SALIDA)?",
+        opciones: [
+            { texto: "Ratón óptico estándar", es_correcta: false },
+            { texto: "Impresora multifuncional (escanea e imprime) o pantalla táctil", es_correcta: true },
+            { texto: "Micrófono de condensador", es_correcta: false },
+            { texto: "Monitor LED convencional sin panel táctil", es_correcta: false }
+        ]
+    },
+    {
+        tipo: "emparejamiento",
+        enunciado: "Relaciona cada periférico con su clasificación correspondiente:",
+        opciones: [
+            { texto: "Teclado y Ratón", texto_par: "Periféricos de Entrada", es_correcta: true },
+            { texto: "Monitor e Impresora", texto_par: "Periféricos de Salida", es_correcta: true },
+            { texto: "Impresora Multifuncional", texto_par: "Entrada y Salida (Mixto)", es_correcta: true },
+            { texto: "Escáner de documentos", texto_par: "Entrada (Digitalización)", es_correcta: true }
+        ]
+    },
+    // ── El Procesador (CPU) ──
+    {
+        enunciado: "¿Qué ventaja principal aporta que un procesador cuente con múltiples núcleos (cores) e hilos (threads)?",
+        opciones: [
+            { texto: "Aumenta la capacidad en GB del disco duro", es_correcta: false },
+            { texto: "Permite ejecutar múltiples instrucciones y procesos en paralelo, mejorando el rendimiento en multitarea", es_correcta: true },
+            { texto: "Elimina la necesidad de memoria RAM", es_correcta: false },
+            { texto: "Convierte automáticamente una red cableada en Wi-Fi", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "¿Cuál es la función de la pasta térmica aplicada entre el procesador (CPU) y el disipador?",
+        opciones: [
+            { texto: "Pegar permanentemente el procesador al zócalo de la placa", es_correcta: false },
+            { texto: "Conducir el calor eficientemente desde el procesador hacia el disipador para evitar sobrecalentamiento", es_correcta: true },
+            { texto: "Aumentar el voltaje de entrada a +12V", es_correcta: false },
+            { texto: "Proteger contra virus en el arranque", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "¿Qué síntomas suelen indicar sobrecalentamiento del procesador (pasta térmica seca o disipador obstruido por polvo)?",
+        opciones: [
+            { texto: "Lentitud severa (thermal throttling), ruido elevado del ventilador y apagados repentinos bajo carga", es_correcta: true },
+            { texto: "Desactivación automática de la licencia de Office", es_correcta: false },
+            { texto: "Cambio automático de la dirección IP a pública", es_correcta: false },
+            { texto: "Duplicación de archivos en el escritorio", es_correcta: false }
+        ]
+    },
+    {
+        enunciado: "¿En qué se diferencia la memoria caché del procesador (L1/L2/L3) de la memoria RAM?",
+        opciones: [
+            { texto: "La caché es más lenta y tiene mayor capacidad que la RAM", es_correcta: false },
+            { texto: "La caché es memoria ultrarrápida integrada dentro del propio procesador para datos inmediatos; la RAM es externa y de mayor capacidad", es_correcta: true },
+            { texto: "La caché guarda los archivos del usuario cuando se apaga la PC", es_correcta: false },
+            { texto: "Son exactamente el mismo componente físico", es_correcta: false }
+        ]
+    },
+    {
+        tipo: "verdadero_falso",
+        enunciado: "Al realizar mantenimiento preventivo al procesador, se debe limpiar por completo la pasta térmica seca con alcohol isopropílico antes de aplicar la nueva.",
+        opciones: [
+            { texto: "Verdadero", es_correcta: true },
+            { texto: "Falso", es_correcta: false }
+        ]
     }
 ];
 
@@ -2098,13 +2245,17 @@ function renderBanco() {
 
     BANCO_PREGUNTAS.forEach(function(q, idx) {
         var sel  = !!exBankSeleccionadas[idx];
+        var tipo = q.tipo || 'opcion_multiple';
+        var tipoTxt = tipo === 'verdadero_falso'
+            ? 'Verdadero / Falso'
+            : (tipo === 'emparejamiento' ? q.opciones.length + ' pares &bull; Emparejar (Duolingo)' : q.opciones.length + ' opciones &bull; Opción múltiple');
         var item = document.createElement('label');
         item.className = 'exm-bank-item' + (sel ? ' selected' : '');
         item.innerHTML =
             '<input type="checkbox" class="exm-opcion-cb"' + (sel ? ' checked' : '') + '>' +
             '<div>' +
               '<div class="exm-bank-q">' + escapeHtml(q.enunciado) + '</div>' +
-              '<div class="exm-bank-hint">' + q.opciones.length + ' opciones &bull; Opción múltiple</div>' +
+              '<div class="exm-bank-hint">' + tipoTxt + '</div>' +
             '</div>';
         item.querySelector('input').addEventListener('change', function() {
             toggleBankQ(idx, this.checked);
@@ -2120,9 +2271,13 @@ function toggleBankQ(idx, checked) {
         var bq = BANCO_PREGUNTAS[idx];
         exPreguntas.push({
             enunciado: bq.enunciado,
-            tipo:      'opcion_multiple',
+            tipo:      bq.tipo || 'opcion_multiple',
             puntos:    1,
-            opciones:  bq.opciones.map(function(o) { return { texto: o.texto, es_correcta: o.es_correcta }; }),
+            opciones:  bq.opciones.map(function(o) {
+                var item = { texto: o.texto, es_correcta: o.es_correcta };
+                if (o.texto_par !== undefined) item.texto_par = o.texto_par;
+                return item;
+            }),
             bankIdx:   idx
         });
     } else {
