@@ -143,31 +143,34 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
                 <?php endif; ?>
             </div>
 
-            <!-- Barra de filtro profesional en 1 sola línea (Segmented + Select) -->
+            <!-- Segmented Control profesional en 1 sola línea con iconos coherentes -->
             <div class="soporte-filter-toolbar">
-                <div class="sft-segmented" role="group" aria-label="Vista rápida de casos">
+                <div class="sft-segmented" role="group" aria-label="Filtrar casos por estado">
                     <button type="button"
                         class="sft-seg-btn <?= $filtros['estado'] === 'Activos' ? 'active' : '' ?>"
-                        onclick="filtrarPorEstado('Activos')">
-                        <i class="ti ti-bolt"></i> Activos
+                        onclick="filtrarPorEstado('Activos')" title="Casos activos (Abiertos y En Proceso)">
+                        <i class="ti ti-bolt"></i><span>Activos</span>
+                    </button>
+                    <button type="button"
+                        class="sft-seg-btn <?= $filtros['estado'] === 'Abierto' ? 'active' : '' ?>"
+                        onclick="filtrarPorEstado('Abierto')" title="Casos abiertos sin atender">
+                        <i class="ti ti-alert-circle"></i><span>Abierto</span>
+                    </button>
+                    <button type="button"
+                        class="sft-seg-btn <?= $filtros['estado'] === 'En Proceso' ? 'active' : '' ?>"
+                        onclick="filtrarPorEstado('En Proceso')" title="Casos en proceso">
+                        <i class="ti ti-loader"></i><span>Proceso</span>
+                    </button>
+                    <button type="button"
+                        class="sft-seg-btn <?= $filtros['estado'] === 'Cerrado' ? 'active' : '' ?>"
+                        onclick="filtrarPorEstado('Cerrado')" title="Casos cerrados">
+                        <i class="ti ti-lock"></i><span>Cerrado</span>
                     </button>
                     <button type="button"
                         class="sft-seg-btn <?= $filtros['estado'] === 'Todos' ? 'active' : '' ?>"
-                        onclick="filtrarPorEstado('Todos')">
-                        <i class="ti ti-list"></i> Todos
+                        onclick="filtrarPorEstado('Todos')" title="Todos los casos">
+                        <i class="ti ti-list"></i><span>Todos</span>
                     </button>
-                </div>
-                <div class="sft-select-wrap">
-                    <i class="ti ti-filter sft-select-ico"></i>
-                    <select id="selectFiltroEstadoSoporte" class="sft-select"
-                        onchange="filtrarPorEstado(this.value)" aria-label="Filtrar casos por estado">
-                        <option value="Activos" <?= $filtros['estado'] === 'Activos' ? 'selected' : '' ?>>Estado: Activos</option>
-                        <option value="Abierto" <?= $filtros['estado'] === 'Abierto' ? 'selected' : '' ?>>Abierto</option>
-                        <option value="En Proceso" <?= $filtros['estado'] === 'En Proceso' ? 'selected' : '' ?>>En Proceso</option>
-                        <option value="Resuelto" <?= $filtros['estado'] === 'Resuelto' ? 'selected' : '' ?>>Resuelto</option>
-                        <option value="Cerrado" <?= $filtros['estado'] === 'Cerrado' ? 'selected' : '' ?>>Cerrado</option>
-                        <option value="Todos" <?= $filtros['estado'] === 'Todos' ? 'selected' : '' ?>>Todos los estados</option>
-                    </select>
                 </div>
             </div>
 
@@ -943,81 +946,56 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
         cursor: pointer;
     }
 
-    /* ── Toolbar de Filtro Profesional (1 sola fila: Segmented + Select) ── */
+    /* ── Toolbar de Filtro Profesional (Segmented Control 1 sola fila) ── */
     .soporte-filter-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
         margin-bottom: 12px;
     }
 
     .sft-segmented {
-        display: inline-flex;
+        display: flex;
+        align-items: center;
+        width: 100%;
         background: #f1f5f9;
         border: 1px solid #e2e8f0;
-        border-radius: 10px;
+        border-radius: 12px;
         padding: 3px;
-        gap: 2px;
-        flex-shrink: 0;
+        gap: 3px;
+        box-sizing: border-box;
     }
 
     .sft-seg-btn {
+        flex: 1;
+        min-width: 0;
         border: none;
         background: transparent;
         color: #64748b;
-        font-size: 0.74rem;
+        font-size: 0.71rem;
         font-weight: 700;
-        padding: 5px 10px;
-        border-radius: 7px;
+        padding: 6px 4px;
+        border-radius: 9px;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 4px;
         transition: all 0.18s ease;
         white-space: nowrap;
     }
 
+    .sft-seg-btn i {
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    .sft-seg-btn:hover:not(.active) {
+        color: #1e293b;
+        background: rgba(255, 255, 255, 0.55);
+    }
+
     .sft-seg-btn.active {
         background: #162660;
         color: #ffffff;
-        box-shadow: 0 2px 6px rgba(22, 38, 96, 0.2);
-    }
-
-    .sft-select-wrap {
-        position: relative;
-        flex: 1;
-        min-width: 0;
-    }
-
-    .sft-select-ico {
-        position: absolute;
-        left: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #64748b;
-        font-size: 0.9rem;
-        pointer-events: none;
-    }
-
-    .sft-select {
-        width: 100%;
-        height: 33px;
-        padding: 0 26px 0 28px;
-        border-radius: 10px;
-        border: 1.5px solid #cbd5e1;
-        background: #f8fafc;
-        color: #1e293b;
-        font-size: 0.76rem;
-        font-weight: 700;
-        outline: none;
-        cursor: pointer;
-        transition: border-color 0.18s;
-    }
-
-    .sft-select:focus {
-        border-color: #2563eb;
-        background: #ffffff;
+        box-shadow: 0 2px 6px rgba(22, 38, 96, 0.22);
     }
 
     html[data-theme="dark"] .sft-segmented,
@@ -1027,12 +1005,11 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
         border-color: #334155;
     }
 
-    html[data-theme="dark"] .sft-select,
-    html.dark .sft-select,
-    body.dark-mode .sft-select {
-        background: #1e293b;
-        border-color: #334155;
+    html[data-theme="dark"] .sft-seg-btn:hover:not(.active),
+    html.dark .sft-seg-btn:hover:not(.active),
+    body.dark-mode .sft-seg-btn:hover:not(.active) {
         color: #f1f5f9;
+        background: rgba(255, 255, 255, 0.08);
     }
 
     .tickets-scroll-list {
