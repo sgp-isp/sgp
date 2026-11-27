@@ -241,7 +241,9 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
                             title="Volver al listado">
                             <i class="ti ti-arrow-left"></i>
                         </button>
-                        <div class="mh-avatar-wrap">
+                        <div class="mh-avatar-wrap mh-avatar-clickable" onclick="abrirModalPerfilSolicitante()"
+                            role="button" tabindex="0" title="Ver datos del solicitante"
+                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirModalPerfilSolicitante();}">
                             <div class="mh-avatar">
                                 <?= strtoupper(substr($selectedTicket->solicitante_nombres ?? 'U', 0, 1)) ?>
                             </div>
@@ -587,6 +589,120 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
     </div>
 </div>
 
+<?php if (!empty($selectedTicket)):
+    $solNombreCompleto = trim(($selectedTicket->solicitante_nombres ?? '') . ' ' . ($selectedTicket->solicitante_apellidos ?? ''));
+    $solInicial = strtoupper(substr($solNombreCompleto !== '' ? $solNombreCompleto : 'U', 0, 1));
+    $solRolId = isset($selectedTicket->solicitante_rol_id) ? (int)$selectedTicket->solicitante_rol_id : -1;
+    $solRolTexto = match ($solRolId) {
+        0 => 'SuperAdministrador',
+        1 => 'Administrador',
+        2 => 'Tutor',
+        3 => 'Pasante',
+        default => 'Usuario Invitado'
+    };
+    $solEstado = strtolower((string)($selectedTicket->solicitante_estado ?? 'activo'));
+    $solEsActivo = ($solEstado === 'activo');
+?>
+<!-- Modal: Ficha de Datos del Solicitante del Caso -->
+<div id="modalPerfilSolicitante" class="sgp-modal-overlay"
+    style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:999999;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:16px;"
+    onclick="if(event.target===this)cerrarModalPerfilSolicitante()">
+    <div class="sgp-modal-bento sgp-perfil-modal-card"
+        style="background:#ffffff;border-radius:24px;width:100%;max-width:460px;box-shadow:0 25px 60px rgba(0,0,0,0.25);border:1px solid #e2e8f0;overflow:hidden;animation:bentoModalIn 0.28s cubic-bezier(0.16,1,0.3,1);">
+        <div style="background:linear-gradient(135deg, #162660 0%, #1e3a8a 55%, #2563eb 100%);padding:22px 24px;color:#ffffff;display:flex;align-items:center;justify-content:space-between;gap:14px;">
+            <div style="display:flex;align-items:center;gap:14px;min-width:0;">
+                <div style="width:52px;height:52px;border-radius:16px;background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.32);display:flex;align-items:center;justify-content:center;font-size:1.35rem;font-weight:800;color:#ffffff;flex-shrink:0;">
+                    <?= htmlspecialchars($solInicial) ?>
+                </div>
+                <div style="min-width:0;">
+                    <h3 style="margin:0;font-size:1.05rem;font-weight:800;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        <?= htmlspecialchars($solNombreCompleto !== '' ? $solNombreCompleto : 'Solicitante') ?>
+                    </h3>
+                    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:5px;">
+                        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;background:rgba(255,255,255,0.2);font-size:0.72rem;font-weight:700;color:#ffffff;">
+                            <i class="ti ti-shield-check"></i> <?= htmlspecialchars($solRolTexto) ?>
+                        </span>
+                        <?php if (!empty($selectedTicket->usuario_id)): ?>
+                            <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;background:<?= $solEsActivo ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)' ?>;font-size:0.72rem;font-weight:700;color:#ffffff;">
+                                <span style="width:6px;height:6px;border-radius:50%;background:<?= $solEsActivo ? '#34d399' : '#f87171' ?>;"></span>
+                                <?= $solEsActivo ? 'Activo' : 'Inactivo' ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <button type="button" onclick="cerrarModalPerfilSolicitante()"
+                style="background:rgba(255,255,255,0.16);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <div style="padding:20px 24px;display:flex;flex-direction:column;gap:12px;">
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
+                <div class="perfil-info-tile" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:10px 12px;">
+                    <div style="font-size:0.68rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.4px;">Cédula</div>
+                    <div style="font-size:0.86rem;font-weight:700;color:#0f172a;margin-top:2px;">
+                        <?= !empty($selectedTicket->solicitante_cedula) ? htmlspecialchars($selectedTicket->solicitante_cedula) : 'No registrada' ?>
+                    </div>
+                </div>
+                <div class="perfil-info-tile" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:10px 12px;">
+                    <div style="font-size:0.68rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.4px;">Teléfono</div>
+                    <div style="font-size:0.86rem;font-weight:700;color:#0f172a;margin-top:2px;">
+                        <?= !empty($selectedTicket->solicitante_telefono) ? htmlspecialchars($selectedTicket->solicitante_telefono) : 'No registrado' ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="perfil-info-tile" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:10px 12px;">
+                <div style="font-size:0.68rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.4px;">Correo Electrónico</div>
+                <div style="font-size:0.86rem;font-weight:700;color:#0f172a;margin-top:2px;word-break:break-all;">
+                    <?= !empty($selectedTicket->solicitante_email) ? htmlspecialchars($selectedTicket->solicitante_email) : 'No registrado' ?>
+                </div>
+            </div>
+
+            <?php if (!empty($selectedTicket->departamento_nombre) || !empty($selectedTicket->solicitante_institucion)): ?>
+                <div class="perfil-info-tile" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:10px 12px;">
+                    <div style="font-size:0.68rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.4px;">
+                        <?= !empty($selectedTicket->solicitante_institucion) ? 'Institución / Departamento' : 'Departamento' ?>
+                    </div>
+                    <div style="font-size:0.86rem;font-weight:700;color:#0f172a;margin-top:2px;">
+                        <?= htmlspecialchars(implode(' · ', array_filter([
+                            $selectedTicket->solicitante_institucion ?? null,
+                            $selectedTicket->departamento_nombre ?? null
+                        ]))) ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <div class="perfil-info-tile" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                <div style="min-width:0;">
+                    <div style="font-size:0.68rem;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:0.4px;">Caso en Atención</div>
+                    <div style="font-size:0.84rem;font-weight:700;color:#1e3a8a;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        #<?= htmlspecialchars($selectedTicket->codigo) ?> &bull; <?= htmlspecialchars($selectedTicket->categoria) ?>
+                    </div>
+                </div>
+                <span style="padding:3px 10px;border-radius:999px;background:#ffffff;color:#1e3a8a;font-size:0.72rem;font-weight:800;border:1px solid #bfdbfe;flex-shrink:0;">
+                    <?= htmlspecialchars($selectedTicket->prioridad) ?>
+                </span>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px;">
+                <?php if (!empty($selectedTicket->usuario_id) && $solRolId === 3): ?>
+                    <a href="<?= URLROOT ?>/pasante/show/<?= (int)$selectedTicket->usuario_id ?>"
+                        style="padding:9px 16px;border-radius:10px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-weight:700;font-size:0.84rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                        <i class="ti ti-external-link"></i> Ver Kardex
+                    </a>
+                <?php endif; ?>
+                <button type="button" onclick="cerrarModalPerfilSolicitante()"
+                    style="padding:9px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#162660,#2563eb);color:#fff;font-weight:700;font-size:0.84rem;cursor:pointer;">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <style>
     /* ── Layout General de Soporte (Aprovechamiento 100% de Pantalla) ── */
     .soporte-container {
@@ -746,7 +862,7 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
     /* ── Workspace Split Screen ──────────────────────────────────────── */
     .soporte-workspace {
         display: grid;
-        grid-template-columns: 380px 1fr;
+        grid-template-columns: 400px 1fr;
         gap: 20px;
         min-height: 620px;
     }
@@ -813,9 +929,10 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
 
     .status-pills-bar {
         display: flex;
+        flex-wrap: wrap;
         gap: 6px;
-        overflow-x: auto;
-        padding-bottom: 8px;
+        overflow-x: visible;
+        padding-bottom: 2px;
         margin-bottom: 12px;
     }
 
@@ -829,7 +946,7 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
     }
 
     .pill-btn {
-        padding: 5px 12px;
+        padding: 5px 11px;
         border-radius: 16px;
         border: 1px solid #cbd5e1;
         background: #ffffff;
@@ -1064,6 +1181,25 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
     .mh-avatar-wrap {
         position: relative;
         flex-shrink: 0;
+    }
+
+    .mh-avatar-clickable {
+        cursor: pointer;
+        border-radius: 14px;
+        transition: transform 0.18s ease;
+    }
+
+    .mh-avatar-clickable:hover {
+        transform: scale(1.06);
+    }
+
+    .mh-avatar-clickable:hover .mh-avatar {
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.28), 0 6px 14px rgba(37, 99, 235, 0.25);
+    }
+
+    .mh-avatar-clickable:focus-visible {
+        outline: 2px solid #2563eb;
+        outline-offset: 2px;
     }
 
     .mh-avatar {
@@ -1311,15 +1447,91 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
         color: #94a3b8;
     }
 
-    /* ── Stream de Mensajes (Steam / Facebook Messenger) ──────────────── */
+    /* ── Stream de Mensajes (Estilo WhatsApp con Patrón Soporte + Tema Dinámico) ── */
     .chat-messages-container {
         flex: 1;
         overflow-y: auto;
         padding: 20px 22px;
-        background: #f8fafc;
+        background-color: #eef2f8;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220' fill='none' stroke='%23162660' stroke-opacity='0.065' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='translate(18 18) rotate(-12)'%3E%3Cpath d='M4 13v-2a8 8 0 0 1 16 0v2'/%3E%3Crect x='2' y='13' width='4' height='6' rx='2'/%3E%3Crect x='18' y='13' width='4' height='6' rx='2'/%3E%3Cpath d='M20 19a3 3 0 0 1-3 3h-3'/%3E%3C/g%3E%3Cg transform='translate(92 14) rotate(10)'%3E%3Cpath d='M3 20l1.3-3.9A9 8 0 1 1 7.7 19L3 20'/%3E%3Cpath d='M9 11h.01M12 11h.01M15 11h.01'/%3E%3C/g%3E%3Cg transform='translate(162 22) rotate(-15)'%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/%3E%3C/g%3E%3Cg transform='translate(48 84) rotate(8)'%3E%3Cpath d='M15 5v2m0 4v2m0 4v2M5 5h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4V7a2 2 0 0 1 2-2z'/%3E%3C/g%3E%3Cg transform='translate(128 88) rotate(-8)'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/%3E%3Cpath d='M9 12l2 2 4-4'/%3E%3C/g%3E%3Cg transform='translate(16 154) rotate(12)'%3E%3Crect x='3' y='4' width='18' height='12' rx='2'/%3E%3Cpath d='M2 20h20'/%3E%3C/g%3E%3Cg transform='translate(98 152) rotate(-10)'%3E%3Cpath d='M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z'/%3E%3C/g%3E%3Cg transform='translate(168 156) rotate(15)'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M9 12l2 2 4-4'/%3E%3C/g%3E%3C/svg%3E");
+        background-repeat: repeat;
+        background-size: 220px 220px;
         display: flex;
         flex-direction: column;
         gap: 14px;
+    }
+
+    html[data-theme="dark"] .chat-messages-container,
+    html.dark .chat-messages-container,
+    body.dark-mode .chat-messages-container {
+        background-color: #0b1220 !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220' fill='none' stroke='%2393c5fd' stroke-opacity='0.085' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='translate(18 18) rotate(-12)'%3E%3Cpath d='M4 13v-2a8 8 0 0 1 16 0v2'/%3E%3Crect x='2' y='13' width='4' height='6' rx='2'/%3E%3Crect x='18' y='13' width='4' height='6' rx='2'/%3E%3Cpath d='M20 19a3 3 0 0 1-3 3h-3'/%3E%3C/g%3E%3Cg transform='translate(92 14) rotate(10)'%3E%3Cpath d='M3 20l1.3-3.9A9 8 0 1 1 7.7 19L3 20'/%3E%3Cpath d='M9 11h.01M12 11h.01M15 11h.01'/%3E%3C/g%3E%3Cg transform='translate(162 22) rotate(-15)'%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/%3E%3C/g%3E%3Cg transform='translate(48 84) rotate(8)'%3E%3Cpath d='M15 5v2m0 4v2m0 4v2M5 5h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4V7a2 2 0 0 1 2-2z'/%3E%3C/g%3E%3Cg transform='translate(128 88) rotate(-8)'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/%3E%3Cpath d='M9 12l2 2 4-4'/%3E%3C/g%3E%3Cg transform='translate(16 154) rotate(12)'%3E%3Crect x='3' y='4' width='18' height='12' rx='2'/%3E%3Cpath d='M2 20h20'/%3E%3C/g%3E%3Cg transform='translate(98 152) rotate(-10)'%3E%3Cpath d='M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z'/%3E%3C/g%3E%3Cg transform='translate(168 156) rotate(15)'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M9 12l2 2 4-4'/%3E%3C/g%3E%3C/svg%3E") !important;
+    }
+
+    html[data-theme="dark"] .chat-date-separator span,
+    html.dark .chat-date-separator span,
+    body.dark-mode .chat-date-separator span {
+        background: rgba(30, 41, 59, 0.9);
+        color: #cbd5e1;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    html[data-theme="dark"] .messenger-header,
+    html.dark .messenger-header,
+    body.dark-mode .messenger-header,
+    html[data-theme="dark"] .messenger-input-bar,
+    html.dark .messenger-input-bar,
+    body.dark-mode .messenger-input-bar {
+        background: #111827 !important;
+        border-color: rgba(148, 163, 184, 0.16) !important;
+    }
+
+    html[data-theme="dark"] .chat-subject-bar,
+    html.dark .chat-subject-bar,
+    body.dark-mode .chat-subject-bar {
+        background: #172033 !important;
+        border-color: rgba(148, 163, 184, 0.16) !important;
+        color: #cbd5e1 !important;
+    }
+
+    html[data-theme="dark"] .mh-name,
+    html.dark .mh-name,
+    body.dark-mode .mh-name,
+    html[data-theme="dark"] .mh-mobile-title,
+    html.dark .mh-mobile-title,
+    body.dark-mode .mh-mobile-title,
+    html[data-theme="dark"] .csb-subject,
+    html.dark .csb-subject,
+    body.dark-mode .csb-subject {
+        color: #f1f5f9 !important;
+    }
+
+    html[data-theme="dark"] .messenger-input-bar textarea,
+    html.dark .messenger-input-bar textarea,
+    body.dark-mode .messenger-input-bar textarea {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f1f5f9 !important;
+    }
+
+    html[data-theme="dark"] .sgp-perfil-modal-card,
+    html.dark .sgp-perfil-modal-card,
+    body.dark-mode .sgp-perfil-modal-card {
+        background: #111827 !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-theme="dark"] .perfil-info-tile,
+    html.dark .perfil-info-tile,
+    body.dark-mode .perfil-info-tile {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-theme="dark"] .perfil-info-tile div,
+    html.dark .perfil-info-tile div,
+    body.dark-mode .perfil-info-tile div {
+        color: #e2e8f0 !important;
     }
 
     .chat-messages-container::-webkit-scrollbar {
@@ -1581,9 +1793,19 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
 
     .cib-input-wrap {
         flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .cib-actions {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
     }
 
     .messenger-input-bar textarea {
+        display: block;
         width: 100%;
         border: 1.5px solid #cbd5e1;
         border-radius: 22px;
@@ -2075,8 +2297,10 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            width: 38px !important;
-            height: 38px !important;
+            width: 40px !important;
+            height: 40px !important;
+            padding: 0 !important;
+            margin: 0 !important;
             border-radius: 50% !important;
             background: #f8fafc !important;
             border: 1.5px solid #cbd5e1 !important;
@@ -2085,7 +2309,6 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
             cursor: pointer !important;
             flex-shrink: 0 !important;
             transition: all 0.2s !important;
-            margin-bottom: 1px !important;
         }
 
         .btn-quick-trigger.active {
@@ -2195,7 +2418,7 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
             overflow-x: hidden !important;
             padding: 12px 14px !important;
             gap: 10px !important;
-            background: var(--color-bg, #F0F5FA) !important;
+            background-color: #eef2f8 !important;
             -webkit-overflow-scrolling: touch !important;
         }
 
@@ -2242,14 +2465,27 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
 
         .cib-input-wrap {
             flex: 1 !important;
+            min-width: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .cib-actions {
+            display: flex !important;
+            align-items: center !important;
+            flex-shrink: 0 !important;
         }
 
         .messenger-input-bar textarea {
+            display: block !important;
             font-size: 0.88rem !important;
             padding: 9px 14px !important;
+            line-height: 20px !important;
             border-radius: 20px !important;
-            min-height: 38px !important;
+            height: 40px;
+            min-height: 40px !important;
             max-height: 90px !important;
+            margin: 0 !important;
         }
 
         .btn-send-chat {
@@ -2257,6 +2493,7 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
             height: 40px !important;
             min-width: 40px !important;
             padding: 0 !important;
+            margin: 0 !important;
             border-radius: 50% !important;
             display: inline-flex !important;
             align-items: center !important;
@@ -2269,8 +2506,9 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
         }
 
         .btn-send-chat i {
-            font-size: 1.25rem !important;
-            margin-left: 2px !important;
+            font-size: 1.2rem !important;
+            margin: 0 !important;
+            transform: translateX(-1px);
         }
     }
 
@@ -2882,6 +3120,16 @@ $hasExplicitTicket = (!empty($selectedTicket) && (isset($_GET['id']) || isset($_
             }
         }
     });
+
+    // Modal perfil del solicitante
+    function abrirModalPerfilSolicitante() {
+        const modal = document.getElementById('modalPerfilSolicitante');
+        if (modal) modal.style.display = 'flex';
+    }
+    function cerrarModalPerfilSolicitante() {
+        const modal = document.getElementById('modalPerfilSolicitante');
+        if (modal) modal.style.display = 'none';
+    }
 
     // Modal nuevo ticket
     function abrirModalCrearTicketAdmin() {

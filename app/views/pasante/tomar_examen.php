@@ -1047,10 +1047,11 @@ async function enviarExamen() {
 /* ── result overlay ── */
 function mostrarResultado(data) {
     const aprobado   = data.aprobado;
-    const pct        = parseFloat(data.porcentaje).toFixed(1);
-    const pctNum     = parseFloat(data.porcentaje);
-    const ptsObt     = parseFloat(data.puntaje_obtenido).toFixed(1);
-    const ptsMx      = parseFloat(data.puntaje_maximo).toFixed(1);
+    const fmtNum     = (v) => { const n = parseFloat(v) || 0; return parseFloat(n.toFixed(1)).toString(); };
+    const pctNum     = parseFloat(data.porcentaje) || 0;
+    const pct        = fmtNum(pctNum);
+    const ptsObt     = fmtNum(data.puntaje_obtenido);
+    const ptsMx      = fmtNum(data.puntaje_maximo);
 
     // Escala de 3 niveles: ≥60 verde · ≥40 amarillo · <40 rojo
     const circleColor = pctNum >= 60 ? '#059669' : (pctNum >= 40 ? '#d97706' : '#dc2626');

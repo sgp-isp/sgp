@@ -229,14 +229,27 @@ class SoporteModel
                     COALESCE(dp.apellidos, '') AS solicitante_apellidos,
                     u.cedula AS solicitante_cedula,
                     u.rol_id AS solicitante_rol_id,
+                    u.estado AS solicitante_estado,
                     COALESCE(u.correo, t.correo) AS solicitante_email,
+                    COALESCE(dp.telefono, t.telefono) AS solicitante_telefono,
                     d.nombre AS departamento_nombre,
+                    COALESCE(inst.nombre, dpa.institucion_procedencia) AS solicitante_institucion,
                     COALESCE(admin_p.nombres, 'Equipo Soporte') AS respondido_por_nombre,
                     TIMESTAMPDIFF(HOUR, t.created_at, NOW()) AS horas_transcurridas
                 FROM soporte_tickets t
                 LEFT JOIN usuarios u ON u.id = t.usuario_id
                 LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
                 LEFT JOIN departamentos d ON d.id = u.departamento_id
+                LEFT JOIN (
+                    SELECT d2.usuario_id, d2.institucion_id, d2.institucion_procedencia
+                    FROM datos_pasante d2
+                    INNER JOIN (
+                        SELECT usuario_id, MAX(id) AS max_id
+                        FROM datos_pasante
+                        GROUP BY usuario_id
+                    ) latest_dp ON d2.usuario_id = latest_dp.usuario_id AND d2.id = latest_dp.max_id
+                ) dpa ON dpa.usuario_id = u.id
+                LEFT JOIN instituciones inst ON inst.id = dpa.institucion_id
                 LEFT JOIN usuarios admin_u ON admin_u.id = t.respondido_por
                 LEFT JOIN datos_personales admin_p ON admin_p.usuario_id = admin_u.id
                 WHERE t.id = :id
