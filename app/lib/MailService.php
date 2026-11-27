@@ -509,7 +509,7 @@ class MailService
             return ['success' => false, 'message' => $msg];
         }
 
-        stream_set_timeout($socket, $timeout);
+        stream_set_timeout($socket, (int)ceil($timeout));
 
         $read = function() use ($socket) {
             $data = '';
@@ -844,7 +844,7 @@ class MailService
     {
         $db = Database::getInstance();
         $db->query("
-            SELECT u.correo AS email, COALESCE(dp.nombres, 'Pasante') AS nombres, COALESCE(dp.apellidos, '') AS apellidos
+            SELECT u.id, u.correo AS email, COALESCE(dp.nombres, 'Pasante') AS nombres, COALESCE(dp.apellidos, '') AS apellidos
             FROM usuarios u
             JOIN datos_pasante dpass ON dpass.usuario_id = u.id
             LEFT JOIN datos_personales dp ON dp.usuario_id = u.id
