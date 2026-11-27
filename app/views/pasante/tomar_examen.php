@@ -1308,4 +1308,30 @@ window.addEventListener('beforeunload', function(e) {
         if (rem <= 0) expirarTiempo();
     }, 1000);
 })();
+
+/* ── Heartbeat en vivo mientras resuelve el examen ── */
+(function() {
+    function sendExamPing() {
+        if (typeof INTENTO_ID === 'undefined' || !INTENTO_ID) return;
+        const overlay = document.getElementById('qzResultOverlay');
+        if (overlay && overlay.classList.contains('open')) return;
+        fetch(URLROOT + '/pasante/pingExamen', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': CSRF_TOK || ''
+            },
+            body: JSON.stringify({ intento_id: INTENTO_ID })
+        }).catch(function() {});
+    }
+    sendExamPing();
+    var pingIv = setInterval(function() {
+        const overlay = document.getElementById('qzResultOverlay');
+        if (overlay && overlay.classList.contains('open')) {
+            clearInterval(pingIv);
+            return;
+        }
+        sendExamPing();
+    }, 15000);
+})();
 </script>

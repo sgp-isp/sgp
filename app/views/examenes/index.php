@@ -22,6 +22,7 @@ $dist              = $data['dist']              ?? null;
 $top5              = $data['top5']              ?? [];
 $examenesActivos   = $data['examenesActivos']   ?? [];
 $recientes         = $data['recientes']         ?? [];
+$enLinea           = $data['enLinea']           ?? [];
 $totalExamenes     = count($examenes);
 
 $examenesActivosBorradores = [];
@@ -629,6 +630,63 @@ $activePeriodoIdJs = $periodoActivo ? (int)$periodoActivo->id : '';
     border-color: #334155 !important;
 }
 
+/* ── Monitor En Vivo (Resolviendo ahora) ───────────────────────── */
+.ex-live-panel{
+    background:#fff;border-radius:18px;padding:18px 20px;margin-bottom:24px;
+    border:1.5px solid #d1fae5;box-shadow:0 4px 18px rgba(16,185,129,.08);
+}
+.ex-live-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    margin-bottom:14px;
+}
+.ex-live-title{
+    display:flex;align-items:center;gap:10px;font-size:.95rem;font-weight:800;color:#0f172a;margin:0;
+}
+.ex-live-dot{
+    width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;
+    box-shadow:0 0 0 0 rgba(16,185,129,.7);animation:exLivePulse 1.6s infinite;
+}
+@keyframes exLivePulse{
+    0%{box-shadow:0 0 0 0 rgba(16,185,129,.7)}
+    70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}
+    100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}
+}
+.ex-live-badge{
+    display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;
+    background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;font-size:.74rem;font-weight:800;
+}
+.ex-live-refresh{
+    border:1px solid #cbd5e1;background:#f8fafc;color:#475569;border-radius:10px;
+    padding:5px 11px;font-size:.74rem;font-weight:700;cursor:pointer;display:inline-flex;
+    align-items:center;gap:5px;transition:all .15s;
+}
+.ex-live-refresh:hover{background:#eff6ff;color:#2563eb;border-color:#93c5fd}
+.ex-live-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;
+}
+.ex-live-item{
+    display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;
+    background:#f8fafc;border:1px solid #e2e8f0;transition:transform .15s,box-shadow .15s;
+}
+.ex-live-item:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,23,42,.06)}
+.ex-live-avatar{
+    width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#059669,#10b981);
+    color:#fff;font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;position:relative;
+}
+.ex-live-avatar-dot{
+    position:absolute;bottom:-2px;right:-2px;width:11px;height:11px;border-radius:50%;
+    background:#22c55e;border:2px solid #fff;
+}
+.ex-live-empty{
+    display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;
+    background:#f8fafc;border:1px dashed #cbd5e1;color:#64748b;font-size:.82rem;font-weight:600;
+}
+[data-theme="dark"] .ex-live-panel{background:#0f172a !important;border-color:#1e3a2f !important}
+[data-theme="dark"] .ex-live-title{color:#f8fafc !important}
+[data-theme="dark"] .ex-live-item,[data-theme="dark"] .ex-live-empty{background:#1e293b !important;border-color:#334155 !important;color:#cbd5e1 !important}
+[data-theme="dark"] .ex-live-refresh{background:#1e293b !important;border-color:#334155 !important;color:#cbd5e1 !important}
+
 /* ── Barra de Control Analítico ─────────────────────────────── */
 .ex-ctrl-bar{
     background:#fff;border-radius:16px;padding:12px 16px;margin-bottom:18px;
@@ -1148,6 +1206,67 @@ $medalClasses    = ['ex-medal-1','ex-medal-2','ex-medal-3','ex-medal-n','ex-meda
         </div>
     </div>
 
+</div>
+
+<!-- ═══════════════════ MONITOR EN VIVO: RESOLVIENDO AHORA ═══════════════════ -->
+<div class="ex-live-panel" id="exLivePanel">
+    <div class="ex-live-head">
+        <h3 class="ex-live-title">
+            <span class="ex-live-dot"></span>
+            <span>Pasantes en línea resolviendo ahora</span>
+            <span class="ex-live-badge" id="exLiveCountBadge">
+                <span id="exLiveCountNum"><?= count($enLinea) ?></span> <?= count($enLinea) === 1 ? 'en línea' : 'en línea' ?>
+            </span>
+        </h3>
+        <button type="button" class="ex-live-refresh" onclick="refreshEnLinea(true)" title="Actualizar lista en tiempo real">
+            <i class="ti ti-refresh" id="exLiveRefreshIcon"></i> Actualizar
+        </button>
+    </div>
+    <div id="exLiveContainer">
+        <?php if (empty($enLinea)): ?>
+            <div class="ex-live-empty">
+                <i class="ti ti-user-check" style="font-size:1.15rem;color:#10b981;"></i>
+                <span>Ningún pasante está presentando un examen en este momento. Se actualiza automáticamente cada 10 s.</span>
+            </div>
+        <?php else: ?>
+            <div class="ex-live-grid">
+                <?php foreach ($enLinea as $live):
+                    $lNom   = trim($live->pasante_nombre ?? 'Pasante');
+                    $lParts = array_filter(explode(' ', $lNom));
+                    $lInits = strtoupper(implode('', array_map(fn($w) => mb_substr($w, 0, 1), array_slice($lParts, 0, 2))));
+                    $segTrans = max(0, (int)($live->seg_transcurridos ?? 0));
+                    $minTrans = (int)floor($segTrans / 60);
+                    $durMin   = !empty($live->duracion_minutos) ? (int)$live->duracion_minutos : 0;
+                    $restTxt  = '';
+                    if ($durMin > 0) {
+                        $segRest = max(0, ($durMin * 60) - $segTrans);
+                        $restTxt = ' · Quedan ' . (int)ceil($segRest / 60) . ' min';
+                    }
+                    $pulsoSeg = max(0, (int)($live->seg_ultimo_pulso ?? 0));
+                ?>
+                <div class="ex-live-item">
+                    <div class="ex-live-avatar">
+                        <?= htmlspecialchars($lInits ?: 'P') ?>
+                        <span class="ex-live-avatar-dot" title="Conectado"></span>
+                    </div>
+                    <div style="min-width:0;flex:1;">
+                        <div style="font-size:.84rem;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                            <?= htmlspecialchars($lNom) ?>
+                        </div>
+                        <div style="font-size:.74rem;font-weight:700;color:#2563eb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                            <a href="<?= URLROOT ?>/examenes/ver/<?= (int)$live->examen_id ?>" style="color:inherit;text-decoration:none;">
+                                <?= htmlspecialchars($live->examen_titulo ?? '') ?>
+                            </a>
+                        </div>
+                        <div style="font-size:.7rem;color:#64748b;margin-top:2px;">
+                            Inició hace <?= $minTrans ?> min<?= $restTxt ?> · Pulso hace <?= $pulsoSeg ?>s
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 <!-- ═══════════════════ EXAM LIST (TABS: ACTIVOS vs HISTORIAL) ═══════════════════ -->
@@ -2600,4 +2719,80 @@ function escapeHtml(str) {
 function escapeAttr(str) {
     return String(str).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+
+// ─────────────────────────────────────────────────────────────
+// Monitor En Vivo: Pasantes resolviendo examen (auto-refresh 10s)
+// ─────────────────────────────────────────────────────────────
+async function refreshEnLinea(manual) {
+    var container = document.getElementById('exLiveContainer');
+    var numEl     = document.getElementById('exLiveCountNum');
+    var iconEl    = document.getElementById('exLiveRefreshIcon');
+    if (!container || !numEl) return;
+
+    if (manual && iconEl) iconEl.style.animation = 'spin 0.6s linear infinite';
+    try {
+        var pid = <?= (int)$selectedPeriodoId ?>;
+        var resp = await fetch(URLROOT + '/examenes/enLinea?periodo_id=' + pid, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        var data = await resp.json();
+        if (!data || !data.success) return;
+
+        var items = Array.isArray(data.items) ? data.items : [];
+        numEl.textContent = items.length;
+
+        if (items.length === 0) {
+            container.innerHTML =
+                '<div class="ex-live-empty">' +
+                    '<i class="ti ti-user-check" style="font-size:1.15rem;color:#10b981;"></i>' +
+                    '<span>Ningún pasante está presentando un examen en este momento. Se actualiza automáticamente cada 10 s.</span>' +
+                '</div>';
+            return;
+        }
+
+        var html = '<div class="ex-live-grid">';
+        items.forEach(function(live) {
+            var nom = (live.pasante_nombre || 'Pasante').trim();
+            var parts = nom.split(/\s+/).filter(Boolean);
+            var inits = parts.slice(0, 2).map(function(w) { return w.charAt(0).toUpperCase(); }).join('') || 'P';
+            var segTrans = Math.max(0, parseInt(live.seg_transcurridos || 0, 10));
+            var minTrans = Math.floor(segTrans / 60);
+            var durMin   = parseInt(live.duracion_minutos || 0, 10);
+            var restTxt  = '';
+            if (durMin > 0) {
+                var segRest = Math.max(0, (durMin * 60) - segTrans);
+                restTxt = ' · Quedan ' + Math.ceil(segRest / 60) + ' min';
+            }
+            var pulsoSeg = Math.max(0, parseInt(live.seg_ultimo_pulso || 0, 10));
+
+            html +=
+                '<div class="ex-live-item">' +
+                    '<div class="ex-live-avatar">' + escapeHtml(inits) +
+                        '<span class="ex-live-avatar-dot" title="Conectado"></span>' +
+                    '</div>' +
+                    '<div style="min-width:0;flex:1;">' +
+                        '<div style="font-size:.84rem;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(nom) + '</div>' +
+                        '<div style="font-size:.74rem;font-weight:700;color:#2563eb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+                            '<a href="' + URLROOT + '/examenes/ver/' + parseInt(live.examen_id, 10) + '" style="color:inherit;text-decoration:none;">' + escapeHtml(live.examen_titulo || '') + '</a>' +
+                        '</div>' +
+                        '<div style="font-size:.7rem;color:#64748b;margin-top:2px;">Inició hace ' + minTrans + ' min' + restTxt + ' · Pulso hace ' + pulsoSeg + 's</div>' +
+                    '</div>' +
+                '</div>';
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    } catch (e) {
+    } finally {
+        if (iconEl) iconEl.style.animation = '';
+    }
+}
+
+if (window._sgpExLiveInterval) clearInterval(window._sgpExLiveInterval);
+window._sgpExLiveInterval = setInterval(function() {
+    if (!document.getElementById('exLivePanel')) {
+        clearInterval(window._sgpExLiveInterval);
+        return;
+    }
+    refreshEnLinea(false);
+}, 10000);
 </script>

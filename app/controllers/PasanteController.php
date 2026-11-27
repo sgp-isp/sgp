@@ -1434,6 +1434,45 @@ class PasanteController extends Controller
     }
 
     /**
+     * POST /pasante/pingExamen
+     * Heartbeat ligero mientras el pasante resuelve un examen en línea.
+     */
+    public function pingExamen(): void
+    {
+        header('Content-Type: application/json');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (int)Session::get('role_id') !== 3) {
+            echo json_encode(['success' => false]);
+            return;
+        }
+
+        $userId    = (int)Session::get('user_id');
+        $raw       = file_get_contents('php://input');
+        $body      = json_decode($raw, true) ?: [];
+        $intentoId = (int)($body['intento_id'] ?? 0);
+
+        if ($intentoId > 0) {
+            try {
+                $this->db->query("
+                    SELECT id FROM examen_intentos
+                    WHERE id = :iid AND pasante_id = :uid AND enviado_at IS NULL
+                    LIMIT 1
+                ");
+                $this->db->bind(':iid', $intentoId);
+                $this->db->bind(':uid', $userId);
+                if ($this->db->single()) {
+                    $this->db->query("UPDATE usuarios SET ultima_actividad = NOW() WHERE id = :uid");
+                    $this->db->bind(':uid', $userId);
+                    $this->db->execute();
+                    echo json_encode(['success' => true]);
+                    return;
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        echo json_encode(['success' => false]);
+    }
+
+    /**
      * Vista de Configuración Personal del Pasante.
      * Permite personalizar la apariencia visual y cambiar el tema del sistema (Claro / Oscuro).
      */

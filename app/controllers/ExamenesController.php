@@ -277,6 +277,8 @@ class ExamenesController extends Controller
         $bindAll($intBinds);
         $recientes = $this->db->resultSet();
 
+        $enLinea = $this->_getEnLinea($rolId, $userId, $selectedPeriodoId);
+
         $this->view('examenes/index', [
             'examenes'           => $examenes,
             'periodos'           => $periodos,
@@ -295,6 +297,32 @@ class ExamenesController extends Controller
             'top5'               => $top5,
             'examenesActivos'    => $examenesActivos,
             'recientes'          => $recientes,
+            'enLinea'            => $enLinea,
+        ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // GET /examenes/enLinea — AJAX: Pasantes resolviendo examen en vivo
+    // ─────────────────────────────────────────────────────────────────
+    public function enLinea(): void
+    {
+        header('Content-Type: application/json');
+
+        $rolId  = (int)(Session::get('role_id') ?? 0);
+        $userId = (int)(Session::get('user_id') ?? 0);
+        if ($rolId === 3) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'items' => []]);
+            return;
+        }
+
+        $periodoId = (int)($_GET['periodo_id'] ?? 0);
+        $items = $this->_getEnLinea($rolId, $userId, $periodoId);
+
+        echo json_encode([
+            'success' => true,
+            'count'   => count($items),
+            'items'   => $items,
         ]);
     }
 
@@ -1114,6 +1142,56 @@ class ExamenesController extends Controller
     // ─────────────────────────────────────────────────────────────────
     // PRIVATE HELPERS
     // ─────────────────────────────────────────────────────────────────
+
+    /**
+     * Obtiene los pasantes que tienen un intento abierto (enviado_at IS NULL)
+     * y han tenido actividad reciente (últimos 90 segundos).
+     */
+    private function _getEnLinea(int $rolId, int $userId, int $periodoId = 0): array
+    {
+        try {
+            $conds = [
+                "ei.enviado_at IS NULL",
+                "u.ultima_actividad >= DATE_SUB(NOW(), INTERVAL 90 SECOND)",
+                "(ex.duracion_minutos IS NULL OR TIMESTAMPDIFF(SECOND, ei.iniciado_at, NOW()) <= (ex.duracion_minutos * 60 + 120))",
+            ];
+            $binds = [];
+            if ($rolId === 2) {
+                $conds[] = "ex.creado_por = :uid";
+                $binds[':uid'] = $userId;
+            }
+            if ($periodoId > 0) {
+                $conds[] = "ex.periodo_id = :pid";
+                $binds[':pid'] = $periodoId;
+            }
+
+            $this->db->query("
+                SELECT ei.id AS intento_id,
+                       ei.examen_id,
+                       ei.pasante_id,
+                       ei.iniciado_at,
+                       ex.titulo AS examen_titulo,
+                       ex.duracion_minutos,
+                       CONCAT(COALESCE(dp.nombres,''), ' ', COALESCE(dp.apellidos,'')) AS pasante_nombre,
+                       u.cedula,
+                       TIMESTAMPDIFF(SECOND, ei.iniciado_at, NOW()) AS seg_transcurridos,
+                       TIMESTAMPDIFF(SECOND, u.ultima_actividad, NOW()) AS seg_ultimo_pulso
+                FROM examen_intentos ei
+                INNER JOIN examenes ex ON ex.id = ei.examen_id
+                INNER JOIN usuarios u  ON u.id  = ei.pasante_id
+                LEFT JOIN datos_personales dp ON dp.usuario_id = ei.pasante_id
+                WHERE " . implode(' AND ', $conds) . "
+                ORDER BY ei.iniciado_at DESC
+            ");
+            foreach ($binds as $k => $v) {
+                $this->db->bind($k, $v);
+            }
+            return $this->db->resultSet() ?: [];
+        } catch (\Throwable $e) {
+            error_log('[SGP-EXAMENES] _getEnLinea(): ' . $e->getMessage());
+            return [];
+        }
+    }
 
     /**
      * Carga un examen con datos del creador y período.
