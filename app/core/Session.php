@@ -11,8 +11,30 @@ class Session
             $gcLifetime = max(3600, defined('SESSION_TIMEOUT_SECONDS') ? (int)SESSION_TIMEOUT_SECONDS : 1800);
             @ini_set('session.gc_maxlifetime', (string)$gcLifetime);
 
+            // Persistir sesiones en BD para sobrevivir reinicios/spin-down de contenedores (Render)
+            if (!class_exists('Database', false) && file_exists(__DIR__ . '/Database.php')) {
+                require_once __DIR__ . '/Database.php';
+            }
+            if (class_exists('Database', false)) {
+                try {
+                    if (!class_exists('DbSessionHandler', false) && file_exists(__DIR__ . '/DbSessionHandler.php')) {
+                        require_once __DIR__ . '/DbSessionHandler.php';
+                    }
+                    if (class_exists('DbSessionHandler', false)) {
+                        $handler = new DbSessionHandler(Database::getInstance()->getPdo());
+                        session_set_save_handler($handler, true);
+                    }
+                } catch (\Throwable $e) {
+                    error_log('[SGP-SESSION] Fallback a sesiones en archivo: ' . $e->getMessage());
+                }
+            }
+
+            // Lifetime >= gcLifetime evita que navegadores móviles descarten la cookie al suspender pestañas;
+            // la expiración real por inactividad sigue controlada por checkInactivity().
+            $cookieLifetime = max(1800, defined('SESSION_TIMEOUT_SECONDS') ? (int)SESSION_TIMEOUT_SECONDS : 1800);
+
             session_set_cookie_params([
-                'lifetime' => 0,                              // Cookie de sesión (expira al cerrar el navegador)
+                'lifetime' => $cookieLifetime,
                 'path'     => '/',
                 'domain'   => '',                             // Dejar vacío para que enlace al host actual (localhost o trycloudflare.com)
                 'secure'   => $isHttps,                       // Solo HTTPS si está disponible o vía túnel

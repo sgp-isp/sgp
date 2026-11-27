@@ -54,9 +54,10 @@ class AuthMiddleware
                 $db->query("SELECT sesion_id, estado FROM usuarios WHERE id = :id LIMIT 1");
                 $db->bind(':id', $userId);
                 $uRow = $db->single();
-                $currSid = session_id();
 
-                if (!$uRow || empty($uRow->sesion_id) || $uRow->estado === 'inactivo' || $uRow->estado === 'bloqueado' || ($uRow->sesion_id !== $currSid && $currSid !== '')) {
+                // Permitir sesiones simultáneas PC + móvil; solo cerrar si la cuenta fue desactivada/bloqueada
+                // o si el SuperAdmin revocó la sesión (sesion_id = NULL).
+                if (!$uRow || empty($uRow->sesion_id) || $uRow->estado === 'inactivo' || $uRow->estado === 'bloqueado') {
                     Session::destroy();
                     self::redirectToLogin($isAjax, 'Tu sesión ha sido cerrada o revocada.', 'revocada');
                     return;
