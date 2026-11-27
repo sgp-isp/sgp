@@ -2764,6 +2764,7 @@ async function refreshEnLinea(manual) {
                 restTxt = ' · Quedan ' + Math.ceil(segRest / 60) + ' min';
             }
             var pulsoSeg = Math.max(0, parseInt(live.seg_ultimo_pulso || 0, 10));
+            var pulsoTxt = pulsoSeg < 60 ? (pulsoSeg + 's') : (Math.floor(pulsoSeg / 60) + ' min');
 
             html +=
                 '<div class="ex-live-item">' +
@@ -2775,7 +2776,7 @@ async function refreshEnLinea(manual) {
                         '<div style="font-size:.74rem;font-weight:700;color:#2563eb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
                             '<a href="' + URLROOT + '/examenes/ver/' + parseInt(live.examen_id, 10) + '" style="color:inherit;text-decoration:none;">' + escapeHtml(live.examen_titulo || '') + '</a>' +
                         '</div>' +
-                        '<div style="font-size:.7rem;color:#64748b;margin-top:2px;">Inició hace ' + minTrans + ' min' + restTxt + ' · Pulso hace ' + pulsoSeg + 's</div>' +
+                        '<div style="font-size:.7rem;color:#64748b;margin-top:2px;">Inició hace ' + minTrans + ' min' + restTxt + ' · Pulso hace ' + pulsoTxt + '</div>' +
                     '</div>' +
                 '</div>';
         });

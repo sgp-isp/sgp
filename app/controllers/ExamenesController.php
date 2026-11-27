@@ -1145,24 +1145,20 @@ class ExamenesController extends Controller
 
     /**
      * Obtiene los pasantes que tienen un intento abierto (enviado_at IS NULL)
-     * y han tenido actividad reciente (últimos 90 segundos).
+     * y han tenido actividad reciente (últimos 5 minutos, igual que el monitor SuperAdmin).
      */
     private function _getEnLinea(int $rolId, int $userId, int $periodoId = 0): array
     {
         try {
             $conds = [
                 "ei.enviado_at IS NULL",
-                "u.ultima_actividad >= DATE_SUB(NOW(), INTERVAL 90 SECOND)",
-                "(ex.duracion_minutos IS NULL OR TIMESTAMPDIFF(SECOND, ei.iniciado_at, NOW()) <= (ex.duracion_minutos * 60 + 120))",
+                "u.estado = 'activo'",
+                "u.ultima_actividad >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)",
             ];
             $binds = [];
             if ($rolId === 2) {
                 $conds[] = "ex.creado_por = :uid";
                 $binds[':uid'] = $userId;
-            }
-            if ($periodoId > 0) {
-                $conds[] = "ex.periodo_id = :pid";
-                $binds[':pid'] = $periodoId;
             }
 
             $this->db->query("
@@ -1181,7 +1177,7 @@ class ExamenesController extends Controller
                 INNER JOIN usuarios u  ON u.id  = ei.pasante_id
                 LEFT JOIN datos_personales dp ON dp.usuario_id = ei.pasante_id
                 WHERE " . implode(' AND ', $conds) . "
-                ORDER BY ei.iniciado_at DESC
+                ORDER BY u.ultima_actividad DESC, ei.iniciado_at DESC
             ");
             foreach ($binds as $k => $v) {
                 $this->db->bind($k, $v);
