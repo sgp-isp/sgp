@@ -1927,37 +1927,75 @@
     function abrirSoporteGuestModal() {
         const modal = document.getElementById('modalSoporteGuest');
         if (!modal) return;
+        // Seguridad: limpiar cualquier rastro previo de otra sesión al abrir el modal
+        try { localStorage.removeItem('sgp_guest_support_session'); } catch (e) {}
+        resetearModalSoporteGuest();
         modal.style.display = 'flex';
-
-        // Comprobar si hay una sesión guardada en localStorage
-        try {
-            const saved = localStorage.getItem('sgp_guest_support_session');
-            if (saved) {
-                const sData = JSON.parse(saved);
-                if (sData && sData.ticket_id && sData.guest_token) {
-                    const banner = document.getElementById('sgpGuestActiveBanner');
-                    const codeEl = document.getElementById('sgpGuestResumeCode');
-                    const asuntoEl = document.getElementById('sgpGuestResumeAsunto');
-                    if (banner && codeEl && asuntoEl) {
-                        codeEl.textContent = 'Caso Activo: ' + (sData.codigo || '#' + sData.ticket_id);
-                        asuntoEl.textContent = sData.asunto ? 'Asunto: ' + sData.asunto : 'Tienes un caso en proceso.';
-                        banner.style.display = 'block';
-                    }
-                }
-            }
-        } catch (e) {}
 
         const inp = document.getElementById('sgpGuestIdentInput');
         if (inp) setTimeout(() => inp.focus(), 150);
     }
 
-    function cerrarSoporteGuestModal() {
-        const modal = document.getElementById('modalSoporteGuest');
-        if (modal) modal.style.display = 'none';
+    function resetearModalSoporteGuest() {
         if (sgpGuestPollTimer) {
             clearInterval(sgpGuestPollTimer);
             sgpGuestPollTimer = null;
         }
+        if (sgpSuccessCountdownTimer) {
+            clearInterval(sgpSuccessCountdownTimer);
+            sgpSuccessCountdownTimer = null;
+        }
+        sgpActiveTicketId     = 0;
+        sgpActiveToken        = '';
+        sgpLastMsgId          = 0;
+        sgpPendingSuccessData = null;
+
+        try {
+            sessionStorage.removeItem('sgp_guest_support_session');
+            localStorage.removeItem('sgp_guest_support_session');
+        } catch (e) {}
+
+        const msgBox = document.getElementById('sgpGuestChatMessages');
+        if (msgBox) msgBox.innerHTML = '';
+
+        const banner = document.getElementById('sgpGuestActiveBanner');
+        if (banner) banner.style.display = 'none';
+
+        const identInp = document.getElementById('sgpGuestIdentInput');
+        if (identInp) identInp.value = '';
+
+        const uidInp = document.getElementById('sgpGuestUsuarioId');
+        if (uidInp) uidInp.value = '';
+
+        const form = document.getElementById('formSoporteGuest');
+        if (form) {
+            form.reset();
+            form.style.display = 'none';
+        }
+
+        const feedback = document.getElementById('sgpGuestFeedback');
+        if (feedback) {
+            feedback.innerHTML = '';
+            feedback.style.display = 'none';
+        }
+
+        const chips = document.getElementById('sgpTopicChipsSection');
+        if (chips) chips.style.display = 'none';
+
+        const successView = document.getElementById('sgpGuestViewSuccess');
+        if (successView) successView.style.display = 'none';
+
+        const chatView = document.getElementById('sgpGuestViewChat');
+        if (chatView) chatView.style.display = 'none';
+
+        const identView = document.getElementById('sgpGuestViewIdent');
+        if (identView) identView.style.display = 'block';
+    }
+
+    function cerrarSoporteGuestModal() {
+        const modal = document.getElementById('modalSoporteGuest');
+        if (modal) modal.style.display = 'none';
+        resetearModalSoporteGuest();
     }
 
     function volverAIdentificacion() {
@@ -1986,23 +2024,14 @@
             confirmButtonColor: '#2563eb'
         }).then((res) => {
             if (res.isConfirmed) {
-                try { localStorage.removeItem('sgp_guest_support_session'); } catch (e) {}
-                volverAIdentificacion();
-                document.getElementById('formSoporteGuest').reset();
-                document.getElementById('sgpGuestUsuarioId').value = '';
-                document.getElementById('sgpGuestFeedback').style.display = 'none';
-                document.getElementById('formSoporteGuest').style.display = 'none';
-                const chips = document.getElementById('sgpTopicChipsSection');
-                if (chips) chips.style.display = 'none';
-                const banner = document.getElementById('sgpGuestActiveBanner');
-                if (banner) banner.style.display = 'none';
+                resetearModalSoporteGuest();
             }
         });
     }
 
     function reanudarChatGuardado() {
         try {
-            const saved = localStorage.getItem('sgp_guest_support_session');
+            const saved = sessionStorage.getItem('sgp_guest_support_session');
             if (saved) {
                 const s = JSON.parse(saved);
                 cargarChatGuest(s.ticket_id, s.guest_token, s.codigo, s.asunto, s.estado || 'En Proceso');
@@ -2237,15 +2266,9 @@
                 return;
             }
 
-            // Guardar sesión en localStorage
+            // Limpiar cualquier sesión guest previa de localStorage (seguridad en equipos compartidos)
             try {
-                localStorage.setItem('sgp_guest_support_session', JSON.stringify({
-                    ticket_id:   data.ticket_id,
-                    guest_token: data.guest_token,
-                    codigo:      data.codigo,
-                    asunto:      payload.asunto,
-                    estado:      'Abierto'
-                }));
+                localStorage.removeItem('sgp_guest_support_session');
             } catch (err) {}
 
             // Ocultar overlay de impresión
