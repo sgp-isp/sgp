@@ -214,12 +214,14 @@ class ExamenesController extends Controller
             FROM examen_intentos ei
             INNER JOIN examenes ex ON ex.id = ei.examen_id
             INNER JOIN usuarios u ON u.id = ei.pasante_id
-            LEFT JOIN datos_pasante dpa ON dpa.id = (
-                SELECT d2.id FROM datos_pasante d2
-                WHERE d2.usuario_id = u.id
-                ORDER BY FIELD(d2.estado_pasantia, 'Activo', 'Pendiente', 'Sin Asignar', 'Finalizado', 'Retirado') ASC, d2.id DESC
-                LIMIT 1
-            )
+            LEFT JOIN (
+                SELECT d2.* FROM datos_pasante d2
+                INNER JOIN (
+                    SELECT usuario_id, MAX(id) AS max_id
+                    FROM datos_pasante
+                    GROUP BY usuario_id
+                ) latest ON d2.usuario_id = latest.usuario_id AND d2.id = latest.max_id
+            ) dpa ON dpa.usuario_id = u.id
             LEFT JOIN instituciones inst ON inst.id = COALESCE(NULLIF(dpa.institucion_id, 0), CASE WHEN dpa.institucion_procedencia REGEXP '^[0-9]+$' THEN CAST(dpa.institucion_procedencia AS UNSIGNED) ELSE NULL END)
             {$intWhere}
             GROUP BY COALESCE(inst.id, 0), COALESCE(inst.nombre, 'Otras Instituciones')
