@@ -33,6 +33,8 @@ class ExamenesController extends Controller
 
         $this->db = Database::getInstance();
         require_once APPROOT . '/models/NotificationModel.php';
+        require_once APPROOT . '/helpers/ExamSchemaHelper.php';
+        ExamSchemaHelper::ensure($this->db);
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -829,7 +831,7 @@ class ExamenesController extends Controller
             $preguntas = $this->_getPreguntasConOpciones((int)$intento->examen_id);
 
             $this->db->query("
-                SELECT pregunta_id, opcion_id_elegida, opcion_par_elegida_id
+                SELECT *
                 FROM examen_respuestas
                 WHERE intento_id = :intento_id
             ");

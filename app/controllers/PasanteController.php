@@ -36,6 +36,8 @@ class PasanteController extends Controller
         require_once '../app/models/PasanteModel.php';
         require_once '../app/models/AsistenciaModel.php';
         require_once '../app/models/NotificationModel.php';
+        require_once APPROOT . '/helpers/ExamSchemaHelper.php';
+        ExamSchemaHelper::ensure($this->db);
         require_once '../app/models/AuditModel.php';
         $this->pasanteModel = new PasanteModel();
     }
