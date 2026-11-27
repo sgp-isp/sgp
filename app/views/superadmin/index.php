@@ -146,9 +146,9 @@ foreach ($distribucionAcciones as $row) {
 .ios-badge { padding: 3px 10px; border-radius: 20px; font-size: 0.68rem; font-weight: 700; color: white; letter-spacing: 0.2px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
 @media (max-width:1100px) {
-    .sa-dash-grid-top { grid-template-columns:repeat(3,1fr); }
-    .sa-charts-row    { grid-template-columns:1fr; }
-    .sa-bottom-row    { grid-template-columns:1fr; }
+    .sa-dash-grid-top { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .sa-charts-row    { grid-template-columns:minmax(0,1fr); }
+    .sa-bottom-row    { grid-template-columns:minmax(0,1fr); }
 }
 @media (max-width:640px) {
     /* ── Banner — override de estilos inline con !important ───────────── */
@@ -227,7 +227,9 @@ foreach ($distribucionAcciones as $row) {
     .ios-feed-time   { width:100%; margin-top:2px; }
 
     /* ── Prevenir overflow horizontal ─────────────────────────────────── */
-    .dashboard-container { overflow-x:hidden; }
+    .dashboard-container { width:100%; max-width:100%; overflow-x:hidden; box-sizing:border-box; }
+    .sa-card { min-width:0; max-width:100%; overflow:hidden; box-sizing:border-box; }
+    .sa-card textarea, .sa-card input { max-width:100%; box-sizing:border-box; }
 
     /* ── Card title — wrap en mobile ──────────────────────────────────── */
     .sa-card-title {
@@ -289,12 +291,16 @@ foreach ($distribucionAcciones as $row) {
 /* ── Bento Operations Center Styles ──────────────────────────── */
 .sa-bento-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 20px;
     margin-bottom: 24px;
 }
+.sa-bento-grid > .sa-card {
+    min-width: 0;
+    box-sizing: border-box;
+}
 @media (max-width: 1024px) {
-    .sa-bento-grid { grid-template-columns: 1fr; }
+    .sa-bento-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 .pulse-dot {
@@ -601,17 +607,17 @@ input:checked + .switch-slider:before {
         <!-- 2. Switch Maestro de Modo Mantenimiento -->
         <div class="sa-card" style="display:flex;flex-direction:column;justify-content:space-between;">
             <div>
-                <div class="sa-card-title" style="justify-content:space-between;display:flex;align-items:center;">
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <div style="width:36px;height:36px;border-radius:10px;background:#fef2f2;display:flex;align-items:center;justify-content:center;">
+                <div class="sa-card-title" style="justify-content:space-between;display:flex;align-items:center;gap:10px;flex-wrap:nowrap;">
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+                        <div style="width:36px;height:36px;border-radius:10px;background:#fef2f2;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                             <i class="ti ti-barrier-block" style="color:#dc2626;font-size:1.2rem;"></i>
                         </div>
-                        <div>
+                        <div style="min-width:0;">
                             <div style="font-weight:700;color:#1e293b;font-size:1rem;">Modo Mantenimiento Global</div>
                             <div style="font-size:0.74rem;color:#64748b;">Bloqueo preventivo temporal para usuarios regulares</div>
                         </div>
                     </div>
-                    <label class="switch-bento" title="Alternar modo mantenimiento">
+                    <label class="switch-bento" style="flex-shrink:0;" title="Alternar modo mantenimiento">
                         <input type="checkbox" id="switchMantenimiento" <?= !empty($data['server_info']['mantenimiento']) ? 'checked' : '' ?> onchange="toggleMantenimientoInput(this)">
                         <span class="switch-slider"></span>
                     </label>
@@ -644,14 +650,14 @@ input:checked + .switch-slider:before {
         <!-- 3. Mesa de Ayuda y Tickets de Soporte -->
         <div class="sa-card" style="display:flex;flex-direction:column;justify-content:space-between;">
             <div>
-                <div class="sa-card-title" style="justify-content:space-between;display:flex;align-items:center;">
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <div style="width:36px;height:36px;border-radius:10px;background:#eff6ff;display:flex;align-items:center;justify-content:center;">
+                <div class="sa-card-title" style="justify-content:space-between;display:flex;align-items:center;gap:10px;">
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+                        <div style="width:36px;height:36px;border-radius:10px;background:#eff6ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                             <i class="ti ti-headset" style="color:#2563eb;font-size:1.2rem;"></i>
                         </div>
-                        <div>
+                        <div style="min-width:0;">
                             <div style="font-weight:700;color:#1e293b;font-size:1rem;">Mesa de Ayuda &bull; Soporte Técnico</div>
-                            <div style="font-size:0.74rem;color:#64748b;">Tickets enviados por usuarios hacia sgp.ispeb@gmail.com</div>
+                            <div style="font-size:0.74rem;color:#64748b;word-break:break-word;">Tickets enviados por usuarios hacia sgp.ispeb@gmail.com</div>
                         </div>
                     </div>
                     <div style="display:flex;gap:6px;">

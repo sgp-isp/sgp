@@ -274,8 +274,24 @@ $chartData   = json_encode(array_values($rangos));
     .ev-opciones{padding-left:0}
     .ev-chart-wrap{height:200px}
     .ev-pct-track{display:none}
-    .ev-table th,.ev-table td{padding:9px 8px;font-size:.78rem}
-    .ev-table td:nth-child(2){min-width:120px}
+    .ev-table-wrap{border:none;border-radius:0;overflow:visible}
+    .ev-table,.ev-table tbody{display:block;width:100%}
+    .ev-table thead{display:none}
+    .ev-table tr{
+        display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;
+        padding:12px;margin-bottom:10px;border:1.5px solid #e9d5ff;border-radius:14px;
+        background:#fff;box-sizing:border-box;width:100%;
+    }
+    .ev-table tr:last-child{margin-bottom:0}
+    .ev-table td{padding:0;border:none;font-size:.82rem}
+    .ev-table td:nth-child(1){order:1;flex-shrink:0}
+    .ev-table td:nth-child(2){order:2;flex:1 1 50%;min-width:0;font-size:.86rem;line-height:1.25;word-break:break-word}
+    .ev-table td:nth-child(6){order:3;flex-shrink:0}
+    .ev-table td:nth-child(3){order:4;font-size:.78rem}
+    .ev-table td:nth-child(4){order:5;font-size:.78rem}
+    .ev-table td:nth-child(5){order:6;margin-left:auto;font-size:.74rem}
+    .ev-table td:nth-child(7){order:7;flex-shrink:0}
+    [data-theme="dark"] .ev-table tr{background:#0d1526 !important;border-color:#334155 !important}
     .ev-tabs{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:6px;box-sizing:border-box}
     .ev-tab{padding:9px 10px;font-size:.8rem;justify-content:center}
     .ev-tab i{display:none}
