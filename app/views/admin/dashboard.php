@@ -116,7 +116,15 @@ $periodos           = $data['periodos']           ?? [];
                 </p>
             </div>
         </div>
-        <div style="display:flex; z-index:1; align-items:center;">
+        <div style="display:flex; z-index:1; align-items:center; gap: 10px;">
+            <button type="button" onclick="abrirCalculadoraHoras()"
+                    title="Calculadora de Horas de Pasantía"
+                    aria-label="Abrir Calculadora de Horas de Pasantía"
+                    style="width: 44px; height: 44px; border-radius: 50%; background: rgba(0, 0, 0, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.18); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; cursor: pointer; flex-shrink: 0; transition: all 0.2s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.22)';this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.background='rgba(0,0,0,0.15)';this.style.transform='none'">
+                <i class="ti ti-calculator"></i>
+            </button>
             <div class="banner-clock" style="background: rgba(0, 0, 0, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50px; padding: 10px 24px; display: flex; align-items: center; gap: 20px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <i class="ti ti-calendar" style="color: rgba(255,255,255,0.8); font-size: 1.1rem;"></i> 
@@ -273,24 +281,6 @@ $periodos           = $data['periodos']           ?? [];
                 <i class="ti ti-alert-triangle"></i>
             </a>
         </div>
-    </div>
-
-    <!-- Widget Acceso Rápido: Calculadora de Horas -->
-    <div style="margin: 18px 0 22px; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #2563eb 100%); border-radius: 16px; padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 8px 24px rgba(30, 58, 138, 0.18);">
-        <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.4rem; flex-shrink: 0;">
-                <i class="ti ti-calculator"></i>
-            </div>
-            <div>
-                <div style="color: #fff; font-size: 0.98rem; font-weight: 800; letter-spacing: -0.01em;">Calculadora de Horas de Pasantía</div>
-                <div style="color: rgba(255,255,255,0.78); font-size: 0.8rem;">Calcula fechas de culminación o total de horas por rango (excluyendo feriados no laborables)</div>
-            </div>
-        </div>
-        <button type="button" onclick="abrirCalculadoraHoras()"
-                style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 10px; border: none; background: #fff; color: #1e3a8a; font-size: 0.84rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.15s;"
-                onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
-            <i class="ti ti-sparkles"></i> Abrir Calculadora
-        </button>
     </div>
 
     <div class="charts-grid-50">

@@ -6,19 +6,37 @@
 
 /* ── Ocultar en desktop y tablet (≥ 769px) ─────────────────────── */
 @media (min-width: 769px) {
-    .sgp-mobile-dock       { display: none !important; }
-    .sgp-dock-sheet        { display: none !important; }
-    .sgp-dock-sheet-overlay{ display: none !important; }
+    .sgp-mobile-dock {
+        display: none !important;
+    }
+
+    .sgp-dock-sheet {
+        display: none !important;
+    }
+
+    .sgp-dock-sheet-overlay {
+        display: none !important;
+    }
+
     /* Restaurar botón hamburguesa desktop (ya manejado por sidebar.js) */
 }
 
 /* ── Ocultar hamburguesa y overlay del sidebar en mobile real (≤ 768px) ── */
 @media (max-width: 768px) {
+
     /* El dock reemplaza la nav móvil en celulares — ocultar hamburguesa */
-    #sidebarToggle          { display: none !important; }
+    #sidebarToggle {
+        display: none !important;
+    }
+
     /* El sidebar lateral NO debe abrirse en mobile */
-    .main-sidebar           { display: none !important; }
-    .sidebar-overlay        { display: none !important; }
+    .main-sidebar {
+        display: none !important;
+    }
+
+    .sidebar-overlay {
+        display: none !important;
+    }
 
     /* Modo Chat Fullscreen: ocultar dock y sheet en móvil */
     body.sgp-mobile-chat-active .sgp-mobile-dock,
@@ -46,10 +64,12 @@
         padding: 24px 20px !important;
         gap: 16px !important;
     }
+
     /* Ocultar círculo decorativo absoluto en mobile */
-    .admin-banner > div:first-child {
+    .admin-banner>div:first-child {
         display: none !important;
     }
+
     /* Pill fecha/hora: ocultarlo en mobile (ocupa mucho espacio) */
     .admin-banner .banner-clock {
         display: none !important;
@@ -60,7 +80,8 @@
    DOCK PRINCIPAL — Base flotante iOS
    ================================================================ */
 .sgp-mobile-dock {
-    display: none; /* Oculto por defecto; visible solo via @media mobile */
+    display: none;
+    /* Oculto por defecto; visible solo via @media mobile */
 }
 
 @media (max-width: 768px) {
@@ -71,7 +92,8 @@
         left: 0;
         right: 0;
         height: 68px;
-        z-index: 2999; /* Sobre content pero bajo modales (z-index 9999) */
+        z-index: 2999;
+        /* Sobre content pero bajo modales (z-index 9999) */
 
         /* Glassmorphism idéntico al original de control_asis */
         background: rgba(255, 255, 255, 0.90);
@@ -79,7 +101,7 @@
         -webkit-backdrop-filter: saturate(180%) blur(20px);
 
         border-top: 1px solid rgba(0, 0, 0, 0.08);
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06), 0 -1px 4px rgba(0,0,0,0.04);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06), 0 -1px 4px rgba(0, 0, 0, 0.04);
 
         justify-content: space-around;
         align-items: center;
@@ -105,7 +127,9 @@
     user-select: none;
     outline: none !important;
 }
-.dock-item:focus, .dock-fab-item:focus {
+
+.dock-item:focus,
+.dock-fab-item:focus {
     outline: none !important;
 }
 
@@ -121,7 +145,8 @@
     letter-spacing: 0.01em;
     white-space: nowrap;
     line-height: 1;
-    margin-bottom: 6px; /* Despegar texto del borde inferior para evitar barrita intrusiva */
+    margin-bottom: 6px;
+    /* Despegar texto del borde inferior para evitar barrita intrusiva */
     position: relative;
     z-index: 15;
 }
@@ -153,7 +178,7 @@
 /* Indicador Magic Dot (Punto Neón Dinámico Controlado desde JS) */
 .dock-indicator {
     position: absolute;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 6px); 
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
     left: 0;
     width: 6px;
     height: 6px;
@@ -166,14 +191,20 @@
     pointer-events: none;
     opacity: 0;
 }
+
 .dock-indicator.visible {
     opacity: 1;
 }
 
 /* Animación de iluminación sutil opcional para el Neón */
 @keyframes neonGlow {
-    from { box-shadow: 0 -2px 10px rgba(5, 150, 105, 0.4); }
-    to { box-shadow: 0 -2px 14px rgba(16, 185, 129, 0.85); }
+    from {
+        box-shadow: 0 -2px 10px rgba(5, 150, 105, 0.4);
+    }
+
+    to {
+        box-shadow: 0 -2px 14px rgba(16, 185, 129, 0.85);
+    }
 }
 
 /* ── FAB (Botón Central Flotante) ────────────────────────────── */
@@ -194,9 +225,9 @@
     justify-content: center;
     color: white;
     box-shadow: 0 6px 18px rgba(22, 38, 96, 0.45),
-                0 2px 6px rgba(0,0,0,0.15);
+        0 2px 6px rgba(0, 0, 0, 0.15);
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-                box-shadow 0.2s ease;
+        box-shadow 0.2s ease;
     margin-bottom: 2px;
 }
 
@@ -210,8 +241,9 @@
     box-shadow: 0 3px 10px rgba(22, 38, 96, 0.3);
 }
 
-.dock-fab-item::after { 
-    display: none !important; /* Force hide old neon line regardless of mobile cache */ 
+.dock-fab-item::after {
+    display: none !important;
+    /* Force hide old neon line regardless of mobile cache */
 }
 
 .dock-item.dock-fab-item span {
@@ -249,8 +281,13 @@
 }
 
 @keyframes dockOverlayIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* Sheet contenedor */
@@ -264,7 +301,7 @@
     border-radius: 28px 28px 0 0;
     z-index: 3001;
     padding: 0 0 max(20px, env(safe-area-inset-bottom)) 0;
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.16);
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.16);
     animation: sheetSlideUp 0.3s cubic-bezier(0.34, 1.2, 0.64, 1) both;
     max-height: 80vh;
     overflow-y: auto;
@@ -278,8 +315,15 @@
 }
 
 @keyframes sheetSlideUp {
-    from { transform: translateY(100%); opacity: 0.6; }
-    to   { transform: translateY(0);    opacity: 1; }
+    from {
+        transform: translateY(100%);
+        opacity: 0.6;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 /* Handle visual */
@@ -364,7 +408,7 @@
 }
 
 .dock-sheet-item.active {
-    background: linear-gradient(135deg, rgba(23,37,84,0.08) 0%, rgba(37,99,235,0.06) 100%);
+    background: linear-gradient(135deg, rgba(23, 37, 84, 0.08) 0%, rgba(37, 99, 235, 0.06) 100%);
     color: #1e3a8a;
     font-weight: 700;
 }
@@ -437,8 +481,15 @@
     }
 
     @keyframes dockMountIn {
-        from { transform: translateY(100%); opacity: 0; }
-        to   { transform: translateY(0);    opacity: 1; }
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
     }
 }
 

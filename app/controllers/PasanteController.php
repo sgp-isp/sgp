@@ -970,12 +970,7 @@ class PasanteController extends Controller
         // Exámenes activos dentro del rango de fechas + estado de intento del pasante
         $this->db->query("
             SELECT
-                e.id,
-                e.titulo,
-                e.descripcion,
-                e.fecha_inicio,
-                e.fecha_fin,
-                e.intentos_permitidos,
+                e.*,
                 (SELECT COUNT(*) FROM examen_preguntas ep WHERE ep.examen_id = e.id) AS total_preguntas,
                 ei.id          AS intento_id,
                 ei.puntaje_obtenido,
@@ -1076,7 +1071,7 @@ class PasanteController extends Controller
 
         // Buscar intento en curso o crear uno nuevo
         $this->db->query("
-            SELECT id FROM examen_intentos
+            SELECT id, iniciado_at FROM examen_intentos
             WHERE examen_id = :eid AND pasante_id = :uid AND enviado_at IS NULL
             LIMIT 1
         ");
@@ -1085,7 +1080,8 @@ class PasanteController extends Controller
         $intentoExistente = $this->db->single();
 
         if ($intentoExistente) {
-            $intentoId = (int)$intentoExistente->id;
+            $intentoId  = (int)$intentoExistente->id;
+            $iniciadoTs = !empty($intentoExistente->iniciado_at) ? strtotime($intentoExistente->iniciado_at) : time();
         } else {
             $this->db->query("
                 INSERT INTO examen_intentos (examen_id, pasante_id, iniciado_at, enviado_at, puntaje_obtenido, puntaje_maximo, porcentaje)
@@ -1094,8 +1090,13 @@ class PasanteController extends Controller
             $this->db->bind(':eid', $id);
             $this->db->bind(':uid', $userId);
             $this->db->execute();
-            $intentoId = (int)$this->db->lastInsertId();
+            $intentoId  = (int)$this->db->lastInsertId();
+            $iniciadoTs = time();
         }
+
+        $duracionMin       = (int)($examen->duracion_minutos ?? 0);
+        $segundosTotales   = $duracionMin > 0 ? ($duracionMin * 60) : 0;
+        $segundosRestantes = $duracionMin > 0 ? max(0, ($iniciadoTs + $segundosTotales) - time()) : null;
 
         // Cargar preguntas con opciones (es_correcta incluido para scoring server-side)
         $this->db->query("
@@ -1108,7 +1109,11 @@ class PasanteController extends Controller
         $preguntas = $this->db->resultSet();
 
         foreach ($preguntas as $preg) {
-            $this->db->query("SELECT id, texto, es_correcta FROM examen_opciones WHERE pregunta_id = :pid");
+            if (($preg->tipo ?? '') === 'emparejamiento') {
+                $this->db->query("SELECT id, texto, texto_par, es_correcta FROM examen_opciones WHERE pregunta_id = :pid");
+            } else {
+                $this->db->query("SELECT id, texto, es_correcta FROM examen_opciones WHERE pregunta_id = :pid");
+            }
             $this->db->bind(':pid', $preg->id);
             $opciones = $this->db->resultSet();
             shuffle($opciones);
@@ -1116,9 +1121,12 @@ class PasanteController extends Controller
         }
 
         $this->view('pasante/tomar_examen', [
-            'examen'    => $examen,
-            'preguntas' => $preguntas,
-            'intentoId' => $intentoId,
+            'examen'            => $examen,
+            'preguntas'         => $preguntas,
+            'intentoId'         => $intentoId,
+            'duracionMin'       => $duracionMin,
+            'segundosRestantes' => $segundosRestantes,
+            'segundosTotales'   => $segundosTotales,
         ]);
     }
 
@@ -1184,8 +1192,9 @@ class PasanteController extends Controller
 
         // Cargar preguntas del examen con opciones correctas
         $this->db->query("
-            SELECT ep.id AS pregunta_id, ep.puntos,
-                   eo.id AS opcion_id, eo.es_correcta, eo.texto
+            SELECT ep.id AS pregunta_id, ep.tipo, ep.puntos,
+                   eo.id AS opcion_id, eo.es_correcta, eo.texto,
+                   eo.*
             FROM examen_preguntas ep
             JOIN examen_opciones eo ON eo.pregunta_id = ep.id
             WHERE ep.examen_id = :eid
@@ -1195,23 +1204,40 @@ class PasanteController extends Controller
 
         // Organizar por pregunta
         $preguntasMap = [];
+        $tokenToOpId  = [];
         foreach ($rows as $row) {
             $pid = (int)$row->pregunta_id;
+            $oid = (int)$row->opcion_id;
             if (!isset($preguntasMap[$pid])) {
-                $preguntasMap[$pid] = ['puntos' => (float)$row->puntos, 'opciones' => []];
+                $preguntasMap[$pid] = [
+                    'tipo'     => $row->tipo ?? 'opcion_multiple',
+                    'puntos'   => (float)$row->puntos,
+                    'opciones' => [],
+                ];
             }
-            $preguntasMap[$pid]['opciones'][(int)$row->opcion_id] = [
+            $preguntasMap[$pid]['opciones'][$oid] = [
                 'es_correcta' => (bool)$row->es_correcta,
                 'texto'       => $row->texto,
+                'texto_par'   => $row->texto_par ?? '',
             ];
+            if (($row->tipo ?? '') === 'emparejamiento') {
+                $tok = substr(hash_hmac('sha256', $intentoId . ':' . $oid, 'sgp_quiz_pair_v1'), 0, 12);
+                $tokenToOpId[$pid][$tok] = $oid;
+            }
         }
 
         // Mapear respuestas enviadas
-        $respMap = [];
+        $respMap     = [];
+        $pairRespMap = [];
         foreach ($respuestas as $r) {
             $pid = (int)($r['pregunta_id'] ?? 0);
-            $oid = (int)($r['opcion_id']   ?? 0);
-            if ($pid > 0) $respMap[$pid] = $oid;
+            if ($pid <= 0) continue;
+            if (!empty($r['pares']) && is_array($r['pares'])) {
+                $pairRespMap[$pid] = $r['pares'];
+            } else {
+                $oid = (int)($r['opcion_id'] ?? 0);
+                $respMap[$pid] = $oid;
+            }
         }
 
         // Calificar y guardar respuestas
@@ -1220,7 +1246,65 @@ class PasanteController extends Controller
         $resultados      = [];
 
         foreach ($preguntasMap as $pid => $pregData) {
-            $puntajeMaximo  += $pregData['puntos'];
+            $puntajeMaximo += $pregData['puntos'];
+
+            if ($pregData['tipo'] === 'emparejamiento') {
+                $paresEnv    = $pairRespMap[$pid] ?? [];
+                $envMap      = [];
+                foreach ($paresEnv as $pr) {
+                    $aId   = (int)($pr['a_id'] ?? 0);
+                    $bTok  = (string)($pr['b_token'] ?? '');
+                    $bId   = $tokenToOpId[$pid][$bTok] ?? 0;
+                    if ($aId > 0 && $bId > 0) {
+                        $envMap[$aId] = $bId;
+                    }
+                }
+
+                $totalPares    = count($pregData['opciones']);
+                $aciertosPares = 0;
+                $paresRes      = [];
+
+                foreach ($pregData['opciones'] as $aId => $opData) {
+                    $bElegidoId = $envMap[$aId] ?? 0;
+                    $parOk      = ($bElegidoId > 0 && $bElegidoId === $aId);
+                    if ($parOk) $aciertosPares++;
+
+                    if ($bElegidoId > 0) {
+                        $this->db->query("
+                            INSERT INTO examen_respuestas (intento_id, pregunta_id, opcion_id_elegida, opcion_par_elegida_id)
+                            VALUES (:iid, :pid, :oid, :opid)
+                        ");
+                        $this->db->bind(':iid',  $intentoId);
+                        $this->db->bind(':pid',  $pid);
+                        $this->db->bind(':oid',  $aId);
+                        $this->db->bind(':opid', $bElegidoId);
+                        $this->db->execute();
+                    }
+
+                    $paresRes[] = [
+                        'texto'             => $opData['texto'],
+                        'texto_par'         => $opData['texto_par'],
+                        'texto_par_elegido' => ($bElegidoId > 0 && isset($pregData['opciones'][$bElegidoId]))
+                                               ? $pregData['opciones'][$bElegidoId]['texto_par']
+                                               : '(sin unir)',
+                        'acierto'           => $parOk,
+                    ];
+                }
+
+                $ptsGanados = $totalPares > 0
+                    ? round($pregData['puntos'] * ($aciertosPares / $totalPares), 2)
+                    : 0.0;
+                $puntajeObtenido += $ptsGanados;
+
+                $resultados[] = [
+                    'pregunta_id' => $pid,
+                    'tipo'        => 'emparejamiento',
+                    'es_correcta' => ($totalPares > 0 && $aciertosPares === $totalPares),
+                    'pares'       => $paresRes,
+                ];
+                continue;
+            }
+
             $opcionElegidaId = $respMap[$pid] ?? 0;
             $esCorrecta      = false;
             $opcionCorrectaId = 0;
@@ -1254,6 +1338,7 @@ class PasanteController extends Controller
 
             $resultados[] = [
                 'pregunta_id'       => $pid,
+                'tipo'              => $pregData['tipo'],
                 'opcion_elegida_id' => $opcionElegidaId,
                 'es_correcta'       => $esCorrecta,
                 'opcion_correcta_id'=> $opcionCorrectaId,

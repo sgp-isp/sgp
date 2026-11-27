@@ -6,21 +6,41 @@
  *            $avgScore, $tasaAprobacion, $dist, $top5[], $examenesActivos[], $recientes[]
  */
 
-$examenes        = $data['examenes']        ?? [];
-$periodos        = $data['periodos']        ?? [];
-$totalActivos    = $data['totalActivos']    ?? 0;
-$totalEvaluados  = $data['totalEvaluados']  ?? 0;
-$avgScore        = $data['avgScore']        ?? 0;
-$tasaAprobacion  = $data['tasaAprobacion']  ?? 0;
-$dist            = $data['dist']            ?? null;
-$top5            = $data['top5']            ?? [];
-$examenesActivos = $data['examenesActivos'] ?? [];
-$recientes       = $data['recientes']       ?? [];
-$totalExamenes   = count($examenes);
-$aprobados       = (int)($dist->r60 ?? 0) + (int)($dist->r80 ?? 0);
-$reprobados      = (int)($dist->r0  ?? 0) + (int)($dist->r20 ?? 0) + (int)($dist->r40 ?? 0);
-$avgColor        = (float)$avgScore  >= 60 ? '#059669' : '#dc2626';
-$tasaColor       = (float)$tasaAprobacion >= 60 ? '#059669' : '#dc2626';
+$examenes          = $data['examenes']          ?? [];
+$periodos          = $data['periodos']          ?? [];
+$selectedPeriodoId = (int)($data['selectedPeriodoId'] ?? 0);
+$periodoActivo     = $data['periodoActivo']     ?? null;
+$scope             = $data['scope']             ?? 'activos';
+$selectedExamenId  = (int)($data['selectedExamenId'] ?? 0);
+$fechaDesde        = $data['fechaDesde']        ?? '';
+$fechaHasta        = $data['fechaHasta']        ?? '';
+$totalActivos      = $data['totalActivos']      ?? 0;
+$totalEvaluados    = $data['totalEvaluados']    ?? 0;
+$avgScore          = $data['avgScore']          ?? 0;
+$tasaAprobacion    = $data['tasaAprobacion']    ?? 0;
+$dist              = $data['dist']              ?? null;
+$top5              = $data['top5']              ?? [];
+$examenesActivos   = $data['examenesActivos']   ?? [];
+$recientes         = $data['recientes']         ?? [];
+$totalExamenes     = count($examenes);
+
+$examenesActivosBorradores = [];
+$examenesCerrados          = [];
+foreach ($examenes as $exItem) {
+    $isAct  = (int)($exItem->activo ?? 0) === 1;
+    $hasRes = (int)($exItem->total_respondieron ?? 0) > 0;
+    if (!$isAct && $hasRes) {
+        $examenesCerrados[] = $exItem;
+    } else {
+        $examenesActivosBorradores[] = $exItem;
+    }
+}
+
+$aprobados         = (int)($dist->r60 ?? 0) + (int)($dist->r80 ?? 0);
+$reprobados        = (int)($dist->r0  ?? 0) + (int)($dist->r20 ?? 0) + (int)($dist->r40 ?? 0);
+$avgColor          = (float)$avgScore  >= 60 ? '#059669' : '#dc2626';
+$tasaColor         = (float)$tasaAprobacion >= 60 ? '#059669' : '#dc2626';
+$activePeriodoIdJs = $periodoActivo ? (int)$periodoActivo->id : '';
 ?>
 <style>
 @keyframes ex-fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
@@ -53,6 +73,26 @@ $tasaColor       = (float)$tasaAprobacion >= 60 ? '#059669' : '#dc2626';
     cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;
 }
 .ex-btn-new-hero:hover{background:rgba(255,255,255,.28);transform:translateY(-2px)}
+.ex-hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.ex-periodo-filter{
+    position:relative;display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.14);backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,.28);border-radius:12px;
+    padding:0 14px;height:42px;color:#fff;font-size:.84rem;font-weight:700;
+    transition:all .2s;cursor:pointer;
+}
+.ex-periodo-filter:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.45)}
+.ex-periodo-filter i.ex-pf-icon{font-size:1rem;opacity:.9;pointer-events:none;flex-shrink:0}
+.ex-periodo-filter i.ex-pf-caret{font-size:.85rem;opacity:.8;pointer-events:none;flex-shrink:0}
+.ex-periodo-filter select{
+    background:transparent !important;background-color:transparent !important;
+    border:none !important;box-shadow:none !important;outline:none !important;
+    color:#fff !important;font-size:.84rem;font-weight:700;
+    padding:0 2px !important;margin:0 !important;height:100%;
+    cursor:pointer;max-width:220px;
+    -webkit-appearance:none;-moz-appearance:none;appearance:none;
+}
+.ex-periodo-filter select option{color:#0f172a;background:#fff;font-weight:600}
 
 /* ── KPI Row — réplica pb-kpi dashboard ──────────────── */
 .ex-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
@@ -349,7 +389,7 @@ $tasaColor       = (float)$tasaAprobacion >= 60 ? '#059669' : '#dc2626';
 .ex-exam-body{padding:18px 20px;flex:1;min-width:0}
 .ex-exam-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
 .ex-exam-title{font-size:.95rem;font-weight:700;color:#1e293b;margin:0 0 3px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .ex-exam-desc{font-size:.79rem;color:#64748b;margin:0;display:-webkit-box;
     -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ex-badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;white-space:nowrap;flex-shrink:0}
@@ -476,21 +516,232 @@ $tasaColor       = (float)$tasaAprobacion >= 60 ? '#059669' : '#dc2626';
     .ex-hero-icon{width:48px;height:48px;font-size:1.4rem;flex-shrink:0;border-radius:14px;}
     .ex-hero-title{font-size:1.4rem;line-height:1.25;}
     .ex-hero-sub{font-size:.82rem;}
-    .ex-btn-new-hero{width:100%;justify-content:center;padding:12px 16px;min-height:42px;}
-    .ex-kpi-row{grid-template-columns:repeat(2,1fr)}
-    .ex-bento{grid-template-columns:1fr}
-    .ex-grid{grid-template-columns:1fr}
+    .ex-hero-actions{width:100%;flex-direction:column;align-items:stretch;}
+    .ex-periodo-filter{width:100%;justify-content:space-between;padding:9px 12px;box-sizing:border-box;}
+    .ex-periodo-filter select{flex:1;max-width:none;}
+    .ex-btn-new-hero{width:100%;justify-content:center;padding:12px 16px;min-height:44px;}
+    .ex-kpi-row{grid-template-columns:repeat(2,1fr);gap:12px;}
+    .ex-kpi{padding:16px;border-radius:15px;}
+    .ex-kpi-val{font-size:1.9rem;}
+    .ex-kpi-icon{width:38px;height:38px;font-size:1.1rem;}
+    .ex-bento{grid-template-columns:1fr;gap:14px;}
+    .ex-card{padding:18px 16px;border-radius:16px;}
+    .ex-grid{grid-template-columns:1fr;gap:14px;}
+    .ex-btn{min-height:38px;padding:8px 13px;}
     /* Modal full-screen */
-    .exm-modal{width:100%;max-width:100%;height:100%;max-height:100%;border-radius:0;margin:0}
-    .exm-header{padding:16px 18px}
-    .exm-body{padding:16px 18px}
-    .exm-footer{padding:12px 18px}
-    .exm-btn-save{padding:9px 16px;font-size:.82rem}
+    .exm-overlay{padding:0;}
+    .exm-modal{width:100%;max-width:100%;height:100dvh;max-height:100dvh;border-radius:0;margin:0}
+    .exm-header{padding:16px 16px 0}
+    .exm-body{padding:16px}
+    .exm-footer{padding:12px 16px;justify-content:space-between;}
+    .exm-btn-save{padding:10px 14px;font-size:.82rem;flex:1;justify-content:center;min-height:42px;}
     /* Constructor de preguntas */
     .exm-preg-meta{grid-template-columns:1fr}
     .exm-row,.exm-row-3{grid-template-columns:1fr}
-    .exm-tab{padding:7px 8px;font-size:.78rem}
+    .exm-tab{padding:8px 6px;font-size:.74rem;display:flex;align-items:center;justify-content:center;gap:4px;}
+    .exm-tab i{display:none;}
 }
+@media(max-width:380px){
+    .ex-kpi-row{grid-template-columns:1fr;}
+}
+
+/* ── Dark Mode Support ──────────────────────────────────────── */
+[data-theme="dark"] .ex-kpi,
+[data-theme="dark"] .ex-card,
+[data-theme="dark"] .ex-exam-card,
+[data-theme="dark"] .ex-empty {
+    background: #111a2e !important;
+    border-color: #1e293b !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+[data-theme="dark"] .ex-card-title,
+[data-theme="dark"] .ex-section-title,
+[data-theme="dark"] .ex-exam-title,
+[data-theme="dark"] .ex-top-name,
+[data-theme="dark"] .ex-prog-name a {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .ex-exam-desc,
+[data-theme="dark"] .ex-kpi-label,
+[data-theme="dark"] .ex-kpi-sub {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .ex-top-row,
+[data-theme="dark"] .ex-prog-row {
+    border-bottom-color: #1e293b !important;
+}
+[data-theme="dark"] .ex-switch-pill,
+[data-theme="dark"] .ex-inst-banner {
+    background: #0d1526 !important;
+    border-color: #1e293b !important;
+}
+[data-theme="dark"] .ex-switch-btn.active,
+[data-theme="dark"] .ex-inst-badge-avg {
+    background: #1e293b !important;
+    color: #a78bfa !important;
+    border-color: #334155 !important;
+}
+[data-theme="dark"] .ex-btn-icon {
+    background: #1e293b !important;
+    color: #cbd5e1 !important;
+}
+[data-theme="dark"] .exm-modal {
+    background: #0f172a !important;
+    border: 1px solid #1e293b !important;
+}
+[data-theme="dark"] .exm-title,
+[data-theme="dark"] .exm-label,
+[data-theme="dark"] .exm-bank-q {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .exm-tabs {
+    background: #1e293b !important;
+}
+[data-theme="dark"] .exm-tab.active {
+    background: #0f172a !important;
+    color: #60a5fa !important;
+}
+[data-theme="dark"] .exm-input,
+[data-theme="dark"] .exm-select,
+[data-theme="dark"] .exm-textarea,
+[data-theme="dark"] .exm-opcion-input {
+    background: #0d1526 !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .exm-bank-item,
+[data-theme="dark"] .exm-preg-card,
+[data-theme="dark"] .exm-empty-preg {
+    background: #111a2e !important;
+    border-color: #1e293b !important;
+}
+[data-theme="dark"] .exm-bank-item.selected {
+    background: rgba(37, 99, 235, 0.15) !important;
+    border-color: #3b82f6 !important;
+}
+[data-theme="dark"] .exm-footer {
+    border-top-color: #1e293b !important;
+}
+[data-theme="dark"] .exm-btn-draft,
+[data-theme="dark"] .exm-btn-cancel {
+    background: #1e293b !important;
+    color: #cbd5e1 !important;
+    border-color: #334155 !important;
+}
+
+/* ── Barra de Control Analítico ─────────────────────────────── */
+.ex-ctrl-bar{
+    background:#fff;border-radius:16px;padding:12px 16px;margin-bottom:18px;
+    box-shadow:0 2px 12px rgba(0,0,0,.05);border:1px solid #f1f5f9;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+.ex-ctrl-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ex-seg{
+    display:inline-flex;background:#f1f5f9;padding:3px;border-radius:11px;border:1px solid #e2e8f0;gap:3px;
+}
+.ex-seg-btn{
+    border:none;background:transparent;padding:7px 13px;border-radius:8px;
+    font-size:.78rem;font-weight:700;color:#64748b;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;transition:all .18s;white-space:nowrap;
+}
+.ex-seg-btn.active{background:#fff;color:#2563eb;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.ex-seg-cnt{
+    background:#e2e8f0;color:#475569;border-radius:20px;padding:1px 7px;font-size:.68rem;font-weight:800;
+}
+.ex-seg-btn.active .ex-seg-cnt{background:#dbeafe;color:#1d4ed8}
+.ex-ctrl-select{
+    height:36px;padding:0 12px;border-radius:10px;border:1.5px solid #e2e8f0;
+    background:#f8fafc;color:#1e293b;font-size:.8rem;font-weight:600;outline:none;cursor:pointer;
+    max-width:230px;
+}
+.ex-ctrl-select:focus{border-color:#2563eb;background:#fff}
+.ex-date-chip{
+    border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;
+    border-radius:9px;padding:6px 11px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;
+}
+.ex-date-chip:hover{border-color:#93c5fd;color:#2563eb}
+.ex-date-chip.active{background:#eff6ff;border-color:#2563eb;color:#1d4ed8}
+.ex-date-input{
+    height:34px;padding:0 9px;border-radius:9px;border:1.5px solid #e2e8f0;
+    background:#f8fafc;color:#334155;font-size:.76rem;font-weight:600;outline:none;
+}
+.ex-date-input:focus{border-color:#2563eb;background:#fff}
+
+/* ── Banner Live-View Vacío ─────────────────────────────────── */
+.ex-live-banner{
+    background:linear-gradient(135deg,#eff6ff 0%,#f5f3ff 100%);
+    border:1px solid #bfdbfe;border-left:4px solid #2563eb;
+    border-radius:14px;padding:13px 18px;margin-bottom:18px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+.ex-live-banner-txt{font-size:.83rem;color:#1e3a8a;font-weight:600;display:flex;align-items:center;gap:9px}
+.ex-live-banner-btn{
+    background:#2563eb;color:#fff;border:none;border-radius:9px;padding:7px 14px;
+    font-size:.77rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .15s;
+}
+.ex-live-banner-btn:hover{opacity:.9}
+
+/* ── Tabs de Listado (Activos vs Historial) ─────────────────── */
+.ex-list-tabs{
+    display:inline-flex;background:#fff;padding:4px;border-radius:13px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);border:1px solid #f1f5f9;gap:4px;
+}
+.ex-list-tab{
+    border:none;background:transparent;padding:8px 16px;border-radius:9px;
+    font-size:.82rem;font-weight:700;color:#64748b;cursor:pointer;
+    display:inline-flex;align-items:center;gap:7px;transition:all .18s;
+}
+.ex-list-tab.active{background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;box-shadow:0 3px 10px rgba(37,99,235,.25)}
+.ex-list-tab .ex-tab-badge{
+    background:rgba(100,116,139,.15);color:inherit;border-radius:20px;padding:1px 7px;font-size:.7rem;font-weight:800;
+}
+.ex-list-tab.active .ex-tab-badge{background:rgba(255,255,255,.22);color:#fff}
+
+/* ── Tabla de Historial de Cerrados ─────────────────────────── */
+.ex-hist-wrap{
+    background:#fff;border-radius:18px;box-shadow:0 2px 14px rgba(0,0,0,.06);
+    border:1px solid rgba(0,0,0,.04);overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.ex-hist-table{width:100%;border-collapse:collapse;font-size:.83rem;min-width:640px}
+.ex-hist-table th{
+    background:#f8fafc;color:#64748b;font-size:.71rem;font-weight:800;text-transform:uppercase;
+    letter-spacing:.04em;padding:13px 16px;text-align:left;border-bottom:1px solid #e2e8f0;white-space:nowrap;
+}
+.ex-hist-table td{padding:13px 16px;border-bottom:1px solid #f1f5f9;color:#1e293b;vertical-align:middle}
+.ex-hist-table tr:last-child td{border-bottom:none}
+.ex-hist-table tr:hover td{background:#f8fafc}
+
+@media(max-width:767px){
+    .ex-ctrl-bar{padding:12px;gap:10px}
+    .ex-ctrl-group{width:100%}
+    .ex-seg{width:100%;display:grid;grid-template-columns:1fr 1fr}
+    .ex-seg-btn{justify-content:center;min-height:38px;padding:7px 8px;font-size:.75rem}
+    .ex-ctrl-select{width:100%;max-width:none;min-height:40px}
+    .ex-date-input{flex:1;min-width:0;min-height:38px}
+    .ex-list-tabs{width:100%;display:grid;grid-template-columns:1fr 1fr}
+    .ex-list-tab{justify-content:center;padding:9px 8px;font-size:.78rem}
+}
+
+[data-theme="dark"] .ex-ctrl-bar,
+[data-theme="dark"] .ex-list-tabs,
+[data-theme="dark"] .ex-hist-wrap {
+    background:#111a2e !important;border-color:#1e293b !important;
+}
+[data-theme="dark"] .ex-seg {background:#0d1526 !important;border-color:#1e293b !important}
+[data-theme="dark"] .ex-seg-btn.active {background:#1e293b !important;color:#60a5fa !important}
+[data-theme="dark"] .ex-ctrl-select,
+[data-theme="dark"] .ex-date-chip,
+[data-theme="dark"] .ex-date-input {
+    background:#0d1526 !important;border-color:#334155 !important;color:#f8fafc !important;
+}
+[data-theme="dark"] .ex-date-chip.active {background:rgba(37,99,235,.22) !important;border-color:#3b82f6 !important;color:#93c5fd !important}
+[data-theme="dark"] .ex-live-banner {
+    background:rgba(30,58,138,.25) !important;border-color:#1e40af !important;
+}
+[data-theme="dark"] .ex-live-banner-txt {color:#bfdbfe !important}
+[data-theme="dark"] .ex-hist-table th {background:#0d1526 !important;border-bottom-color:#1e293b !important;color:#94a3b8 !important}
+[data-theme="dark"] .ex-hist-table td {border-bottom-color:#1e293b !important;color:#f8fafc !important}
+[data-theme="dark"] .ex-hist-table tr:hover td {background:#1e293b !important}
 </style>
 
 <div class="ex-wrap">
@@ -508,11 +759,82 @@ $tasaColor       = (float)$tasaAprobacion >= 60 ? '#059669' : '#dc2626';
                 </p>
             </div>
         </div>
-        <button class="ex-btn-new-hero" onclick="abrirModalExamen()">
-            <i class="ti ti-plus"></i> Nuevo Examen
-        </button>
+        <div class="ex-hero-actions">
+            <label class="ex-periodo-filter" for="exPeriodoFilter">
+                <i class="ti ti-calendar-event ex-pf-icon"></i>
+                <select id="exPeriodoFilter" class="no-choices" onchange="filtrarPorPeriodo(this.value)" aria-label="Filtrar analítica y exámenes por período">
+                    <option value="all" <?= $selectedPeriodoId === 0 ? 'selected' : '' ?>>Todos los períodos</option>
+                    <?php foreach ($periodos as $p):
+                        $est = $p->estado ?? '';
+                        $tag = $est === 'Activo' ? ' (Activo)' : ($est === 'Cerrado' ? ' (Cerrado)' : '');
+                    ?>
+                    <option value="<?= (int)$p->id ?>" <?= $selectedPeriodoId === (int)$p->id ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($p->nombre) . $tag ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+                <i class="ti ti-chevron-down ex-pf-caret"></i>
+            </label>
+            <button class="ex-btn-new-hero" onclick="abrirModalExamen()">
+                <i class="ti ti-plus"></i> Nuevo Examen
+            </button>
+        </div>
     </div>
 </div>
+
+<!-- ═══════════════════ BARRA DE CONTROL ANALÍTICO ═══════════════════ -->
+<?php
+$hoyStr  = date('Y-m-d');
+$sem7Str = date('Y-m-d', strtotime('-7 days'));
+$isHoy   = ($fechaDesde === $hoyStr && $fechaHasta === $hoyStr);
+$is7d    = ($fechaDesde === $sem7Str && $fechaHasta === $hoyStr);
+$isTodoF = ($fechaDesde === '' && $fechaHasta === '');
+?>
+<div class="ex-ctrl-bar">
+    <div class="ex-ctrl-group">
+        <div class="ex-seg" role="group" aria-label="Alcance de analítica">
+            <button type="button" class="ex-seg-btn <?= $scope === 'activos' ? 'active' : '' ?>"
+                    onclick="setScopeFiltro('activos')">
+                <i class="ti ti-bolt"></i> En curso
+                <span class="ex-seg-cnt"><?= $totalActivos ?></span>
+            </button>
+            <button type="button" class="ex-seg-btn <?= $scope === 'todos' && $selectedExamenId === 0 ? 'active' : '' ?>"
+                    onclick="setScopeFiltro('todos')">
+                <i class="ti ti-history"></i> Todos
+                <span class="ex-seg-cnt"><?= $totalExamenes ?></span>
+            </button>
+        </div>
+
+        <select id="exExamenFilter" class="ex-ctrl-select no-choices" onchange="aplicarFiltroExamenes()" aria-label="Filtrar por examen">
+            <option value="0" <?= $selectedExamenId === 0 ? 'selected' : '' ?>>Todos los exámenes</option>
+            <?php foreach ($examenes as $exOpt): ?>
+            <option value="<?= (int)$exOpt->id ?>" <?= $selectedExamenId === (int)$exOpt->id ? 'selected' : '' ?>>
+                <?= htmlspecialchars($exOpt->titulo) ?> (<?= (int)$exOpt->activo === 1 ? 'Activo' : 'Cerrado' ?>)
+            </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
+    <div class="ex-ctrl-group">
+        <button type="button" class="ex-date-chip <?= $isHoy ? 'active' : '' ?>" onclick="setDatePreset('hoy')">Hoy</button>
+        <button type="button" class="ex-date-chip <?= $is7d ? 'active' : '' ?>" onclick="setDatePreset('7d')">7 días</button>
+        <button type="button" class="ex-date-chip <?= $isTodoF ? 'active' : '' ?>" onclick="setDatePreset('todo')">Todo</button>
+        <input type="date" id="exFechaDesde" class="ex-date-input" value="<?= htmlspecialchars($fechaDesde) ?>" onchange="aplicarFiltroExamenes()" title="Desde">
+        <input type="date" id="exFechaHasta" class="ex-date-input" value="<?= htmlspecialchars($fechaHasta) ?>" onchange="aplicarFiltroExamenes()" title="Hasta">
+    </div>
+</div>
+
+<?php if ($scope === 'activos' && $totalActivos === 0 && count($examenesCerrados) > 0): ?>
+<div class="ex-live-banner">
+    <div class="ex-live-banner-txt">
+        <i class="ti ti-radar" style="font-size:1.15rem;color:#2563eb;flex-shrink:0;"></i>
+        <span>Vista <strong>En curso</strong> lista para el próximo examen (0 activos ahora). Hay <strong><?= count($examenesCerrados) ?></strong> examen<?= count($examenesCerrados) !== 1 ? 'es' : '' ?> cerrado<?= count($examenesCerrados) !== 1 ? 's' : '' ?> en el historial.</span>
+    </div>
+    <button type="button" class="ex-live-banner-btn" onclick="setScopeFiltro('todos')">
+        <i class="ti ti-history"></i> Ver historial del período
+    </button>
+</div>
+<?php endif; ?>
 
 <!-- ═══════════════════ KPI ROW ═══════════════════ -->
 <?php
@@ -828,33 +1150,40 @@ $medalClasses    = ['ex-medal-1','ex-medal-2','ex-medal-3','ex-medal-n','ex-meda
 
 </div>
 
-<!-- ═══════════════════ EXAM LIST ═══════════════════ -->
+<!-- ═══════════════════ EXAM LIST (TABS: ACTIVOS vs HISTORIAL) ═══════════════════ -->
 <div class="ex-section-hd">
     <h2 class="ex-section-title">
         <i class="ti ti-notebook" style="color:#2563eb;"></i>
-        Exámenes Registrados
-        <span style="background:#eff6ff;color:#2563eb;font-size:.72rem;padding:2px 8px;border-radius:20px;font-weight:700;">
-            <?= $totalExamenes ?>
-        </span>
+        Exámenes del Período
     </h2>
+    <div class="ex-list-tabs">
+        <button type="button" class="ex-list-tab active" id="exListTab-activos" onclick="switchExamListTab('activos')">
+            <i class="ti ti-bolt"></i> Activos y Borradores
+            <span class="ex-tab-badge"><?= count($examenesActivosBorradores) ?></span>
+        </button>
+        <button type="button" class="ex-list-tab" id="exListTab-historial" onclick="switchExamListTab('historial')">
+            <i class="ti ti-history"></i> Historial (Cerrados)
+            <span class="ex-tab-badge"><?= count($examenesCerrados) ?></span>
+        </button>
+    </div>
 </div>
 
-<div class="ex-grid">
-    <?php if (empty($examenes)): ?>
+<div id="exListPane-activos" class="ex-grid">
+    <?php if (empty($examenesActivosBorradores)): ?>
     <div class="ex-empty">
         <i class="ti ti-notebook"></i>
-        <p>No hay exámenes registrados aún.</p>
+        <p>No hay exámenes activos ni borradores en este período.</p>
         <button class="ex-btn-new-hero" style="display:inline-flex;background:linear-gradient(135deg,#1d4ed8,#2563eb);border:none;"
                 onclick="abrirModalExamen()">
-            <i class="ti ti-plus"></i> Crear primer examen
+            <i class="ti ti-plus"></i> Crear examen rápido
         </button>
     </div>
     <?php else: ?>
-    <?php foreach ($examenes as $ex):
+    <?php foreach ($examenesActivosBorradores as $ex):
         $activo    = (int)($ex->activo ?? 0);
         $respond   = (int)($ex->total_respondieron ?? 0);
-        $estado    = $activo ? 'publicado' : ($respond > 0 ? 'cerrado' : 'borrador');
-        $accentClr = $activo ? '#059669'   : ($respond > 0 ? '#64748b' : '#d97706');
+        $estado    = $activo ? 'publicado' : 'borrador';
+        $accentClr = $activo ? '#059669'   : '#d97706';
     ?>
     <div class="ex-exam-card" id="ex-card-<?= (int)$ex->id ?>">
         <div class="ex-exam-accent" style="background:<?= $accentClr ?>;"></div>
@@ -868,8 +1197,8 @@ $medalClasses    = ['ex-medal-1','ex-medal-2','ex-medal-3','ex-medal-n','ex-meda
                     <p class="ex-exam-desc"><?= htmlspecialchars($ex->descripcion) ?></p>
                     <?php endif; ?>
                 </div>
-                <span class="ex-badge <?= $estado === 'publicado' ? 'ex-badge-pub' : ($estado === 'cerrado' ? 'ex-badge-cerr' : 'ex-badge-draf') ?>">
-                    <?= $estado === 'publicado' ? 'Publicado' : ($estado === 'cerrado' ? 'Cerrado' : 'Borrador') ?>
+                <span class="ex-badge <?= $estado === 'publicado' ? 'ex-badge-pub' : 'ex-badge-draf' ?>">
+                    <?= $estado === 'publicado' ? 'Publicado' : 'Borrador' ?>
                 </span>
             </div>
 
@@ -894,8 +1223,14 @@ $medalClasses    = ['ex-medal-1','ex-medal-2','ex-medal-3','ex-medal-n','ex-meda
                 </span>
                 <span class="ex-exam-stat">
                     <i class="ti ti-users" style="color:#2563eb;"></i>
-                    <?= (int)($ex->total_respondieron ?? 0) ?> respondieron
+                    <?= $respond ?> respondieron
                 </span>
+                <?php if (!empty($ex->duracion_minutos)): ?>
+                <span class="ex-exam-stat">
+                    <i class="ti ti-clock" style="color:#d97706;"></i>
+                    <?= (int)$ex->duracion_minutos ?> min
+                </span>
+                <?php endif; ?>
             </div>
 
             <div class="ex-exam-actions">
@@ -903,10 +1238,10 @@ $medalClasses    = ['ex-medal-1','ex-medal-2','ex-medal-3','ex-medal-n','ex-meda
                     <i class="ti ti-chart-bar"></i> Ver resultados
                 </a>
                 <button class="ex-btn ex-btn-icon <?= $activo ? 'ex-btn-cerrar' : '' ?>"
-                        title="<?= $activo ? 'Cerrar examen' : ($respond > 0 ? 'Reabrir examen' : 'Publicar') ?>"
+                        title="<?= $activo ? 'Cerrar examen' : 'Publicar' ?>"
                         onclick="togglePublicar(<?= (int)$ex->id ?>, <?= $activo ?>, <?= $respond ?>)"
                         id="btn-pub-<?= (int)$ex->id ?>">
-                    <i class="ti <?= $activo ? 'ti-lock' : ($respond > 0 ? 'ti-lock-open' : 'ti-eye') ?>"></i>
+                    <i class="ti <?= $activo ? 'ti-lock' : 'ti-eye' ?>"></i>
                 </button>
                 <button class="ex-btn ex-btn-del"
                         title="Eliminar"
@@ -917,6 +1252,72 @@ $medalClasses    = ['ex-medal-1','ex-medal-2','ex-medal-3','ex-medal-n','ex-meda
         </div>
     </div>
     <?php endforeach; ?>
+    <?php endif; ?>
+</div>
+
+<div id="exListPane-historial" style="display:none;">
+    <?php if (empty($examenesCerrados)): ?>
+    <div class="ex-empty">
+        <i class="ti ti-history"></i>
+        <p>No hay exámenes cerrados en este período.</p>
+    </div>
+    <?php else: ?>
+    <div class="ex-hist-wrap">
+        <table class="ex-hist-table">
+            <thead>
+                <tr>
+                    <th>Examen</th>
+                    <th>Fecha</th>
+                    <th>Evaluados</th>
+                    <th>Promedio</th>
+                    <th>Aprobación</th>
+                    <th style="text-align:right;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($examenesCerrados as $hc):
+                    $hResp  = (int)($hc->total_respondieron ?? 0);
+                    $hProm  = (float)($hc->promedio_pct ?? 0);
+                    $hAprob = (int)($hc->aprobados_cnt ?? 0);
+                    $hTasa  = $hResp > 0 ? round(($hAprob / $hResp) * 100) : 0;
+                    $hFecha = !empty($hc->ultimo_envio) ? date('d/m/Y', strtotime($hc->ultimo_envio)) : date('d/m/Y', strtotime($hc->created_at));
+                ?>
+                <tr id="ex-card-<?= (int)$hc->id ?>">
+                    <td>
+                        <div style="font-weight:700;"><?= htmlspecialchars($hc->titulo ?? '') ?></div>
+                        <div style="font-size:.73rem;color:#94a3b8;"><?= (int)($hc->total_preguntas ?? 0) ?> preguntas &bull; <?= htmlspecialchars($hc->periodo_nombre ?? '') ?></div>
+                    </td>
+                    <td style="white-space:nowrap;color:#64748b;font-weight:600;"><?= $hFecha ?></td>
+                    <td style="font-weight:700;color:#2563eb;"><?= $hResp ?> pasante<?= $hResp !== 1 ? 's' : '' ?></td>
+                    <td>
+                        <span class="ex-pct-badge <?= $hProm >= 60 ? 'ex-pct-ok' : 'ex-pct-fail' ?>">
+                            <?= number_format($hProm, 1) ?>%
+                        </span>
+                    </td>
+                    <td style="font-weight:700;color:<?= $hTasa >= 60 ? '#059669' : '#dc2626' ?>;">
+                        <?= $hTasa ?>% <span style="font-weight:500;color:#94a3b8;font-size:.74rem;">(<?= $hAprob ?>/<?= $hResp ?>)</span>
+                    </td>
+                    <td style="text-align:right;white-space:nowrap;">
+                        <div style="display:inline-flex;gap:6px;">
+                            <a href="<?= URLROOT ?>/examenes/ver/<?= (int)$hc->id ?>" class="ex-btn ex-btn-ver">
+                                <i class="ti ti-chart-bar"></i> Ver resultados
+                            </a>
+                            <button class="ex-btn ex-btn-icon" title="Reabrir examen"
+                                    onclick="togglePublicar(<?= (int)$hc->id ?>, 0, <?= $hResp ?>)"
+                                    id="btn-pub-<?= (int)$hc->id ?>">
+                                <i class="ti ti-lock-open"></i>
+                            </button>
+                            <button class="ex-btn ex-btn-del" title="Eliminar"
+                                    onclick="eliminarExamen(<?= (int)$hc->id ?>)">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
     <?php endif; ?>
 </div>
 
@@ -970,6 +1371,21 @@ $medalClasses    = ['ex-medal-1','ex-medal-2','ex-medal-3','ex-medal-n','ex-meda
                         <option value="<?= (int)$p->id ?>"><?= htmlspecialchars($p->nombre) ?><?= $tipoLabel ?></option>
                         <?php endforeach; ?>
                     </select>
+                </div>
+                <div class="exm-field">
+                    <label class="exm-label">Temporizador (duración)</label>
+                    <select class="exm-select no-choices" id="exm-duracion" onchange="toggleDuracionCustom(this.value)">
+                        <option value="">Sin límite de tiempo</option>
+                        <option value="5">5 minutos</option>
+                        <option value="10">10 minutos</option>
+                        <option value="15">15 minutos</option>
+                        <option value="20">20 minutos</option>
+                        <option value="30">30 minutos</option>
+                        <option value="45">45 minutos</option>
+                        <option value="60">60 minutos</option>
+                        <option value="custom">Personalizado...</option>
+                    </select>
+                    <input type="number" class="exm-input" id="exm-duracion-custom" min="1" max="300" placeholder="Minutos (ej. 25)" style="display:none;margin-top:8px;">
                 </div>
             </div>
             <div class="exm-row">
@@ -1317,7 +1733,91 @@ async function togglePublicar(id, activoActual, respondieron) {
         }
         if (btn) btn.setAttribute('onclick', 'togglePublicar(' + id + ',' + nuevoActivo + ',' + respondieron + ')');
 
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: nuevoActivo ? 'Examen publicado y notificado' : 'Examen cerrado correctamente',
+                showConfirmButton: false,
+                timer: 2200,
+                timerProgressBar: true
+            });
+        }
+
     } catch(e) { Swal.fire({ icon: 'error', title: 'Error de conexión' }); }
+}
+
+function filtrarPorPeriodo(val) {
+    var selEx = document.getElementById('exExamenFilter');
+    if (selEx) selEx.value = '0';
+    aplicarFiltroExamenes(val);
+}
+
+var _exCurrentScope = '<?= $scope ?>';
+function setScopeFiltro(sc) {
+    _exCurrentScope = sc;
+    var selEx = document.getElementById('exExamenFilter');
+    if (sc === 'activos' && selEx) selEx.value = '0';
+    aplicarFiltroExamenes();
+}
+
+function setDatePreset(preset) {
+    var dIn = document.getElementById('exFechaDesde');
+    var hIn = document.getElementById('exFechaHasta');
+    var hoy = new Date();
+    var fmt = function(dt) {
+        var y = dt.getFullYear();
+        var m = String(dt.getMonth() + 1).padStart(2, '0');
+        var d = String(dt.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + d;
+    };
+    if (preset === 'hoy') {
+        if (dIn) dIn.value = fmt(hoy);
+        if (hIn) hIn.value = fmt(hoy);
+    } else if (preset === '7d') {
+        var prev = new Date(hoy);
+        prev.setDate(prev.getDate() - 7);
+        if (dIn) dIn.value = fmt(prev);
+        if (hIn) hIn.value = fmt(hoy);
+    } else {
+        if (dIn) dIn.value = '';
+        if (hIn) hIn.value = '';
+    }
+    aplicarFiltroExamenes();
+}
+
+function aplicarFiltroExamenes(periodoOverride) {
+    var pVal   = periodoOverride !== undefined ? periodoOverride : (document.getElementById('exPeriodoFilter')?.value || 'all');
+    var exId   = document.getElementById('exExamenFilter')?.value || '0';
+    var fDesde = document.getElementById('exFechaDesde')?.value || '';
+    var fHasta = document.getElementById('exFechaHasta')?.value || '';
+
+    var params = new URLSearchParams();
+    params.set('periodo_id', pVal);
+    params.set('scope', parseInt(exId, 10) > 0 ? 'todos' : _exCurrentScope);
+    if (parseInt(exId, 10) > 0) params.set('examen_id', exId);
+    if (fDesde) params.set('fecha_desde', fDesde);
+    if (fHasta) params.set('fecha_hasta', fHasta);
+
+    var url = URLROOT + '/examenes?' + params.toString();
+    if (window.SGPPjax && typeof window.SGPPjax.navigate === 'function') {
+        window.SGPPjax.navigate(url, true);
+    } else {
+        window.location.href = url;
+    }
+}
+
+function switchExamListTab(tab) {
+    var isAct = (tab === 'activos');
+    var pAct  = document.getElementById('exListPane-activos');
+    var pHis  = document.getElementById('exListPane-historial');
+    var bAct  = document.getElementById('exListTab-activos');
+    var bHis  = document.getElementById('exListTab-historial');
+    if (pAct) pAct.style.display = isAct ? '' : 'none';
+    if (pHis) pHis.style.display = isAct ? 'none' : '';
+    if (bAct) bAct.classList.toggle('active', isAct);
+    if (bHis) bHis.classList.toggle('active', !isAct);
 }
 
 async function eliminarExamen(id) {
@@ -1337,7 +1837,10 @@ async function eliminarExamen(id) {
             body: JSON.stringify({id: id})
         });
         var data = await res.json();
-        if (!data.success) { alert('Error: ' + (data.message || 'No se pudo eliminar')); return; }
+        if (!data.success) {
+            Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo eliminar' });
+            return;
+        }
 
         var card = document.getElementById('ex-card-' + id);
         if (card) {
@@ -1346,7 +1849,15 @@ async function eliminarExamen(id) {
             card.style.transform  = 'scale(0.95)';
             setTimeout(function() { card.remove(); }, 320);
         }
-    } catch(e) { alert('Error de conexión.'); }
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Examen eliminado',
+            showConfirmButton: false,
+            timer: 2000
+        });
+    } catch(e) { Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo contactar al servidor.' }); }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1540,7 +2051,10 @@ function abrirModalExamen() {
 
     document.getElementById('exm-titulo').value       = '';
     document.getElementById('exm-desc').value         = '';
-    document.getElementById('exm-periodo').value      = '';
+    document.getElementById('exm-periodo').value      = '<?= $activePeriodoIdJs ?>';
+    document.getElementById('exm-duracion').value     = '';
+    var dc = document.getElementById('exm-duracion-custom');
+    if (dc) { dc.value = ''; dc.style.display = 'none'; }
     document.getElementById('exm-fecha-inicio').value = '';
     document.getElementById('exm-fecha-fin').value    = '';
 
@@ -1656,28 +2170,44 @@ function renderConstructor() {
         card.className = 'exm-preg-card';
         card.id = 'exm-preg-' + pi;
 
+        var isEmp = (preg.tipo === 'emparejamiento');
+        var isVF  = (preg.tipo === 'verdadero_falso');
         var opcionesHtml = '';
         (preg.opciones || []).forEach(function(op, oi) {
-            opcionesHtml +=
-                '<div class="exm-opcion-row" id="exm-op-' + pi + '-' + oi + '">' +
-                  '<span class="exm-opcion-ltr">' + (LETRAS[oi] || oi + 1) + '</span>' +
-                  '<input class="exm-opcion-input" type="text" placeholder="Texto de la opción" value="' + escapeAttr(op.texto) + '"' +
-                         ' onchange="syncOpcion(' + pi + ',' + oi + ',this.value)">' +
-                  '<input type="checkbox" class="exm-opcion-cb" title="Correcta" ' + (op.es_correcta ? 'checked' : '') +
-                         ' onchange="selCorrect(' + pi + ',' + oi + ')">' +
-                  '<button class="exm-opcion-del" onclick="eliminarOpcion(' + pi + ',' + oi + ')" title="Quitar opción"><i class="ti ti-x"></i></button>' +
-                '</div>';
+            if (isEmp) {
+                opcionesHtml +=
+                    '<div class="exm-opcion-row" id="exm-op-' + pi + '-' + oi + '" style="flex-wrap:wrap;">' +
+                      '<span class="exm-opcion-ltr" style="background:#ede9fe;color:#6d28d9;">' + (oi + 1) + '</span>' +
+                      '<input class="exm-opcion-input" type="text" placeholder="Concepto (Columna A)" value="' + escapeAttr(op.texto || '') + '"' +
+                             ' onchange="syncOpcion(' + pi + ',' + oi + ',this.value)" style="min-width:130px;">' +
+                      '<i class="ti ti-arrows-left-right" style="color:#7c3aed;flex-shrink:0;"></i>' +
+                      '<input class="exm-opcion-input" type="text" placeholder="Pareja correcta (Columna B)" value="' + escapeAttr(op.texto_par || '') + '"' +
+                             ' onchange="syncOpcionPar(' + pi + ',' + oi + ',this.value)" style="min-width:130px;">' +
+                      '<button class="exm-opcion-del" onclick="eliminarOpcion(' + pi + ',' + oi + ')" title="Quitar pareja"><i class="ti ti-x"></i></button>' +
+                    '</div>';
+            } else {
+                opcionesHtml +=
+                    '<div class="exm-opcion-row" id="exm-op-' + pi + '-' + oi + '">' +
+                      '<span class="exm-opcion-ltr">' + (LETRAS[oi] || oi + 1) + '</span>' +
+                      '<input class="exm-opcion-input" type="text" placeholder="Texto de la opción" value="' + escapeAttr(op.texto || '') + '"' +
+                             ' onchange="syncOpcion(' + pi + ',' + oi + ',this.value)"' + (isVF ? ' readonly' : '') + '>' +
+                      '<input type="checkbox" class="exm-opcion-cb" title="Correcta" ' + (op.es_correcta ? 'checked' : '') +
+                             ' onchange="selCorrect(' + pi + ',' + oi + ')">' +
+                      (!isVF ? '<button class="exm-opcion-del" onclick="eliminarOpcion(' + pi + ',' + oi + ')" title="Quitar opción"><i class="ti ti-x"></i></button>' : '') +
+                    '</div>';
+            }
         });
 
         card.innerHTML =
             '<div class="exm-preg-head">' +
               '<div class="exm-preg-num">' + (pi + 1) + '</div>' +
               '<div class="exm-preg-meta" style="flex:1;min-width:0;">' +
-                '<input class="exm-input" type="text" placeholder="Enunciado de la pregunta..." value="' + escapeAttr(preg.enunciado) + '"' +
+                '<input class="exm-input" type="text" placeholder="' + (isEmp ? 'Ej. Relaciona cada cable con su voltaje...' : 'Enunciado de la pregunta...') + '" value="' + escapeAttr(preg.enunciado) + '"' +
                        ' onchange="syncPregunta(' + pi + ',\'enunciado\',this.value)">' +
-                '<select class="exm-select" onchange="syncPregunta(' + pi + ',\'tipo\',this.value)">' +
+                '<select class="exm-select no-choices" onchange="syncPregunta(' + pi + ',\'tipo\',this.value)">' +
                   '<option value="opcion_multiple"' + (preg.tipo === 'opcion_multiple' ? ' selected' : '') + '>Opción múltiple</option>' +
-                  '<option value="verdadero_falso"' + (preg.tipo === 'verdadero_falso'  ? ' selected' : '') + '>V/F</option>' +
+                  '<option value="verdadero_falso"' + (preg.tipo === 'verdadero_falso'  ? ' selected' : '') + '>Verdadero / Falso</option>' +
+                  '<option value="emparejamiento"'  + (preg.tipo === 'emparejamiento'  ? ' selected' : '') + '>Emparejar (Duolingo)</option>' +
                 '</select>' +
                 '<input class="exm-input" type="number" value="' + (preg.puntos || 1) + '" min="1" max="10" title="Puntos"' +
                        ' onchange="syncPregunta(' + pi + ',\'puntos\',+this.value)">' +
@@ -1689,7 +2219,7 @@ function renderConstructor() {
               '</div>' +
             '</div>' +
             opcionesHtml +
-            '<button class="exm-add-op" onclick="agregarOpcion(' + pi + ')"><i class="ti ti-plus"></i> Agregar opción</button>';
+            (!isVF ? '<button class="exm-add-op" onclick="agregarOpcion(' + pi + ')"><i class="ti ti-plus"></i> ' + (isEmp ? 'Agregar pareja' : 'Agregar opción') + '</button>' : '');
 
         container.appendChild(card);
     });
@@ -1720,7 +2250,11 @@ function eliminarPregunta(pi) {
 
 function agregarOpcion(pi) {
     if (!exPreguntas[pi]) return;
-    exPreguntas[pi].opciones.push({ texto: '', es_correcta: false });
+    if (exPreguntas[pi].tipo === 'emparejamiento') {
+        exPreguntas[pi].opciones.push({ texto: '', texto_par: '', es_correcta: true });
+    } else {
+        exPreguntas[pi].opciones.push({ texto: '', es_correcta: false });
+    }
     renderConstructor();
 }
 
@@ -1742,8 +2276,35 @@ function syncOpcion(pi, oi, val) {
     }
 }
 
+function syncOpcionPar(pi, oi, val) {
+    if (exPreguntas[pi] && exPreguntas[pi].opciones[oi]) {
+        exPreguntas[pi].opciones[oi].texto_par = val;
+    }
+}
+
 function syncPregunta(pi, field, val) {
-    if (exPreguntas[pi]) exPreguntas[pi][field] = val;
+    if (!exPreguntas[pi]) return;
+    exPreguntas[pi][field] = val;
+    if (field === 'tipo') {
+        if (val === 'verdadero_falso') {
+            exPreguntas[pi].opciones = [
+                { texto: 'Verdadero', es_correcta: true },
+                { texto: 'Falso',     es_correcta: false }
+            ];
+        } else if (val === 'emparejamiento') {
+            exPreguntas[pi].opciones = [
+                { texto: '', texto_par: '', es_correcta: true },
+                { texto: '', texto_par: '', es_correcta: true },
+                { texto: '', texto_par: '', es_correcta: true }
+            ];
+        } else {
+            exPreguntas[pi].opciones = [
+                { texto: '', es_correcta: true },
+                { texto: '', es_correcta: false }
+            ];
+        }
+        renderConstructor();
+    }
 }
 
 function reorderUp(pi) {
@@ -1765,12 +2326,28 @@ function reorderDown(pi) {
 // ─────────────────────────────────────────────────────────────
 // Guardar examen
 // ─────────────────────────────────────────────────────────────
+function toggleDuracionCustom(val) {
+    var dc = document.getElementById('exm-duracion-custom');
+    if (!dc) return;
+    dc.style.display = (val === 'custom') ? '' : 'none';
+    if (val === 'custom') dc.focus();
+}
+
 function buildPayload(publicar) {
+    var durSel = document.getElementById('exm-duracion')?.value || '';
+    var durMin = null;
+    if (durSel === 'custom') {
+        var cv = parseInt(document.getElementById('exm-duracion-custom')?.value || '0', 10);
+        if (cv > 0) durMin = cv;
+    } else if (durSel !== '') {
+        durMin = parseInt(durSel, 10);
+    }
     return {
         titulo:              document.getElementById('exm-titulo').value.trim(),
         descripcion:         document.getElementById('exm-desc').value.trim(),
         periodo_id:          document.getElementById('exm-periodo').value || null,
         intentos_permitidos: 1, // [FIX-N-11] cada examen admite un único intento (examen_intentos.UNIQUE(examen_id, pasante_id))
+        duracion_minutos:    durMin,
         fecha_inicio:        document.getElementById('exm-fecha-inicio').value || null,
         fecha_fin:           document.getElementById('exm-fecha-fin').value || null,
         publicar:            publicar,
@@ -1780,7 +2357,11 @@ function buildPayload(publicar) {
                 tipo:      p.tipo,
                 puntos:    p.puntos || 1,
                 opciones:  (p.opciones || []).map(function(o) {
-                    return { texto: o.texto, es_correcta: !!o.es_correcta };
+                    return {
+                        texto:       o.texto || '',
+                        texto_par:   o.texto_par || '',
+                        es_correcta: !!o.es_correcta
+                    };
                 })
             };
         })
@@ -1794,11 +2375,19 @@ function validarPayload(payload) {
         var p   = payload.preguntas[i];
         var num = i + 1;
         if (!p.enunciado.trim()) return 'La pregunta #' + num + ' no tiene enunciado.';
-        if (p.opciones.length < 2) return 'La pregunta #' + num + ' necesita al menos 2 opciones.';
-        var correctas = p.opciones.filter(function(o) { return o.es_correcta; }).length;
-        if (correctas !== 1) return 'La pregunta #' + num + ' debe tener exactamente 1 opción correcta.';
-        for (var j = 0; j < p.opciones.length; j++) {
-            if (!p.opciones[j].texto.trim()) return 'La opción ' + (j + 1) + ' de la pregunta #' + num + ' está vacía.';
+        if (p.opciones.length < 2) return 'La pregunta #' + num + ' necesita al menos 2 ' + (p.tipo === 'emparejamiento' ? 'parejas.' : 'opciones.');
+        if (p.tipo === 'emparejamiento') {
+            for (var k = 0; k < p.opciones.length; k++) {
+                if (!p.opciones[k].texto.trim() || !p.opciones[k].texto_par.trim()) {
+                    return 'La pareja ' + (k + 1) + ' de la pregunta #' + num + ' debe tener ambos lados completos.';
+                }
+            }
+        } else {
+            var correctas = p.opciones.filter(function(o) { return o.es_correcta; }).length;
+            if (correctas !== 1) return 'La pregunta #' + num + ' debe tener exactamente 1 opción correcta.';
+            for (var j = 0; j < p.opciones.length; j++) {
+                if (!p.opciones[j].texto.trim()) return 'La opción ' + (j + 1) + ' de la pregunta #' + num + ' está vacía.';
+            }
         }
     }
     return null;

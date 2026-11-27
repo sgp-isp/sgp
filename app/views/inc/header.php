@@ -305,7 +305,7 @@ if (Session::get('requiere_cambio_clave') == 1) {
         <script>
         function applySgpZoom(val) {
             var num = parseFloat(val);
-            if (isNaN(num)) num = 0.90;
+            if (isNaN(num)) num = 0.80;
             num = Math.round(num * 100) / 100;
             num = Math.max(0.60, Math.min(1.20, num));
             document.documentElement.style.zoom = num.toString();
@@ -316,19 +316,19 @@ if (Session::get('requiere_cambio_clave') == 1) {
             }
         }
         function toggleSgpDefaultZoom() {
-            var cur = parseFloat(localStorage.getItem('sgp_zoom') || (document.documentElement.style.zoom || '0.90'));
-            var next = (Math.round(cur * 100) === 90) ? 1.00 : 0.90;
+            var cur = parseFloat(localStorage.getItem('sgp_zoom') || (document.documentElement.style.zoom || '0.80'));
+            var next = (Math.round(cur * 100) === 80) ? 1.00 : 0.80;
             applySgpZoom(next);
         }
         function changeSgpZoom(delta) {
-            var cur = parseFloat(localStorage.getItem('sgp_zoom') || (document.documentElement.style.zoom || '0.90'));
+            var cur = parseFloat(localStorage.getItem('sgp_zoom') || (document.documentElement.style.zoom || '0.80'));
             applySgpZoom(cur + delta);
         }
         (function() {
             var isDesktop = window.innerWidth >= 768;
             var saved = localStorage.getItem('sgp_zoom');
-            if (!saved || saved === '0.80' || saved === '0.8' || saved === '1') {
-                saved = isDesktop ? '0.90' : '1';
+            if (!saved || saved === '0.90' || saved === '0.9' || saved === '1') {
+                saved = isDesktop ? '0.80' : '1';
             }
             if (isDesktop || saved !== '1') {
                 applySgpZoom(saved);
@@ -511,13 +511,15 @@ if (Session::get('requiere_cambio_clave') == 1) {
             `;
 
             try {
-                localStorage.setItem('sgp_user_palette', JSON.stringify({ primary: primary, accent: accent, name: name || 'Custom' }));
+                var pKey = window.SGP_PALETTE_KEY || ('sgp_user_palette_' + (window.SGP_USER_ID || 0));
+                localStorage.setItem(pKey, JSON.stringify({ primary: primary, accent: accent, name: name || 'Custom' }));
             } catch(e){}
         }
 
         function restoreSgpPalette() {
             try {
-                var p = JSON.parse(localStorage.getItem('sgp_user_palette'));
+                var pKey = window.SGP_PALETTE_KEY || ('sgp_user_palette_' + (window.SGP_USER_ID || 0));
+                var p = JSON.parse(localStorage.getItem(pKey));
                 if (p && p.primary && p.accent) {
                     applySgpPalette(p.primary, p.accent, p.name);
                 } else {

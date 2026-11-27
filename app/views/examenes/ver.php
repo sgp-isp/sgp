@@ -259,19 +259,65 @@ $chartData   = json_encode(array_values($rangos));
 
 /* ── Mobile ≤ 767px ─────────────────────────────────────────── */
 @media(max-width:767px){
-    .ev-hero{padding:20px 18px;flex-direction:column;gap:14px}
-    .ev-hero-left{flex-direction:column;gap:10px}
-    .ev-hero-avatar{width:48px;height:48px;font-size:1.2rem}
-    .ev-hero-title{font-size:1.2rem}
-    .ev-kpi-grid{grid-template-columns:repeat(2,1fr)}
-    .ev-kpi-val{font-size:1.8rem}
-    .ev-kpi-row{grid-template-columns:1fr}
-    .ev-results-grid{grid-template-columns:1fr}
+    .ev-hero{padding:20px 18px;flex-direction:column;align-items:flex-start;gap:14px}
+    .ev-hero-left{flex-direction:row;align-items:flex-start;gap:12px;width:100%}
+    .ev-hero-avatar{width:46px;height:46px;font-size:1.2rem;border-radius:13px}
+    .ev-hero-title{font-size:1.25rem}
+    .ev-hero-right{width:100%;justify-content:flex-start}
+    .ev-kpi-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+    .ev-kpi{padding:16px}
+    .ev-kpi-val{font-size:1.85rem}
+    .ev-kpi-row{grid-template-columns:1fr;gap:12px}
+    .ev-results-grid{grid-template-columns:1fr;gap:14px}
+    .ev-card{padding:18px 16px;border-radius:16px}
+    .ev-preg-item{padding:14px}
+    .ev-opciones{padding-left:0}
     .ev-chart-wrap{height:200px}
     .ev-table th,.ev-table td{padding:8px 10px;font-size:.8rem}
-    .ev-tabs{gap:4px}
-    .ev-tab{padding:7px 10px;font-size:.78rem}
+    .ev-tabs{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:6px;box-sizing:border-box}
+    .ev-tab{padding:9px 10px;font-size:.8rem;justify-content:center}
     .ev-tab i{display:none}
+}
+@media(max-width:380px){
+    .ev-kpi-grid{grid-template-columns:1fr}
+}
+
+/* ── Dark Mode Support ──────────────────────────────────────── */
+[data-theme="dark"] .ev-kpi,
+[data-theme="dark"] .ev-card,
+[data-theme="dark"] .ev-tabs {
+    background:#111a2e !important;
+    border-color:#1e293b !important;
+    box-shadow:0 4px 20px rgba(0,0,0,.35) !important;
+}
+[data-theme="dark"] .ev-card-title,
+[data-theme="dark"] .ev-kpi-val,
+[data-theme="dark"] .ev-preg-enunc,
+[data-theme="dark"] .ev-table td {
+    color:#f8fafc !important;
+}
+[data-theme="dark"] .ev-preg-item {
+    background:#0d1526 !important;
+    border-color:#334155 !important;
+}
+[data-theme="dark"] .ev-opcion-row.incorrecta {
+    background:#111a2e !important;
+    border-color:#1e293b !important;
+    color:#94a3b8 !important;
+}
+[data-theme="dark"] .ev-table-wrap {
+    border-color:#1e293b !important;
+}
+[data-theme="dark"] .ev-table th {
+    background:#0d1526 !important;
+    color:#c4b5fd !important;
+    border-bottom-color:#1e293b !important;
+}
+[data-theme="dark"] .ev-table td {
+    border-bottom-color:#1e293b !important;
+}
+[data-theme="dark"] .ev-table tr:hover td {
+    background:#1e293b !important;
 }
 </style>
 
@@ -457,7 +503,7 @@ $chartData   = json_encode(array_values($rangos));
                     <div class="ev-preg-num"><?= $qi + 1 ?></div>
                     <div class="ev-preg-enunc"><?= htmlspecialchars($preg->enunciado ?? '') ?></div>
                     <span class="ev-badge-tipo">
-                        <?= $preg->tipo === 'verdadero_falso' ? 'V / F' : 'Opción múltiple' ?>
+                        <?= $preg->tipo === 'verdadero_falso' ? 'V / F' : ($preg->tipo === 'emparejamiento' ? 'Emparejar' : 'Opción múltiple') ?>
                     </span>
                     <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;" title="Puntos de esta pregunta">
                         <input type="number"
@@ -471,20 +517,32 @@ $chartData   = json_encode(array_values($rangos));
                     </div>
                 </div>
                 <div class="ev-opciones">
-                    <?php foreach (($preg->opciones ?? []) as $op):
-                        $esCor = (int)($op->es_correcta ?? 0) === 1;
-                    ?>
-                    <div class="ev-opcion-row <?= $esCor ? 'correcta' : 'incorrecta' ?>">
-                        <span class="ev-opcion-icon">
-                            <?php if ($esCor): ?>
-                            <i class="ti ti-circle-check-filled" style="color:#10b981;"></i>
-                            <?php else: ?>
-                            <i class="ti ti-circle" style="color:#cbd5e1;"></i>
-                            <?php endif; ?>
-                        </span>
-                        <?= htmlspecialchars($op->texto ?? '') ?>
-                    </div>
-                    <?php endforeach; ?>
+                    <?php if (($preg->tipo ?? '') === 'emparejamiento'): ?>
+                        <?php foreach (($preg->opciones ?? []) as $op): ?>
+                        <div class="ev-opcion-row correcta" style="justify-content:space-between;flex-wrap:wrap;gap:6px;">
+                            <span><?= htmlspecialchars($op->texto ?? '') ?></span>
+                            <span style="display:inline-flex;align-items:center;gap:6px;color:#6d28d9;">
+                                <i class="ti ti-arrows-left-right"></i>
+                                <?= htmlspecialchars($op->texto_par ?? '') ?>
+                            </span>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <?php foreach (($preg->opciones ?? []) as $op):
+                            $esCor = (int)($op->es_correcta ?? 0) === 1;
+                        ?>
+                        <div class="ev-opcion-row <?= $esCor ? 'correcta' : 'incorrecta' ?>">
+                            <span class="ev-opcion-icon">
+                                <?php if ($esCor): ?>
+                                <i class="ti ti-circle-check-filled" style="color:#10b981;"></i>
+                                <?php else: ?>
+                                <i class="ti ti-circle" style="color:#cbd5e1;"></i>
+                                <?php endif; ?>
+                            </span>
+                            <?= htmlspecialchars($op->texto ?? '') ?>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -855,24 +913,37 @@ async function marcarRevisado(intentoId) {
         const iconColor  = ok ? '#059669' : '#ef4444';
 
         let htmlOps = '';
-        preg.opciones.forEach(op => {
-            let bg = '#f8fafc', border = '#e2e8f0', color = '#64748b', icon = '○', fw = '500', tag = '';
-            if (op.es_correcta && op.elegida) {
-                bg = '#f0fdf4'; border = '#10b981'; color = '#065f46'; icon = '✓'; fw = '700';
-                tag = '<span style="margin-left:auto;font-size:.68rem;font-weight:700;background:#d1fae5;color:#065f46;padding:2px 9px;border-radius:20px;white-space:nowrap;">Tu respuesta ✓</span>';
-            } else if (op.es_correcta) {
-                bg = '#f0fdf4'; border = '#10b981'; color = '#065f46'; icon = '✓'; fw = '700';
-                tag = '<span style="margin-left:auto;font-size:.68rem;font-weight:700;background:#d1fae5;color:#065f46;padding:2px 9px;border-radius:20px;white-space:nowrap;">Correcta</span>';
-            } else if (op.elegida) {
-                bg = '#fff1f2'; border = '#ef4444'; color = '#b91c1c'; icon = '✗'; fw = '700';
-                tag = '<span style="margin-left:auto;font-size:.68rem;font-weight:700;background:#fee2e2;color:#b91c1c;padding:2px 9px;border-radius:20px;white-space:nowrap;">Tu respuesta ✗</span>';
-            }
-            htmlOps += `<div style="display:flex;align-items:center;gap:9px;padding:7px 12px;border-radius:10px;background:${bg};border:1.5px solid ${border};margin-bottom:5px;">
-                <span style="font-size:.9rem;color:${color};font-weight:700;flex-shrink:0;width:15px;text-align:center;">${icon}</span>
-                <span style="font-size:.84rem;color:${color};font-weight:${fw};flex:1;">${_escHtml(op.texto)}</span>
-                ${tag}
-            </div>`;
-        });
+        if (preg.tipo === 'emparejamiento' && Array.isArray(preg.pares)) {
+            preg.pares.forEach(par => {
+                const pOk = par.acierto;
+                const bg = pOk ? '#f0fdf4' : '#fff1f2';
+                const border = pOk ? '#10b981' : '#ef4444';
+                const color = pOk ? '#065f46' : '#b91c1c';
+                htmlOps += `<div style="padding:7px 12px;border-radius:10px;background:${bg};border:1.5px solid ${border};margin-bottom:5px;font-size:.82rem;color:${color};">
+                    <strong>${_escHtml(par.texto)}</strong> ↔ <strong>${_escHtml(par.texto_par_elegido || '(sin unir)')}</strong>
+                    ${!pOk ? `<div style="font-size:.75rem;color:#059669;margin-top:2px;">Correcto: ${_escHtml(par.texto_par)}</div>` : ''}
+                </div>`;
+            });
+        } else {
+            preg.opciones.forEach(op => {
+                let bg = '#f8fafc', border = '#e2e8f0', color = '#64748b', icon = '○', fw = '500', tag = '';
+                if (op.es_correcta && op.elegida) {
+                    bg = '#f0fdf4'; border = '#10b981'; color = '#065f46'; icon = '✓'; fw = '700';
+                    tag = '<span style="margin-left:auto;font-size:.68rem;font-weight:700;background:#d1fae5;color:#065f46;padding:2px 9px;border-radius:20px;white-space:nowrap;">Tu respuesta ✓</span>';
+                } else if (op.es_correcta) {
+                    bg = '#f0fdf4'; border = '#10b981'; color = '#065f46'; icon = '✓'; fw = '700';
+                    tag = '<span style="margin-left:auto;font-size:.68rem;font-weight:700;background:#d1fae5;color:#065f46;padding:2px 9px;border-radius:20px;white-space:nowrap;">Correcta</span>';
+                } else if (op.elegida) {
+                    bg = '#fff1f2'; border = '#ef4444'; color = '#b91c1c'; icon = '✗'; fw = '700';
+                    tag = '<span style="margin-left:auto;font-size:.68rem;font-weight:700;background:#fee2e2;color:#b91c1c;padding:2px 9px;border-radius:20px;white-space:nowrap;">Tu respuesta ✗</span>';
+                }
+                htmlOps += `<div style="display:flex;align-items:center;gap:9px;padding:7px 12px;border-radius:10px;background:${bg};border:1.5px solid ${border};margin-bottom:5px;">
+                    <span style="font-size:.9rem;color:${color};font-weight:700;flex-shrink:0;width:15px;text-align:center;">${icon}</span>
+                    <span style="font-size:.84rem;color:${color};font-weight:${fw};flex:1;">${_escHtml(op.texto)}</span>
+                    ${tag}
+                </div>`;
+            });
+        }
 
         htmlPregs += `<div style="border:1.5px solid ${borderPreg};border-radius:12px;padding:13px 15px;margin-bottom:10px;background:${bgPreg};">
             <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:9px;">

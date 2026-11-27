@@ -49,48 +49,137 @@ class ExamenesController extends Controller
             return;
         }
 
+        // Períodos para filtro de analítica y selector del modal (Activo primero)
+        $this->db->query("
+            SELECT id, nombre, estado, COALESCE(tipo,'Regular') AS tipo
+            FROM periodos_academicos
+            ORDER BY FIELD(estado, 'Activo', 'Planificado', 'Cerrado') ASC, fecha_inicio DESC, id DESC
+        ");
+        $periodos = $this->db->resultSet();
+
+        $periodoActivo = null;
+        foreach ($periodos as $p) {
+            if (($p->estado ?? '') === 'Activo') {
+                $periodoActivo = $p;
+                break;
+            }
+        }
+
+        // Filtro de período: por defecto usa el período activo (si existe) para no mezclar analíticas antiguas
+        $periodoParam = $_GET['periodo_id'] ?? null;
+        if ($periodoParam === 'all') {
+            $selectedPeriodoId = 0;
+        } elseif ($periodoParam !== null && is_numeric($periodoParam) && (int)$periodoParam > 0) {
+            $selectedPeriodoId = (int)$periodoParam;
+        } else {
+            $selectedPeriodoId = $periodoActivo ? (int)$periodoActivo->id : 0;
+        }
+
+        // Filtro de alcance, examen específico y rango de fechas para analítica
+        $selectedExamenId = (int)($_GET['examen_id'] ?? 0);
+        $scopeParam       = $_GET['scope'] ?? 'activos';
+        $scope            = ($selectedExamenId > 0 || $scopeParam === 'todos') ? 'todos' : 'activos';
+        $fechaDesde       = trim($_GET['fecha_desde'] ?? '');
+        $fechaHasta       = trim($_GET['fecha_hasta'] ?? '');
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaDesde)) $fechaDesde = '';
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaHasta)) $fechaHasta = '';
+
+        // Condiciones compartidas para listado de exámenes (no filtran por scope para mostrar activos + historial)
+        $exConds = [];
+        $exBinds = [];
+        if ($rolId === 2) {
+            $exConds[] = "e.creado_por = :uid";
+            $exBinds[':uid'] = $userId;
+        }
+        if ($selectedPeriodoId > 0) {
+            $exConds[] = "e.periodo_id = :pid";
+            $exBinds[':pid'] = $selectedPeriodoId;
+        }
+        $exWhere = !empty($exConds) ? (' WHERE ' . implode(' AND ', $exConds)) : '';
+
+        // Condiciones para analítica (sí respetan scope, examen_id y rango de fechas)
+        $intConds = ["ei.enviado_at IS NOT NULL"];
+        $intBinds = $exBinds;
+        if ($rolId === 2) {
+            $intConds[] = "ex.creado_por = :uid";
+        }
+        if ($selectedPeriodoId > 0) {
+            $intConds[] = "ex.periodo_id = :pid";
+        }
+        if ($selectedExamenId > 0) {
+            $intConds[] = "ex.id = :eid";
+            $intBinds[':eid'] = $selectedExamenId;
+        } elseif ($scope === 'activos') {
+            $intConds[] = "ex.activo = 1";
+        }
+        if ($fechaDesde !== '') {
+            $intConds[] = "DATE(ei.enviado_at) >= :fdesde";
+            $intBinds[':fdesde'] = $fechaDesde;
+        }
+        if ($fechaHasta !== '') {
+            $intConds[] = "DATE(ei.enviado_at) <= :fhasta";
+            $intBinds[':fhasta'] = $fechaHasta;
+        }
+        $intWhere = ' WHERE ' . implode(' AND ', $intConds);
+
+        $bindAll = function (array $params) {
+            foreach ($params as $k => $v) {
+                $this->db->bind($k, $v);
+            }
+        };
+
         $baseQuery = "
             SELECT e.*,
                    CONCAT(COALESCE(dp.nombres,''), ' ', COALESCE(dp.apellidos,'')) AS creador_nombre,
                    COALESCE(pa.nombre, 'Sin período') AS periodo_nombre,
                    (SELECT COUNT(*) FROM examen_preguntas ep WHERE ep.examen_id = e.id) AS total_preguntas,
-                   (SELECT COUNT(*) FROM examen_intentos ei WHERE ei.examen_id = e.id AND ei.enviado_at IS NOT NULL) AS total_respondieron
+                   (SELECT COUNT(*) FROM examen_intentos ei WHERE ei.examen_id = e.id AND ei.enviado_at IS NOT NULL) AS total_respondieron,
+                   (SELECT ROUND(AVG(ei.porcentaje), 1) FROM examen_intentos ei WHERE ei.examen_id = e.id AND ei.enviado_at IS NOT NULL) AS promedio_pct,
+                   (SELECT SUM(CASE WHEN ei.porcentaje >= 60 THEN 1 ELSE 0 END) FROM examen_intentos ei WHERE ei.examen_id = e.id AND ei.enviado_at IS NOT NULL) AS aprobados_cnt,
+                   (SELECT MAX(ei.enviado_at) FROM examen_intentos ei WHERE ei.examen_id = e.id AND ei.enviado_at IS NOT NULL) AS ultimo_envio
             FROM examenes e
             LEFT JOIN usuarios u ON u.id = e.creado_por
             LEFT JOIN datos_personales dp ON dp.usuario_id = e.creado_por
             LEFT JOIN periodos_academicos pa ON pa.id = e.periodo_id
         ";
 
-        if ($rolId === 2) {
-            // Tutor: solo ve sus propios exámenes
-            $this->db->query($baseQuery . " WHERE e.creado_por = :uid ORDER BY e.created_at DESC");
-            $this->db->bind(':uid', $userId);
-        } else {
-            // Admin/SuperAdmin: ve todos
-            $this->db->query($baseQuery . " ORDER BY e.created_at DESC");
-        }
+        $this->db->query($baseQuery . $exWhere . " ORDER BY e.created_at DESC");
+        $bindAll($exBinds);
         $examenes = $this->db->resultSet();
 
-        // Períodos para el selector del modal
-        $this->db->query("SELECT id, nombre, COALESCE(tipo,'Regular') AS tipo FROM periodos_academicos ORDER BY created_at DESC");
-        $periodos = $this->db->resultSet();
+        // ── Analytics (filtrados por período, alcance, examen, fechas y rol) ───
 
-        // ── Analytics ────────────────────────────────────────────────────────
-
-        $this->db->query("SELECT COUNT(*) AS cnt FROM examenes WHERE activo = 1");
+        $actConds = array_merge(["e.activo = 1"], $exConds);
+        $this->db->query("SELECT COUNT(*) AS cnt FROM examenes e WHERE " . implode(' AND ', $actConds));
+        $bindAll($exBinds);
         $totalActivos = (int)($this->db->single()->cnt ?? 0);
 
-        $this->db->query("SELECT COUNT(DISTINCT pasante_id) AS cnt FROM examen_intentos WHERE enviado_at IS NOT NULL");
+        $this->db->query("
+            SELECT COUNT(DISTINCT ei.pasante_id) AS cnt
+            FROM examen_intentos ei
+            INNER JOIN examenes ex ON ex.id = ei.examen_id
+            {$intWhere}
+        ");
+        $bindAll($intBinds);
         $totalEvaluados = (int)($this->db->single()->cnt ?? 0);
 
-        $this->db->query("SELECT COALESCE(AVG(porcentaje), 0) AS avg FROM examen_intentos WHERE enviado_at IS NOT NULL");
+        $this->db->query("
+            SELECT COALESCE(AVG(ei.porcentaje), 0) AS avg
+            FROM examen_intentos ei
+            INNER JOIN examenes ex ON ex.id = ei.examen_id
+            {$intWhere}
+        ");
+        $bindAll($intBinds);
         $avgScore = round((float)($this->db->single()->avg ?? 0), 1);
 
         $this->db->query("
             SELECT COUNT(*) AS total,
-                   SUM(CASE WHEN porcentaje >= 60 THEN 1 ELSE 0 END) AS aprobados
-            FROM examen_intentos WHERE enviado_at IS NOT NULL
+                   SUM(CASE WHEN ei.porcentaje >= 60 THEN 1 ELSE 0 END) AS aprobados
+            FROM examen_intentos ei
+            INNER JOIN examenes ex ON ex.id = ei.examen_id
+            {$intWhere}
         ");
+        $bindAll($intBinds);
         $tmpKpi = $this->db->single();
         $tasaAprobacion = ($tmpKpi && (int)$tmpKpi->total > 0)
             ? round(((int)$tmpKpi->aprobados / (int)$tmpKpi->total) * 100, 1)
@@ -99,16 +188,19 @@ class ExamenesController extends Controller
         // Distribución de puntajes en rangos
         $this->db->query("
             SELECT
-                SUM(CASE WHEN porcentaje <  20 THEN 1 ELSE 0 END) AS r0,
-                SUM(CASE WHEN porcentaje >= 20 AND porcentaje < 40 THEN 1 ELSE 0 END) AS r20,
-                SUM(CASE WHEN porcentaje >= 40 AND porcentaje < 60 THEN 1 ELSE 0 END) AS r40,
-                SUM(CASE WHEN porcentaje >= 60 AND porcentaje < 80 THEN 1 ELSE 0 END) AS r60,
-                SUM(CASE WHEN porcentaje >= 80 THEN 1 ELSE 0 END) AS r80
-            FROM examen_intentos WHERE enviado_at IS NOT NULL
+                SUM(CASE WHEN ei.porcentaje <  20 THEN 1 ELSE 0 END) AS r0,
+                SUM(CASE WHEN ei.porcentaje >= 20 AND ei.porcentaje < 40 THEN 1 ELSE 0 END) AS r20,
+                SUM(CASE WHEN ei.porcentaje >= 40 AND ei.porcentaje < 60 THEN 1 ELSE 0 END) AS r40,
+                SUM(CASE WHEN ei.porcentaje >= 60 AND ei.porcentaje < 80 THEN 1 ELSE 0 END) AS r60,
+                SUM(CASE WHEN ei.porcentaje >= 80 THEN 1 ELSE 0 END) AS r80
+            FROM examen_intentos ei
+            INNER JOIN examenes ex ON ex.id = ei.examen_id
+            {$intWhere}
         ");
+        $bindAll($intBinds);
         $dist = $this->db->single();
 
-        // Rendimiento y distribución por cada institución
+        // Rendimiento y distribución por cada institución (evita duplicados por múltiples filas en datos_pasante)
         $this->db->query("
             SELECT
                 COALESCE(inst.id, 0) AS institucion_id,
@@ -120,13 +212,20 @@ class ExamenesController extends Controller
                 SUM(CASE WHEN ei.porcentaje >= 60 AND ei.porcentaje < 80 THEN 1 ELSE 0 END) AS bueno,
                 SUM(CASE WHEN ei.porcentaje >= 80 THEN 1 ELSE 0 END) AS excelente
             FROM examen_intentos ei
+            INNER JOIN examenes ex ON ex.id = ei.examen_id
             INNER JOIN usuarios u ON u.id = ei.pasante_id
-            LEFT JOIN datos_pasante dpa ON dpa.usuario_id = u.id
+            LEFT JOIN datos_pasante dpa ON dpa.id = (
+                SELECT d2.id FROM datos_pasante d2
+                WHERE d2.usuario_id = u.id
+                ORDER BY FIELD(d2.estado_pasantia, 'Activo', 'Pendiente', 'Sin Asignar', 'Finalizado', 'Retirado') ASC, d2.id DESC
+                LIMIT 1
+            )
             LEFT JOIN instituciones inst ON inst.id = COALESCE(NULLIF(dpa.institucion_id, 0), CASE WHEN dpa.institucion_procedencia REGEXP '^[0-9]+$' THEN CAST(dpa.institucion_procedencia AS UNSIGNED) ELSE NULL END)
-            WHERE ei.enviado_at IS NOT NULL
+            {$intWhere}
             GROUP BY COALESCE(inst.id, 0), COALESCE(inst.nombre, 'Otras Instituciones')
             ORDER BY promedio_pct DESC
         ");
+        $bindAll($intBinds);
         $institucionesStats = $this->db->resultSet();
 
         // Top 5 pasantes por mejor puntaje
@@ -136,13 +235,15 @@ class ExamenesController extends Controller
                    MAX(ei.porcentaje) AS mejor_pct,
                    COUNT(ei.id) AS total_intentos
             FROM examen_intentos ei
+            INNER JOIN examenes ex ON ex.id = ei.examen_id
             INNER JOIN usuarios u ON u.id = ei.pasante_id
             LEFT JOIN datos_personales dp ON dp.usuario_id = ei.pasante_id
-            WHERE ei.enviado_at IS NOT NULL
+            {$intWhere}
             GROUP BY ei.pasante_id, dp.nombres, dp.apellidos, u.cedula
             ORDER BY mejor_pct DESC
             LIMIT 5
         ");
+        $bindAll($intBinds);
         $top5 = $this->db->resultSet();
 
         // Exámenes activos con progreso
@@ -151,10 +252,11 @@ class ExamenesController extends Controller
                    (SELECT COUNT(*) FROM examen_intentos ei
                     WHERE ei.examen_id = e.id AND ei.enviado_at IS NOT NULL) AS respondieron
             FROM examenes e
-            WHERE e.activo = 1
+            WHERE " . implode(' AND ', $actConds) . "
             ORDER BY e.created_at DESC
             LIMIT 5
         ");
+        $bindAll($exBinds);
         $examenesActivos = $this->db->resultSet();
 
         // Envíos recientes
@@ -166,15 +268,22 @@ class ExamenesController extends Controller
             INNER JOIN examenes ex ON ex.id = ei.examen_id
             INNER JOIN usuarios u ON u.id = ei.pasante_id
             LEFT JOIN datos_personales dp ON dp.usuario_id = ei.pasante_id
-            WHERE ei.enviado_at IS NOT NULL
+            {$intWhere}
             ORDER BY ei.enviado_at DESC
             LIMIT 8
         ");
+        $bindAll($intBinds);
         $recientes = $this->db->resultSet();
 
         $this->view('examenes/index', [
             'examenes'           => $examenes,
             'periodos'           => $periodos,
+            'selectedPeriodoId'  => $selectedPeriodoId,
+            'periodoActivo'      => $periodoActivo,
+            'scope'              => $scope,
+            'selectedExamenId'   => $selectedExamenId,
+            'fechaDesde'         => $fechaDesde,
+            'fechaHasta'         => $fechaHasta,
             'totalActivos'       => $totalActivos,
             'totalEvaluados'     => $totalEvaluados,
             'avgScore'           => $avgScore,
@@ -249,6 +358,7 @@ class ExamenesController extends Controller
         // intento por pasante, así que "intentos permitidos" > 1 nunca podía cumplirse.
         // Se fija en 1 en servidor sin importar lo que envíe el cliente.
         $intentosPermitidos = 1;
+        $duracionMinutos    = !empty($body['duracion_minutos']) ? max(1, min(300, (int)$body['duracion_minutos'])) : null;
         $preguntas          = $body['preguntas'] ?? [];
         $publicar           = !empty($body['publicar']) ? 1 : 0;
 
@@ -264,7 +374,8 @@ class ExamenesController extends Controller
         }
 
         foreach ($preguntas as $idx => $preg) {
-            $num = $idx + 1;
+            $num  = $idx + 1;
+            $tipo = $preg['tipo'] ?? 'opcion_multiple';
 
             if (empty(trim($preg['enunciado'] ?? ''))) {
                 echo json_encode(['success' => false, 'message' => "La pregunta #{$num} no tiene enunciado"]);
@@ -273,23 +384,40 @@ class ExamenesController extends Controller
 
             $opciones = $preg['opciones'] ?? [];
             if (count($opciones) < 2) {
-                echo json_encode(['success' => false, 'message' => "La pregunta #{$num} debe tener al menos 2 opciones"]);
+                echo json_encode(['success' => false, 'message' => "La pregunta #{$num} debe tener al menos 2 " . ($tipo === 'emparejamiento' ? 'parejas' : 'opciones')]);
                 return;
             }
 
-            $correctas = array_filter($opciones, fn($o) => !empty($o['es_correcta']));
-            if (count($correctas) !== 1) {
-                echo json_encode(['success' => false, 'message' => "La pregunta #{$num} debe tener exactamente 1 opción correcta"]);
-                return;
+            if ($tipo === 'emparejamiento') {
+                foreach ($opciones as $oi => $op) {
+                    if (empty(trim($op['texto'] ?? '')) || empty(trim($op['texto_par'] ?? ''))) {
+                        echo json_encode(['success' => false, 'message' => "La pareja " . ($oi + 1) . " de la pregunta #{$num} debe tener ambos lados completos"]);
+                        return;
+                    }
+                }
+            } else {
+                $correctas = array_filter($opciones, fn($o) => !empty($o['es_correcta']));
+                if (count($correctas) !== 1) {
+                    echo json_encode(['success' => false, 'message' => "La pregunta #{$num} debe tener exactamente 1 opción correcta"]);
+                    return;
+                }
             }
         }
 
         // ── INSERT examenes ──────────────────────────────────────────
         try {
-            $this->db->query("
-                INSERT INTO examenes (titulo, descripcion, periodo_id, creado_por, fecha_inicio, fecha_fin, intentos_permitidos, activo)
-                VALUES (:titulo, :descripcion, :periodo_id, :creado_por, :fecha_inicio, :fecha_fin, :intentos_permitidos, :activo)
-            ");
+            if ($duracionMinutos !== null) {
+                $this->db->query("
+                    INSERT INTO examenes (titulo, descripcion, periodo_id, creado_por, fecha_inicio, fecha_fin, intentos_permitidos, duracion_minutos, activo)
+                    VALUES (:titulo, :descripcion, :periodo_id, :creado_por, :fecha_inicio, :fecha_fin, :intentos_permitidos, :duracion_minutos, :activo)
+                ");
+                $this->db->bind(':duracion_minutos', $duracionMinutos);
+            } else {
+                $this->db->query("
+                    INSERT INTO examenes (titulo, descripcion, periodo_id, creado_por, fecha_inicio, fecha_fin, intentos_permitidos, activo)
+                    VALUES (:titulo, :descripcion, :periodo_id, :creado_por, :fecha_inicio, :fecha_fin, :intentos_permitidos, :activo)
+                ");
+            }
             $this->db->bind(':titulo',              $titulo);
             $this->db->bind(':descripcion',         $descripcion ?: null);
             $this->db->bind(':periodo_id',          $periodoId);
@@ -306,7 +434,7 @@ class ExamenesController extends Controller
             foreach ($preguntas as $idx => $preg) {
                 $orden     = $idx + 1;
                 $enunciado = trim($preg['enunciado']);
-                $tipo      = in_array($preg['tipo'] ?? '', ['opcion_multiple', 'verdadero_falso'])
+                $tipo      = in_array($preg['tipo'] ?? '', ['opcion_multiple', 'verdadero_falso', 'emparejamiento'])
                              ? $preg['tipo']
                              : 'opcion_multiple';
                 // [FIX-V-10] Solo tenía piso (min 1); actualizarPuntos() sí limita a 100
@@ -327,18 +455,30 @@ class ExamenesController extends Controller
                 $preguntaId = (int)$this->db->lastInsertId();
 
                 foreach ($preg['opciones'] as $opcion) {
-                    $textoOpc  = trim($opcion['texto'] ?? '');
-                    $esCorrecta = !empty($opcion['es_correcta']) ? 1 : 0;
+                    $textoOpc   = trim($opcion['texto'] ?? '');
+                    $textoPar   = $tipo === 'emparejamiento' ? trim($opcion['texto_par'] ?? '') : null;
+                    $esCorrecta = $tipo === 'emparejamiento' ? 1 : (!empty($opcion['es_correcta']) ? 1 : 0);
 
                     if ($textoOpc === '') continue;
 
-                    $this->db->query("
-                        INSERT INTO examen_opciones (pregunta_id, texto, es_correcta)
-                        VALUES (:pregunta_id, :texto, :es_correcta)
-                    ");
-                    $this->db->bind(':pregunta_id', $preguntaId);
-                    $this->db->bind(':texto',       $textoOpc);
-                    $this->db->bind(':es_correcta', $esCorrecta);
+                    if ($tipo === 'emparejamiento') {
+                        $this->db->query("
+                            INSERT INTO examen_opciones (pregunta_id, texto, texto_par, es_correcta)
+                            VALUES (:pregunta_id, :texto, :texto_par, :es_correcta)
+                        ");
+                        $this->db->bind(':pregunta_id', $preguntaId);
+                        $this->db->bind(':texto',       $textoOpc);
+                        $this->db->bind(':texto_par',   $textoPar);
+                        $this->db->bind(':es_correcta', $esCorrecta);
+                    } else {
+                        $this->db->query("
+                            INSERT INTO examen_opciones (pregunta_id, texto, es_correcta)
+                            VALUES (:pregunta_id, :texto, :es_correcta)
+                        ");
+                        $this->db->bind(':pregunta_id', $preguntaId);
+                        $this->db->bind(':texto',       $textoOpc);
+                        $this->db->bind(':es_correcta', $esCorrecta);
+                    }
                     $this->db->execute();
                 }
             }
@@ -659,7 +799,7 @@ class ExamenesController extends Controller
             $preguntas = $this->_getPreguntasConOpciones((int)$intento->examen_id);
 
             $this->db->query("
-                SELECT pregunta_id, opcion_id_elegida
+                SELECT pregunta_id, opcion_id_elegida, opcion_par_elegida_id
                 FROM examen_respuestas
                 WHERE intento_id = :intento_id
             ");
@@ -667,13 +807,55 @@ class ExamenesController extends Controller
             $respRows = $this->db->resultSet();
 
             $respMap = [];
+            $pairRespMap = [];
             foreach ($respRows as $r) {
-                $respMap[(int)$r->pregunta_id] = (int)$r->opcion_id_elegida;
+                $pid = (int)$r->pregunta_id;
+                $oid = (int)$r->opcion_id_elegida;
+                $respMap[$pid] = $oid;
+                if (!empty($r->opcion_par_elegida_id)) {
+                    $pairRespMap[$pid][$oid] = (int)$r->opcion_par_elegida_id;
+                }
             }
 
             $preguntasOut = [];
             foreach ($preguntas as $preg) {
-                $opcionElegida  = $respMap[(int)$preg->id] ?? null;
+                $pid = (int)$preg->id;
+                if (($preg->tipo ?? '') === 'emparejamiento') {
+                    $opById = [];
+                    foreach ($preg->opciones as $op) {
+                        $opById[(int)$op->id] = $op;
+                    }
+                    $paresOut = [];
+                    $aciertosPares = 0;
+                    $elegidosMap = $pairRespMap[$pid] ?? [];
+                    foreach ($preg->opciones as $op) {
+                        $oid = (int)$op->id;
+                        $elegidoId = $elegidosMap[$oid] ?? null;
+                        $aciertoPar = ($elegidoId !== null && $elegidoId === $oid);
+                        if ($aciertoPar) $aciertosPares++;
+                        $paresOut[] = [
+                            'id'                => $oid,
+                            'texto'             => $op->texto ?? '',
+                            'texto_par'         => $op->texto_par ?? '',
+                            'texto_par_elegido' => ($elegidoId && isset($opById[$elegidoId])) ? ($opById[$elegidoId]->texto_par ?? '') : null,
+                            'acierto'           => $aciertoPar,
+                        ];
+                    }
+                    $totalPares = count($preg->opciones);
+                    $preguntasOut[] = [
+                        'id'         => $pid,
+                        'tipo'       => 'emparejamiento',
+                        'enunciado'  => $preg->enunciado ?? '',
+                        'puntos'     => (int)($preg->puntos ?? 1),
+                        'pares'      => $paresOut,
+                        'opciones'   => [],
+                        'acierto'    => $totalPares > 0 && $aciertosPares === $totalPares,
+                        'respondida' => !empty($elegidosMap),
+                    ];
+                    continue;
+                }
+
+                $opcionElegida  = $respMap[$pid] ?? null;
                 $opcionCorrecta = null;
                 $opciones = [];
                 foreach ($preg->opciones as $op) {
@@ -687,7 +869,8 @@ class ExamenesController extends Controller
                     ];
                 }
                 $preguntasOut[] = [
-                    'id'         => (int)$preg->id,
+                    'id'         => $pid,
+                    'tipo'       => $preg->tipo ?? 'opcion_multiple',
                     'enunciado'  => $preg->enunciado ?? '',
                     'puntos'     => (int)($preg->puntos ?? 1),
                     'opciones'   => $opciones,

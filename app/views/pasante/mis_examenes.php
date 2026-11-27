@@ -210,6 +210,7 @@ $disponibles = $total - $completados;
     /* Resultado */
     .ex-result-pct{font-size:1.5rem}
     .ex-result-body{padding:12px 12px 8px}
+    .ex-btn{min-height:44px;font-size:.86rem}
 }
 
 /* ─── DARK MODE SUPPORT (MIS EXÁMENES) ──────────────── */
@@ -259,6 +260,9 @@ $disponibles = $total - $completados;
 }
 [data-theme="dark"] .ex-result-pts {
     color: #94a3b8 !important;
+}
+[data-theme="dark"] .ex-result-pts div:first-child {
+    color: #f8fafc !important;
 }
 [data-theme="dark"] .ex-empty p {
     color: #94a3b8 !important;
@@ -387,6 +391,12 @@ $disponibles = $total - $completados;
                 <span class="ex-meta-tag">
                     <i class="ti ti-list-numbers" style="font-size:.8rem;"></i>
                     <?= $totalPreg ?> pregunta<?= $totalPreg !== 1 ? 's' : '' ?>
+                </span>
+                <?php endif; ?>
+                <?php if (!empty($ex->duracion_minutos)): ?>
+                <span class="ex-meta-tag" style="background:#fffbeb;border-color:#fde68a;color:#92400e;">
+                    <i class="ti ti-clock" style="font-size:.8rem;"></i>
+                    <?= (int)$ex->duracion_minutos ?> min
                 </span>
                 <?php endif; ?>
                 <?php if ($fechaDesde): ?>

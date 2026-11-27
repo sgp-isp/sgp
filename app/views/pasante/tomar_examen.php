@@ -4,28 +4,59 @@
    Variables: $examen, $preguntas[], $intentoId
    SECURITY: es_correcta is stripped before sending to JS
    ══════════════════════════════════════════════════════ */
-$examen    = $data['examen']    ?? null;
-$preguntas = $data['preguntas'] ?? [];
-$intentoId = (int)($data['intentoId'] ?? 0);
+$examen            = $data['examen']            ?? null;
+$preguntas         = $data['preguntas']         ?? [];
+$intentoId         = (int)($data['intentoId']    ?? 0);
+$duracionMin       = (int)($data['duracionMin']  ?? 0);
+$segundosRestantes = $data['segundosRestantes']  ?? null;
+$segundosTotales   = (int)($data['segundosTotales'] ?? 0);
 
 // Build sanitized frontend data — NEVER expose es_correcta
 $preguntas_js = [];
 foreach ($preguntas as $preg) {
-    $opciones_js = [];
-    foreach ($preg->opciones as $op) {
-        $opciones_js[] = [
-            'id'    => (int)$op->id,
-            'texto' => $op->texto,
-            // es_correcta intentionally omitted
+    $tipo = $preg->tipo ?? 'opcion_multiple';
+    if ($tipo === 'emparejamiento') {
+        $itemsA = [];
+        $itemsB = [];
+        foreach ($preg->opciones as $op) {
+            $itemsA[] = [
+                'id'    => (int)$op->id,
+                'texto' => $op->texto,
+            ];
+            $itemsB[] = [
+                'token' => substr(hash_hmac('sha256', $intentoId . ':' . (int)$op->id, 'sgp_quiz_pair_v1'), 0, 12),
+                'texto' => $op->texto_par ?? '',
+            ];
+        }
+        shuffle($itemsB);
+        $preguntas_js[] = [
+            'id'        => (int)$preg->id,
+            'orden'     => (int)$preg->orden,
+            'tipo'      => 'emparejamiento',
+            'enunciado' => $preg->enunciado,
+            'puntos'    => (float)$preg->puntos,
+            'items_a'   => $itemsA,
+            'items_b'   => $itemsB,
+            'opciones'  => [],
+        ];
+    } else {
+        $opciones_js = [];
+        foreach ($preg->opciones as $op) {
+            $opciones_js[] = [
+                'id'    => (int)$op->id,
+                'texto' => $op->texto,
+                // es_correcta intentionally omitted
+            ];
+        }
+        $preguntas_js[] = [
+            'id'        => (int)$preg->id,
+            'orden'     => (int)$preg->orden,
+            'tipo'      => $tipo,
+            'enunciado' => $preg->enunciado,
+            'puntos'    => (float)$preg->puntos,
+            'opciones'  => $opciones_js,
         ];
     }
-    $preguntas_js[] = [
-        'id'       => (int)$preg->id,
-        'orden'    => (int)$preg->orden,
-        'enunciado'=> $preg->enunciado,
-        'puntos'   => (float)$preg->puntos,
-        'opciones' => $opciones_js,
-    ];
 }
 
 $totalPreg = count($preguntas_js);
@@ -86,8 +117,8 @@ $totalPreg = count($preguntas_js);
 .qz-opt{
     display:flex;align-items:center;gap:14px;
     border:2px solid #e2e8f0;border-radius:14px;
-    padding:14px 18px;cursor:pointer;
-    background:#fff;
+    padding:14px 18px;cursor:pointer;min-height:48px;
+    background:#fff;-webkit-tap-highlight-color:transparent;
     transition:border-color .18s,background .18s,transform .15s,box-shadow .18s;
     text-align:left;width:100%;font-size:.9rem;color:#334155;font-weight:500;
     position:relative;outline:none;
@@ -292,24 +323,39 @@ $totalPreg = count($preguntas_js);
 
 /* ── Mobile ≤ 767px ─────────────────────────────────────────── */
 @media(max-width:767px){
-    .qz-wrap{padding:0}
-    .qz-topbar{padding:14px 16px}
+    .qz-wrap{padding:0;gap:14px}
+    .qz-topbar{padding:14px 16px;border-radius:16px}
     .qz-exam-title{font-size:.88rem}
-    .qz-card{padding:18px 16px}
-    .qz-q-text{font-size:.95rem}
-    .qz-opt{padding:11px 14px;gap:10px}
-    .qz-opt-letter{width:28px;height:28px;font-size:.78rem;flex-shrink:0}
-    .qz-opt-text{font-size:.88rem}
-    .qz-nav{padding:14px 16px;gap:8px}
-    .qz-btn{padding:9px 16px;font-size:.82rem}
-    .qz-dots{gap:5px}
-    .qz-dot{width:8px;height:8px}
+    .qz-step-label{font-size:.74rem;padding:4px 10px}
+    .qz-card{padding:18px 16px;border-radius:18px}
+    .qz-enunciado{font-size:.98rem;line-height:1.5;margin-bottom:16px}
+    .qz-opt{padding:12px 14px;gap:10px;border-radius:12px}
+    .qz-opt:hover{transform:none}
+    .qz-opt-letter{width:28px;height:28px;font-size:.75rem;flex-shrink:0}
+    .qz-opt-text{font-size:.87rem}
+    .qz-nav{padding:4px 0;gap:10px}
+    .qz-unanswered-hint{order:-1;width:100%;justify-content:center;padding:7px 12px}
+    .qz-btn{padding:11px 16px;font-size:.84rem;min-height:44px}
+    .qz-dots{gap:6px}
+    .qz-dot{width:9px;height:9px}
     /* Modal resultado */
-    .qz-result-modal{padding:24px 20px 20px;border-radius:20px;width:calc(100% - 32px)}
-    .qz-score-circle{width:120px;height:120px}
+    .qz-overlay{padding:12px}
+    .qz-result-modal{padding:0;border-radius:22px;width:100%}
+    .qz-result-hero{padding:24px 18px 18px}
+    .qz-result-hero-banner{padding:24px 18px 20px !important;margin:-24px -18px 16px !important;border-radius:20px 20px 0 0 !important}
+    .qz-score-circle{width:124px;height:124px;border-width:6px;margin-bottom:14px}
     .qz-score-pct{font-size:2rem}
     .qz-score-label{font-size:.7rem}
-    .qz-breakdown{max-height:220px}
+    .qz-verdict{font-size:1.2rem}
+    .qz-breakdown{padding:0 18px 18px;max-height:240px}
+    .qz-result-footer{padding:0 18px 20px}
+    .qz-result-footer .qz-btn{width:100%;justify-content:center}
+    /* Modal revisión */
+    .qz-review-overlay{padding:12px}
+    .qz-review-modal{max-height:calc(100dvh - 24px);border-radius:20px}
+    .qz-review-header{padding:16px 18px 12px}
+    .qz-review-footer{padding:12px 16px;gap:8px}
+    .qz-review-footer .qz-btn{flex:1;justify-content:center}
 }
 
 /* ─── DARK MODE SUPPORT (TOMAR EXAMEN) ──────────────── */
@@ -425,6 +471,88 @@ $totalPreg = count($preguntas_js);
     border-color: rgba(245, 158, 11, 0.35) !important;
     color: #fbbf24 !important;
 }
+
+/* ── Verdadero / Falso grid ── */
+.qz-vf-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.qz-vf-grid .qz-opt{justify-content:center;flex-direction:column;text-align:center;padding:22px 14px;gap:10px}
+.qz-vf-grid .qz-opt:hover{transform:translateY(-2px)}
+.qz-vf-grid .qz-opt-check{margin-left:0}
+@media(max-width:480px){.qz-vf-grid{grid-template-columns:1fr}}
+
+/* ── Emparejamiento (Tap-to-Match estilo Duolingo) ── */
+.qz-match-tip{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    background:#f5f3ff;border:1px solid #ddd6fe;border-radius:12px;padding:9px 13px;
+    font-size:.78rem;color:#5b21b6;font-weight:600;margin-bottom:14px;
+}
+.qz-match-reset{
+    border:1px solid #c4b5fd;background:#fff;color:#6d28d9;border-radius:8px;
+    padding:4px 10px;font-size:.73rem;font-weight:700;cursor:pointer;
+}
+.qz-match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.qz-match-col{display:flex;flex-direction:column;gap:9px}
+.qz-match-col-hd{
+    font-size:.69rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+    color:#94a3b8;padding:0 4px;
+}
+.qz-match-item{
+    display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+    border:2px solid #e2e8f0;border-radius:13px;padding:11px 12px;min-height:50px;
+    background:#fff;color:#334155;font-size:.84rem;font-weight:600;line-height:1.35;
+    cursor:pointer;transition:all .16s;-webkit-tap-highlight-color:transparent;
+    word-break:break-word;
+}
+.qz-match-item:hover{border-color:#a78bfa;background:#faf5ff}
+.qz-match-item.active-a{
+    border-color:#7c3aed;background:#f5f3ff;
+    box-shadow:0 0 0 3px rgba(124,58,237,.18);transform:scale(1.01);
+}
+.qz-match-badge{
+    width:24px;height:24px;border-radius:50%;flex-shrink:0;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:.72rem;font-weight:900;color:#fff;background:#cbd5e1;
+}
+@media(max-width:480px){
+    .qz-match-grid{gap:8px}
+    .qz-match-item{padding:10px;font-size:.8rem;min-height:48px}
+}
+[data-theme="dark"] .qz-match-tip{background:rgba(124,58,237,.15);border-color:rgba(167,139,250,.3);color:#ddd6fe}
+[data-theme="dark"] .qz-match-reset{background:#1e293b;border-color:#4c1d95;color:#ddd6fe}
+[data-theme="dark"] .qz-match-item{background:#0d1526;border-color:#1e293b;color:#cbd5e1}
+[data-theme="dark"] .qz-match-item.active-a{background:rgba(124,58,237,.22);border-color:#a78bfa;color:#fff}
+
+/* ── Cápsula Temporizador ── */
+@keyframes qzTimerPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(220,38,38,.35)}50%{transform:scale(1.04);box-shadow:0 0 0 6px rgba(220,38,38,0)}}
+@keyframes qzTimerShake{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+.qz-top-badges{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.qz-timer-pill{
+    position:relative;overflow:hidden;
+    display:inline-flex;align-items:center;gap:7px;
+    padding:5px 13px 7px;border-radius:999px;
+    background:#eff6ff;border:1.5px solid #bfdbfe;color:#1d4ed8;
+    font-size:.84rem;font-weight:800;font-variant-numeric:tabular-nums;
+    transition:background .3s,border-color .3s,color .3s;
+}
+.qz-timer-pill i{font-size:1rem;flex-shrink:0}
+.qz-timer-bar{
+    position:absolute;left:0;bottom:0;height:3px;width:100%;
+    background:#3b82f6;transition:width 1s linear,background .3s;
+}
+.qz-timer-pill.is-warn{background:#fffbeb;border-color:#fcd34d;color:#b45309}
+.qz-timer-pill.is-warn .qz-timer-bar{background:#f59e0b}
+.qz-timer-pill.is-crit{
+    background:#fef2f2;border-color:#fca5a5;color:#dc2626;
+    animation:qzTimerPulse 1.1s ease-in-out infinite;
+}
+.qz-timer-pill.is-crit i{animation:qzTimerShake .6s ease-in-out infinite}
+.qz-timer-pill.is-crit .qz-timer-bar{background:#ef4444}
+@media(max-width:767px){
+    .qz-topbar{position:sticky;top:8px;z-index:50}
+    .qz-top-badges{width:100%;justify-content:space-between}
+}
+[data-theme="dark"] .qz-timer-pill{background:rgba(37,99,235,.18);border-color:rgba(96,165,250,.35);color:#93c5fd}
+[data-theme="dark"] .qz-timer-pill.is-warn{background:rgba(245,158,11,.18);border-color:rgba(251,191,36,.4);color:#fcd34d}
+[data-theme="dark"] .qz-timer-pill.is-crit{background:rgba(220,38,38,.22);border-color:rgba(248,113,113,.45);color:#fca5a5}
 </style>
 
 <!-- Loading overlay -->
@@ -486,7 +614,16 @@ $totalPreg = count($preguntas_js);
                 </div>
                 <span class="qz-exam-title"><?= htmlspecialchars($examen->titulo ?? 'Examen') ?></span>
             </div>
-            <span class="qz-step-label" id="qzStepLabel">Pregunta 1 de <?= $totalPreg ?></span>
+            <div class="qz-top-badges">
+                <?php if ($duracionMin > 0 && $segundosRestantes !== null): ?>
+                <div class="qz-timer-pill" id="qzTimerPill" title="Tiempo restante del examen">
+                    <i class="ti ti-clock" id="qzTimerIcon"></i>
+                    <span id="qzTimerText">--:--</span>
+                    <div class="qz-timer-bar" id="qzTimerBar"></div>
+                </div>
+                <?php endif; ?>
+                <span class="qz-step-label" id="qzStepLabel">Pregunta 1 de <?= $totalPreg ?></span>
+            </div>
         </div>
         <div class="qz-prog-track">
             <div class="qz-prog-fill" id="qzProgFill" style="width:<?= $totalPreg > 0 ? round(1/$totalPreg*100) : 100 ?>%;"></div>
@@ -529,13 +666,26 @@ $totalPreg = count($preguntas_js);
 /* ══════════════════════════════════════════════════════
    QUIZ ENGINE
    ══════════════════════════════════════════════════════ */
-var QUIZ_DATA   = <?= json_encode($preguntas_js, JSON_UNESCAPED_UNICODE) ?>;
-var INTENTO_ID  = <?= $intentoId ?>;
-var TOTAL       = QUIZ_DATA.length;
-var URLROOT_VAL = (typeof URLROOT !== 'undefined') ? URLROOT : '<?= URLROOT ?>';
+var QUIZ_DATA          = <?= json_encode($preguntas_js, JSON_UNESCAPED_UNICODE) ?>;
+var INTENTO_ID         = <?= $intentoId ?>;
+var TOTAL              = QUIZ_DATA.length;
+var URLROOT_VAL        = (typeof URLROOT !== 'undefined') ? URLROOT : '<?= URLROOT ?>';
+var TIMER_TOTAL_SEC    = <?= $segundosTotales ?>;
+var TIMER_REMAIN_SEC   = <?= $segundosRestantes !== null ? (int)$segundosRestantes : 'null' ?>;
 
 var currentStep = 0;
 var respuestas  = {};
+var activeMatchA = null; // { pregId, aId }
+var MATCH_COLORS = ['#2563eb','#7c3aed','#059669','#d97706','#e11d48','#0891b2','#4f46e5','#65a30d'];
+
+function isPreguntaRespondida(q) {
+    if (!q) return false;
+    if (q.tipo === 'emparejamiento') {
+        const m = respuestas[q.id] || {};
+        return (q.items_a || []).length > 0 && (q.items_a || []).every(it => !!m[it.id]);
+    }
+    return !!respuestas[q.id];
+}
 
 /* ── init ── */
 buildDots();
@@ -546,23 +696,79 @@ function renderStep() {
     const q        = QUIZ_DATA[currentStep];
     const card     = document.getElementById('qzCard');
     const letters  = ['A','B','C','D','E','F','G','H'];
-    const selected = respuestas[q.id] || null;
+    let bodyHtml   = '';
 
-    const opts = q.opciones.map((op, i) => {
-        const isSel  = selected === op.id;
-        const letter = letters[i] || String.fromCharCode(65 + i);
-        return `
-        <button class="qz-opt${isSel ? ' selected' : ''}"
-                onclick="seleccionarOpcion(${q.id}, ${op.id}, this)"
-                style="animation-delay:${i * 0.05}s">
-            <span class="qz-opt-letter">${letter}</span>
-            <span class="qz-opt-text">${escHtml(op.texto)}</span>
-            <i class="ti ti-circle-check qz-opt-check"></i>
-        </button>`;
-    }).join('');
+    if (q.tipo === 'emparejamiento') {
+        const pairMap = respuestas[q.id] || {};
+        const aList   = q.items_a || [];
+        const bList   = q.items_b || [];
+
+        const pairNumByA = {};
+        const pairNumByB = {};
+        aList.forEach((it, idx) => {
+            if (pairMap[it.id]) {
+                pairNumByA[it.id] = idx + 1;
+                pairNumByB[pairMap[it.id]] = idx + 1;
+            }
+        });
+
+        const colAHtml = aList.map((it, idx) => {
+            const pNum   = pairNumByA[it.id] || null;
+            const pColor = pNum ? MATCH_COLORS[(pNum - 1) % MATCH_COLORS.length] : null;
+            const isAct  = activeMatchA && activeMatchA.pregId === q.id && activeMatchA.aId === it.id;
+            const st     = pColor ? `border-color:${pColor};background:${pColor}12;` : '';
+            return `<button type="button" class="qz-match-item${isAct ? ' active-a' : ''}" style="${st}"
+                        onclick="seleccionarMatchA(${q.id}, ${it.id})">
+                        <span class="qz-match-badge" style="${pColor ? 'background:' + pColor : ''}">${pNum || (idx + 1)}</span>
+                        <span style="flex:1;">${escHtml(it.texto)}</span>
+                    </button>`;
+        }).join('');
+
+        const colBHtml = bList.map((it) => {
+            const pNum   = pairNumByB[it.token] || null;
+            const pColor = pNum ? MATCH_COLORS[(pNum - 1) % MATCH_COLORS.length] : null;
+            const st     = pColor ? `border-color:${pColor};background:${pColor}12;` : '';
+            return `<button type="button" class="qz-match-item" style="${st}"
+                        onclick="seleccionarMatchB(${q.id}, '${it.token}')">
+                        <span class="qz-match-badge" style="${pColor ? 'background:' + pColor : ''}">${pNum || '?'}</span>
+                        <span style="flex:1;">${escHtml(it.texto)}</span>
+                    </button>`;
+        }).join('');
+
+        bodyHtml = `
+            <div class="qz-match-tip">
+                <span><i class="ti ti-arrows-left-right"></i> Toca un concepto a la izquierda y luego su pareja a la derecha.</span>
+                <button type="button" class="qz-match-reset" onclick="limpiarMatch(${q.id})">Limpiar</button>
+            </div>
+            <div class="qz-match-grid">
+                <div class="qz-match-col">
+                    <div class="qz-match-col-hd">Conceptos</div>
+                    ${colAHtml}
+                </div>
+                <div class="qz-match-col">
+                    <div class="qz-match-col-hd">Parejas</div>
+                    ${colBHtml}
+                </div>
+            </div>`;
+    } else {
+        const selected = respuestas[q.id] || null;
+        const isVF     = q.tipo === 'verdadero_falso';
+        const opts = q.opciones.map((op, i) => {
+            const isSel  = selected === op.id;
+            const letter = isVF ? (i === 0 ? 'V' : 'F') : (letters[i] || String.fromCharCode(65 + i));
+            return `
+            <button type="button" class="qz-opt${isSel ? ' selected' : ''}"
+                    onclick="seleccionarOpcion(${q.id}, ${op.id}, this)"
+                    style="animation-delay:${i * 0.05}s">
+                <span class="qz-opt-letter">${letter}</span>
+                <span class="qz-opt-text">${escHtml(op.texto)}</span>
+                <i class="ti ti-circle-check qz-opt-check"></i>
+            </button>`;
+        }).join('');
+        bodyHtml = `<div class="${isVF ? 'qz-vf-grid' : 'qz-options'}" id="qzOpts">${opts}</div>`;
+    }
 
     card.style.animation = 'none';
-    // force reflow
     void card.offsetWidth;
     card.style.animation = 'qzSlideIn .3s ease both';
 
@@ -573,7 +779,7 @@ function renderStep() {
             <span class="qz-q-pts">${q.puntos} pt${q.puntos !== 1 ? 's' : ''}</span>
         </div>
         <div class="qz-enunciado">${escHtml(q.enunciado)}</div>
-        <div class="qz-options" id="qzOpts">${opts}</div>
+        ${bodyHtml}
     `;
 
     /* progress */
@@ -595,8 +801,42 @@ function renderStep() {
     btnNext.style.display   = isLast ? 'none' : '';
     btnSubmit.style.display = isLast ? '' : 'none';
 
-    // Hint if current question unanswered
-    hint.style.display = respuestas[q.id] ? 'none' : 'flex';
+    hint.style.display = isPreguntaRespondida(q) ? 'none' : 'flex';
+}
+
+/* ── Tap-to-Match handlers ── */
+function seleccionarMatchA(pregId, aId) {
+    if (activeMatchA && activeMatchA.pregId === pregId && activeMatchA.aId === aId) {
+        activeMatchA = null;
+    } else {
+        activeMatchA = { pregId: pregId, aId: aId };
+    }
+    renderStep();
+}
+
+function seleccionarMatchB(pregId, bToken) {
+    const q = QUIZ_DATA[currentStep];
+    if (!activeMatchA || activeMatchA.pregId !== pregId) {
+        const m = respuestas[pregId] || {};
+        const libre = (q.items_a || []).find(it => !m[it.id]);
+        if (!libre) return;
+        activeMatchA = { pregId: pregId, aId: libre.id };
+    }
+    if (!respuestas[pregId] || typeof respuestas[pregId] !== 'object') {
+        respuestas[pregId] = {};
+    }
+    Object.keys(respuestas[pregId]).forEach(k => {
+        if (respuestas[pregId][k] === bToken) delete respuestas[pregId][k];
+    });
+    respuestas[pregId][activeMatchA.aId] = bToken;
+    activeMatchA = null;
+    renderStep();
+}
+
+function limpiarMatch(pregId) {
+    respuestas[pregId] = {};
+    activeMatchA = null;
+    renderStep();
 }
 
 /* ── option selection ── */
@@ -632,7 +872,7 @@ function anterior() {
 function irASiguienteSinResponder() {
     for (var i = 1; i <= TOTAL; i++) {
         var idx = (currentStep + i) % TOTAL;
-        if (!respuestas[QUIZ_DATA[idx].id]) {
+        if (!isPreguntaRespondida(QUIZ_DATA[idx])) {
             currentStep = idx;
             renderStep();
             window.scrollTo({top: 0, behavior: 'smooth'});
@@ -649,7 +889,7 @@ function buildDots() {
         const btn = document.createElement('button');
         btn.className = 'qz-dot';
         btn.title = `Pregunta ${i + 1}`;
-        btn.addEventListener('click', () => { currentStep = i; renderStep(); });
+        btn.addEventListener('click', () => { currentStep = i; renderStep(); window.scrollTo({top: 0, behavior: 'smooth'}); });
         container.appendChild(btn);
     }
 }
@@ -658,14 +898,14 @@ function updateDots() {
     const dots = document.querySelectorAll('.qz-dot');
     dots.forEach((d, i) => {
         const q = QUIZ_DATA[i];
-        d.classList.toggle('answered', !!respuestas[q.id]);
+        d.classList.toggle('answered', isPreguntaRespondida(q));
         d.classList.toggle('current', i === currentStep);
     });
 }
 
 /* ── confirm & submit ── */
 function confirmarEnvio() {
-    const sinResponder = QUIZ_DATA.filter(q => !respuestas[q.id]).length;
+    const sinResponder = QUIZ_DATA.filter(q => !isPreguntaRespondida(q)).length;
     let msg = '¿Estás seguro de enviar el examen?';
     if (sinResponder > 0) {
         msg = `Tienes <strong>${sinResponder} pregunta${sinResponder > 1 ? 's' : ''} sin responder</strong>. ¿Deseas enviar de todas formas?`;
@@ -693,7 +933,7 @@ function confirmarEnvio() {
 
 /* ── review panel ── */
 function mostrarRevision() {
-    const sinResponder = QUIZ_DATA.filter(q => !respuestas[q.id]).length;
+    const sinResponder = QUIZ_DATA.filter(q => !isPreguntaRespondida(q)).length;
     const conRespuesta = TOTAL - sinResponder;
     const letters = ['A','B','C','D','E','F','G','H'];
 
@@ -704,10 +944,18 @@ function mostrarRevision() {
 
     let html = '';
     QUIZ_DATA.forEach(function(q, i) {
-        const answered = !!respuestas[q.id];
+        const answered = isPreguntaRespondida(q);
         let answerText = '(sin respuesta)';
         let answerLetter = '';
-        if (answered) {
+        if (q.tipo === 'emparejamiento') {
+            const m = respuestas[q.id] || {};
+            const cnt = Object.keys(m).length;
+            const tot = (q.items_a || []).length;
+            if (cnt > 0) {
+                answerLetter = cnt + '/' + tot;
+                answerText = cnt === tot ? 'Todas las parejas unidas' : 'Parejas incompletas';
+            }
+        } else if (answered) {
             const opIdx = q.opciones.findIndex(function(o){ return o.id === respuestas[q.id]; });
             if (opIdx >= 0) {
                 answerLetter = letters[opIdx] || String.fromCharCode(65 + opIdx);
@@ -758,10 +1006,22 @@ async function enviarExamen() {
 
     const payload = {
         intento_id: INTENTO_ID,
-        respuestas: Object.entries(respuestas).map(([pid, oid]) => ({
-            pregunta_id: parseInt(pid),
-            opcion_id:   oid,
-        }))
+        respuestas: QUIZ_DATA.map(q => {
+            if (q.tipo === 'emparejamiento') {
+                const m = respuestas[q.id] || {};
+                return {
+                    pregunta_id: q.id,
+                    pares: Object.entries(m).map(([aId, bTok]) => ({
+                        a_id:    parseInt(aId, 10),
+                        b_token: bTok,
+                    })),
+                };
+            }
+            return {
+                pregunta_id: q.id,
+                opcion_id:   respuestas[q.id] || 0,
+            };
+        }).filter(r => r.pares ? r.pares.length > 0 : r.opcion_id > 0)
     };
 
     try {
@@ -807,7 +1067,7 @@ function mostrarResultado(data) {
     const pctFontSz  = pctStr.length >= 6 ? '2rem' : (pctStr.length >= 5 ? '2.3rem' : '2.6rem');
 
     document.getElementById('qzResultHero').innerHTML = `
-        <div style="background:${heroBg};border-radius:20px;padding:32px 28px 24px;margin:-36px -36px 0;margin-bottom:20px;">
+        <div class="qz-result-hero-banner" style="background:${heroBg};border-radius:20px;padding:32px 28px 24px;margin:-36px -36px 20px;">
             <div class="qz-score-circle" style="border-color:${circleColor};color:${circleColor};">
                 <span class="qz-score-pct" style="font-size:${pctFontSz};">${pct}%</span>
                 <span class="qz-score-label">Puntaje</span>
@@ -840,11 +1100,23 @@ function mostrarResultado(data) {
         const iconColor = correct ? '#059669' : '#dc2626';
         const icon      = correct ? 'ti-check' : 'ti-x';
 
-        /* find chosen option text */
-        let textoElegido = '(sin respuesta)';
-        if (q.opciones && r.opcion_elegida_id) {
-            const opEl = q.opciones.find(o => o.id === r.opcion_elegida_id);
-            if (opEl) textoElegido = opEl.texto;
+        let detailHtml = '';
+        if (r.tipo === 'emparejamiento' && Array.isArray(r.pares)) {
+            detailHtml = r.pares.map(p =>
+                `<div style="margin-top:3px;">
+                    <span style="color:${p.acierto ? '#059669' : '#dc2626'};font-weight:700;">${p.acierto ? '✓' : '✗'}</span>
+                    ${escHtml(p.texto)} ↔ <strong>${escHtml(p.texto_par_elegido)}</strong>
+                    ${!p.acierto ? ` <span style="color:#059669;">(Correcto: ${escHtml(p.texto_par)})</span>` : ''}
+                </div>`
+            ).join('');
+        } else {
+            let textoElegido = '(sin respuesta)';
+            if (q.opciones && r.opcion_elegida_id) {
+                const opEl = q.opciones.find(o => o.id === r.opcion_elegida_id);
+                if (opEl) textoElegido = opEl.texto;
+            }
+            detailHtml = `Tu respuesta: <strong>${escHtml(textoElegido)}</strong>
+                ${!correct ? `<br>Respuesta correcta: <strong style="color:#059669;">${escHtml(r.texto_correcto || '')}</strong>` : ''}`;
         }
 
         html += `
@@ -854,10 +1126,7 @@ function mostrarResultado(data) {
             </div>
             <div style="flex:1;min-width:0;">
                 <div class="qz-br-q">${escHtml(q.enunciado || `Pregunta ${r.pregunta_id}`)}</div>
-                <div class="qz-br-ans">
-                    Tu respuesta: <strong>${escHtml(textoElegido)}</strong>
-                    ${!correct ? `<br>Respuesta correcta: <strong style="color:#059669;">${escHtml(r.texto_correcto || '')}</strong>` : ''}
-                </div>
+                <div class="qz-br-ans">${detailHtml}</div>
             </div>
         </div>`;
     });
@@ -947,4 +1216,95 @@ document.addEventListener('keydown', function(e) {
 window.addEventListener('beforeunload', function(e) {
     if (_qzEnProgreso()) { e.preventDefault(); e.returnValue = ''; }
 });
+
+/* ── Temporizador en Cápsula ── */
+(function initQuizTimer() {
+    if (TIMER_REMAIN_SEC === null || TIMER_TOTAL_SEC <= 0) return;
+
+    var pill   = document.getElementById('qzTimerPill');
+    var txt    = document.getElementById('qzTimerText');
+    var icon   = document.getElementById('qzTimerIcon');
+    var bar    = document.getElementById('qzTimerBar');
+    if (!pill || !txt) return;
+
+    var rem       = Math.max(0, parseInt(TIMER_REMAIN_SEC, 10));
+    var warnFired = false;
+    var critFired = false;
+    var ended     = false;
+
+    function fmtTime(s) {
+        var hrs  = Math.floor(s / 3600);
+        var mins = Math.floor((s % 3600) / 60);
+        var secs = s % 60;
+        var mm   = String(mins).padStart(2, '0');
+        var ss   = String(secs).padStart(2, '0');
+        return hrs > 0 ? (hrs + ':' + mm + ':' + ss) : (mm + ':' + ss);
+    }
+
+    function toastAviso(title, iconName) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true, position: 'top-end', icon: iconName,
+                title: title, showConfirmButton: false, timer: 3000, timerProgressBar: true
+            });
+        }
+    }
+
+    function renderTimer() {
+        txt.textContent = fmtTime(rem);
+        var pct = Math.max(0, Math.min(100, (rem / TIMER_TOTAL_SEC) * 100));
+        if (bar) bar.style.width = pct + '%';
+
+        var warnUmbral = Math.min(300, Math.floor(TIMER_TOTAL_SEC * 0.25));
+        if (rem <= 60) {
+            pill.classList.remove('is-warn');
+            pill.classList.add('is-crit');
+            if (icon) icon.className = 'ti ti-alarm';
+            if (!critFired && rem > 0) {
+                critFired = true;
+                toastAviso('¡Último minuto! Revisa tus respuestas', 'warning');
+            }
+        } else if (rem <= warnUmbral) {
+            pill.classList.add('is-warn');
+            pill.classList.remove('is-crit');
+            if (icon) icon.className = 'ti ti-hourglass-high';
+            if (!warnFired) {
+                warnFired = true;
+                var minRest = Math.ceil(rem / 60);
+                toastAviso('Queda' + (minRest === 1 ? ' 1 minuto' : 'n ' + minRest + ' minutos'), 'info');
+            }
+        }
+    }
+
+    async function expirarTiempo() {
+        if (ended || !_qzEnProgreso()) return;
+        ended = true;
+        clearInterval(iv);
+        if (typeof Swal !== 'undefined') {
+            await Swal.fire({
+                icon: 'warning',
+                title: '¡Tiempo finalizado!',
+                text: 'Se enviarán automáticamente las respuestas marcadas.',
+                timer: 2000,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            });
+        }
+        enviarExamen();
+    }
+
+    renderTimer();
+    if (rem <= 0) {
+        expirarTiempo();
+        return;
+    }
+
+    var iv = setInterval(function() {
+        if (!_qzEnProgreso()) { clearInterval(iv); return; }
+        rem = Math.max(0, rem - 1);
+        renderTimer();
+        if (rem <= 0) expirarTiempo();
+    }, 1000);
+})();
 </script>

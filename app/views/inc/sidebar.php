@@ -583,6 +583,10 @@ if (!function_exists('isActive')) {
             <span class="dock-sheet-icon"><i class="ti ti-refresh-dot"></i></span>
             <span class="dock-sheet-label">Actualizaciones</span>
         </a>
+        <a href="javascript:void(0)" class="dock-sheet-item" onclick="if(window.closeSgpDockSheet)window.closeSgpDockSheet();if(window.abrirCalculadoraHoras)window.abrirCalculadoraHoras();">
+            <span class="dock-sheet-icon" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;"><i class="ti ti-calculator"></i></span>
+            <span class="dock-sheet-label">Calculadora</span>
+        </a>
         <?php endif; ?>
 
         <?php if ($role == 'Administrador'): ?>
@@ -644,6 +648,10 @@ if (!function_exists('isActive')) {
             <span class="dock-sheet-icon"><i class="ti ti-notebook"></i></span>
             <span class="dock-sheet-label">Exámenes</span>
         </a>
+        <a href="javascript:void(0)" class="dock-sheet-item" onclick="if(window.closeSgpDockSheet)window.closeSgpDockSheet();if(window.abrirCalculadoraHoras)window.abrirCalculadoraHoras();">
+            <span class="dock-sheet-icon" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;"><i class="ti ti-calculator"></i></span>
+            <span class="dock-sheet-label">Calculadora</span>
+        </a>
         <?php endif; ?>
 
         <?php if ($role == 'Tutor'): ?>
@@ -666,6 +674,10 @@ if (!function_exists('isActive')) {
         <a href="<?= URLROOT ?>/examenes" class="dock-sheet-item" data-href="/examenes">
             <span class="dock-sheet-icon"><i class="ti ti-notebook"></i></span>
             <span class="dock-sheet-label">Exámenes</span>
+        </a>
+        <a href="javascript:void(0)" class="dock-sheet-item" onclick="if(window.closeSgpDockSheet)window.closeSgpDockSheet();if(window.abrirCalculadoraHoras)window.abrirCalculadoraHoras();">
+            <span class="dock-sheet-icon" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;"><i class="ti ti-calculator"></i></span>
+            <span class="dock-sheet-label">Calculadora</span>
         </a>
         <?php endif; ?>
 

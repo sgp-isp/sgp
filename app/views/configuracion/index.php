@@ -1881,7 +1881,7 @@ $hoy             = date('Y-m-d');
                 </div>
             </div>
 
-            <form method="POST" action="<?= URLROOT ?>/configuracion" id="formBrandingTema" style="margin-top:14px;">
+            <form method="POST" action="<?= URLROOT ?>/configuracion" id="formBrandingTema" style="margin-top:14px;" onsubmit="try{if(window.SGP_PALETTE_KEY)localStorage.removeItem(window.SGP_PALETTE_KEY);localStorage.removeItem('sgp_user_palette');}catch(e){}">
                 <input type="hidden" name="accion" value="guardar_tema">
                 <input type="hidden" name="_csrf" value="<?= CsrfHelper::generate() ?>">
 

@@ -599,7 +599,8 @@ function renderPalettes() {
 
 function getActivePalette() {
     try {
-        var saved = JSON.parse(localStorage.getItem('sgp_user_palette'));
+        var pKey = window.SGP_PALETTE_KEY || ('sgp_user_palette_' + (window.SGP_USER_ID || 0));
+        var saved = JSON.parse(localStorage.getItem(pKey));
         if (saved && saved.primary && saved.accent) return saved;
     } catch(e) {}
     return { primary: '#162660', accent: '#2563eb', name: 'Azul ISP Institucional' };
@@ -690,6 +691,8 @@ function applyCustomPalette() {
 
 function resetToDefaultPalette() {
     try {
+        var pKey = window.SGP_PALETTE_KEY || ('sgp_user_palette_' + (window.SGP_USER_ID || 0));
+        localStorage.removeItem(pKey);
         localStorage.removeItem('sgp_user_palette');
     } catch(e) {}
 

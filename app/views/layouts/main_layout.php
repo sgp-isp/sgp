@@ -69,14 +69,14 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
             if (theme === 'dark') document.documentElement.classList.add('dark');
         })();
     </script>
-    <!-- Escala de Visualización Global (Cero FOUC: 90% en pantallas de escritorio para máxima ergonomía visual) -->
+    <!-- Escala de Visualización Global (Cero FOUC: 80% en pantallas de escritorio para máxima ergonomía visual) -->
     <script>
         (function() {
             try {
                 var isDesktop = window.innerWidth >= 768;
                 var savedZoom = localStorage.getItem('sgp_zoom');
-                if (!savedZoom || savedZoom === '0.80' || savedZoom === '0.8' || savedZoom === '1') {
-                    savedZoom = isDesktop ? '0.90' : '1';
+                if (!savedZoom || savedZoom === '0.90' || savedZoom === '0.9' || savedZoom === '1') {
+                    savedZoom = isDesktop ? '0.80' : '1';
                     try { localStorage.setItem('sgp_zoom', savedZoom); } catch(e){}
                 }
                 if (isDesktop || savedZoom !== '1') {
@@ -87,10 +87,10 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
     </script>
     <style>
         html[data-theme="dark"], html[data-theme="dark"] body { background-color: #090e1a !important; color: #f8fafc !important; }
-        /* Escala compacta 90% por defecto en pantallas de laptop y escritorio (>=768px) */
+        /* Escala compacta 80% por defecto en pantallas de laptop y escritorio (>=768px) */
         @media (min-width: 768px) {
             html {
-                zoom: 0.90;
+                zoom: 0.80;
             }
         }
         /* Fijación absoluta de la barra lateral desde el topbar hasta el borde inferior de la ventana */
@@ -100,11 +100,16 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
             height: auto !important;
         }
     </style>
-    <!-- User Palette Pre-render (Inyección dinámica inmediata de colores personalizados) -->
+    <!-- User Palette Pre-render (Inyección dinámica inmediata de colores personalizados por usuario) -->
     <script>
+        window.SGP_USER_ID = <?= (int)$_currentUserId ?>;
+        window.SGP_PALETTE_KEY = 'sgp_user_palette_' + window.SGP_USER_ID;
         (function() {
             try {
-                var p = JSON.parse(localStorage.getItem('sgp_user_palette'));
+                if (localStorage.getItem('sgp_user_palette')) {
+                    localStorage.removeItem('sgp_user_palette');
+                }
+                var p = JSON.parse(localStorage.getItem(window.SGP_PALETTE_KEY));
                 if (p && p.primary && p.accent) {
                     var style = document.createElement('style');
                     style.id = 'sgp-palette-dynamic-override';
@@ -400,9 +405,9 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
        nunca queden 3+1, y de paso da más aire a cada tarjeta (era la
        causa real de "todo se ve grande, hay que hacer zoom out"). */
     @media (max-width:1366px) and (min-width:1025px){
-        .dashboard-kpi-grid{ grid-template-columns:repeat(2,1fr) !important; }
-        .kpi-users-grid     { grid-template-columns:repeat(2,1fr) !important; }
-        .kpi-pasantes-grid  { grid-template-columns:repeat(2,1fr) !important; }
+        .dashboard-kpi-grid{ grid-template-columns:repeat(4,1fr) !important; }
+        .kpi-users-grid     { grid-template-columns:repeat(4,1fr) !important; }
+        .kpi-pasantes-grid  { grid-template-columns:repeat(4,1fr) !important; }
         .charts-grid-50,.sa-charts-row{ gap:16px !important; }
     }
     /* ── 1024px gap — entre tablet y laptop ──────────────────────── */
@@ -1007,6 +1012,9 @@ if (in_array($_rolAutoFill, [0, 1, 2])) {
         }
     }
     </script>
+    <?php if (in_array($_currentUserRole, [0, 1, 2], true)): ?>
+    <?php require_once APPROOT . '/views/inc/modal_calculadora_horas.php'; ?>
+    <?php endif; ?>
 </body>
 
 </html>
